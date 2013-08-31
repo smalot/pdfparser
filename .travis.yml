@@ -3,5 +3,5 @@ php:
   - 5.3
   - 5.4
 before_script:
-  - ./composer update
+  - composer update
 script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc
