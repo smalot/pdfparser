@@ -1,0 +1,6 @@
+/.idea/*
+/coverage/*
+/vendor/
+/xdebug/*
+/composer.phar
+/composer

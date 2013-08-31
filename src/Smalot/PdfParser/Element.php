@@ -1,0 +1,178 @@
+<?php
+
+namespace Smalot\PdfParser;
+
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Element\ElementBoolean;
+use Smalot\PdfParser\Element\ElementDate;
+use Smalot\PdfParser\Element\ElementHexa;
+use Smalot\PdfParser\Element\ElementName;
+use Smalot\PdfParser\Element\ElementNull;
+use Smalot\PdfParser\Element\ElementNumeric;
+use Smalot\PdfParser\Element\ElementString;
+use Smalot\PdfParser\Element\ElementStruct;
+use Smalot\PdfParser\Element\ElementXRef;
+
+/**
+ * Class Element
+ * @package PdfParser
+ */
+class Element
+{
+    /**
+     * @var Document
+     */
+    protected $document = null;
+
+    /**
+     * @var mixed
+     */
+    protected $value = null;
+
+    /**
+     * @param mixed    $value
+     * @param Document $document
+     */
+    public function __construct($value, Document $document = null)
+    {
+        $this->value = $value;
+
+        $this->document = $document;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    public function equals($value)
+    {
+        return ($value == $this->value);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    public function contains($value)
+    {
+        if (is_array($this->value)) {
+            /** @var Element $val */
+            foreach ($this->value as $val) {
+                if ($val->equals($value)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return $this->equals($value);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getContent()
+    {
+        return $this->value;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string)($this->value);
+    }
+
+    /**
+     * @param string   $content
+     * @param Document $document
+     * @param int      $position
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public static function parse($content, Document $document = null, &$position = 0)
+    {
+        $args        = func_get_args();
+        $only_values = false;
+        if (isset($args[3])) {
+            $only_values = $args[3];
+        }
+
+        $position = 0;
+        $content  = trim($content);
+        $values   = array();
+
+        do {
+            $sub_content = substr($content, $position);
+
+            //echo "-----------------------------------\n";
+//            var_dump($sub_content);
+
+            if (!$only_values) {
+                if (!preg_match('/(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
+                    break;
+                } else {
+                    $name  = ltrim($match['name'], '/');
+                    $value = $match['value'];
+                    //var_dump($name, $value);
+                    $position = strpos($content, $value, $position + strlen($match['name']));
+                }
+            } else {
+                $name  = count($values);
+                $value = $sub_content;
+            }
+
+            //var_dump($name, $value);
+
+            $old_position = $position;
+            $offset       = 0;
+
+            if ($element = ElementName::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementXRef::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementNumeric::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementStruct::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementBoolean::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementNull::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementDate::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementString::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementHexa::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } elseif ($element = ElementArray::parse($value, $document, $offset)) {
+                $values[$name] = $element;
+                $position += $offset;
+            } else {
+                throw new \Exception('Unsupported element: "' . $value . '" in "' . $content . '".');
+            }
+
+            //echo 'header found: ' . $name . ' (' . get_class($values[$name]) . ')' . "\n";
+
+            /*if ($old_position == $position) {
+                throw new \Exception('Error on header parsing : "' . $name . '" on "' . $content . '".');
+            }*/
+        } while ($position < strlen($content));
+
+        return $values;
+    }
+}

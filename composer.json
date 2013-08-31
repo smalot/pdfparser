@@ -1,0 +1,19 @@
+{
+    "name": "smalot/pdfparser",
+    "description": "Pdf parser library. Can read and extract informations from pdf file.",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Sebastien Malot",
+            "email": "sebastien@malot.fr"
+        }
+    ],
+    "require": {
+        "atoum/atoum": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "Smalot\\PdfParser\\": "src/"
+        }
+    }
+}
