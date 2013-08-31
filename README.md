@@ -1,6 +1,9 @@
 PdfParser
 =========
 
+[![Build Status](https://travis-ci.org/smalot/pdfparser.png?branch=master)](https://travis-ci.org/smalot/pdfparser)
+[![Total Downloads](https://poser.pugx.org/smalot/pdfparser/downloads.png)](https://packagist.org/packages/smalot/pdfparser)
+
 PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file.
 Features included :
 
@@ -15,11 +18,10 @@ Features included :
 
 Currently, secured documents are not supported.
 
-
 State
 =========
 
-This Library is still under active development. As a result users must expect BC breaks when using the master version.
+This Library is still under active development. As a result, users must expect BC breaks when using the master version.
 
 Documentation
 =========
