@@ -15,11 +15,12 @@ Features included :
 
 Currently, secured documents are not supported.
 
+[![Build Status](https://travis-ci.org/smalot/pdfparser.png?branch=master)](https://travis-ci.org/smalot/pdfparser)
 
 State
 =========
 
-This Library is still under active development. As a result users must expect BC breaks when using the master version.
+This Library is still under active development. As a result, users must expect BC breaks when using the master version.
 
 Documentation
 =========
