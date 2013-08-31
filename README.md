@@ -10,8 +10,8 @@ Features included :
 - Support of compressed pdf
 - Support of MAC OS Roman charset encoding
 - Handling of hexa and octal encoding
-- PSR-0 compliant (autoloader)
-- PSR-1 compliant (code styling)
+- PSR-0 compliant ([autoloader](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md))
+- PSR-1 compliant ([code styling](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md))
 
 Currently, secured documents are not supported.
 
