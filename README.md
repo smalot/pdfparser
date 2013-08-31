@@ -1,7 +1,8 @@
-pdfparser
+PdfParser
 =========
 
-PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file. Features included :
+PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file.
+Features included :
 
 - Load/parse objects and headers
 - EXtract meta informations (author, description, ...)
