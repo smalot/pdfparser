@@ -1,15 +1,22 @@
 <?php
 
-namespace Smalot\PdfParser;
-
 /**
  * @file
+ * This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
- * @license GPL-3.0
+ * @license GPL-2.0
+ * @url     <https://github.com/smalot/pdfparser>
  *
- * References :
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Smalot\PdfParser;
+
+/**
+ * Technical references :
  * - http://www.mactech.com/articles/mactech/Vol.15/15.09/PDFIntro/index.html
  * - http://framework.zend.com/issues/secure/attachment/12512/Pdf.php
  * - http://www.php.net/manual/en/ref.pdf.php#74211
@@ -18,8 +25,8 @@ namespace Smalot\PdfParser;
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/StandardEncoding.pm
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/WinAnsiEncoding.pm
  *
- * Class Parser
- * @package PdfParser
+ * Class Document
+ * @package Smalot\PdfParser
  */
 class Document
 {

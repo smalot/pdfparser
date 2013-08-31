@@ -3,6 +3,5 @@ php:
   - 5.3
   - 5.4
 before_script:
-  - curl -sS https://getcomposer.org/installer | php
-  - ./composer.phar update
+  - ./composer update
 script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc

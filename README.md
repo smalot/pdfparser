@@ -5,7 +5,7 @@ PdfParser, a standalone PHP library, provides various tools to extract data from
 Features included :
 
 - Load/parse objects and headers
-- EXtract meta informations (author, description, ...)
+- Extract meta data (author, description, ...)
 - Extract text from ordered pages
 - Support of compressed pdf
 - Support of MAC OS Roman charset encoding

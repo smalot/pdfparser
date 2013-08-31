@@ -4,11 +4,11 @@
     "license": "GPL-2.0",
     "authors": [
         {
-            "name": "Sebastien Malot",
+            "name": "Sébastien MALOT",
             "email": "sebastien@malot.fr"
         }
     ],
-    "require": {
+    "require-dev": {
         "atoum/atoum": "dev-master"
     },
     "autoload": {

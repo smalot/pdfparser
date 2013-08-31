@@ -1,16 +1,33 @@
 <?php
 
+/**
+ * @file
+ * This file is part of the PdfParser library.
+ *
+ * @author  Sébastien MALOT <sebastien@malot.fr>
+ * @date    2013-08-08
+ * @license GPL-2.0
+ * @url     <https://github.com/smalot/pdfparser>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Smalot\PdfParser\Tests\Units;
 
 use mageekguy\atoum;
 
+/**
+ * Class Element
+ * @package Smalot\PdfParser\Tests\Units
+ */
 class Element extends atoum\test
 {
     public function testParse()
     {
         $document = new \Smalot\PdfParser\Document(array());
 
-        // only_values = false
+        // Only_values = false.
         $content  = '/NameType /FlateDecode
         /Contents[4 0 R 42]/Fonts<</F1 41/F2 43>>/NullType
         null/StringType(hello)/DateType(D:2013)/XRefType 2 0 R
@@ -57,16 +74,15 @@ class Element extends atoum\test
         $this->boolean($elements['BooleanType'] instanceof \Smalot\PdfParser\Element\ElementBoolean)->isEqualTo(true);
         $this->boolean($elements['BooleanType']->getContent())->isEqualTo(false);
 
-        // only_values = true
+        // Only_values = true.
         $content  = '/NameType /FlateDecode';
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, true);
 
-        // test error
+        // Test error.
         $content  = '/NameType /FlateDecode $$$';
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
-
 
         $content  = '/NameType $$$';
         $offset   = 0;
@@ -76,7 +92,6 @@ class Element extends atoum\test
         } catch(\Exception $e) {
             $this->exception($e);
         }
-        //var_dump($elements);
 
         /*$this->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
         $this->boolean($elements['NameType'] instanceof \Smalot\PdfParser\Element\ElementName)->isEqualTo(true);
