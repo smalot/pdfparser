@@ -154,8 +154,8 @@ class Document
      */
     public static function parseFile($filename)
     {
-        // Search 'startxref' position.
-        $handle = fopen($filename, 'rb');
+        // Search for 'startxref' position.
+        $handle = @fopen($filename, 'rb');
         if (!$handle) {
             throw new \Exception('Unable to read file.');
         }
@@ -191,7 +191,7 @@ class Document
                 $generation = intval(ltrim($generation, '0'));
                 $in_use     = ($in_use == 'n');
 
-                if ($next_id && $offset) {
+                if ($next_id && $offset && $in_use) {
                     $entries[$offset] = array(
                         'id'         => $next_id,
                         'offset'     => $offset,
@@ -225,13 +225,16 @@ class Document
             fseek($handle, $offset, SEEK_SET);
             $content = fread($handle, $next_offset - $offset);
 
-            if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*?)(endobj)?\s*$/s', $content, $match)) {
+            if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*)[\n\r]{1,2}endobj\s*$/s', $content, $match)) {
+//                echo $entries[$i]['id'] . ' 0 obj' . "\n";
+                $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
+//                echo '---------------------------' . "\n";
+            } elseif (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*?)(\s*)$/s', $content, $match)) {
 //                echo $entries[$i]['id'] . ' 0 obj' . "\n";
                 $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
 //                echo '---------------------------' . "\n";
             } else {
-                var_dump($content);
-                throw new \Exception('Object not found.');
+                throw new \Exception('Invalid object declaration.');
             }
         }
 

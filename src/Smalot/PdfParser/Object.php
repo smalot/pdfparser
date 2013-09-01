@@ -421,17 +421,30 @@ class Object
      */
     public static function parse(Document $document, $content = '')
     {
-        //echo 'content to parse: "' . $content . "\"\n";
+        //
+        if (preg_match('/^(<<|\[)/s', $content, $matches)) {
+            $position = 0;
+            $header   = Header::parse($content, $document, $position);
+            $content  = trim(substr($content, $position), " \n\r");
+        } else {
+            $header   = new Header(array(), $document);
+            $content  = trim($content, " \n\r");
+        }
+
+//        var_dump($content);
 
         $matches = array();
-        preg_match('/^((<<)(.*)(>>[\n\r]+))?(.*)/s', $content, $matches);
+        /*if (preg_match('/^((<<)(.*)(>>[\n\r]{0,2}))?(.*)/s', $content, $matches)) {
+            //echo 'header: "' . $matches[3] . "\"\n";
 
-        //echo 'header: "' . $matches[3] . "\"\n";
+            $header  = Header::parse($matches[3], $document);
+            $content = trim($matches[5]);
+        } else {
+            var_dump($content);
+            die('no header');
+        }*/
 
-        $header  = Header::parse($matches[3], $document);
-        $content = trim($matches[5]);
-
-        if (preg_match('/^stream\n(?<data>.*)\nendstream$/s', $content, $matches)) {
+        if (preg_match('/^stream[\n\r]{1,2}(?<data>.*?)[\n\r]{1,2}endstream$/s', $content, $matches)) {
             $content = $matches['data'];
             //echo 'extracted from stream' . "\n";
             //$content = substr($content, strpos($content, 'stream') + strlen('stream') + $nb_chars, strrpos($content, 'endstream') - strlen('stream') - $nb_chars);

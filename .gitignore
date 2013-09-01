@@ -6,3 +6,5 @@
 /xdebug/*
 /composer.phar
 /composer
+debug*
+

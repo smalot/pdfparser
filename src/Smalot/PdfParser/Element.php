@@ -176,7 +176,8 @@ class Element
                 $values[$name] = $element;
                 $position += $offset;
             } else {
-                throw new \Exception('Unsupported element: "' . $value . '" in "' . $content . '".');
+                return $values;
+//                throw new \Exception('Unsupported element: "' . $value . '" in "' . $content . '".');
             }
 
             //echo 'header found: ' . $name . ' (' . get_class($values[$name]) . ')' . "\n";

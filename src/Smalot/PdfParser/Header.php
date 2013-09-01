@@ -101,12 +101,13 @@ class Header
     /**
      * @param string   $content
      * @param Document $document
+     * @param int      $position
      *
      * @return Header
      */
-    public static function parse($content, Document $document)
+    public static function parse($content, Document $document, &$position = 0)
     {
-        $elements = Element::parse($content, $document);
+        $elements = Element::parse($content, $document, $position);
 
         return new self($elements, $document);
     }

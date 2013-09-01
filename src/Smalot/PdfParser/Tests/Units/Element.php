@@ -86,12 +86,8 @@ class Element extends atoum\test
 
         $content  = '/NameType $$$';
         $offset   = 0;
-        try {
-            $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
-            $this->assert->exception(null);
-        } catch(\Exception $e) {
-            $this->assert->exception($e);
-        }
+        $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
+        $this->assert->array($elements)->isEmpty();
 
         /*$this->assert->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
         $this->assert->boolean($elements['NameType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementName)->isEqualTo(true);
