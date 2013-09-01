@@ -28,75 +28,75 @@ class ElementHexa extends atoum\test
         // Skipped.
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse('ABC', null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' [ <0020> 5 6 ]', null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' << <0020> >>', null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' / <0020> ', null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' 0 <0020> ', null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(" 0 \n <0020> ", null, $offset);
-        $this->boolean($element)->isEqualTo(false);
-        $this->integer($offset)->isEqualTo(0);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
 
         // Valid.
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' <0020> ', null, $offset);
-        $this->string($element->getContent())->isEqualTo(' ');
-        $this->integer($offset)->isEqualTo(7);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(7);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' <0020> ', null, $offset);
-        $this->string($element->getContent())->isEqualTo(' ');
-        $this->integer($offset)->isEqualTo(7);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(7);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(' <0020>', null, $offset);
-        $this->string($element->getContent())->isEqualTo(' ');
-        $this->integer($offset)->isEqualTo(7);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(7);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse('<0020>', null, $offset);
-        $this->string($element->getContent())->isEqualTo(' ');
-        $this->integer($offset)->isEqualTo(6);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(6);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <0020> ", null, $offset);
-        $this->string($element->getContent())->isEqualTo(' ');
-        $this->integer($offset)->isEqualTo(9);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(9);
     }
 
     public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
-        $this->string($element->getContent())->isEqualTo(' ');
+        $this->assert->string($element->getContent())->isEqualTo(' ');
     }
 
     public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
-        $this->boolean($element->equals(' '))->isEqualTo(true);
-        $this->boolean($element->equals('A'))->isEqualTo(false);
+        $this->assert->boolean($element->equals(' '))->isEqualTo(true);
+        $this->assert->boolean($element->equals('A'))->isEqualTo(false);
     }
 
     public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
-        $this->boolean($element->contains(' '))->isEqualTo(true);
-        $this->boolean($element->contains('A'))->isEqualTo(false);
+        $this->assert->boolean($element->contains(' '))->isEqualTo(true);
+        $this->assert->boolean($element->contains('A'))->isEqualTo(false);
     }
 
     public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
-        $this->string($element->__toString())->isEqualTo(' ');
+        $this->assert->castToString($element)->isEqualTo(' ');
     }
 }

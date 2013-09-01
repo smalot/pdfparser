@@ -35,44 +35,44 @@ class Element extends atoum\test
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
 
-        $this->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
-        $this->boolean($elements['NameType'] instanceof \Smalot\PdfParser\Element\ElementName)->isEqualTo(true);
-        $this->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');
+        $this->assert->array($elements)->hasKey('NameType');
+        $this->assert->object($elements['NameType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
+        $this->assert->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');
 
-        $this->boolean(array_key_exists('Contents', $elements))->isEqualTo(true);
-        $this->boolean($elements['Contents'] instanceof \Smalot\PdfParser\Element\ElementArray)->isEqualTo(true);
-        $this->boolean($elements['Contents']->contains(42))->isEqualTo(true);
+        $this->assert->boolean(array_key_exists('Contents', $elements))->isEqualTo(true);
+        $this->assert->object($elements['Contents'])->isInstanceOf('\Smalot\PdfParser\Element\ElementArray');
+        $this->assert->boolean($elements['Contents']->contains(42))->isEqualTo(true);
 
-        $this->boolean(array_key_exists('Fonts', $elements))->isEqualTo(true);
-        $this->boolean($elements['Fonts'] instanceof \Smalot\PdfParser\Object)->isEqualTo(true);
+        $this->assert->boolean(array_key_exists('Fonts', $elements))->isEqualTo(true);
+        $this->assert->object($elements['Fonts'])->isInstanceOf('\Smalot\PdfParser\Object');
 
-        $this->boolean(array_key_exists('NullType', $elements))->isEqualTo(true);
-        $this->boolean($elements['NullType'] instanceof \Smalot\PdfParser\Element\ElementNull)->isEqualTo(true);
-        $this->string($elements['NullType']->__toString())->isEqualTo('null');
+        $this->assert->boolean(array_key_exists('NullType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['NullType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementNull');
+        $this->assert->castToString($elements['NullType'])->isEqualTo('null');
 
-        $this->boolean(array_key_exists('StringType', $elements))->isEqualTo(true);
-        $this->boolean($elements['StringType'] instanceof \Smalot\PdfParser\Element\ElementString)->isEqualTo(true);
-        $this->string($elements['StringType']->getContent())->isEqualTo('hello');
+        $this->assert->boolean(array_key_exists('StringType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['StringType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementString');
+        $this->assert->string($elements['StringType']->getContent())->isEqualTo('hello');
 
-        $this->boolean(array_key_exists('DateType', $elements))->isEqualTo(true);
-        $this->boolean($elements['DateType'] instanceof \Smalot\PdfParser\Element\ElementDate)->isEqualTo(true);
-        $this->string($elements['DateType']->getContent())->isEqualTo('D:2013');
+        $this->assert->boolean(array_key_exists('DateType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['DateType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementDate');
+        $this->assert->string($elements['DateType']->getContent())->isEqualTo('D:2013');
 
-        $this->boolean(array_key_exists('XRefType', $elements))->isEqualTo(true);
-        $this->boolean($elements['XRefType'] instanceof \Smalot\PdfParser\Element\ElementXRef)->isEqualTo(true);
-        $this->integer($elements['XRefType']->getId())->isEqualTo(2);
+        $this->assert->boolean(array_key_exists('XRefType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['XRefType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementXRef');
+        $this->assert->integer($elements['XRefType']->getId())->isEqualTo(2);
 
-        $this->boolean(array_key_exists('NumericType', $elements))->isEqualTo(true);
-        $this->boolean($elements['NumericType'] instanceof \Smalot\PdfParser\Element\ElementNumeric)->isEqualTo(true);
-        $this->string($elements['NumericType']->__toString())->isEqualTo('8');
+        $this->assert->boolean(array_key_exists('NumericType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['NumericType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementNumeric');
+        $this->assert->castToString($elements['NumericType'])->isEqualTo('8');
 
-        $this->boolean(array_key_exists('HexaType', $elements))->isEqualTo(true);
-        $this->boolean($elements['HexaType'] instanceof \Smalot\PdfParser\Element\ElementHexa)->isEqualTo(true);
-        $this->string($elements['HexaType']->getContent())->isEqualTo(' ');
+        $this->assert->boolean(array_key_exists('HexaType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['HexaType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementHexa');
+        $this->assert->string($elements['HexaType']->getContent())->isEqualTo(' ');
 
-        $this->boolean(array_key_exists('BooleanType', $elements))->isEqualTo(true);
-        $this->boolean($elements['BooleanType'] instanceof \Smalot\PdfParser\Element\ElementBoolean)->isEqualTo(true);
-        $this->boolean($elements['BooleanType']->getContent())->isEqualTo(false);
+        $this->assert->boolean(array_key_exists('BooleanType', $elements))->isEqualTo(true);
+        $this->assert->object($elements['BooleanType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementBoolean');
+        $this->assert->boolean($elements['BooleanType']->getContent())->isEqualTo(false);
 
         // Only_values = true.
         $content  = '/NameType /FlateDecode';
@@ -88,33 +88,33 @@ class Element extends atoum\test
         $offset   = 0;
         try {
             $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
-            $this->exception(null);
+            $this->assert->exception(null);
         } catch(\Exception $e) {
-            $this->exception($e);
+            $this->assert->exception($e);
         }
 
-        /*$this->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
-        $this->boolean($elements['NameType'] instanceof \Smalot\PdfParser\Element\ElementName)->isEqualTo(true);
-        $this->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');*/
+        /*$this->assert->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
+        $this->assert->boolean($elements['NameType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementName)->isEqualTo(true);
+        $this->assert->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');*/
     }
 
     public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element(42);
         $content = $element->getContent();
-        $this->integer($content)->isEqualTo(42);
+        $this->assert->integer($content)->isEqualTo(42);
 
         $element = new \Smalot\PdfParser\Element(array(4, 2));
         $content = $element->getContent();
-        $this->boolean(is_array($content))->isEqualTo(true);
+        $this->assert->array($content)->hasSize(2);
     }
 
     public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element(2);
 
-        $this->boolean($element->equals(2))->isEqualTo(true);
-        $this->boolean($element->equals(8))->isEqualTo(false);
+        $this->assert->boolean($element->equals(2))->isEqualTo(true);
+        $this->assert->boolean($element->equals(8))->isEqualTo(false);
     }
 
     public function testContains()
@@ -123,13 +123,13 @@ class Element extends atoum\test
         $val_2   = new \Smalot\PdfParser\Element(2);
         $element = new \Smalot\PdfParser\Element(array($val_4, $val_2));
 
-        $this->boolean($element->contains(2))->isEqualTo(true);
-        $this->boolean($element->contains(8))->isEqualTo(false);
+        $this->assert->boolean($element->contains(2))->isEqualTo(true);
+        $this->assert->boolean($element->contains(8))->isEqualTo(false);
     }
 
     public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element(2);
-        $this->string($element->__toString())->isEqualTo('2');
+        $this->assert->castToString($element)->isEqualTo('2');
     }
 }

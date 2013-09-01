@@ -141,7 +141,7 @@ class Document
         } elseif (isset($this->dictionary['Page'])) {
             $pages = $this->getObjectsByType('Page');
 
-            return $pages;
+            return array_values($pages);
         } else {
             throw new \Exception('Missing catalog.');
         }
@@ -226,9 +226,9 @@ class Document
             $content = fread($handle, $next_offset - $offset);
 
             if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*?)(endobj)?\s*$/s', $content, $match)) {
-                echo $entries[$i]['id'] . ' 0 obj' . "\n";
+//                echo $entries[$i]['id'] . ' 0 obj' . "\n";
                 $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
-                echo '---------------------------' . "\n";
+//                echo '---------------------------' . "\n";
             } else {
                 var_dump($content);
                 throw new \Exception('Object not found.');
@@ -247,10 +247,24 @@ class Document
      */
     public static function parseContent($content)
     {
+//        $filename = tempnam(sys_get_temp_dir(), 'pdfparser_');
+//
+//        try {
+//            file_put_contents($filename, $content);
+//            $document = self::parseFile($filename);
+//            @unlink($filename);
+//        }
+//        catch (\Exception $e) {
+//            @unlink($filename);
+//            throw $e;
+//        }
+//
+//        return $document;
+
         $regexp  = '/(?<id>[0-9]+\s+[0-9]+\s+obj(\s+|<<))(?<data>.*?)(endobj\s+)/s';
         $matches = array();
 
-        preg_match_all($regexp, $content, $matches);
+        preg_match_all($regexp, $content . "\n", $matches);
         $data    = $matches['data'];
         $objects = array();
 
