@@ -488,7 +488,7 @@ class Object
 
             case 'Font':
                 $subtype   = $header->get('Subtype')->getContent();
-                $classname = '\\Smalot\\PdfParser\\Font\\Font' . $subtype;
+                $classname = '\Smalot\PdfParser\Font\Font' . $subtype;
 
                 return new $classname($document, $header, $content);
 
