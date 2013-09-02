@@ -66,7 +66,7 @@ class Page extends atoum\test
         // the first to load data.
         $fonts = $page->getFonts();
         $this->assert->array($fonts)->isNotEmpty();
-        foreach ($fonts as $id => $font) {
+        foreach ($fonts as $font) {
             $this->assert->object($font)->isInstanceOf('\Smalot\PdfParser\Font');
         }
         // the second to use cache.
@@ -109,7 +109,8 @@ class Page extends atoum\test
         $pages     = $document->getPages();
         $page      = $pages[0];
         $text      = $page->getText();
-//        $this->assert->string($text)->hasLengthGreaterThan(150);
-//        $this->assert->string($text)->contains('Lorem ipsum');
+//        var_dump($text);
+        $this->assert->string($text)->hasLengthGreaterThan(150);
+        $this->assert->string($text)->contains('Lorem ipsum');
     }
 }

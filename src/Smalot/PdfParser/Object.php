@@ -102,7 +102,7 @@ class Object
             $commands = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
-                //echo 'command: ' . $command['operator'] . ': ' . $command['command'] . "\n";
+//                echo 'command: ' . $command['operator'] . ': ' . $command['command'] . "\n";
 
                 switch ($command['operator']) {
                     // set character spacing
@@ -121,7 +121,6 @@ class Object
                         list($id,) = preg_split('/\s/s', $command['command']);
                         //var_dump('fontsize:' . $command['command']);
                         $current_font = $page->getFont($id);
-                        //var_dump($current_font->getHeader());
                         break;
 
                     case 'TJ':
@@ -152,9 +151,7 @@ class Object
                         $args = preg_split('/\s/mis', $command['command']);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
-                        //echo 'position: ' . $x . ' x ' . $y . "\n";
                         if ($current_position['y'] !== false && floatval($y) != floatval($current_position['y'])) {
-                            //$text .= '(y: '.$y.' > '.$current_position['y'].')';
                             $text .= "\n";
                         }
                         $current_position = array('x' => $x, 'y' => $y);
@@ -318,15 +315,16 @@ class Object
 
             // extract content
             $sub_text = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
-            //var_dump('avant', $sub_text);
+//            var_dump('avant', $sub_text);
             $sub_text = str_replace(array('\\\\', '\(', '\)', '\n', '\r'), array('\\', '(', ')', "\n", "\r"), $sub_text);
 
             // decode content
             if (!is_null($font)) {
+//                var_dump('decode');
                 $sub_text = $this->decodeContent($sub_text, $font);
             }
-            //var_dump('apres', $sub_text);
-            //var_dump('ajout espace', $spacing, $spacing_size);
+//            var_dump('apres', $sub_text);
+//            var_dump('ajout espace', $spacing, $spacing_size);
 
             // add content to result string
             $result .= $spacing . $sub_text;
@@ -338,11 +336,12 @@ class Object
 
     protected function decodeContent($text, Font $font)
     {
-        if (!$font->getToUnicode() instanceof ElementMissing || true) {
+        if (!$font->getToUnicode() instanceof ElementMissing) {
             $chars  = preg_split('//', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             $result = '';
 
-            foreach ($chars as $pos => $char) {
+            foreach ($chars as $char) {
+//                var_dump(ord($char));
                 $decoded = $font->translateChar($char);
                 $result .= $decoded;
             }

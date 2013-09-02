@@ -36,11 +36,10 @@ class FontTrueType extends Font
             $dec = hexdec(bin2hex($char));
         }
 
-        //echo ' (dec: ' . $dec . ")";
+//        echo ' (dec: ' . $dec . ")";
 
         if (array_key_exists($dec, $this->table['chars'])) {
-            //echo ' => ' . $this->table['chars'][$dec] . "\n";
-
+//            echo ' => ' . $this->table['chars'][$dec] . "\n";
             return $this->table['chars'][$dec];
         } else {
             if (is_string($this->encoding)) {

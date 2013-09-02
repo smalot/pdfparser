@@ -158,11 +158,20 @@ class Font extends Object
                 $matches = array();
                 preg_match_all($regexp, $bfrange, $matches);
                 foreach ($matches['from'] as $key => $from) {
+                    $char_from = hexdec($from);
+                    $char_to   = hexdec($matches['to'][$key]);
+                    $offset    = hexdec($matches['offset'][$key]);
+
                     $this->table['ranges'][] = array(
-                        'from'   => hexdec($from),
-                        'to'     => hexdec($matches['to'][$key]),
-                        'offset' => hexdec($matches['offset'][$key]),
+                        'from'   => $char_from,
+                        'to'     => $char_to,
+                        'offset' => $offset,
                     );
+
+                    for ($char=$char_from;$char<=$char_to;$char++) {
+                        $to = html_entity_decode('&#' . ($char - $char_from + $offset) . ';', ENT_NOQUOTES, 'UTF-8');
+                        $this->table['chars'][$char] = $to;
+                    }
                 }
             }
         }
