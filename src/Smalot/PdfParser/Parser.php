@@ -60,7 +60,10 @@ class Parser
         $texts = array();
 
         foreach ($pages as $page) {
-            $texts[] = $page->getText();
+            // Add a new text block if not empty.
+            if ($text = $page->getText()) {
+                $texts[] = $text;
+            }
         }
 
         return implode("\n\n", $texts);
