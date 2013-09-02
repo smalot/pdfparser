@@ -90,7 +90,7 @@ class Parser
         }
         die();*/
 
-        $text  = '';
+        $texts  = array();
         $pages = $pdf->getPages();
         echo 'extraction des pages : ' . round((microtime(true) - $start) * 1000) . " ms\n";
         foreach ($pages as $pos => $page) {
@@ -109,12 +109,12 @@ class Parser
             echo 'page #' . ($pos + 1) . ' : ' . round((microtime(true) - $start) * 1000) . " ms\n";
 
             //var_dump('content text', $text_page);
-            $text .= $text_page . "\n\n";
+            $texts = $text_page;
 //            echo 'une seule page';
 //            break;
             //if ($pos>=7) break;
         }
 
-        return $text;
+        return implode("\n\n", $texts);
     }
 }

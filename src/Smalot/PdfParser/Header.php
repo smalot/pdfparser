@@ -16,6 +16,7 @@
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
@@ -35,7 +36,8 @@ class Header
     protected $elements = null;
 
     /**
-     * @param Element[] $elements
+     * @param Element[] $struct
+     * @param Document  $document
      */
     public function __construct($elements = array(), Document $document = null)
     {
@@ -63,7 +65,7 @@ class Header
      */
     public function has($name)
     {
-        if (array_key_exists($name, $this->elements) && !($this->elements[$name] instanceof ElementMissing)) {
+        if (array_key_exists($name, $this->elements)) {
             return true;
         } else {
             return false;
@@ -81,7 +83,7 @@ class Header
             return $this->resolveXRef($name);
         }
 
-        return ($this->elements[$name] = new ElementMissing(null, null));
+        return new ElementMissing(null, null);
     }
 
     /**
@@ -103,12 +105,17 @@ class Header
      * @param Document $document
      * @param int      $position
      *
-     * @return Header
+     * @return null|Header
      */
     public static function parse($content, Document $document, &$position = 0)
     {
-        $elements = Element::parse($content, $document, $position);
+        // ElementStruct::parse returns an header
+        $header = ElementStruct::parse($content, $document, $position);
 
-        return new self($elements, $document);
+        if ($header) {
+            return $header;
+        } else {
+            return new self(array(), $document);
+        }
     }
 }

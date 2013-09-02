@@ -54,7 +54,7 @@ class ElementString extends Element
     {
         if (preg_match('/^\s*\((?<name>.*?)\)/is', $content, $match)) {
             $name   = $match['name'];
-            $offset = strpos($content, $name) + strlen($name) + 1; // 1 for ')'
+            $offset = strpos($content, '(' . $name) + strlen($name) + 2; // 2 for '(' and ')'
 
             return new self($name, $document);
         }

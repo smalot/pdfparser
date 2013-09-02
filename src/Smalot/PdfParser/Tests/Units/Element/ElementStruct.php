@@ -52,19 +52,19 @@ class ElementStruct extends atoum\test
         // Valid.
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' << /Filter /FlateDecode >> ', $document, $offset);
-        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(27);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' << /Filter /FlateDecode >>', $document, $offset);
-        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(27);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse('<< /Filter /FlateDecode >>', $document, $offset);
-        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(26);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(" \n << /Filter /FlateDecode >> ", $document, $offset);
-        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(29);
     }
 }

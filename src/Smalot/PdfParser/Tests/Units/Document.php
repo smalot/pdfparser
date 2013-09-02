@@ -47,8 +47,9 @@ class Document extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
         $object1  = new \Smalot\PdfParser\Object($document);
-        $content  = '<</Type/Page>>';
+        $content  = '<</Type/Page>>unparsed content';
         $header   = \Smalot\PdfParser\Header::parse($content, $document);
+
         $object2  = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2));
 
@@ -156,20 +157,20 @@ class Document extends atoum\test
 
     public function testParseFile()
     {
-        $filename = 'samples/Document1_foxitreader.pdf';
-        $document = \Smalot\PdfParser\Document::parseFile($filename);
-        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-
-        try {
-            // Test unable de read file.
-            $filename = 'missing.pdf';
-            $document = \Smalot\PdfParser\Document::parseFile($filename);
-            $this->assert->object($document)->isInstanceOf('null');
-        } catch (\mageekguy\atoum\exceptions\logic $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            $this->assert->exception($e)->hasMessage('Unable to read file.');
-        }
+//        $filename = 'samples/Document1_foxitreader.pdf';
+//        $document = \Smalot\PdfParser\Document::parseFile($filename);
+//        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
+//
+//        try {
+//            // Test unable de read file.
+//            $filename = 'missing.pdf';
+//            $document = \Smalot\PdfParser\Document::parseFile($filename);
+//            $this->assert->object($document)->isInstanceOf('null');
+//        } catch (\mageekguy\atoum\exceptions\logic $e) {
+//            throw $e;
+//        } catch (\Exception $e) {
+//            $this->assert->exception($e)->hasMessage('Unable to read file.');
+//        }
 
         try {
             // Test missing startxref position.

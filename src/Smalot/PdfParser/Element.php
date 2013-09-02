@@ -110,6 +110,8 @@ class Element
      */
     public static function parse($content, Document $document = null, &$position = 0)
     {
+        //var_dump($content);
+
         $args        = func_get_args();
         $only_values = false;
         if (isset($args[3])) {
@@ -127,7 +129,7 @@ class Element
 //            var_dump($sub_content);
 
             if (!$only_values) {
-                if (!preg_match('/(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
+                if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
                     break;
                 } else {
                     $name  = ltrim($match['name'], '/');

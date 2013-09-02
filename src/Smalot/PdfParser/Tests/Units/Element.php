@@ -44,7 +44,7 @@ class Element extends atoum\test
         $this->assert->boolean($elements['Contents']->contains(42))->isEqualTo(true);
 
         $this->assert->boolean(array_key_exists('Fonts', $elements))->isEqualTo(true);
-        $this->assert->object($elements['Fonts'])->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($elements['Fonts'])->isInstanceOf('\Smalot\PdfParser\Header');
 
         $this->assert->boolean(array_key_exists('NullType', $elements))->isEqualTo(true);
         $this->assert->object($elements['NullType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementNull');

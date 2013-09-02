@@ -17,6 +17,7 @@ namespace Smalot\PdfParser\Element;
 
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Object;
 
 /**
@@ -49,7 +50,14 @@ class ElementStruct extends Element
 
             $offset = strpos($content, '<<') + strlen(rtrim($sub));
 
-            return Object::parse($document, trim($sub) . "\n");
+            // Removes '<<' and '>>'.
+            $sub = trim(preg_replace('/^\s*<<(.*)>>\s*$/s', '\\1', $sub));
+
+            $position = 0;
+            $elements = Element::parse($sub, $document, $position);
+            $header   = new Header($elements, $document);
+
+            return $header;
         }
 
         return false;

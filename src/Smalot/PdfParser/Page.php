@@ -25,10 +25,12 @@ class Page extends Object
      * @var Object
      */
     protected $resources = null;
+
     /**
      * @var Object
      */
     protected $contents = null;
+
     /**
      * @var Font[]
      */
@@ -45,14 +47,11 @@ class Page extends Object
 
         $resources = $this->get('Resources');
 
-        /*var_dump($resources);
-        die();*/
-
         return ($this->resources = $resources);
     }
 
     /**
-     * @return null|Object
+     * @return Object
      */
     public function getContents()
     {
@@ -60,17 +59,9 @@ class Page extends Object
             return $this->contents;
         }
 
-        if ($this->has('Contents')) {
-            $contents = $this->get('Contents');
+        $contents = $this->get('Contents');
 
-            if (!($contents instanceof Object)) {
-                $contents = $this->getContent();
-            }
-
-            return ($this->contents = $contents);
-        }
-
-        return null;
+        return ($this->contents = $contents);
     }
 
     /**
@@ -83,9 +74,11 @@ class Page extends Object
         }
 
         $resources = $this->getResources();
-        if ($resources->getHeader()->has('Font')) {
-            $fonts = $resources->getHeader()->get('Font')->getHeader()->getElements();
+
+        if ($resources->has('Font')) {
+            $fonts = $resources->get('Font')->getHeader()->getElements();
             $table = array();
+
             foreach ($fonts as $id => $font) {
                 $id         = preg_replace('/[^0-9\.\-_]/', '', $id);
                 $table[$id] = $font;
@@ -118,8 +111,9 @@ class Page extends Object
     public function getText(Page $page = null)
     {
         $contents = $this->getContents();
-        //var_dump($contents);
-        //die();
+
+//        var_dump($contents);
+//        die();
 
         if ($contents) {
             if (is_array($contents)) {
@@ -134,7 +128,7 @@ class Page extends Object
                 return $contents->getText($this);
             }
         } else {
-            return '';
+            return null;
         }
     }
 }

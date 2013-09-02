@@ -431,8 +431,6 @@ class Object
             $content  = trim($content, " \n\r");
         }
 
-//        var_dump($content);
-
         $matches = array();
         /*if (preg_match('/^((<<)(.*)(>>[\n\r]{0,2}))?(.*)/s', $content, $matches)) {
             //echo 'header: "' . $matches[3] . "\"\n";
@@ -490,7 +488,7 @@ class Object
 
             case 'Font':
                 $subtype   = $header->get('Subtype')->getContent();
-                $classname = 'Smalot\PdfParser\\Font\\Font' . $subtype;
+                $classname = '\\Smalot\\PdfParser\\Font\\Font' . $subtype;
 
                 return new $classname($document, $header, $content);
 
