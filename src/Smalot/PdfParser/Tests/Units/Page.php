@@ -109,8 +109,15 @@ class Page extends atoum\test
         $pages     = $document->getPages();
         $page      = $pages[0];
         $text      = $page->getText();
-//        var_dump($text);
+
         $this->assert->string($text)->hasLengthGreaterThan(150);
+        $this->assert->string($text)->contains('Document title');
         $this->assert->string($text)->contains('Lorem ipsum');
+
+        $this->assert->string($text)->contains('Calibri');
+        $this->assert->string($text)->contains('Arial');
+        $this->assert->string($text)->contains('Times');
+        $this->assert->string($text)->contains('Courier New');
+        $this->assert->string($text)->contains('Verdana');
     }
 }
