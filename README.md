@@ -19,7 +19,7 @@ Features included :
 Currently, secured documents are not supported.
 
 State
-=========
+=====
 
 This Library is still under active development. As a result, users must expect BC breaks when using the master version.
 
@@ -29,9 +29,11 @@ Todo list :
 - [ ] Add helper to extract meta data
 - [ ] Clean code on Font Classes
 - [ ] Support of encoding files
+- [ ] Support of missing cross-reference table
+- [ ] Support of missing endstream tag (malformed file)
 
 Documentation
-=========
+=============
 
 Extract text from PDF File :
 ```php
@@ -48,12 +50,12 @@ $text     = $pages[1]->getText();
 [Read the Documentation](https://github.com/smalot/pdfparser/blob/master/doc)
 
 Installation
-=========
+============
 
 All the installation instructions are located in the [documentation](https://github.com/smalot/pdfparser/blob/master/doc).
 
 License
-=========
+=======
 
 This bundle is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE). See the complete license in the bundle:
 
