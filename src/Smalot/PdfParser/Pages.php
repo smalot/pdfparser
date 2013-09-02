@@ -21,6 +21,11 @@ namespace Smalot\PdfParser;
  */
 class Pages extends Object
 {
+    /**
+     * @param bool $deep
+     *
+     * @return array
+     */
     public function getPages($deep = false)
     {
         if ($this->has('Kids')) {

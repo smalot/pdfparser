@@ -157,20 +157,20 @@ class Document extends atoum\test
 
     public function testParseFile()
     {
-//        $filename = 'samples/Document1_foxitreader.pdf';
-//        $document = \Smalot\PdfParser\Document::parseFile($filename);
-//        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-//
-//        try {
-//            // Test unable de read file.
-//            $filename = 'missing.pdf';
-//            $document = \Smalot\PdfParser\Document::parseFile($filename);
-//            $this->assert->object($document)->isInstanceOf('null');
-//        } catch (\mageekguy\atoum\exceptions\logic $e) {
-//            throw $e;
-//        } catch (\Exception $e) {
-//            $this->assert->exception($e)->hasMessage('Unable to read file.');
-//        }
+        $filename = 'samples/Document1_foxitreader.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
+
+        try {
+            // Test unable de read file.
+            $filename = 'missing.pdf';
+            $document = \Smalot\PdfParser\Document::parseFile($filename);
+            $this->assert->object($document)->isInstanceOf('null');
+        } catch (\mageekguy\atoum\exceptions\logic $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            $this->assert->exception($e)->hasMessage('Unable to read file.');
+        }
 
         try {
             // Test missing startxref position.

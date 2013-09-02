@@ -112,9 +112,6 @@ class Page extends Object
     {
         $contents = $this->getContents();
 
-//        var_dump($contents);
-//        die();
-
         if ($contents) {
             if (is_array($contents)) {
                 $text = '';
