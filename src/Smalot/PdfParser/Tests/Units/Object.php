@@ -34,6 +34,6 @@ EOT;
         $document = new \Smalot\PdfParser\Document();
         $object = \Smalot\PdfParser\Object::parse($document, $content);
 
-        var_dump($object);
+//        var_dump($object);
     }
 }
