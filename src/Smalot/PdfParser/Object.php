@@ -111,6 +111,13 @@ class Object
 
                     // move text current point
                     case 'Td':
+                        $args = preg_split('/\s/s', $command['command']);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        if (floatval($x) <= 0 && floatval($y) > 0) {
+                            $text .= "\n";
+                        }
+//                        $text .= '(move Td:'.$x.' x '.$y.')';
                         break;
 
                     // move text current point and set leading
@@ -148,7 +155,7 @@ class Object
                         break;
 
                     case 'Tm':
-                        $args = preg_split('/\s/mis', $command['command']);
+                        $args = preg_split('/\s/s', $command['command']);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if ($current_position['y'] !== false && floatval($y) != floatval($current_position['y'])) {
