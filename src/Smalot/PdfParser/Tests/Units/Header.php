@@ -27,13 +27,15 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text>>foo';
+        $content  = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $object = new \Smalot\PdfParser\Font($document);
+        $document->setObjects(array(5 => $object));
 
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
-        $this->assert->integer($position)->isEqualTo(27);
-        $this->assert->array($header->getElements())->hasSize(2);
+        $this->assert->integer($position)->isEqualTo(38);
+        $this->assert->array($header->getElements())->hasSize(3);
 
         // No header to parse
         $this->assert->castToString($header->get('Type'))->isEqualTo('Page');
@@ -49,17 +51,68 @@ class Header extends atoum\test
 
     public function testGetElements()
     {
+        $document = new \Smalot\PdfParser\Document();
+
+        $content  = '<</Type/Page/SubType/Text>>foo';
+        $position = 0;
+        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+
+        $this->assert->array($elements = $header->getElements())->hasSize(2);
+        $this->assert->object(current($elements))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
     }
 
     public function testHas()
     {
+        $document = new \Smalot\PdfParser\Document();
+
+        $content  = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
+        $position = 0;
+        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+
+        $this->assert->boolean($header->has('Type'))->isEqualTo(true);
+        $this->assert->boolean($header->has('SubType'))->isEqualTo(true);
+        $this->assert->boolean($header->has('Font'))->isEqualTo(true);
+        $this->assert->boolean($header->has('Text'))->isEqualTo(false);
     }
 
     public function testGet()
     {
+        $document = new \Smalot\PdfParser\Document();
+
+        $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
+        $position = 0;
+        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $object = new \Smalot\PdfParser\Font($document);
+        $document->setObjects(array(5 => $object));
+
+        $this->assert->object($header->get('Type'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
+        $this->assert->object($header->get('SubType'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
+        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Font');
+        $this->assert->object($header->get('Image'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
+
+        try {
+            $resources = $header->get('Resources');
+            $this->assert->boolean(false)->isEqualTo(true);
+        } catch (\Exception $e) {
+            $this->assert->exception($e)->hasMessage('Missing object reference #8.');
+        }
     }
 
     public function testResolveXRef()
     {
+        $document = new \Smalot\PdfParser\Document();
+        $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
+        $position = 0;
+        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $object = new \Smalot\PdfParser\Font($document);
+        $document->setObjects(array(5 => $object));
+
+        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Object');
+
+        try {
+            $this->assert->object($header->get('Resources'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
+        } catch (\Exception $e) {
+            $this->assert->exception($e)->hasMessage('Missing object reference #8.');
+        }
     }
 }

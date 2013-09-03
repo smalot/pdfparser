@@ -90,11 +90,18 @@ class Header
      * @param string $name
      *
      * @return Element|Object
+     * @throws \Exception
      */
     protected function resolveXRef($name)
     {
-        if (($obj = $this->elements[$name]) instanceof ElementXRef and !is_null($this->document)) {
-            $this->elements[$name] = $this->document->getObjectById($obj->getId());
+        if (($obj = $this->elements[$name]) instanceof ElementXRef && !is_null($this->document)) {
+            $object = $this->document->getObjectById($obj->getId());
+
+            if (is_null($object)) {
+                throw new \Exception('Missing object reference #' . $obj->getId() . '.');
+            }
+
+            $this->elements[$name] = $object;
         }
 
         return $this->elements[$name];
