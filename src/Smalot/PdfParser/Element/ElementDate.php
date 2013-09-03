@@ -31,19 +31,16 @@ class ElementDate extends ElementString
     protected $format = 'c';
 
     /**
-     * @param string   $value
-     * @param Document $document
+     * @param \DateTime $value
+     * @param Document  $document
      */
     public function __construct($value, Document $document = null)
     {
-        if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{2}\'[0-9]{2}\'$/', $value)) {
-            throw new \Exception('Invalid date format.');
+        if (!($value instanceof \DateTime)) {
+            throw new \Exception('DateTime required.');
         }
 
-        $value = str_replace("'", '', $value);
-        $date  = \DateTime::createFromFormat('YmdHisP', $value);
-
-        parent::__construct($date, null);
+        parent::__construct($value, null);
     }
 
     /**
@@ -83,7 +80,14 @@ class ElementDate extends ElementString
             $name   = $match['name'];
             $offset = strpos($content, '(D:') + strlen($name) + 4; // 1 for '(D:' and ')'
 
-            return new self($name, $document);
+            if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{2}\'[0-9]{2}\'$/', $name)) {
+                throw new \Exception('Invalid date format.');
+            }
+
+            $name = str_replace("'", '', $name);
+            $date  = \DateTime::createFromFormat('YmdHisP', $name);
+
+            return new self($date, $document);
         }
 
         return false;
