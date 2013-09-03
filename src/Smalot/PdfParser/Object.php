@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use Smalot\PdfParser\Element\ElementMissing;
 
 /**
  * Class Object
+ *
  * @package Smalot\PdfParser
  */
 class Object
@@ -44,7 +45,7 @@ class Object
     public function __construct(Document $document, Header $header = null, $content = null)
     {
         $this->document = $document;
-        $this->header   = !is_null($header)?$header:new Header();
+        $this->header   = !is_null($header) ? $header : new Header();
         $this->content  = $content;
     }
 
@@ -323,7 +324,11 @@ class Object
             // extract content
             $sub_text = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
 //            var_dump('avant', $sub_text);
-            $sub_text = str_replace(array('\\\\', '\(', '\)', '\n', '\r'), array('\\', '(', ')', "\n", "\r"), $sub_text);
+            $sub_text = str_replace(
+                array('\\\\', '\(', '\)', '\n', '\r'),
+                array('\\', '(', ')', "\n", "\r"),
+                $sub_text
+            );
 
             // decode content
             if (!is_null($font)) {
@@ -433,8 +438,8 @@ class Object
             $header   = Header::parse($content, $document, $position);
             $content  = trim(substr($content, $position), " \n\r");
         } else {
-            $header   = new Header(array(), $document);
-            $content  = trim($content, " \n\r");
+            $header  = new Header(array(), $document);
+            $content = trim($content, " \n\r");
         }
 
         $matches = array();

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -26,6 +26,7 @@ namespace Smalot\PdfParser;
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/WinAnsiEncoding.pm
  *
  * Class Document
+ *
  * @package Smalot\PdfParser
  */
 class Document

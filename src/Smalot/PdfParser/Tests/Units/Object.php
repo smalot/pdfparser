@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class Object
+ *
  * @package Smalot\PdfParser\Tests\Units
  */
 class Object extends atoum\test
@@ -32,7 +33,7 @@ main content
 EOT;
 
         $document = new \Smalot\PdfParser\Document();
-        $object = \Smalot\PdfParser\Object::parse($document, $content);
+        $object   = \Smalot\PdfParser\Object::parse($document, $content);
 
 //        var_dump($object);
     }

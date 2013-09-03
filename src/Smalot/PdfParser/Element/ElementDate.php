@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -20,6 +20,7 @@ use Smalot\PdfParser\Document;
 
 /**
  * Class ElementDate
+ *
  * @package Smalot\PdfParser\Element
  */
 class ElementDate extends ElementString
@@ -39,14 +40,15 @@ class ElementDate extends ElementString
             throw new \Exception('Invalid date format.');
         }
 
-        $value     = str_replace("'", '', $value);
-        $date      = \DateTime::createFromFormat('YmdHisP', $value);
+        $value = str_replace("'", '', $value);
+        $date  = \DateTime::createFromFormat('YmdHisP', $value);
 
         parent::__construct($date, null);
     }
 
     /**
      * @param mixed $value
+     *
      * @return bool
      */
     public function equals($value)
@@ -65,7 +67,7 @@ class ElementDate extends ElementString
      */
     public function __toString()
     {
-        return (string) ($this->value->format($this->format));
+        return (string)($this->value->format($this->format));
     }
 
     /**

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class Header
+ *
  * @package Smalot\PdfParser\Tests\Units
  */
 class Header extends atoum\test
@@ -30,7 +31,7 @@ class Header extends atoum\test
         $content  = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object = new \Smalot\PdfParser\Font($document);
+        $object   = new \Smalot\PdfParser\Font($document);
         $document->setObjects(array(5 => $object));
 
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
@@ -46,7 +47,6 @@ class Header extends atoum\test
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($position)->isEqualTo(0);
         $this->assert->array($header->getElements())->hasSize(0);
-
     }
 
     public function testGetElements()
@@ -82,7 +82,7 @@ class Header extends atoum\test
         $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object = new \Smalot\PdfParser\Font($document);
+        $object   = new \Smalot\PdfParser\Font($document);
         $document->setObjects(array(5 => $object));
 
         $this->assert->object($header->get('Type'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
@@ -104,7 +104,7 @@ class Header extends atoum\test
         $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object = new \Smalot\PdfParser\Font($document);
+        $object   = new \Smalot\PdfParser\Font($document);
         $document->setObjects(array(5 => $object));
 
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Object');

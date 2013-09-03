@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class Document
+ *
  * @package Smalot\PdfParser\Tests\Units
  */
 class Document extends atoum\test
@@ -33,9 +34,9 @@ class Document extends atoum\test
         // Obj #1 exists
         $this->assert->object($document->getObjectById(1))->isInstanceOf('\Smalot\PdfParser\Object');
 
-        $content  = '<</Type/Page>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object   = new \Smalot\PdfParser\Object($document, $header);
+        $content = '<</Type/Page>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object  = new \Smalot\PdfParser\Object($document, $header);
         $document->setObjects(array(2 => $object));
         // Obj #1 is missing
         $this->assert->assert->variable($document->getObjectById(1))->isNull();
@@ -50,7 +51,7 @@ class Document extends atoum\test
         $content  = '<</Type/Page>>unparsed content';
         $header   = \Smalot\PdfParser\Header::parse($content, $document);
 
-        $object2  = new \Smalot\PdfParser\Page($document, $header);
+        $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2));
 
         $this->assert->integer(count($objects = $document->getObjects()))->isEqualTo(2);
@@ -63,10 +64,10 @@ class Document extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
         $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(0);
-        $object1  = new \Smalot\PdfParser\Object($document);
-        $content  = '<</Type/Page>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object2  = new \Smalot\PdfParser\Page($document, $header);
+        $object1 = new \Smalot\PdfParser\Object($document);
+        $content = '<</Type/Page>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2));
         $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(1);
         $this->assert->integer(count($objects['Page']))->isEqualTo(1);
@@ -93,16 +94,16 @@ class Document extends atoum\test
         try {
             $pages = $document->getPages();
             $this->assert->boolean($pages)->isEqualTo(false);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->assert->object($e)->isInstanceOf('\Exception');
         }
 
         // Listing pages from type Page
-        $content  = '<</Type/Page>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object1  = new \Smalot\PdfParser\Page($document, $header);
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object2  = new \Smalot\PdfParser\Page($document, $header);
+        $content = '<</Type/Page>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object1 = new \Smalot\PdfParser\Page($document, $header);
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2));
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(2);
@@ -110,19 +111,19 @@ class Document extends atoum\test
         $this->assert->object($pages[1])->isInstanceOf('\Smalot\PdfParser\Page');
 
         // Listing pages from type Pages (kids)
-        $content  = '<</Type/Page>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object1  = new \Smalot\PdfParser\Page($document, $header);
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object2  = new \Smalot\PdfParser\Page($document, $header);
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object3  = new \Smalot\PdfParser\Page($document, $header);
-        $content  = '<</Type/Pages/Kids[1 0 R 2 0 R]>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object4  = new \Smalot\PdfParser\Pages($document, $header);
-        $content  = '<</Type/Pages/Kids[3 0 R]>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object5  = new \Smalot\PdfParser\Pages($document, $header);
+        $content = '<</Type/Page>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object1 = new \Smalot\PdfParser\Page($document, $header);
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object2 = new \Smalot\PdfParser\Page($document, $header);
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object3 = new \Smalot\PdfParser\Page($document, $header);
+        $content = '<</Type/Pages/Kids[1 0 R 2 0 R]>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object4 = new \Smalot\PdfParser\Pages($document, $header);
+        $content = '<</Type/Pages/Kids[3 0 R]>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object5 = new \Smalot\PdfParser\Pages($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2, 3 => $object3, 4 => $object4, 5 => $object5));
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);
@@ -131,23 +132,25 @@ class Document extends atoum\test
         $this->assert->object($pages[2])->isInstanceOf('\Smalot\PdfParser\Page');
 
         // Listing pages from type Catalog
-        $content  = '<</Type/Page>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object1  = new \Smalot\PdfParser\Page($document, $header);
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object2  = new \Smalot\PdfParser\Page($document, $header);
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object3  = new \Smalot\PdfParser\Page($document, $header);
-        $content  = '<</Type/Pages/Kids[1 0 R 2 0 R]>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object4  = new \Smalot\PdfParser\Pages($document, $header);
-        $content  = '<</Type/Pages/Kids[4 0 R 3 0 R]>>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object5  = new \Smalot\PdfParser\Pages($document, $header);
-        $content  = '<</Type/Catalog/Pages 5 0 R >>';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document);
-        $object6  = new \Smalot\PdfParser\Pages($document, $header);
-        $document->setObjects(array(1 => $object1, 2 => $object2, 3 => $object3, 4 => $object4, 5 => $object5, 6 => $object6));
+        $content = '<</Type/Page>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object1 = new \Smalot\PdfParser\Page($document, $header);
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object2 = new \Smalot\PdfParser\Page($document, $header);
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object3 = new \Smalot\PdfParser\Page($document, $header);
+        $content = '<</Type/Pages/Kids[1 0 R 2 0 R]>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object4 = new \Smalot\PdfParser\Pages($document, $header);
+        $content = '<</Type/Pages/Kids[4 0 R 3 0 R]>>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object5 = new \Smalot\PdfParser\Pages($document, $header);
+        $content = '<</Type/Catalog/Pages 5 0 R >>';
+        $header  = \Smalot\PdfParser\Header::parse($content, $document);
+        $object6 = new \Smalot\PdfParser\Pages($document, $header);
+        $document->setObjects(
+            array(1 => $object1, 2 => $object2, 3 => $object3, 4 => $object4, 5 => $object5, 6 => $object6)
+        );
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
@@ -188,7 +191,7 @@ class Document extends atoum\test
         try {
             // Test invalid structure.
             $filename = tempnam(sys_get_temp_dir(), 'test_');
-            $content = <<<EOF
+            $content  = <<<EOF
 %PDF-1.4
 %Çì¢
 1 0 obj
@@ -240,7 +243,7 @@ EOF;
 
     public function testParseContent()
     {
-        $content = <<<EOT
+        $content  = <<<EOT
 5 0 obj
 5198
 endobj

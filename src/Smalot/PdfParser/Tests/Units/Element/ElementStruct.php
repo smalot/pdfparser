@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class ElementStruct
+ *
  * @package Smalot\PdfParser\Tests\Units\Element
  */
 class ElementStruct extends atoum\test
@@ -33,7 +34,11 @@ class ElementStruct extends atoum\test
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementStruct::parse(' [ << /Filter /FlateDecode >> ]', $document, $offset);
+        $element = \Smalot\PdfParser\Element\ElementStruct::parse(
+            ' [ << /Filter /FlateDecode >> ]',
+            $document,
+            $offset
+        );
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
@@ -45,7 +50,11 @@ class ElementStruct extends atoum\test
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
         $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementStruct::parse(" 0 \n << /Filter /FlateDecode >> ", $document, $offset);
+        $element = \Smalot\PdfParser\Element\ElementStruct::parse(
+            " 0 \n << /Filter /FlateDecode >> ",
+            $document,
+            $offset
+        );
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
 
@@ -63,7 +72,11 @@ class ElementStruct extends atoum\test
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(26);
         $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementStruct::parse(" \n << /Filter /FlateDecode >> ", $document, $offset);
+        $element = \Smalot\PdfParser\Element\ElementStruct::parse(
+            " \n << /Filter /FlateDecode >> ",
+            $document,
+            $offset
+        );
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(29);
     }

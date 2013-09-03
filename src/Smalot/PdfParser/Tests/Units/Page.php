@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class Page
+ *
  * @package Smalot\PdfParser\Tests\Units
  */
 class Page extends atoum\test
@@ -26,10 +27,10 @@ class Page extends atoum\test
     public function testGetResources()
     {
         // Document with text.
-        $filename  = 'samples/Document1_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
+        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
 
         // the first to load data.
         $resources = $page->getResources();
@@ -42,10 +43,10 @@ class Page extends atoum\test
     public function testGetContents()
     {
         // Document with text.
-        $filename  = 'samples/Document1_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
+        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
 
         // the first to load data.
         $contents = $page->getContents();
@@ -58,10 +59,10 @@ class Page extends atoum\test
     public function testGetFonts()
     {
         // Document with text.
-        $filename  = 'samples/Document1_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
+        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
 
         // the first to load data.
         $fonts = $page->getFonts();
@@ -75,10 +76,10 @@ class Page extends atoum\test
 
         // ------------------------------------------------------
         // Document without text.
-        $filename  = 'samples/Document3_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
+        $filename = 'samples/Document3_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
 
         // the first to load data.
         $fonts = $page->getFonts();
@@ -91,10 +92,10 @@ class Page extends atoum\test
     public function testGetFont()
     {
         // Document with text.
-        $filename  = 'samples/Document1_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
+        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
 
         // the first to load data.
         $font = $page->getFont('R7');
@@ -104,11 +105,11 @@ class Page extends atoum\test
     public function testGetText()
     {
         // Document with text.
-        $filename  = 'samples/Document1_pdfcreator_nocompressed.pdf';
-        $document  = \Smalot\PdfParser\Document::parseFile($filename);
-        $pages     = $document->getPages();
-        $page      = $pages[0];
-        $text      = $page->getText();
+        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        $pages    = $document->getPages();
+        $page     = $pages[0];
+        $text     = $page->getText();
 
         $this->assert->string($text)->hasLengthGreaterThan(150);
         $this->assert->string($text)->contains('Document title');

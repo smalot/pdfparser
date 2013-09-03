@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -17,6 +17,7 @@ namespace Smalot\PdfParser;
 
 /**
  * Class Font
+ *
  * @package Smalot\PdfParser
  */
 class Font extends Object
@@ -138,7 +139,11 @@ class Font extends Object
             $content = $this->getToUnicode()->getContent();
 
             if (strpos($content, 'beginbfchar') !== false) {
-                $bfchar  = substr($content, strpos($content, 'beginbfchar') + strlen('beginbfchar'), strpos($content, 'endbfchar') - strpos($content, 'beginbfchar') - strlen('beginbfchar'));
+                $bfchar  = substr(
+                    $content,
+                    strpos($content, 'beginbfchar') + strlen('beginbfchar'),
+                    strpos($content, 'endbfchar') - strpos($content, 'beginbfchar') - strlen('beginbfchar')
+                );
                 $regexp  = '/<(?<from>[0-9A-Z]+)> +<(?<to>[0-9A-Z]+)>[ \r\n]+/ims';
                 $matches = array();
                 preg_match_all($regexp, $bfchar, $matches);
@@ -153,7 +158,11 @@ class Font extends Object
             }
 
             if (strpos($content, 'beginbfrange') !== false) {
-                $bfrange = substr($content, strpos($content, 'beginbfrange') + strlen('beginbfrange'), strpos($content, 'endbfrange') - strpos($content, 'beginbfrange') - strlen('beginbfrange'));
+                $bfrange = substr(
+                    $content,
+                    strpos($content, 'beginbfrange') + strlen('beginbfrange'),
+                    strpos($content, 'endbfrange') - strpos($content, 'beginbfrange') - strlen('beginbfrange')
+                );
                 $regexp  = '/<(?<from>[0-9A-Z]+)> *<(?<to>[0-9A-Z]+)> *<(?<offset>[0-9A-Z]+)>[ \r\n]+/ims';
                 $matches = array();
                 preg_match_all($regexp, $bfrange, $matches);
@@ -168,8 +177,12 @@ class Font extends Object
                         'offset' => $offset,
                     );
 
-                    for ($char=$char_from;$char<=$char_to;$char++) {
-                        $to = html_entity_decode('&#' . ($char - $char_from + $offset) . ';', ENT_NOQUOTES, 'UTF-8');
+                    for ($char = $char_from; $char <= $char_to; $char++) {
+                        $to                          = html_entity_decode(
+                            '&#' . ($char - $char_from + $offset) . ';',
+                            ENT_NOQUOTES,
+                            'UTF-8'
+                        );
                         $this->table['chars'][$char] = $to;
                     }
                 }

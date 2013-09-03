@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file is part of the PdfParser library.
+ *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2013-08-08
@@ -19,6 +19,7 @@ use mageekguy\atoum;
 
 /**
  * Class ElementDate
+ *
  * @package Smalot\PdfParser\Tests\Units\Element
  */
 class ElementDate extends atoum\test
@@ -83,7 +84,7 @@ class ElementDate extends atoum\test
             $offset  = 0;
             $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:2013+02'00') ", null, $offset);
             $this->assert->integer($offset)->isEqualTo(-1);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->assert->exception($e)->hasMessage('Invalid date format.');
             $this->assert->integer($offset)->isEqualTo(18);
         }
