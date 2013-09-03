@@ -60,6 +60,20 @@ class Header
     }
 
     /**
+     * @return array
+     */
+    public function getElementTypes()
+    {
+        $types = array();
+
+        foreach ($this->elements as $key => $element) {
+            $types[$key] = get_class($element);
+        }
+
+        return $types;
+    }
+
+    /**
      * @param $name
      *
      * @return bool

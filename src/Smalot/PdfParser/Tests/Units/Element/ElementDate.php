@@ -78,6 +78,11 @@ class ElementDate extends atoum\test
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(28);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:20130901235555) ", null, $offset);
+        $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
+        $this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55')))->isEqualTo(true);
+        $this->assert->integer($offset)->isEqualTo(21);
 
         // Format invalid
         try {
@@ -94,6 +99,13 @@ class ElementDate extends atoum\test
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $this->assert->dateTime($element->getContent())->isEqualTo(new \DateTime('2013-09-01 21:55:55+00:00'));
+
+        try {
+            $element = new \Smalot\PdfParser\Element\ElementDate('2013-09-01 23:55:55+02:00');
+            $this->assert->boolean(false)->isEqualTo(true);
+        } catch (\Exception $e) {
+            $this->assert->exception($e)->hasMessage('DateTime required.');
+        }
     }
 
     public function testEquals()

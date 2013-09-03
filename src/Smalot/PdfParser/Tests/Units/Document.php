@@ -175,40 +175,26 @@ class Document extends atoum\test
             $this->assert->exception($e)->hasMessage('Unable to read file.');
         }
 
-        try {
-            // Test missing startxref position.
-            $filename = tempnam(sys_get_temp_dir(), 'test_');
-            $document = \Smalot\PdfParser\Document::parseFile($filename);
-            unlink($filename);
-            $this->assert->object($document)->isInstanceOf('null');
-        } catch (\mageekguy\atoum\exceptions\logic $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            unlink($filename);
-            $this->assert->exception($e)->hasMessage('Missing "startxref" tag.');
-        }
-
-        try {
-            // Test invalid structure.
-            $filename = tempnam(sys_get_temp_dir(), 'test_');
-            $content  = <<<EOF
+        // Test invalid structure : "invalid section"
+        $filename = tempnam(sys_get_temp_dir(), 'test_');
+        $content  = <<<EOF
 %PDF-1.4
 %Çì¢
 1 0 obj
-<</Length 6 0 R/Filter /FlateDecode>>
+<</Length 6 0 R>>
 stream
 foo
 endstream
 endobj
 2 0 obj
-<</Length 6 0 R/Filter /FlateDecode>>
+<</Length 6 0 R>>
 stream
-foo
+bar
 endstream
 3 0 obj
-<</Length 6 0 R/Filter /FlateDecode>>
+<</Length 6 0 R>>
 stream
-foo
+baz
 endstream
 endobj
 invalid section
@@ -216,29 +202,69 @@ xref
 0 3
 0000000000 65535 f
 0000000019 00000 n
-0000000093 00000 n
-0000000160 00000 n
-0000000234 00000 n
+0000000073 00000 n
+0000000120 00000 n
+0000000174 00000 n
 trailer
 << /Size 24 /Root 1 0 R /Info 2 0 R
 /ID [<984DA96B7C5E60408BB1AFE2FE6B6C03><984DA96B7C5E60408BB1AFE2FE6B6C03>]
 >>
 startxref
-250
+190
 %%EOF
 
 EOF;
-            file_put_contents($filename, $content);
-            $document = \Smalot\PdfParser\Document::parseFile($filename);
-            $this->assert->object($document)->isInstanceOf('null');
-            unlink($filename);
-        } catch (\mageekguy\atoum\exceptions\logic $e) {
-            @unlink($filename);
-            throw $e;
-        } catch (\Exception $e) {
-            @unlink($filename);
-            $this->assert->exception($e)->hasMessage('Invalid object declaration.');
-        }
+        file_put_contents($filename, $content);
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        unlink($filename);
+        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
+        $this->assert->array($document->getObjects())->hasSize(3);
+        $this->assert->string($document->getObjectById(1)->getContent())->isEqualTo('foo');
+        $this->assert->string($document->getObjectById(2)->getContent())->isEqualTo('bar');
+        $this->assert->string($document->getObjectById(3)->getContent())->isEqualTo('baz');
+
+        // Test invalid structure : "invalid section"
+        $filename = tempnam(sys_get_temp_dir(), 'test_');
+        $content  = <<<EOF
+%PDF-1.4
+%Çì¢
+1 0 obj
+<</Length 6 0 R>>
+stream
+foo
+endstream
+endobj
+2 0 obj
+<</Length 6 0 R>>
+stream
+foo
+endstream
+3 0 obj
+<</Length 6 0 R>>
+stream
+foo
+endstream
+endobj
+xref
+0 3
+0000000000 65535 f
+0000000019 00000 n
+0000000073 00000 n
+0000000100 00000 n
+trailer
+<< /Size 24 /Root 1 0 R /Info 2 0 R
+/ID [<984DA96B7C5E60408BB1AFE2FE6B6C03><984DA96B7C5E60408BB1AFE2FE6B6C03>]
+>>
+startxref
+174
+%%EOF
+
+EOF;
+        file_put_contents($filename, $content);
+        $document = \Smalot\PdfParser\Document::parseFile($filename);
+        unlink($filename);
+        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
+        $this->assert->array($document->getObjects())->hasSize(3);
     }
 
     public function testParseContent()

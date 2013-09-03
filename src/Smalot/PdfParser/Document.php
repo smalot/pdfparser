@@ -118,6 +118,7 @@ class Document
 
     /**
      * @return Page[]
+     * @throws \Exception
      */
     public function getPages()
     {
@@ -152,6 +153,7 @@ class Document
      * @param $filename
      *
      * @return Document
+     * @throws \Exception
      */
     public static function parseFile($filename)
     {
@@ -161,125 +163,129 @@ class Document
             throw new \Exception('Unable to read file.');
         }
 
-        $position_startxref = 0;
-        while (($line = fgets($handle)) !== false) {
-            if (trim($line) == 'startxref') {
-                $position_startxref = intval(fgets($handle));
-                break;
-            }
-        }
-
-        if (!$position_startxref) {
-            throw new \Exception('Missing "startxref" tag.');
-        }
-
-        fseek($handle, $position_startxref, SEEK_SET);
-        $entries = array();
-        $next_id = 0;
-        while (($line = fgets($handle)) !== false) {
-            $line = trim($line);
-            if ($line == 'xref' || $line == '') {
-                continue;
-            } elseif ($line == 'trailer') {
-                break;
+        try {
+            $position_startxref = 0;
+            while (($line = fgets($handle)) !== false) {
+                if (trim($line) == 'startxref') {
+                    $position_startxref = intval(fgets($handle));
+                    break;
+                }
             }
 
-            if (preg_match('/^\d+\s+\d+$/', $line)) {
-                list($next_id,) = explode(' ', $line);
-            } elseif (preg_match('/^\d+\s+\d+\s+(n|f)$/', $line)) {
-                list($offset, $generation, $in_use) = explode(' ', $line);
-                $offset     = intval(ltrim($offset, '0'));
-                $generation = intval(ltrim($generation, '0'));
-                $in_use     = ($in_use == 'n');
+            if (!$position_startxref) {
+                throw new \Exception('Missing "startxref" tag.');
+            }
 
-                if ($next_id && $offset && $in_use) {
-                    $entries[$offset] = array(
-                        'id'         => $next_id,
-                        'offset'     => $offset,
-                        'generation' => $generation,
-                        'in_use'     => $in_use,
-                    );
+            fseek($handle, $position_startxref, SEEK_SET);
+            $entries = array();
+            $next_id = 0;
+            while (($line = fgets($handle)) !== false) {
+                $line = trim($line);
+                if ($line == 'xref' || $line == '') {
+                    continue;
+                } elseif ($line == 'trailer') {
+                    break;
                 }
 
-                $next_id++;
+                if (preg_match('/^\d+\s+\d+$/', $line)) {
+                    list($next_id,) = explode(' ', $line);
+                } elseif (preg_match('/^\d+\s+\d+\s+(n|f)$/', $line)) {
+                    list($offset, $generation, $in_use) = explode(' ', $line);
+                    $offset     = intval(ltrim($offset, '0'));
+                    $generation = intval(ltrim($generation, '0'));
+                    $in_use     = ($in_use == 'n');
+
+                    if ($next_id && $offset && $in_use) {
+                        $entries[$offset] = array(
+                            'id'         => $next_id,
+                            'offset'     => $offset,
+                            'generation' => $generation,
+                            'in_use'     => $in_use,
+                        );
+                    }
+
+                    $next_id++;
+                }
             }
-        }
 
-        $entries[] = array(
-            'id'         => '',
-            'offset'     => $position_startxref,
-            'generation' => 0,
-            'in_use'     => true,
-        );
+            $entries[] = array(
+                'id'         => '',
+                'offset'     => $position_startxref,
+                'generation' => 0,
+                'in_use'     => true,
+            );
 
-        ksort($entries, SORT_NUMERIC);
+            ksort($entries, SORT_NUMERIC);
 
-        $entries  = array_values($entries);
-        $document = new self();
-        $objects  = array();
+            $entries  = array_values($entries);
+            $document = new self();
+            $objects  = array();
 
-        $count = count($entries) - 1;
-        for ($i = 0; $i < $count; $i++) {
-            $offset      = $entries[$i]['offset'];
-            $next_offset = $entries[$i + 1]['offset'];
+            $count = count($entries) - 1;
+            for ($i = 0; $i < $count; $i++) {
+                $offset      = $entries[$i]['offset'];
+                $next_offset = $entries[$i + 1]['offset'];
 
-            fseek($handle, $offset, SEEK_SET);
-            $content = fread($handle, $next_offset - $offset);
+                fseek($handle, $offset, SEEK_SET);
+                $content = fread($handle, $next_offset - $offset);
+                //            var_dump($content);
 
-            if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*)[\n\r]{1,2}endobj\s*$/s', $content, $match)) {
-//                echo $entries[$i]['id'] . ' 0 obj' . "\n";
-                $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
-//                echo '---------------------------' . "\n";
-            } elseif (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*?)(\s*)$/s', $content, $match)) {
-//                echo $entries[$i]['id'] . ' 0 obj' . "\n";
-                $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
-//                echo '---------------------------' . "\n";
-            } else {
-                throw new \Exception('Invalid object declaration.');
+                if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*)[\n\r]{0,2}endobj\s*$/s', $content, $match)) {
+                    //                echo $entries[$i]['id'] . ' 0 obj' . "\n";
+                    $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
+                    //                echo '---------------------------' . "\n";
+                } elseif (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*?)(\s*)$/s', $content, $match)) {
+                    //                echo $entries[$i]['id'] . ' 0 obj' . "\n";
+                    $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);
+                    //                echo '---------------------------' . "\n";
+                } else {
+//                    echo $entries[$i]['id'] . ' 0 obj' . " ()\n";
+                    throw new \Exception('Invalid object declaration.');
+                }
             }
+
+            $document->setObjects($objects);
+
+            return $document;
+        } catch (\Exception $e) {
+//            trigger_error($e->getMessage());
+            $content = file_get_contents($filename);
+
+            return self::parseContent($content);
         }
-
-        $document->setObjects($objects);
-
-        return $document;
     }
 
     /**
-     * @param $content
+     * This method extract object from document using regular
+     * expressions. This is useful in case of missing xref section
+     * or invalid xref references.
+     *
+     * @param string $content
      *
      * @return Document
      */
     public static function parseContent($content)
     {
-//        $filename = tempnam(sys_get_temp_dir(), 'pdfparser_');
-//
-//        try {
-//            file_put_contents($filename, $content);
-//            $document = self::parseFile($filename);
-//            @unlink($filename);
-//        }
-//        catch (\Exception $e) {
-//            @unlink($filename);
-//            throw $e;
-//        }
-//
-//        return $document;
-
-        $regexp  = '/(?<id>[0-9]+\s+[0-9]+\s+obj(\s+|<<))(?<data>.*?)(endobj\s+)/s';
-        $matches = array();
-
-        preg_match_all($regexp, $content . "\n", $matches);
-        $data    = $matches['data'];
-        $objects = array();
-
         $document = new self();
+        $objects  = array();
+        $regexp   = '/([\n\r]{1,2}\d+\s+\d+\s+obj)/s';
+        $parts    = preg_split($regexp, "\n" . $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $id       = 0;
 
-        foreach ($data as $key => $object) {
-            $id = intval(trim($matches['id'][$key]));
-            //echo $id . ' 0 obj' . "\n";
-            $objects[$id] = Object::parse($document, $object);
-            //echo 'type detected: ' . $objects[$id]->get('Type')->getContent() . "\n";
-            //echo '------------------------------------------' . "\n";
+        // Extract objects from content.
+        foreach ($parts as $part) {
+            if (preg_match('/^([\n\r]{1,2}\d+\s+\d+\s+obj)$/s', $part)) {
+                if ($id != 0) {
+                    // In case of empty object content (strange situation).
+                    $objects[$id] = Object::parse($document, '');
+                }
+                $id = intval(trim($part));
+            } elseif ($id != 0) {
+                // Remove trailing 'endobj'.
+                $part         = preg_replace('/endobj\s*$/s', '', $part);
+                $objects[$id] = Object::parse($document, $part);
+                $id           = 0;
+            }
         }
 
         $document->setObjects($objects);

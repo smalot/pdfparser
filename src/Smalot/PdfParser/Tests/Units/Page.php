@@ -100,6 +100,8 @@ class Page extends atoum\test
         // the first to load data.
         $font = $page->getFont('R7');
         $this->assert->object($font)->isInstanceOf('\Smalot\PdfParser\Font');
+        $font = $page->getFont('ABC7');
+        $this->assert->object($font)->isInstanceOf('\Smalot\PdfParser\Font');
     }
 
     public function testGetText()
