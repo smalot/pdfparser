@@ -35,5 +35,6 @@ EOT;
         $document = new \Smalot\PdfParser\Document();
         $object   = \Smalot\PdfParser\Object::parse($document, $content);
         $this->assert->string($object->getContent())->isEqualTo('main content');
+        
     }
 }
