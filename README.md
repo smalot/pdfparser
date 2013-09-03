@@ -18,6 +18,8 @@ Features included :
 
 Currently, secured documents are not supported.
 
+This project is supported by [Actualys](http://www.actualys.com).
+
 State
 =====
 
@@ -29,8 +31,8 @@ Todo list :
 - [ ] Add helper to extract meta data
 - [ ] Clean code on Font Classes
 - [ ] Support of encoding files
-- [ ] Support of missing cross-reference table
-- [ ] Support of missing endstream tag (malformed file)
+- [X] Support of missing cross-reference table
+- [X] Support of missing endstream tag (malformed file)
 
 Documentation
 =============
@@ -59,4 +61,3 @@ License
 
 This bundle is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE). See the complete license in the bundle:
 
-    LICENSE
