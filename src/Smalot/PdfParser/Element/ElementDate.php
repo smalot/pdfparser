@@ -25,12 +25,47 @@ use Smalot\PdfParser\Document;
 class ElementDate extends ElementString
 {
     /**
+     * @var string
+     */
+    protected $format = 'c';
+
+    /**
      * @param string   $value
      * @param Document $document
      */
     public function __construct($value, Document $document = null)
     {
-        parent::__construct($value, null);
+        if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{2}\'[0-9]{2}\'$/', $value)) {
+            throw new \Exception('Invalid date format.');
+        }
+
+        $value     = str_replace("'", '', $value);
+        $date      = \DateTime::createFromFormat('YmdHisP', $value);
+
+        parent::__construct($date, null);
+    }
+
+    /**
+     * @param mixed $value
+     * @return bool
+     */
+    public function equals($value)
+    {
+        if ($value instanceof \DateTime) {
+            $timestamp = $value->getTimeStamp();
+        } else {
+            $timestamp = strtotime($value);
+        }
+
+        return ($timestamp == $this->value->getTimeStamp());
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) ($this->value->format($this->format));
     }
 
     /**
@@ -42,9 +77,9 @@ class ElementDate extends ElementString
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\((?<name>D\:.*?)\)/is', $content, $match)) {
+        if (preg_match('/^\s*\(D\:(?<name>.*?)\)/s', $content, $match)) {
             $name   = $match['name'];
-            $offset = strpos($content, $name) + strlen($name) + 1; // 1 for ')'
+            $offset = strpos($content, '(D:') + strlen($name) + 4; // 1 for '(D:' and ')'
 
             return new self($name, $document);
         }
