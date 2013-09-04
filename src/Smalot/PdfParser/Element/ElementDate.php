@@ -85,7 +85,7 @@ class ElementDate extends ElementString
             if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{4}$/', $name) &&
                 !preg_match('/^[1-2][0-9]{13}$/', $name)
             ) {
-                echo $name . "\n";
+//                echo $name . "\n";
                 throw new \Exception('Invalid date format.');
             }
 
