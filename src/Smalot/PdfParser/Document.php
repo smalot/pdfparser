@@ -230,6 +230,9 @@ class Document
                 $content = fread($handle, $next_offset - $offset);
                 //            var_dump($content);
 
+//                echo '---------------------------' . "\n";
+//                echo '#' . $entries[$i]['id'] . "\n";
+
                 if (preg_match('/^\d+\s+\d+\s+obj\s*(?<data>.*)[\n\r]{0,2}endobj\s*$/s', $content, $match)) {
                     //                echo $entries[$i]['id'] . ' 0 obj' . "\n";
                     $objects[$entries[$i]['id']] = Object::parse($document, $match['data']);

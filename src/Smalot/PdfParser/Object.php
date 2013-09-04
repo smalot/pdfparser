@@ -311,8 +311,8 @@ class Object
             $content = trim($content, " \n\r");
         }
 
-        if (preg_match('/^stream[\n\r]{0,2}(?<data>.*?)[\n\r]{0,2}endstream.*$/s', $content, $matches)) {
-            $content = $matches['data'];
+        if (preg_match('/^\s*stream[\n\r]{0,2}(?<data>.*)endstream.*/s', $content, $matches)) {
+            $content = preg_replace('/[\n\r]{1,2}$/', '', $matches['data']);
             //echo 'extracted from stream' . "\n";
             //$content = substr($content, strpos($content, 'stream') + strlen('stream') + $nb_chars, strrpos($content, 'endstream') - strlen('stream') - $nb_chars);
         }
@@ -326,10 +326,12 @@ class Object
 //                echo 'apply filter: ' . $filter->getContent() . "\n";
                 try {
 //                    echo 'length (before "'.$filter.'"):' . strlen($content) . "\n";
+//                    if (strlen($content) > 50000) var_dump($content);
                     $content = Filters::decodeFilter((string)$filter, $content);
+//                    echo 'length (after  "'.$filter.'"):' . strlen($content) . "\n";
 //                var_dump($content);
                 } catch (\Exception $e) {
-//                    echo 'error: ' . $e->getMessage() . "\n";
+                    echo 'error: ' . $e->getMessage() . "\n";
                     trigger_error($e->getMessage());
                     $content = '';
                     break;
