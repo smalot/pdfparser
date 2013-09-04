@@ -55,50 +55,75 @@ class Encoding extends Object
             $this->init_done = true;
         }
 
-        // Load reference table charset.
-        $baseEncoding = $this->get('BaseEncoding')->getContent();
-        $encoding     = array();
-        $file         = $baseEncoding . '.php';
-
-        if (file_exists($file)) {
-            include $file;
-        } else {
-            die('Missing encoding data file: "' . $file . '".');
-        }
-
-        $this->encoding = $encoding;
-
-        // Build table including differences.
-        $differences       = $this->get('Differences')->getContent();
+        $this->mapping     = array();
         $this->differences = array();
-        $code              = 0;
+        $this->encoding    = null;
 
-        foreach ($differences as $difference) {
-            /** @var ElementNumeric $difference */
-            if ($difference instanceof ElementNumeric) {
-                $code = $difference->getContent();
-                continue;
+        if ($this->has('BaseEncoding')) {
+            // Load reference table charset.
+            $baseEncoding = preg_replace('/[^A-Z0-9]/i', '', $this->get('BaseEncoding')->getContent());
+            $encoding     = array();
+            $file         = __DIR__ . '/Encoding/' . $baseEncoding . '.php';
+
+            if (file_exists($file)) {
+                include $file;
+            } else {
+                die('Missing encoding data file: "' . $file . '".');
             }
 
-            $this->differences[$code] = $difference->getContent();
+            $this->encoding = $encoding;
 
-            // For the next char.
-            $code++;
+            // Build table including differences.
+            $differences = $this->get('Differences')->getContent();
+            $code        = 0;
+
+            foreach ($differences as $difference) {
+                /** @var ElementNumeric $difference */
+                if ($difference instanceof ElementNumeric) {
+                    $code = $difference->getContent();
+                    continue;
+                }
+
+                // ElementName
+                $this->differences[$code] = $difference->getContent();
+
+                // For the next char.
+                $code++;
+            }
+
+            // Build final mapping (custom => standard).
+            $table = array_flip(array_reverse($this->encoding, true));
+
+            foreach ($this->differences as $code => $difference) {
+                /** @var string $difference */
+                $this->mapping[$code] = $table[$difference];
+            }
         }
 
-        // Build final mapping (custom => standard).
-        $this->mapping = array();
-        $table         = array_flip(array_reverse($this->encoding, true));
-
-        foreach ($this->differences as $code => $difference) {
-            /** @var string $difference */
-            $this->mapping[$code] = $table[$difference];
-        }
+//        var_dump($this->mapping);
     }
 
     /**
-     * @param int  $char
-     * @param bool $is_hexa
+     * @param string $token
+     *
+     * @return int
+     */
+//    public function convertTokenToInt($token)
+//    {
+//        $this->init();
+//
+//        var_dump($this->differences);
+//        die();
+//
+//        if (isset($this->mapping[$token])) {
+//            return $this->mapping[$token];
+//        } else {
+//            return 0;
+//        }
+//    }
+
+    /**
+     * @param int $char
      *
      * @return int
      */
@@ -107,13 +132,11 @@ class Encoding extends Object
         $this->init();
 
         if (isset($this->mapping[$dec])) {
-            $char = chr($this->mapping[$dec]);
+            $dec = $this->mapping[$dec];
         } elseif (isset($this->encoding[$dec])) {
-            $char = chr($dec);
-        } else {
-            $char = chr($dec);
+            $dec = $dec;
         }
 
-        return $char;
+        return $dec;
     }
 }

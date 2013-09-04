@@ -80,13 +80,15 @@ class ElementDate extends ElementString
             $name   = $match['name'];
             $offset = strpos($content, '(D:') + strlen($name) + 4; // 1 for '(D:' and ')'
 
-            if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{2}\'[0-9]{2}\'$/', $name) &&
+            $name = str_replace("'", '', $name);
+
+            if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{4}$/', $name) &&
                 !preg_match('/^[1-2][0-9]{13}$/', $name)
             ) {
+                echo $name . "\n";
                 throw new \Exception('Invalid date format.');
             }
 
-            $name = str_replace("'", '', $name);
             if (strlen($name) == 19) {
                 $date = \DateTime::createFromFormat('YmdHisP', $name);
             } elseif (strlen($name) == 14) {

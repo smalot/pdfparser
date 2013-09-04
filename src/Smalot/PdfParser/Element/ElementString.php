@@ -57,9 +57,28 @@ class ElementString extends Element
             $name   = $match['name'];
             $offset = strpos($content, '(' . $name) + strlen($name) + 2; // 2 for '(' and ')'
 
+            $name = self::decodeOctal($name);
+
             return new self($name, $document);
         }
 
         return false;
+    }
+
+    /**
+     * @param string $text
+     *
+     * @return string
+     */
+    public static function decodeOctal($text)
+    {
+        $found_octal_values = array();
+        preg_match_all('/\\\\([0-9]{3})/', $text, $found_octal_values);
+        foreach ($found_octal_values[0] as $value) {
+            $octal = substr($value, 1);
+            $text  = str_replace($value, chr(octdec($octal)), $text);
+        }
+
+        return $text;
     }
 }

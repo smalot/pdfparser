@@ -101,10 +101,12 @@ class Object
         $current_position_tm = array('x' => false, 'y' => false);
 
         foreach ($text_parts as $text_part) {
+//            var_dump($text_part);
             $commands = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
-//                echo 'command: ' . $command['operator'] . ': ' . $command['command'] . "\n";
+//                echo 'command: ' . $command['operator'] . ': ' . "\n";
+//                var_dump($command['command']);
 
                 switch ($command['operator']) {
                     // set character spacing
@@ -135,20 +137,29 @@ class Object
                         break;
 
                     case 'TJ':
+                        // Skip if not previously defined
+                        if (is_null($current_font)) continue;
+
                         $tmp = trim($command['command'], '[]');
                         if ($tmp[0] == '<') {
-                            $text .= $current_font->decodeHexadecimal($tmp);
+                            $sub_text = $current_font->decodeHexadecimal($tmp);
                         } else {
-                            $text .= $current_font->decodeText($tmp);
+                            $sub_text = $current_font->decodeText($tmp);
                         }
+//                        echo '*** decoded: "' . $sub_text . "\"\n";
+                        $text .= $sub_text;
                         break;
 
                     case 'Tj':
+                        // Skip if not previously defined
+                        if (is_null($current_font)) continue;
+
                         if ($command['command'][0] == '<') {
                             $command['command'] = '(' . $command['command'] . ')';
                         }
-                        $tmp = $current_font->decodeText($command['command']);
-                        $text .= $tmp;
+                        $sub_text = $current_font->decodeText($command['command']);
+//                        echo '*** decoded: "' . $sub_text . "\"\n";
+                        $text .= $sub_text;
                         break;
 
                     // set leading
@@ -233,14 +244,14 @@ class Object
     /**
      * @return array
      */
-    protected function getTextParts()
+    public function getTextParts()
     {
-        $regexp  = '/(BT\s*)(.*?)(\s*ET)/ms';
+        $regexp  = '/BT\s*(.*?)\s*ET/s';
         $matches = array();
 
         preg_match_all($regexp, $this->content, $matches);
 
-        return $matches[2];
+        return $matches[1];
     }
 
     /**
@@ -248,9 +259,17 @@ class Object
      *
      * @return array
      */
-    protected function getCommandsFromTextPart($text_part)
+    public function getCommandsFromTextPart($text_part)
     {
-        $regex    = '#(\[.*?\]\s*)(TJ)|(\(.*?\)\s*)(Tj)|(<.*?>\s*)(Tj)|(T\*)|((/[A-Za-z0-9]|[0-9\.])+\s+)+([a-zA-Z]{1,2})#s';
+        $regexps = array(
+            'TJ'     => '(\[.*?\]\s*)(TJ)',
+            'Tj'     => '(\(.*?\)\s*)(Tj)',
+            'T*'     => '(T\*)',
+            'Tf'     => '(/[A-Za-z0-9\.]+\s+[0-9\.]+)(Tf)',
+            'others' => '(([0-9\.\-])+\s+)+([a-zA-Z]{1,2})',
+        );
+
+        $regex    = '#' . implode('|', $regexps) . '#';
         $matches  = array();
         $commands = array();
 

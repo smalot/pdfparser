@@ -28,14 +28,17 @@ class Font extends Object
      * @var Object
      */
     protected $toUnicode = false;
+
     /**
      * @var array
      */
     protected $table = null;
+
     /**
      * @var mixed
      */
     protected $encoding = null;
+
     /**
      * @var bool
      */
@@ -49,10 +52,6 @@ class Font extends Object
         if (!$this->init_done) {
             // Load encoding informations.
             $encoding = $this->get('Encoding');
-
-            if (!($encoding instanceof Encoding) && $encoding instanceof Element) {
-                $encoding = $encoding->getContent();
-            }
 
             $this->encoding = $encoding;
 
@@ -73,8 +72,6 @@ class Font extends Object
         }
 
         $toUnicode = $this->getHeader()->get('ToUnicode');
-
-        //$toUnicode = ($id?$this->document->resolveXRef($id, true):null);
 
         return ($this->toUnicode = $toUnicode);
     }
@@ -98,17 +95,6 @@ class Font extends Object
         if (array_key_exists($dec, $this->table['chars'])) {
             return $this->table['chars'][$dec];
         } else {
-            foreach ($this->table['ranges'] as $range) {
-                if ($dec >= $range['from'] && $dec <= $range['to']) {
-                    $new_dec  = ($dec - $range['from']) + $range['offset'];
-                    $new_char = html_entity_decode('&#' . $new_dec . ';', ENT_NOQUOTES, 'UTF-8');
-
-                    //$hex     = str_pad(base_convert($new_dec, 10, 16), ($new_dec <= 255 ? 2 : 4), '0', STR_PAD_LEFT);
-
-                    return ($this->table['chars'][$dec] = $new_char);
-                }
-            }
-
             return $char;
         }
     }
@@ -151,10 +137,7 @@ class Font extends Object
                 preg_match_all($regexp, $bfchar, $matches);
                 foreach ($matches['from'] as $key => $from) {
                     $to = $matches['to'][$key];
-                    $to = html_entity_decode('&#' . $to . ';', ENT_NOQUOTES, 'UTF-8');
-                    /*if (substr($to, 0, 2) == '00') {
-                        $to = substr($to, 2);
-                    }*/
+                    $to = $this->uchr(hexdec($to));
                     $this->table['chars'][hexdec($from)] = $to;
                 }
             }
@@ -180,11 +163,8 @@ class Font extends Object
                     );
 
                     for ($char = $char_from; $char <= $char_to; $char++) {
-                        $to                          = html_entity_decode(
-                            '&#' . ($char - $char_from + $offset) . ';',
-                            ENT_NOQUOTES,
-                            'UTF-8'
-                        );
+                        $to = $this->uchr($char - $char_from + $offset);
+
                         $this->table['chars'][$char] = $to;
                     }
                 }
@@ -207,8 +187,7 @@ class Font extends Object
 
         foreach ($matches['data'] as $pos => $hexa) {
             for ($i = 0; $i < strlen($hexa); $i = $i + 4) {
-                $new_char = $this->translateChar(substr($hexa, $i, 4), true);
-                $text .= $new_char; //pack('H*', $hexa_char);
+                $text .= $this->translateChar(substr($hexa, $i, 4), true);
             }
 
             if ((int)$matches['position'][$pos] < 0) {
@@ -243,6 +222,8 @@ class Font extends Object
      */
     public function decodeText($text)
     {
+        $this->init();
+
         $text = $this->decodeOctal($text);
 
         $result        = '';
@@ -292,6 +273,7 @@ class Font extends Object
 //                var_dump('decode');
             $sub_text = $this->decodeContent($sub_text);
 //            var_dump('apres', $sub_text);
+//            echo '--------------' . "\n";
 //            var_dump('ajout espace', $spacing, $spacing_size);
 
             // add content to result string
@@ -304,26 +286,37 @@ class Font extends Object
 
     protected function decodeContent($text)
     {
-        if (!$this->getToUnicode() instanceof ElementMissing) {
+        $this->init();
+
+        if ($this->encoding instanceof Encoding) {
+
             $chars  = preg_split('//', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             $result = '';
 
             foreach ($chars as $char) {
-//                var_dump(ord($char));
-                $decoded = $this->translateChar($char);
-                $result .= $decoded;
+                $dec_av = hexdec(bin2hex($char));
+                $dec_ap = $this->encoding->translateChar($dec_av);
+
+                $result .= $this->uchr($dec_ap);
             }
 
             return $result;
-        } elseif ($this->header->get('Encoding') instanceof Element) {
-            $encoding = $this->get('Encoding')->getContent();
-
-            if (preg_match('/^mac/i', $encoding)) {
-                if ($decoded = @iconv('MacRoman', 'UTF-8//TRANSLIT//IGNORE', $text)) {
-                    return $decoded;
-                }
-            }
         }
+
+        if (!$this->getToUnicode() instanceof ElementMissing) {
+//            var_dump('font->translateChar');
+//            die();
+
+            $chars  = preg_split('//', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $result = '';
+
+            foreach ($chars as $char) {
+                $result .= $this->translateChar($char);
+            }
+
+            return $result;
+        }
+
 
         return $text;
     }

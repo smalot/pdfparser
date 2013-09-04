@@ -15,6 +15,9 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Element\ElementMissing;
+
 /**
  * Class Page
  *
@@ -77,7 +80,13 @@ class Page extends Object
         $resources = $this->getResources();
 
         if ($resources->has('Font')) {
-            $fonts = $resources->get('Font')->getHeader()->getElements();
+
+            if ($resources->get('Font') instanceof Header) {
+                $fonts = $resources->get('Font')->getElements();
+            } else {
+                $fonts = $resources->get('Font')->getHeader()->getElements();
+            }
+
             $table = array();
 
             foreach ($fonts as $id => $font) {
@@ -114,15 +123,16 @@ class Page extends Object
         $contents = $this->getContents();
 
         if ($contents) {
-            if (is_array($contents)) {
+            if ($contents instanceof ElementArray) {
                 $text = '';
 
-                foreach ($contents as $content) {
+                foreach ($contents->getContent() as $content) {
                     $text .= $content->getText($this) . "\n";
                 }
 
                 return $text;
-            } else {
+            } elseif (!($contents instanceof ElementMissing)) {
+//                var_dump(get_class())
                 return $contents->getText($this);
             }
         } else {
