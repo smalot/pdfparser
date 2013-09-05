@@ -59,5 +59,5 @@ All the installation instructions are located in the [documentation](https://git
 License
 =======
 
-This bundle is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE). See the complete license in the bundle:
+This library is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE). See the complete license in the bundle:
 
