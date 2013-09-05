@@ -114,40 +114,40 @@ class FontTrueType extends Font
      *
      * @return string
      */
-    public function translateChar($char, $is_hexa = false)
-    {
-        $this->init();
-
-        if ($is_hexa) {
-            $char = str_pad($char, 4, '0', STR_PAD_RIGHT);
-            $dec  = hexdec($char);
-        } else {
-            $dec = hexdec(bin2hex($char));
-        }
-
-        if (array_key_exists($dec, $this->table['chars'])) {
-            return $this->table['chars'][$dec];
-        } else {
-            if (is_string($this->encoding)) {
-                switch ($this->encoding) {
-                    case 'MacRomanEncoding':
-                        $new_char = @iconv('MacRoman', 'UTF-8', $char);
-                        break;
-
-                    default:
-                        $new_char = $char;
-                }
-
-                return ($this->table['chars'][$dec] = $new_char);
-            } elseif ($this->encoding instanceof Encoding) {
-                die('test');
-                $new_dec  = $this->encoding->translateChar($dec);
-                $new_char = $new_dec;
-
-                return ($this->table['chars'][$dec] = $new_char);
-            } else {
-                return $this->uchr($dec);
-            }
-        }
-    }
+//    public function translateChar($char, $is_hexa = false)
+//    {
+//        $this->init();
+//
+//        if ($is_hexa) {
+//            $char = str_pad($char, 4, '0', STR_PAD_RIGHT);
+//            $dec  = hexdec($char);
+//        } else {
+//            $dec = hexdec(bin2hex($char));
+//        }
+//
+//        if (array_key_exists($dec, $this->table['chars'])) {
+//            return $this->table['chars'][$dec];
+//        } else {
+//            if (is_string($this->encoding)) {
+//                switch ($this->encoding) {
+//                    case 'MacRomanEncoding':
+//                        $new_char = @iconv('MacRoman', 'UTF-8', $char);
+//                        break;
+//
+//                    default:
+//                        $new_char = $char;
+//                }
+//
+//                return ($this->table['chars'][$dec] = $new_char);
+//            } elseif ($this->encoding instanceof Encoding) {
+//                die('test');
+//                $new_dec  = $this->encoding->translateChar($dec);
+//                $new_char = $new_dec;
+//
+//                return ($this->table['chars'][$dec] = $new_char);
+//            } else {
+//                return $this->uchr($dec);
+//            }
+//        }
+//    }
 }

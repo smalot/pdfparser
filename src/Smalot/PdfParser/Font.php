@@ -81,7 +81,7 @@ class Font extends Object
      *
      * @return string
      */
-    public function translateChar($char, $is_hexa = false)
+    /*public function translateChar($char, $is_hexa = false)
     {
         $this->init();
 
@@ -96,6 +96,42 @@ class Font extends Object
             return $this->table['chars'][$dec];
         } else {
             return $char;
+        }
+    }*/
+    public function translateChar($char, $is_hexa = false)
+    {
+        $this->init();
+
+        if ($is_hexa) {
+            $char = str_pad($char, 4, '0', STR_PAD_RIGHT);
+            $dec  = hexdec($char);
+        } else {
+            $dec = hexdec(bin2hex($char));
+        }
+
+        if (array_key_exists($dec, $this->table['chars'])) {
+            return $this->table['chars'][$dec];
+        } else {
+            if (is_string($this->encoding)) {
+                switch ($this->encoding) {
+                    case 'MacRomanEncoding':
+                        $new_char = @iconv('MacRoman', 'UTF-8', $char);
+                        break;
+
+                    default:
+                        $new_char = $char;
+                }
+
+                return ($this->table['chars'][$dec] = $new_char);
+            } elseif ($this->encoding instanceof Encoding) {
+                die('test');
+                $new_dec  = $this->encoding->translateChar($dec);
+                $new_char = $new_dec;
+
+                return ($this->table['chars'][$dec] = $new_char);
+            } else {
+                return $this->uchr($dec);
+            }
         }
     }
 
@@ -181,17 +217,20 @@ class Font extends Object
     {
         $text = '';
 
-        $matches = array();
-        $regexp  = '/<(?<data>[a-z0-9]+)>\s*(?<position>[\-0-9\.]*)/mis';
-        preg_match_all($regexp, $hexa, $matches);
+        $parts = preg_split('/(<[a-z0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
-        foreach ($matches['data'] as $pos => $hexa) {
-            for ($i = 0; $i < strlen($hexa); $i = $i + 4) {
-                $text .= $this->translateChar(substr($hexa, $i, 4), true);
-            }
+        foreach ($parts as $part) {
+            if (preg_match('/^<.*>$/', $part)) {
+                $part = trim($part, '<>');
 
-            if ((int)$matches['position'][$pos] < 0) {
-                $text .= ' ';
+                $text .= '(';
+                for ($i = 0; $i < strlen($part); $i = $i + 4) {
+                    echo 'hexa: ' . substr($part, $i, 4) . "\n";
+                    $text .= pack('H*', ltrim(substr($part, $i, 4), '0'));
+                }
+                $text .= ')';
+            } else {
+                $text .= $part;
             }
         }
 

@@ -60,6 +60,10 @@ class Parser
         $pages = $pdf->getPages();
         $texts = array();
 
+//        var_dump($pdf->getObjectById(1227)->getContent());
+
+        return $pages[1]->getText();
+
         foreach ($pages as $page) {
             // Add a new text block if not empty.
             if ($text = $page->getText()) {

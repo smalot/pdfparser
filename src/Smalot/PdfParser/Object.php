@@ -105,8 +105,8 @@ class Object
             $commands = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
-//                echo 'command: ' . $command['operator'] . ': ' . "\n";
-//                var_dump($command['command']);
+                echo 'command: ' . $command['operator'] . ': ' . "\n";
+                var_dump($command['command']);
 
                 switch ($command['operator']) {
                     // set character spacing
@@ -142,11 +142,12 @@ class Object
 
                         $tmp = trim($command['command'], '[]');
                         if ($tmp[0] == '<') {
-                            $sub_text = $current_font->decodeHexadecimal($tmp);
-                        } else {
-                            $sub_text = $current_font->decodeText($tmp);
+                            $tmp = $current_font->decodeHexadecimal($tmp);
                         }
-//                        echo '*** decoded: "' . $sub_text . "\"\n";
+                        var_dump(get_class($current_font));
+                        echo '*** encoded: "' . $tmp . "\"\n";
+                        $sub_text = $current_font->decodeText($tmp);
+                        echo '*** decoded: "' . $sub_text . "\"\n";
                         $text .= $sub_text;
                         break;
 
