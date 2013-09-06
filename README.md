@@ -43,7 +43,7 @@ $text = \Smalot\PdfParser\Parser::parseFile('document.pdf');
 ```
 
 Extract text from the second page :
-```php
+``` php
 $document = \Smalot\PdfParser\Document::parseFile('document.pdf');
 $pages    = $document->getPages();
 $text     = $pages[1]->getText();
@@ -54,8 +54,8 @@ Installation
 
 To run PDfParser as a standalone library, you can use [composer](http://getcomposer.org/download/).
 
-```bash
-#> composer install
+``` bash
+$ composer install
 ```
 
 This command will download Atoum library and generate the following file :
@@ -68,11 +68,11 @@ Unit tests with Atoum
 =====================
 
 Run Atoum unit tests (with code coverage - if xdebug installed) :
-```bash
-#> vendor/bin/atoum -d src/Smalot/PdfParser/Tests/
+``` bash
+$ vendor/bin/atoum -d src/Smalot/PdfParser/Tests/
 ```
 
-[Read the Documentation](https://github.com/smalot/pdfparser/blob/master/doc)
+Once this command is ended, the folder "coverage/" will contain html pages with a code coverage summary.
 
 
 Sample demo
