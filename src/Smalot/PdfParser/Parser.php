@@ -61,6 +61,8 @@ class Parser
         $texts = array();
 
 //        var_dump($pdf->getObjectById(1227)->getContent());
+//        var_dump($pdf->getObjectById(1227)->loadTranslateTable());
+//        die('test');
 
         return $pages[1]->getText();
 

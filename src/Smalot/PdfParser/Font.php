@@ -242,7 +242,7 @@ class Font extends Object
 
         foreach ($matches[0] as $value) {
             $octal = substr($value, 1);
-            $text  = str_replace($value, chr(octdec($octal)), $text);
+            $text  = $this->uchr(octdec($octal));
         }
 
         return $text;
