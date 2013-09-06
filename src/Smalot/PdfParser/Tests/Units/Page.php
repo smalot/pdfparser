@@ -27,7 +27,7 @@ class Page extends atoum\test
     public function testGetResources()
     {
         // Document with text.
-        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
@@ -43,7 +43,7 @@ class Page extends atoum\test
     public function testGetContents()
     {
         // Document with text.
-        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
@@ -59,7 +59,7 @@ class Page extends atoum\test
     public function testGetFonts()
     {
         // Document with text.
-        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
@@ -76,7 +76,7 @@ class Page extends atoum\test
 
         // ------------------------------------------------------
         // Document without text.
-        $filename = 'samples/Document3_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document3_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
@@ -92,7 +92,7 @@ class Page extends atoum\test
     public function testGetFont()
     {
         // Document with text.
-        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
@@ -107,7 +107,7 @@ class Page extends atoum\test
     public function testGetText()
     {
         // Document with text.
-        $filename = 'samples/Document1_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $pages    = $document->getPages();
         $page     = $pages[0];
