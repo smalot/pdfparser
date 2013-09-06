@@ -49,13 +49,6 @@ $pages    = $document->getPages();
 $text     = $pages[1]->getText();
 ```
 
-Run Atoum unit tests (with code coverage - if xdebug installed) :
-```bash
-#> vendor/bin/atoum -d src/Smalot/PdfParser/Tests/
-```
-
-[Read the Documentation](https://github.com/smalot/pdfparser/blob/master/doc)
-
 Installation
 ============
 
@@ -71,8 +64,19 @@ This command will download Atoum library and generate the following file :
 vendor/autoload.php
 ```
 
-Test
-====
+Unit tests with Atoum
+=====================
+
+Run Atoum unit tests (with code coverage - if xdebug installed) :
+```bash
+#> vendor/bin/atoum -d src/Smalot/PdfParser/Tests/
+```
+
+[Read the Documentation](https://github.com/smalot/pdfparser/blob/master/doc)
+
+
+Sample demo
+===========
 
 Create a 'sample.php' file :
 
