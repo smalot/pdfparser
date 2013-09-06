@@ -69,7 +69,7 @@ Unit tests with Atoum
 
 Run Atoum unit tests (with code coverage - if xdebug installed) :
 ``` bash
-$ vendor/bin/atoum -d src/Smalot/PdfParser/Tests/
+$ vendor/bin/atoum -d vendor/smalot/pdfparser/src/Smalot/PdfParser/Tests/
 ```
 
 Once this command is ended, the folder "coverage/" will contain html pages with a code coverage summary.
