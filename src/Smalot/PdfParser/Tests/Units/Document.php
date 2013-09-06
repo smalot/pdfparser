@@ -160,7 +160,7 @@ class Document extends atoum\test
 
     public function testParseFile()
     {
-        $filename = 'samples/Document1_foxitreader.pdf';
+        $filename = __DIR__ . '/../../../../../samples/Document1_foxitreader.pdf';
         $document = \Smalot\PdfParser\Document::parseFile($filename);
         $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
 
