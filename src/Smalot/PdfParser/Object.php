@@ -28,10 +28,12 @@ class Object
      * @var Document
      */
     protected $document = null;
+
     /**
      * @var Header
      */
     protected $header = null;
+
     /**
      * @var string
      */
@@ -47,6 +49,14 @@ class Object
         $this->document = $document;
         $this->header   = !is_null($header) ? $header : new Header();
         $this->content  = $content;
+    }
+
+    /**
+     *
+     */
+    public function init()
+    {
+
     }
 
     /**
@@ -137,26 +147,13 @@ class Object
                         break;
 
                     case 'TJ':
-                        // Skip if not previously defined
-                        if (is_null($current_font)) continue;
-
-                        $tmp = trim($command['command'], '[]');
-                        if ($tmp[0] == '<') {
-                            $tmp = $current_font->decodeHexadecimal($tmp);
-                        }
-//                        var_dump(get_class($current_font));
-//                        echo '*** encoded: "' . $tmp . "\"\n";
-                        $sub_text = $current_font->decodeText($tmp);
-//                        echo '*** decoded: "' . $sub_text . "\"\n";
-                        $text .= $sub_text;
-                        break;
-
+                        $command['command'] = trim($command['command'], '[]');
                     case 'Tj':
                         // Skip if not previously defined
                         if (is_null($current_font)) continue;
 
                         if ($command['command'][0] == '<') {
-                            $command['command'] = '(' . $command['command'] . ')';
+                            $command['command'] = Font::decodeHexadecimal($command['command'], true);
                         }
                         $sub_text = $current_font->decodeText($command['command']);
 //                        echo '*** decoded: "' . $sub_text . "\"\n";

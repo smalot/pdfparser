@@ -64,7 +64,7 @@ class Parser
 //        var_dump($pdf->getObjectById(1227)->loadTranslateTable());
 //        die('test');
 
-        return $pages[1]->getText();
+        return $pages[2]->getText();
 
         foreach ($pages as $page) {
             // Add a new text block if not empty.

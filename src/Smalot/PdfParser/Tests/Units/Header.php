@@ -53,12 +53,17 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text>>foo';
+        $content  = '<</Type/Page/Subtype/Text>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
 
         $this->assert->array($elements = $header->getElements())->hasSize(2);
         $this->assert->object(current($elements))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
+
+        $types = $header->getElementTypes();
+        $this->assert->array($types);
+        $this->assert->string($types['Type'])->isEqualTo('Smalot\PdfParser\Element\ElementName');
+        $this->assert->string($types['Subtype'])->isEqualTo('Smalot\PdfParser\Element\ElementName');
     }
 
     public function testHas()

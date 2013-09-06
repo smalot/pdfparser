@@ -37,17 +37,18 @@ class Header
     protected $elements = null;
 
     /**
-     * @param Element[] $struct
-     * @param Document  $document
+     * @param Element[] $struct   List of elements.
+     * @param Document  $document Document.
      */
     public function __construct($elements = array(), Document $document = null)
     {
         $this->elements = $elements;
-
         $this->document = $document;
     }
 
     /**
+     * Returns all elements.
+     *
      * @return mixed
      */
     public function getElements()
@@ -60,6 +61,8 @@ class Header
     }
 
     /**
+     * Used only for debug.
+     *
      * @return array
      */
     public function getElementTypes()
@@ -74,7 +77,9 @@ class Header
     }
 
     /**
-     * @param $name
+     * Indicate if an element name is available in header.
+     *
+     * @param string $name The name of the element
      *
      * @return bool
      */
@@ -102,6 +107,8 @@ class Header
     }
 
     /**
+     * Resolve XRef to object.
+     *
      * @param string $name
      *
      * @return Element|Object
@@ -110,12 +117,14 @@ class Header
     protected function resolveXRef($name)
     {
         if (($obj = $this->elements[$name]) instanceof ElementXRef && !is_null($this->document)) {
+            /** @var ElementXRef $obj */
             $object = $this->document->getObjectById($obj->getId());
 
             if (is_null($object)) {
                 throw new \Exception('Missing object reference #' . $obj->getId() . '.');
             }
 
+            // Update elements list for future calls.
             $this->elements[$name] = $object;
         }
 
@@ -123,20 +132,21 @@ class Header
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $position
+     * @param string   $content  The content to parse
+     * @param Document $document The document
+     * @param int      $position The new position of the cursor after parsing
      *
-     * @return null|Header
+     * @return Header
      */
     public static function parse($content, Document $document, &$position = 0)
     {
-        // ElementStruct::parse returns an header
+        /** @var Header $header */
         $header = ElementStruct::parse($content, $document, $position);
 
         if ($header) {
             return $header;
         } else {
+            // Build an empty header.
             return new self(array(), $document);
         }
     }

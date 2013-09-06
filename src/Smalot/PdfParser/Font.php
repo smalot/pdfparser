@@ -40,26 +40,17 @@ class Font extends Object
     protected $encoding = null;
 
     /**
-     * @var bool
-     */
-    protected $init_done = false;
-
-    /**
      *
      */
-    protected function init()
+    public function init()
     {
-        if (!$this->init_done) {
-            // Load encoding informations.
-            $encoding = $this->get('Encoding');
+        // Load encoding informations.
+        $encoding = $this->get('Encoding');
 
-            $this->encoding = $encoding;
+        $this->encoding = $encoding;
 
-            // Load translate table.
-            $this->loadTranslateTable();
-
-            $this->init_done = true;
-        }
+        // Load translate table.
+        $this->loadTranslateTable();
     }
 
     /**
@@ -81,58 +72,24 @@ class Font extends Object
      *
      * @return string
      */
-    /*public function translateChar($char, $is_hexa = false)
+    public function translateChar($char)
     {
-        $this->init();
+        $dec = hexdec(bin2hex($char));
 
-        if ($is_hexa) {
-            $char = str_pad($char, 4, '0', STR_PAD_RIGHT);
-            $dec  = hexdec($char);
-        } else {
-            $dec = hexdec(bin2hex($char));
-        }
+//        echo '<<<<<<<<<<<<<<<' . "\n";
+//        var_dump($char, bin2hex($char), $dec);
 
         if (array_key_exists($dec, $this->table)) {
-            return $this->table[$dec];
+            $char = $this->table[$dec];
+//            var_dump($char);
         } else {
-            return $char;
-        }
-    }*/
-    public function translateChar($char, $is_hexa = false)
-    {
-        $this->init();
-
-        if ($is_hexa) {
-            $char = str_pad($char, 4, '0', STR_PAD_RIGHT);
-            $dec  = hexdec($char);
-        } else {
-            $dec = hexdec(bin2hex($char));
+//            var_dump('unknown');
         }
 
-        if (array_key_exists($dec, $this->table)) {
-            return $this->table[$dec];
-        } else {
-            if (is_string($this->encoding)) {
-                switch ($this->encoding) {
-                    case 'MacRomanEncoding':
-                        $new_char = @iconv('MacRoman', 'UTF-8', $char);
-                        break;
+//        echo '>>>>>>>>>>>>>>>' . "\n";
 
-                    default:
-                        $new_char = $char;
-                }
+        return $char;
 
-                return ($this->table[$dec] = $new_char);
-            } elseif ($this->encoding instanceof Encoding) {
-                die('test');
-                $new_dec  = $this->encoding->translateChar($dec);
-                $new_char = $new_dec;
-
-                return ($this->table[$dec] = $new_char);
-            } else {
-                return $this->uchr($dec);
-            }
-        }
     }
 
     /**
@@ -140,7 +97,7 @@ class Font extends Object
      *
      * @return string
      */
-    protected function uchr($code)
+    protected static function uchr($code)
     {
         return html_entity_decode('&#' . ((int)$code) . ';', ENT_NOQUOTES, 'UTF-8');
     }
@@ -163,14 +120,16 @@ class Font extends Object
             // Support for multiple bfchar sections
             if (preg_match_all('/beginbfchar(?<sections>.*?)endbfchar/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp  = '/<(?<from>[0-9A-Z]+)> +<(?<to>[0-9A-Z]+)>[ \r\n]+/is';
+                    $regexp  = '/<(?<from>[0-9A-F]+)> +<(?<to>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
                     foreach ($matches['from'] as $key => $from) {
                         $to = $matches['to'][$key];
-                        $to = $this->uchr(hexdec($to));
+                        $to = self::uchr(hexdec($to));
                         $this->table[hexdec($from)] = $to;
+//                        var_dump($from, hexdec($from), $to);
+//                        echo "1---------------\n";
                     }
                 }
             }
@@ -178,7 +137,8 @@ class Font extends Object
             // Support for multiple bfrange sections
             if (preg_match_all('/beginbfrange(?<sections>.*?)endbfrange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp  = '/<(?<from>[0-9A-Z]+)> *<(?<to>[0-9A-Z]+)> *<(?<offset>[0-9A-Z]+)>[ \r\n]+/is';
+                    // Support for : <srcCode1> <srcCode2> <dstString>
+                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *<(?<offset>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -188,11 +148,32 @@ class Font extends Object
                         $offset    = hexdec($matches['offset'][$key]);
 
                         for ($char = $char_from; $char <= $char_to; $char++) {
-                            $to = $this->uchr($char - $char_from + $offset);
-
-                            $this->table[$char] = $to;
+                            $this->table[$char] = self::uchr($char - $char_from + $offset);
+//                            var_dump(dechex($char), $char, $this->table[$char]);
+//                            echo "2---------------\n";
                         }
                     }
+
+                    // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
+                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *\[(?<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
+
+                    preg_match_all($regexp, $section, $matches);
+
+//                    var_dump($matches['strings']);
+                    foreach ($matches['from'] as $key => $from) {
+                        $char_from = hexdec($from);
+                        $char_to   = hexdec($matches['to'][$key]);
+                        $strings   = array();
+
+                        preg_match_all('/(?<string><[0-9A-F]+>) */is', $matches['strings'][$key], $strings);
+
+                        foreach ($strings['string'] as $position => $string) {
+                            $this->table[$char_from + $position] = Font::decodeHexadecimal($string);
+//                            var_dump($char_from + $position, $string, $this->table[$char_from + $position]);
+//                            echo "3---------------\n";
+                        }
+                    }
+//                    var_dump($matches);
                 }
             }
         }
@@ -202,29 +183,37 @@ class Font extends Object
 
     /**
      * @param string $hexa
+     * @param bool   $add_braces
      *
      * @return string
      */
-    public function decodeHexadecimal($hexa)
+    public static function decodeHexadecimal($hexa, $add_braces = false)
     {
-        $text = '';
-
+        $text  = '';
         $parts = preg_split('/(<[a-z0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
             if (preg_match('/^<.*>$/', $part)) {
                 $part = trim($part, '<>');
-
-                $text .= '(';
-                for ($i = 0; $i < strlen($part); $i = $i + 4) {
-                    echo 'hexa: ' . substr($part, $i, 4) . "\n";
-                    $text .= pack('H*', ltrim(substr($part, $i, 4), '0'));
+                if ($add_braces) {
+                    $text .= '(';
                 }
-                $text .= ')';
+
+                for ($i = 0; $i < strlen($part); $i = $i + 4) {
+                    $char = Font::uchr(hexdec(substr($part, $i, 4)));
+//                    echo 'hexa: <' . substr($part, $i, 4) . '> : "' . $char . "\"\n";
+                    $text .= ($add_braces?preg_replace('/\\\/s', '\\\\\\', $char):$char);
+                }
+
+                if ($add_braces) {
+                    $text .= ')';
+                }
             } else {
                 $text .= $part;
             }
         }
+
+//        var_dump($text);
 
         return $text;
     }
@@ -234,7 +223,7 @@ class Font extends Object
      *
      * @return string
      */
-    public function decodeOctal($text)
+    public static function decodeOctal($text)
     {
         $matches = array();
 
@@ -242,7 +231,7 @@ class Font extends Object
 
         foreach ($matches[0] as $value) {
             $octal = substr($value, 1);
-            $text  = $this->uchr(octdec($octal));
+            $text  = self::uchr(octdec($octal));
         }
 
         return $text;
@@ -255,24 +244,21 @@ class Font extends Object
      */
     public function decodeText($text)
     {
-        $this->init();
-
-        $text          = $this->decodeOctal($text);
-        $result        = '';
+        $text          = self::decodeOctal($text);
         $cur_start_pos = 0;
+        $word_position = 0;
+        $words         = array();
 
         while (($cur_start_text = mb_strpos($text, '(', $cur_start_pos)) !== false) {
             // New text element found
             if ($cur_start_text - $cur_start_pos > 8) {
-                $spacing = '';
+                ;
             } else {
                 $spacing_size = floatval(trim(mb_substr($text, $cur_start_pos, $cur_start_text - $cur_start_pos)));
 
                 // TODO : use matrix to determine spacing
                 if ($spacing_size < -50) {
-                    $spacing = ' ';
-                } else {
-                    $spacing = '';
+                    //$word_position++;
                 }
             }
 
@@ -297,60 +283,69 @@ class Font extends Object
 
             // extract content
             $sub_text = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
-//            var_dump('avant', $sub_text);
             $sub_text = str_replace(
-                array('\\\\', '\(', '\)', '\n', '\r'),
-                array('\\', '(', ')', "\n", "\r"),
+                array('\\\\', '\(', '\)', '\n', '\r', '\t'),
+                array('\\',   '(',  ')',  "\n", "\r", "\t"),
                 $sub_text
             );
 
-            // decode content
-//                var_dump('decode');
-            $sub_text = $this->decodeContent($sub_text);
-//            var_dump('apres', $sub_text);
-//            echo '--------------' . "\n";
-//            var_dump('ajout espace', $spacing, $spacing_size);
-
             // add content to result string
-            $result .= $spacing . $sub_text;
+            if (isset($words[$word_position])) {
+                $words[$word_position] .= $sub_text;
+            } else {
+                $words[$word_position] = $sub_text;
+            }
+
             $cur_start_pos++;
         }
 
-        return $result;
+        foreach ($words as &$word) {
+//            echo 'before decode: "' . $word . '"' . "\n";
+            $word = $this->decodeContent($word);
+//            echo 'after decode : "' . $word . '"' . "\n";
+//            echo "-----------------------------------\n";
+        }
+
+        return implode(' ', $words);
     }
 
+    /**
+     * @param string $text
+     *
+     * @return string
+     */
     protected function decodeContent($text)
     {
-        $this->init();
-
         if ($this->encoding instanceof Encoding) {
 
-            $chars  = preg_split('//', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $chars  = preg_split('//s', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             $result = '';
 
             foreach ($chars as $char) {
                 $dec_av = hexdec(bin2hex($char));
                 $dec_ap = $this->encoding->translateChar($dec_av);
-                $result .= $this->uchr($dec_ap);
+                $result .= self::uchr($dec_ap);
             }
 
-            return $result;
+            $text = $result;
         }
 
-        if (!$this->getToUnicode() instanceof ElementMissing) {
-//            var_dump('font->translateChar');
+        if ($this->has('ToUnicode')) {
+//            var_dump($this->get('ToUnicode')->getContent());
 //            die();
 
-            $chars  = preg_split('//', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $chars  = preg_split('//us', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             $result = '';
 
             foreach ($chars as $char) {
                 $result .= $this->translateChar($char);
             }
 
-            return $result;
+            $text = $result;
+        } else {
+//            echo 'iconv convert CP1252 => UTF-8' . "\n";
+            $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
         }
-
 
         return $text;
     }

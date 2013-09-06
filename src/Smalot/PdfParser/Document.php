@@ -34,7 +34,7 @@ class Document
     /**
      * @var Object[]
      */
-    protected $objects;
+    protected $objects = array();
 
     /**
      * @var array
@@ -46,31 +46,37 @@ class Document
      */
     public function __construct()
     {
-        $this->objects = array();
     }
 
     /**
-     * @param Object[] $objects
+     *
      */
-    public function setObjects($objects)
+    public function init()
     {
-        foreach ($objects as $id => $object) {
+        // Build dictionary before init of objects.
+        $this->buildDictionary();
+
+        // Propagate init to objects.
+        foreach ($this->objects as $object) {
+            $object->init();
+        }
+    }
+
+    /**
+     * Build dictionary based on type header field.
+     */
+    protected function buildDictionary()
+    {
+        // Build dictionary.
+        $this->dictionary = array();
+
+        foreach ($this->objects as $id => $object) {
             $type = $object->getHeader()->get('Type')->getContent();
 
             if (!empty($type)) {
                 $this->dictionary[$type][$id] = $id;
             }
         }
-
-        $this->objects = (array)$objects;
-    }
-
-    /**
-     * @return Object[]
-     */
-    public function getObjects()
-    {
-        return $this->objects;
     }
 
     /**
@@ -82,9 +88,27 @@ class Document
     }
 
     /**
-     * @param $id
+     * @param Object[] $objects
+     */
+    public function setObjects($objects = array())
+    {
+        $this->objects = (array)$objects;
+
+        $this->init();
+    }
+
+    /**
+     * @return Object[]
+     */
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    /**
+     * @param int $id
      *
-     * @return null|Object
+     * @return Object
      */
     public function getObjectById($id)
     {
@@ -123,6 +147,7 @@ class Document
     public function getPages()
     {
         if (isset($this->dictionary['Catalog'])) {
+            // Search for catalog to list pages.
             $id = reset($this->dictionary['Catalog']);
 
             /** @var Pages $object */
@@ -131,6 +156,7 @@ class Document
 
             return $pages;
         } elseif (isset($this->dictionary['Pages'])) {
+            // Search for pages to list kids.
             $pages = array();
 
             /** @var Pages[] $objects */
@@ -141,6 +167,7 @@ class Document
 
             return $pages;
         } elseif (isset($this->dictionary['Page'])) {
+            // Search for 'page' (unordered pages).
             $pages = $this->getObjectsByType('Page');
 
             return array_values($pages);
@@ -179,6 +206,7 @@ class Document
             fseek($handle, $position_startxref, SEEK_SET);
             $entries = array();
             $next_id = 0;
+
             while (($line = fgets($handle)) !== false) {
                 $line = trim($line);
                 if ($line == 'xref' || $line == '') {
@@ -252,6 +280,7 @@ class Document
             return $document;
         } catch (\Exception $e) {
 //            trigger_error($e->getMessage());
+            // Fallback on raw content parsing.
             $content = file_get_contents($filename);
 
             return self::parseContent($content);

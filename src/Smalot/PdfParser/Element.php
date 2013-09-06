@@ -44,14 +44,21 @@ class Element
     protected $value = null;
 
     /**
-     * @param mixed    $value
+     * @param mixed $value
      * @param Document $document
      */
     public function __construct($value, Document $document = null)
     {
         $this->value = $value;
-
         $this->document = $document;
+    }
+
+    /**
+     *
+     */
+    public function init()
+    {
+
     }
 
     /**
@@ -102,51 +109,41 @@ class Element
     }
 
     /**
-     * @param string   $content
+     * @param string $content
      * @param Document $document
-     * @param int      $position
+     * @param int $position
      *
      * @return array
      * @throws \Exception
      */
     public static function parse($content, Document $document = null, &$position = 0)
     {
-        //var_dump($content);
-
-        $args        = func_get_args();
+        $args = func_get_args();
         $only_values = false;
         if (isset($args[3])) {
             $only_values = $args[3];
         }
 
         $position = 0;
-        $content  = trim($content);
-        $values   = array();
+        $content = trim($content);
+        $values = array();
 
         do {
             $sub_content = substr($content, $position);
-
-            //echo "-----------------------------------\n";
-//            var_dump($sub_content);
+            $offset = 0;
 
             if (!$only_values) {
                 if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
                     break;
                 } else {
-                    $name  = ltrim($match['name'], '/');
+                    $name = ltrim($match['name'], '/');
                     $value = $match['value'];
-                    //var_dump($name, $value);
                     $position = strpos($content, $value, $position + strlen($match['name']));
                 }
             } else {
-                $name  = count($values);
+                $name = count($values);
                 $value = $sub_content;
             }
-
-            //var_dump($name, $value);
-
-            $old_position = $position;
-            $offset       = 0;
 
             if ($element = ElementName::parse($value, $document, $offset)) {
                 $values[$name] = $element;
@@ -180,14 +177,7 @@ class Element
                 $position += $offset;
             } else {
                 return $values;
-//                throw new \Exception('Unsupported element: "' . $value . '" in "' . $content . '".');
             }
-
-            //echo 'header found: ' . $name . ' (' . get_class($values[$name]) . ')' . "\n";
-
-            /*if ($old_position == $position) {
-                throw new \Exception('Error on header parsing : "' . $name . '" on "' . $content . '".');
-            }*/
         } while ($position < strlen($content));
 
         return $values;

@@ -44,10 +44,10 @@ class FontTrueType extends Font
 
             foreach ($differences as $position => $difference) {
                 echo 'check for ' . $difference . "\n";
-                $this->table['chars'][$firstChar + $position] = $encoding->convertTokenToInt($difference);
+                $this->table[$firstChar + $position] = $encoding->convertTokenToInt($difference);
             }
 
-            var_dump($this->table['chars']);
+            var_dump($this->table);
         }
 
         if (!is_null($this->table)) {
@@ -73,8 +73,8 @@ class FontTrueType extends Font
                 preg_match_all($regexp, $bfchar, $matches);
                 foreach ($matches['from'] as $key => $from) {
                     $to = $matches['to'][$key];
-                    $to = $this->uchr(hexdec($to));
-                    $this->table['chars'][hexdec($from)] = $to;
+                    $to = self::uchr(hexdec($to));
+                    $this->table[hexdec($from)] = $to;
                 }
             }
 
@@ -99,9 +99,9 @@ class FontTrueType extends Font
                     );
 
                     for ($char = $char_from; $char <= $char_to; $char++) {
-                        $to = $this->uchr($char - $char_from + $offset);
+                        $to = self::uchr($char - $char_from + $offset);
 
-                        $this->table['chars'][$char] = $to;
+                        $this->table[$char] = $to;
                     }
                 }
             }
@@ -125,8 +125,8 @@ class FontTrueType extends Font
 //            $dec = hexdec(bin2hex($char));
 //        }
 //
-//        if (array_key_exists($dec, $this->table['chars'])) {
-//            return $this->table['chars'][$dec];
+//        if (array_key_exists($dec, $this->table)) {
+//            return $this->table[$dec];
 //        } else {
 //            if (is_string($this->encoding)) {
 //                switch ($this->encoding) {
@@ -138,15 +138,15 @@ class FontTrueType extends Font
 //                        $new_char = $char;
 //                }
 //
-//                return ($this->table['chars'][$dec] = $new_char);
+//                return ($this->table[$dec] = $new_char);
 //            } elseif ($this->encoding instanceof Encoding) {
 //                die('test');
 //                $new_dec  = $this->encoding->translateChar($dec);
 //                $new_char = $new_dec;
 //
-//                return ($this->table['chars'][$dec] = $new_char);
+//                return ($this->table[$dec] = $new_char);
 //            } else {
-//                return $this->uchr($dec);
+//                return self::uchr($dec);
 //            }
 //        }
 //    }

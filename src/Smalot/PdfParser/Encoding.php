@@ -40,35 +40,24 @@ class Encoding extends Object
     protected $mapping;
 
     /**
-     * @var bool
-     */
-    protected $init_done = false;
-
-    /**
      *
      */
-    protected function init()
+    public function init()
     {
-        if ($this->init_done) {
-            return;
-        } else {
-            $this->init_done = true;
-        }
-
         $this->mapping     = array();
         $this->differences = array();
         $this->encoding    = null;
 
         if ($this->has('BaseEncoding')) {
             // Load reference table charset.
-            $baseEncoding = preg_replace('/[^A-Z0-9]/i', '', $this->get('BaseEncoding')->getContent());
+            $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
             $encoding     = array();
             $file         = __DIR__ . '/Encoding/' . $baseEncoding . '.php';
 
             if (file_exists($file)) {
                 include $file;
             } else {
-                die('Missing encoding data file: "' . $file . '".');
+                throw new \Exception('Missing encoding data file: "' . $file . '".');
             }
 
             $this->encoding = $encoding;
@@ -99,28 +88,7 @@ class Encoding extends Object
                 $this->mapping[$code] = $table[$difference];
             }
         }
-
-//        var_dump($this->mapping);
     }
-
-    /**
-     * @param string $token
-     *
-     * @return int
-     */
-//    public function convertTokenToInt($token)
-//    {
-//        $this->init();
-//
-//        var_dump($this->differences);
-//        die();
-//
-//        if (isset($this->mapping[$token])) {
-//            return $this->mapping[$token];
-//        } else {
-//            return 0;
-//        }
-//    }
 
     /**
      * @param int $char
@@ -129,12 +97,10 @@ class Encoding extends Object
      */
     public function translateChar($dec)
     {
-        $this->init();
-
         if (isset($this->mapping[$dec])) {
             $dec = $this->mapping[$dec];
-        } elseif (isset($this->encoding[$dec])) {
-            $dec = $dec;
+//        } elseif (isset($this->encoding[$dec])) {
+//            $dec = $dec;
         }
 
         return $dec;
