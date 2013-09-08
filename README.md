@@ -1,10 +1,18 @@
 PdfParser
 =========
 
+PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file.
+
 [![Build Status](https://travis-ci.org/smalot/pdfparser.png?branch=master)](https://travis-ci.org/smalot/pdfparser)
 [![Total Downloads](https://poser.pugx.org/smalot/pdfparser/downloads.png)](https://packagist.org/packages/smalot/pdfparser)
 
-PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file.
+Website : [http://www.pdfparser.org](http://www.pdfparser.org/?utm_source=GitHub&utm_medium=website&utm_campaign=GitHub)
+
+This project is supported by [Actualys](http://www.actualys.com).
+
+Features
+========
+
 Features included :
 
 - Load/parse objects and headers
@@ -18,79 +26,12 @@ Features included :
 
 Currently, secured documents are not supported.
 
-This project is supported by [Actualys](http://www.actualys.com).
-
-State
-=====
-
 This Library is still under active development. As a result, users must expect BC breaks when using the master version.
-
-Todo list :
-- [ ] Complete Unit Tests
-- [ ] Support of hexa and octal encoding in properties
-- [ ] Add helper to extract meta data
-- [ ] Clean code on Font Classes
-- [ ] Support of encoding files
-- [X] Support of missing cross-reference table
-- [X] Support of missing endstream tag (malformed file)
 
 Documentation
 =============
 
-Extract text from PDF File :
-```php
-$text = \Smalot\PdfParser\Parser::parseFile('document.pdf');
-```
-
-Extract text from the second page :
-``` php
-$document = \Smalot\PdfParser\Document::parseFile('document.pdf');
-$pages    = $document->getPages();
-$text     = $pages[1]->getText();
-```
-
-Installation
-============
-
-To run PDfParser as a standalone library, you can use [composer](http://getcomposer.org/download/).
-
-``` bash
-$ composer install
-```
-
-This command will download Atoum library and generate the following file :
-
-```
-vendor/autoload.php
-```
-
-Unit tests with Atoum
-=====================
-
-Run Atoum unit tests (with code coverage - if xdebug installed) :
-``` bash
-$ vendor/bin/atoum -d vendor/smalot/pdfparser/src/Smalot/PdfParser/Tests/
-```
-
-Once this command is ended, the folder "coverage/" will contain html pages with a code coverage summary.
-
-
-Sample demo
-===========
-
-Create a 'sample.php' file :
-
-```php
-<?php
-
-include 'vendor/autoload.php';
-
-$filename = 'document.pdf';
-$text = \Smalot\PdfParser\Parser::parseFile($file);
-
-echo $text;
-```
-
+All wanted information is stored on the [official website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
 
 License
 =======
