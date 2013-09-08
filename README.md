@@ -1,7 +1,6 @@
-PdfParser
-=========
+# PdfParser #
 
-PdfParser, a standalone PHP library, provides various tools to extract data from a PDF file.
+Pdf Parser, a standalone PHP library, provides various tools to extract data from a PDF file.
 
 [![Build Status](https://travis-ci.org/smalot/pdfparser.png?branch=master)](https://travis-ci.org/smalot/pdfparser)
 [![Total Downloads](https://poser.pugx.org/smalot/pdfparser/downloads.png)](https://packagist.org/packages/smalot/pdfparser)
@@ -10,8 +9,7 @@ Website : [http://www.pdfparser.org](http://www.pdfparser.org/?utm_source=GitHub
 
 This project is supported by [Actualys](http://www.actualys.com).
 
-Features
-========
+## Features ##
 
 Features included :
 
@@ -28,13 +26,11 @@ Currently, secured documents are not supported.
 
 This Library is still under active development. As a result, users must expect BC breaks when using the master version.
 
-Documentation
-=============
+## Documentation ##
 
-All wanted information is stored on the [official website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
+[Read the documentation on website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
 
-License
-=======
+## License ##
 
-This library is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE). See the complete license in the bundle:
+This library is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
 
