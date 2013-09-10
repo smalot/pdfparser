@@ -4,10 +4,16 @@
     "license": "GPL-2.0",
     "authors": [
         {
-            "name": "Sébastien MALOT",
-            "email": "sebastien@malot.fr"
+            "name": "Sebastien MALOT",
+            "email": "sebastien@malot.fr",
+            "role": "Developer",
+            "homepage": "http://www.malot.fr"
         }
     ],
+    "support": {
+        "issues": "https://github.com/smalot/pdfparser/issues"
+    },
+    "homepage": "http://www.pdfparser.org",
     "require-dev": {
         "atoum/atoum": "dev-master"
     },
