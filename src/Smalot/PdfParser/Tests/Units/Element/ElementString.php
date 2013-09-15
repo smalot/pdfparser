@@ -81,6 +81,16 @@ class ElementString extends atoum\test
         $element = \Smalot\PdfParser\Element\ElementString::parse('()', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('');
         $this->assert->integer($offset)->isEqualTo(2);
+
+        // Complex study case : Unicode + octal.
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse("(\xFE\xFF\\000M)", null, $offset);
+        $this->assert->string($element->getContent())->isEqualTo('M');
+        $this->assert->integer($offset)->isEqualTo(9);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse("(<20>)", null, $offset);
+        $this->assert->string($element->getContent())->isEqualTo(' ');
+        $this->assert->integer($offset)->isEqualTo(6);
     }
 
     public function testGetContent()

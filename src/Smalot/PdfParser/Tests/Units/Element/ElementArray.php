@@ -96,7 +96,7 @@ class ElementArray extends atoum\test
     public function testResolveXRef()
     {
         $document = new \Smalot\PdfParser\Document();
-        $ref      = \Smalot\PdfParser\Object::parse($document, 'hello');
+        $ref      = \Smalot\PdfParser\Object::parse($document, '<</Type/Page>>hello');
         $document->setObjects(array(1 => $ref));
 
         $element = \Smalot\PdfParser\Element\ElementArray::parse(' [ 1 0 R ]', $document);

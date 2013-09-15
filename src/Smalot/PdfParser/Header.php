@@ -37,7 +37,7 @@ class Header
     protected $elements = null;
 
     /**
-     * @param Element[] $struct   List of elements.
+     * @param Element[] $elements   List of elements.
      * @param Document  $document Document.
      */
     public function __construct($elements = array(), Document $document = null)

@@ -105,16 +105,19 @@ class Object
     {
         $text                = '';
         $text_parts          = $this->getTextParts();
-        $current_font        = null;
         $current_font_size   = 0;
+        $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
 
         foreach ($text_parts as $text_part) {
-//            var_dump($text_part);
-            $commands = $this->getCommandsFromTextPart($text_part);
+//            echo "---------------------------------------------------\n";
+//            echo 'textpart: "' . $text_part . '"' . "\n";
+
+            $commands     = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
+//                echo '.';
 //                echo 'command: ' . $command['operator'] . ': ' . "\n";
 //                var_dump($command['command']);
 
@@ -125,6 +128,8 @@ class Object
 
                     // move text current point
                     case 'Td':
+//                        break;
+
                         $args = preg_split('/\s/s', $command['command']);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
@@ -138,46 +143,75 @@ class Object
 
                     // move text current point and set leading
                     case 'TD':
+                        $args = preg_split('/\s/s', $command['command']);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        if (floatval($y)) {
+                            $text .= "\n";
+                        } elseif (floatval($x) <= 0) {
+                            $text .= ' ';
+                        }
                         break;
 
                     case 'Tf':
                         list($id,) = preg_split('/\s/s', $command['command']);
                         //var_dump('fontsize:' . $command['command']);
                         $current_font = $page->getFont($id);
+//                        echo '!!!!  Changement de font #' . $id . "  !!!!\n";
                         break;
 
                     case 'TJ':
                         $command['command'] = trim($command['command'], '[]');
                     case 'Tj':
                         // Skip if not previously defined
-                        if (is_null($current_font)) continue;
+//                        if (is_null($current_font)) continue;
 
                         if ($command['command'][0] == '<') {
                             $command['command'] = Font::decodeHexadecimal($command['command'], true);
+                            $unicode = true;
+                        } else {
+                            $unicode = false;
                         }
-                        $sub_text = $current_font->decodeText($command['command']);
+                        $sub_text = $current_font->decodeText($command['command'], $unicode);
 //                        echo '*** decoded: "' . $sub_text . "\"\n";
                         $text .= $sub_text;
                         break;
 
                     // set leading
                     case 'TL':
+                        $text .= ' ';
                         break;
 
                     case 'Tm':
                         $args = preg_split('/\s/s', $command['command']);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
-                        if ($current_position_tm['y'] !== false && floatval($y) != floatval(
-                                $current_position_tm['y']
-                            )
-                        ) {
-                            $text .= "\n";
+                        if ($current_position_tm['y'] !== false) {
+                            $delta = abs(floatval($y) - floatval($current_position_tm['y']));
+                            if ($delta > 10) {
+//                                $text .= '(' . floatval($y) .' -> '. floatval($current_position_tm['y']) . ")\n";
+                                $text .= "\n";
+                            }
                         }
                         $current_position_tm = array('x' => $x, 'y' => $y);
                         break;
 
+                    // set super/subscripting text rise
+                    case 'Ts':
+                        break;
+
+                    // set word spacing
                     case 'Tw':
+                        break;
+
+                    // set horizontal scaling
+                    case 'Tz':
+                        $text .= "\n";
+                        break;
+
+                    // move to start of next line
+                    case 'T*':
+                        $text .= "\n";
                         break;
 
                     case 'Da':
@@ -217,15 +251,12 @@ class Object
                     case 'Vo':
                         break;
 
-                    // move to start of next line
-                    case 'T*':
-                        $text .= "\n";
-                        break;
-
                     default:
                         //throw new \Exception('Operator not supported: ' . $command['operator']);
                 }
             }
+
+//            echo 'result: "' . $text . '"' . "\n";
         }
 
         return $text;
@@ -318,14 +349,29 @@ class Object
         //var_dump($header);
 
         if ($header->has('Filter')) {
+            if ($header->has('DecodeParms')) {
+                $decodeParms = $header->get('DecodeParms');
+                if ($decodeParms instanceof ElementArray) {
+                    $decodeParms = $decodeParms->getContent();
+                } else {
+                    $decodeParms = array($decodeParms);
+                }
+            } else {
+                $decodeParms = array();
+            }
+
             $filters = (array)($header->get('Filter')->getContent());
 
-            foreach ($filters as $filter) {
+            foreach ($filters as $position => $filter) {
 //                echo 'apply filter: ' . $filter->getContent() . "\n";
                 try {
 //                    echo 'length (before "'.$filter.'"):' . strlen($content) . "\n";
 //                    if (strlen($content) > 50000) var_dump($content);
-                    $content = Filters::decodeFilter((string)$filter, $content);
+                    if (isset($decodeParms[$position])) {
+                        $content = Filters::decodeFilter((string)$filter, $content, $decodeParms[$position]);
+                    } else {
+                        $content = Filters::decodeFilter((string)$filter, $content);
+                    }
 //                    echo 'length (after  "'.$filter.'"):' . strlen($content) . "\n";
 //                var_dump($content);
                 } catch (\Exception $e) {
@@ -337,9 +383,11 @@ class Object
             }
         }
 
-        //echo 'content: ' . $content . "\n";
-        //die();
+        return self::factory($document, $header, $content);
+    }
 
+    public static function factory($document, $header, $content)
+    {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
                 switch ($header->get('Subtype')->getContent()) {

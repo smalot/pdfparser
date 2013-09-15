@@ -54,11 +54,34 @@ class ElementString extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\((?<name>.*?)\)/is', $content, $match)) {
-            $name   = $match['name'];
-            $offset = strpos($content, '(' . $name) + strlen($name) + 2; // 2 for '(' and ')'
+        if (preg_match('/^\s*\((?<name>.*)/s', $content, $match)) {
+            $name = $match['name'];
 
-            $name = Font::decodeOctal($name);
+            // Find next ')' not escaped.
+            $cur_start_text = $start_search_end = 0;
+            while (($cur_start_pos = strpos($name, ')', $start_search_end)) !== false) {
+                $cur_extract = substr($name, $cur_start_text, $cur_start_pos - $cur_start_text);
+                preg_match('/(?<escape>[\\\]*)$/s', $cur_extract, $match);
+                if (!(strlen($match['escape']) % 2)) {
+                    break;
+                }
+                $start_search_end = $cur_start_pos + 1;
+            }
+
+            // Extract string.
+            $name    = substr($name, 0, $cur_start_pos);
+            $offset  = strpos($content, '(') + $cur_start_pos + 2; // 2 for '(' and ')'
+            $name    = str_replace(
+                array('\\\\', '\(', '\)', '\n', '\r', '\t'),
+                array('\\',   '(',  ')',  "\n", "\r", "\t"),
+                $name
+            );
+
+            // Decode string.
+            $unicode = false;
+            $name    = Font::decodeOctal($name);
+            $name    = Font::decodeHexadecimal($name, false);
+            $name    = Font::decodeUnicode($name, $unicode);
 
             return new self($name, $document);
         }

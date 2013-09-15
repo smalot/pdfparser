@@ -124,15 +124,17 @@ class Page extends Object
 
         if ($contents) {
             if ($contents instanceof ElementArray) {
-                $text = '';
-
+                // Create a virtual global content.
+                $new_content = '';
                 foreach ($contents->getContent() as $content) {
-                    $text .= $content->getText($this) . "\n";
+                    $new_content .= $content->getContent() . "\n";
                 }
 
-                return $text;
+                $header   = new Header(array(), $this->document);
+                $contents = new Object($this->document, $header, $new_content);
+
+                return $contents->getText($this);
             } elseif (!($contents instanceof ElementMissing)) {
-//                var_dump(get_class())
                 return $contents->getText($this);
             }
         } else {

@@ -26,6 +26,21 @@ use Smalot\PdfParser\Document;
 class ElementDate extends ElementString
 {
     /**
+     * @var array
+     */
+    protected static $formats = array(
+        4  => 'Y',
+        6  => 'Ym',
+        8  => 'Ymd',
+        10 => 'YmdH',
+        12 => 'YmdHi',
+        14 => 'YmdHis',
+        15 => 'YmdHise',
+        17 => 'YmdHisO',
+        19 => 'YmdHisO',
+    );
+
+    /**
      * @var string
      */
     protected $format = 'c';
@@ -41,6 +56,14 @@ class ElementDate extends ElementString
         }
 
         parent::__construct($value, null);
+    }
+
+    /**
+     * @param string $format
+     */
+    public function setFormat($format)
+    {
+        $this->format = $format;
     }
 
     /**
@@ -82,20 +105,24 @@ class ElementDate extends ElementString
 
             $name = str_replace("'", '', $name);
 
-            if (!preg_match('/^[1-2][0-9]{13}[\-+][0-9]{4}$/', $name) &&
-                !preg_match('/^[1-2][0-9]{13}$/', $name)
-            ) {
-//                echo $name . "\n";
-                throw new \Exception('Invalid date format.');
+            // Smallest format : Y
+            // Full format     : YmdHisP
+            if (!preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
+                return false;
             }
+
+            $format = self::$formats[strlen($name)];
 
             if (strlen($name) == 19) {
-                $date = \DateTime::createFromFormat('YmdHisP', $name);
+                $date = \DateTime::createFromFormat($format, $name);
             } elseif (strlen($name) == 14) {
-                $date = \DateTime::createFromFormat('YmdHis', $name);
+                $date = \DateTime::createFromFormat($format, $name);
             }
 
-            return new self($date, $document);
+            $element = new self($date, $document);
+            $element->setFormat($format);
+
+            return $element;
         }
 
         return false;

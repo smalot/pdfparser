@@ -26,11 +26,11 @@ use Smalot\PdfParser\Document;
 class ElementXRef extends Element
 {
     /**
-     * @return int
+     * @return string
      */
     public function getId()
     {
-        return intval($this->getContent());
+        return $this->getContent();
     }
 
     /**

@@ -77,7 +77,7 @@ class Font extends Object
         $dec = hexdec(bin2hex($char));
 
 //        echo '<<<<<<<<<<<<<<<' . "\n";
-//        var_dump($char, bin2hex($char), $dec);
+//        var_dump($char, '<' . bin2hex($char) . '>', $dec);
 
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
@@ -220,18 +220,21 @@ class Font extends Object
 
     /**
      * @param string $text
+     * @param bool   $unicode
      *
      * @return string
      */
-    public static function decodeOctal($text)
+    public static function decodeOctal($text, $unicode = false)
     {
-        $matches = array();
+        $parts = preg_split('/(\\\\\d{3})/s', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $text  = '';
 
-        preg_match_all('/\\\\([0-9]{3})/s', $text, $matches);
-
-        foreach ($matches[0] as $value) {
-            $octal = substr($value, 1);
-            $text  = self::uchr(octdec($octal));
+        foreach ($parts as $part) {
+            if (preg_match('/^\\\\\d{3}$/', $part)) {
+                $text .= chr(octdec(trim($part, '\\')));
+            } else {
+                $text .= $part;
+            }
         }
 
         return $text;
@@ -239,10 +242,36 @@ class Font extends Object
 
     /**
      * @param string $text
+     * @param bool  $unicode
      *
      * @return string
      */
-    public function decodeText($text)
+    public static function decodeUnicode($text, &$unicode = false)
+    {
+        // Strip U+FEFF byte order marker.
+        if ($unicode = preg_match('/^\xFE\xFF/i', $text)) {
+            $text = substr($text, 2);
+        }
+
+        if ($unicode) {
+            $decode = $text;
+            $text   = '';
+
+            for ($i=0; $i<strlen($decode); $i+=2) {
+                $text .= self::uchr(hexdec(bin2hex(substr($decode, $i, 2))));
+            }
+        }
+
+        return $text;
+    }
+
+    /**
+     * @param string $text
+     * @param bool   $unicode
+     *
+     * @return string
+     */
+    public function decodeText($text, $unicode)
     {
         $text          = self::decodeOctal($text);
         $cur_start_pos = 0;
@@ -258,7 +287,7 @@ class Font extends Object
 
                 // TODO : use matrix to determine spacing
                 if ($spacing_size < -50) {
-                    //$word_position++;
+                    $word_position++;
                 }
             }
 
@@ -301,7 +330,7 @@ class Font extends Object
 
         foreach ($words as &$word) {
 //            echo 'before decode: "' . $word . '"' . "\n";
-            $word = $this->decodeContent($word);
+            $word = $this->decodeContent($word, $unicode);
 //            echo 'after decode : "' . $word . '"' . "\n";
 //            echo "-----------------------------------\n";
         }
@@ -311,30 +340,53 @@ class Font extends Object
 
     /**
      * @param string $text
+     * @param bool   $unicode
      *
      * @return string
      */
-    protected function decodeContent($text)
+    protected function decodeContent($text, $unicode)
     {
+//        if (!$unicode) {
+//            $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
+//        }
+//        var_dump($unicode);
+
         if ($this->encoding instanceof Encoding) {
 
-            $chars  = preg_split('//s', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-            $result = '';
+            if ($unicode) {
+//                echo 'using unicode' . "\n";
+                $chars  = preg_split('//s' . ($unicode?'u':''), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+                $result = '';
 
-            foreach ($chars as $char) {
-                $dec_av = hexdec(bin2hex($char));
-                $dec_ap = $this->encoding->translateChar($dec_av);
-                $result .= self::uchr($dec_ap);
+                foreach ($chars as $char) {
+                    $dec_av = hexdec(bin2hex($char));
+                    $dec_ap = $this->encoding->translateChar($dec_av);
+                    $result .= self::uchr($dec_ap);
+                }
+
+                $text = $result;
+            } else {
+//                echo 'not using unicode' . "\n";
+                $chars = '';
+
+                for ($i=0;$i<strlen($text);$i++) {
+                    $dec_av = hexdec(bin2hex($text[$i]));
+                    $dec_ap = $this->encoding->translateChar($dec_av);
+                    $chars .= self::uchr($dec_ap);
+                }
+
+                $text = $chars;
             }
 
-            $text = $result;
         }
 
         if ($this->has('ToUnicode')) {
 //            var_dump($this->get('ToUnicode')->getContent());
 //            die();
 
-            $chars  = preg_split('//us', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+//            var_dump($text);
+
+            $chars  = preg_split('//s' . ($unicode?'u':''), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             $result = '';
 
             foreach ($chars as $char) {

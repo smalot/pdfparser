@@ -55,31 +55,37 @@ class ElementDate extends atoum\test
         // Valid.
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse(' (D:20130901235555+02\'00\') ', null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(26);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse(' (D:20130901235555+02\'00\') ', null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(26);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse(' (D:20130901235555+02\'00\')', null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(26);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse('(D:20130901235555+02\'00\')', null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(25);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:20130901235555+02'00') ", null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
         $this->assert->integer($offset)->isEqualTo(28);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:20130901235555) ", null, $offset);
+        $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55')))->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(21);
@@ -111,6 +117,7 @@ class ElementDate extends atoum\test
     public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
+        $element->setFormat('c');
         $this->assert->boolean($element->equals('2013-09-01T23:55:55+02:00'))->isEqualTo(true);
         $this->assert->boolean($element->equals('2013-09-01T23:55:55+01:00'))->isEqualTo(false);
         $this->assert->boolean($element->equals(new \DateTime('2013-09-01T21:55:55+00:00')))->isEqualTo(true);
@@ -128,6 +135,7 @@ class ElementDate extends atoum\test
     public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
+        $element->setFormat('c');
         $this->assert->castToString($element)->isEqualTo('2013-09-01T23:55:55+02:00');
     }
 }

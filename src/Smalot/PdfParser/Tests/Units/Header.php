@@ -28,15 +28,13 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
+        $content  = '<</Type/Page/SubType/Text>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object   = new \Smalot\PdfParser\Font($document);
-        $document->setObjects(array(5 => $object));
 
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
-        $this->assert->integer($position)->isEqualTo(38);
-        $this->assert->array($header->getElements())->hasSize(3);
+        $this->assert->integer($position)->isEqualTo(27);
+        $this->assert->array($header->getElements())->hasSize(2);
 
         // No header to parse
         $this->assert->castToString($header->get('Type'))->isEqualTo('Page');
@@ -47,6 +45,14 @@ class Header extends atoum\test
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($position)->isEqualTo(0);
         $this->assert->array($header->getElements())->hasSize(0);
+
+        $position = 0;
+        $content = "<</CreationDate(D:20100309184803+01'00')/Author(Utilisateur)/Creator(PScript5.dll Version 5.2.2)/Producer(Acrobat Distiller 7.0.5 \(Windows\))/ModDate(D:20100310104810+01'00')/Title(Microsoft Word - CLEMI.docx)>>";
+        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $this->assert->integer($position)->isEqualTo(212);
+
+//        var_dump($header);
+//        die();
     }
 
     public function testGetElements()
@@ -87,12 +93,12 @@ class Header extends atoum\test
         $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object   = new \Smalot\PdfParser\Font($document);
+        $object   = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(5 => $object));
 
         $this->assert->object($header->get('Type'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
         $this->assert->object($header->get('SubType'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
-        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Font');
+        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($header->get('Image'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
 
         try {
@@ -109,7 +115,7 @@ class Header extends atoum\test
         $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object   = new \Smalot\PdfParser\Font($document);
+        $object   = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(5 => $object));
 
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Object');

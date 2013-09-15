@@ -1,6 +1,6 @@
 {
     "name": "smalot/pdfparser",
-    "description": "Pdf parser library. Can read and extract informations from pdf file.",
+    "description": "Pdf parser library. Can read and extract information from pdf file.",
     "license": "GPL-2.0",
     "authors": [
         {
@@ -14,6 +14,9 @@
         "issues": "https://github.com/smalot/pdfparser/issues"
     },
     "homepage": "http://www.pdfparser.org",
+    "require": {
+        "tecnick.com/tcpdf": "6.0.*"
+    },
     "require-dev": {
         "atoum/atoum": "dev-master"
     },

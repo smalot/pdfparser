@@ -31,7 +31,7 @@ class ElementBoolean extends Element
      */
     public function __construct($value, Document $document = null)
     {
-        parent::__construct(strtolower($value) == 'true', null);
+        parent::__construct((strtolower($value) == 'true' || $value === true), null);
     }
 
     /**
