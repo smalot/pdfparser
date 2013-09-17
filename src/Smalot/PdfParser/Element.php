@@ -124,13 +124,14 @@ class Element
             $only_values = $args[3];
         }
 
-        $position = 0;
+        $position = $old_position = 0;
         $content  = trim($content);
         $values   = array();
 
         do {
-            $sub_content = substr($content, $position);
-            $offset      = 0;
+            $old_position = $position;
+            $sub_content  = substr($content, $position);
+            $offset       = 0;
 
             if (!$only_values) {
                 if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
@@ -176,6 +177,9 @@ class Element
                 $values[$name] = $element;
                 $position += $offset;
             } else {
+                // Revert position
+                $position = $old_position;
+
                 return $values;
             }
         } while ($position < strlen($content));

@@ -79,15 +79,22 @@ class Element extends atoum\test
         $content  = '/NameType /FlateDecode';
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, true);
+        $this->assert->array($elements)->hasSize(2);
+        $this->assert->integer($offset)->isEqualTo(22);
 
         // Test error.
         $content  = '/NameType /FlateDecode $$$';
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
+        $this->assert->array($elements)->hasSize(1);
+        $this->assert->integer($offset)->isEqualTo(22);
+        $this->assert->string(key($elements))->isEqualTo('NameType');
+        $this->assert->object(current($elements))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
 
         $content  = '/NameType $$$';
         $offset   = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
+        $this->assert->integer($offset)->isEqualTo(0);
         $this->assert->array($elements)->isEmpty();
 
         /*$this->assert->boolean(array_key_exists('NameType', $elements))->isEqualTo(true);
