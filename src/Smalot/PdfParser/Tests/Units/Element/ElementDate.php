@@ -91,14 +91,10 @@ class ElementDate extends atoum\test
         $this->assert->integer($offset)->isEqualTo(21);
 
         // Format invalid
-        try {
-            $offset  = 0;
-            $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:2013+02'00') ", null, $offset);
-            $this->assert->integer($offset)->isEqualTo(-1);
-        } catch (\Exception $e) {
-            $this->assert->exception($e)->hasMessage('Invalid date format.');
-            $this->assert->integer($offset)->isEqualTo(18);
-        }
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:2013+02'00') ", null, $offset);
+        $this->assert->boolean($element)->isEqualTo(false);
+        $this->assert->integer($offset)->isEqualTo(0);
     }
 
     public function testGetContent()

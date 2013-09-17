@@ -100,9 +100,7 @@ class ElementDate extends ElementString
     public static function parse($content, Document $document = null, &$offset = 0)
     {
         if (preg_match('/^\s*\(D\:(?<name>.*?)\)/s', $content, $match)) {
-            $name   = $match['name'];
-            $offset = strpos($content, '(D:') + strlen($name) + 4; // 1 for '(D:' and ')'
-
+            $name = $match['name'];
             $name = str_replace("'", '', $name);
 
             // Smallest format : Y
@@ -111,6 +109,7 @@ class ElementDate extends ElementString
                 return false;
             }
 
+            $offset = strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
             $format = self::$formats[strlen($name)];
 
             if (strlen($name) == 19) {

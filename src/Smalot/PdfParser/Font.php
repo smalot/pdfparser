@@ -265,11 +265,8 @@ class Font extends Object
                     $text .= '(';
                 }
 
-                for ($i = 0; $i < strlen($part); $i = $i + 4) {
-                    $char = Font::uchr(hexdec(substr($part, $i, 4)));
-//                    echo 'hexa: <' . substr($part, $i, 4) . '> : "' . $char . "\"\n";
-                    $text .= ($add_braces?preg_replace('/\\\/s', '\\\\\\', $char):$char);
-                }
+                $part = pack("H*", $part);
+                $text .= ($add_braces ? preg_replace('/\\\/s', '\\\\\\', $part) : $part);
 
                 if ($add_braces) {
                     $text .= ')';
@@ -278,8 +275,6 @@ class Font extends Object
                 $text .= $part;
             }
         }
-
-//        var_dump($text);
 
         return $text;
     }
@@ -364,7 +359,7 @@ class Font extends Object
         $cur_start_pos = 0;
         $word_position = 0;
         $words         = array();
-        //$unicode       = $this->isUnicode();
+        $unicode       = false;//$this->isUnicode();
 
         while (($cur_start_text = mb_strpos($text, '(', $cur_start_pos)) !== false) {
             // New text element found
@@ -418,16 +413,16 @@ class Font extends Object
 
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
+
+//            echo ' << : "' . $word . '"' . "\n";
+//
+//            echo '$unicode:   ' . $unicode . "\n";
+
             $word         = $this->decodeContent($word, $loop_unicode);
-
-//            echo 'has encoding: ' . ($this->has('Encoding')?'true':'false') . "\n";
-//            echo 'to unicode:   ' . ($this->has('ToUnicode')?'true':'false') . "\n";
-//            echo 'before decode: "' . $word . '"' . "\n";
-
             if (!$loop_unicode) {
                 $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
-//                echo 'after decode : "' . $word . '"' . "\n";
             }
+//                echo ' >> : "' . $word . '"' . "\n";
 
 //            echo "-----------------------------------\n";
         }

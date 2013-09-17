@@ -114,11 +114,13 @@ class ElementArray extends Element
                 }
             }
 
-            $offset = strpos($content, '[') + strlen(rtrim($sub));
-
             // Removes 1 level [ and ].
             $sub    = substr(trim($sub), 1, -1);
             $values = Element::parse($sub, $document, $offset, true);
+
+            $offset = strpos($content, '[') + $offset;
+            // Find next ']' position
+            $offset += strpos(substr($content, $offset), ']') + 1;
 
             return new self($values, $document);
         }

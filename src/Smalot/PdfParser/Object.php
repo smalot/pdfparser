@@ -123,12 +123,14 @@ class Object
         $current_position_tm = array('x' => false, 'y' => false);
 
         foreach ($text_parts as $text_part) {
-//            echo "---------------------------------------------------\n";
+//            echo "===================================================\n";
 //            echo 'textpart: "' . $text_part . '"' . "\n";
+//            echo "---------------------------------------------------\n";
 
             $commands     = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
+//                if ($command['operator'][0] != 'T') continue;
 //                echo 'command: ' . $command['operator'] . ': ' . "\n";
 //                var_dump($command['command']);
 
@@ -180,10 +182,11 @@ class Object
 
                         if ($command['command'][0] == '<') {
                             $command['command'] = Font::decodeHexadecimal($command['command'], true);
-                            $unicode = true;
+//                            $unicode = true;
                         } else {
-                            $unicode = $current_font->isUnicode();
+//                            $unicode = $current_font->isUnicode();
                         }
+                        $unicode = false;
 //                        echo '*** encoded: "' . $command['command'] . "\"\n";
                         $sub_text = $current_font->decodeText($command['command'], $unicode);
 //                        echo '*** decoded: "' . $sub_text . "\"\n";
@@ -269,7 +272,9 @@ class Object
                 }
             }
 
+//            echo "---------------------------------------------------\n";
 //            echo 'result: "' . $text . '"' . "\n";
+//            echo "---------------------------------------------------\n";
         }
 
         return $text;

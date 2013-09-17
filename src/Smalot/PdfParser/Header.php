@@ -151,6 +151,7 @@ class Header
     {
         if (($obj = $this->elements[$name]) instanceof ElementXRef && !is_null($this->document)) {
             /** @var ElementXRef $obj */
+            var_dump($obj->getId());
             $object = $this->document->getObjectById($obj->getId());
 
             if (is_null($object)) {

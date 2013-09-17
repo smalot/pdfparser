@@ -80,7 +80,7 @@ end
 end';
         $unicode   = new \Smalot\PdfParser\Object($document, null, $content);
 
-        $document->setObjects(array(1 => $font, 2 => $unicode));
+        $document->setObjects(array('1_0' => $font, '2_0' => $unicode));
 
         $font->init();
         // Test reload
@@ -102,19 +102,29 @@ end';
 
     public function testDecodeHexadecimal()
     {
+        $hexa = '<322041>';
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("2 A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("2 A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(2 A)");
+
         $hexa = '<003200200041>';
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo('2 A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo('2 A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo('(2 A)');
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("\x002\x00 \x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("\x002\x00 \x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(\x002\x00 \x00A)");
 
         $hexa = '<00320020> 8 <0041>';
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo('2  8 A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo('2  8 A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo('(2 ) 8 (A)');
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("\x002\x00  8 \x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("\x002\x00  8 \x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(\x002\x00 ) 8 (\x00A)");
+
+        $hexa = '<3220> 8 <41>';
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("2  8 A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("2  8 A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(2 ) 8 (A)");
 
         $hexa = '<00320020005C>-10<0041>';
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo('2 \-10A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo('2 \-10A');
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo('(2 \\\\)-10(A)');
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("\x002\x00 \x00\\-10\x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("\x002\x00 \x00\\-10\x00A");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(\x002\x00 \x00\\\\)-10(\x00A)");
     }
 }
