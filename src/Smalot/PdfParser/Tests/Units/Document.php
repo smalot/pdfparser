@@ -124,7 +124,7 @@ class Document extends atoum\test
         $content = '<</Type/Pages/Kids[3 0 R]>>';
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
         $object5 = new \Smalot\PdfParser\Pages($document, $header);
-        $document->setObjects(array(1 => $object1, 2 => $object2, 3 => $object3, 4 => $object4, 5 => $object5));
+        $document->setObjects(array('1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5));
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
@@ -149,146 +149,12 @@ class Document extends atoum\test
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
         $object6 = new \Smalot\PdfParser\Pages($document, $header);
         $document->setObjects(
-            array(1 => $object1, 2 => $object2, 3 => $object3, 4 => $object4, 5 => $object5, 6 => $object6)
+            array('1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5, '6_0' => $object6)
         );
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[1])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[2])->isInstanceOf('\Smalot\PdfParser\Page');
-    }
-
-    public function testParseFile()
-    {
-        $filename = __DIR__ . '/../../../../../samples/Document1_foxitreader.pdf';
-        $document = \Smalot\PdfParser\Document::parseFile($filename);
-        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-
-        try {
-            // Test unable de read file.
-            $filename = 'missing.pdf';
-            $document = \Smalot\PdfParser\Document::parseFile($filename);
-            $this->assert->object($document)->isInstanceOf('null');
-        } catch (\mageekguy\atoum\exceptions\logic $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            $this->assert->exception($e)->hasMessage('Unable to read file.');
-        }
-
-        // Test invalid structure : "invalid section"
-        $filename = tempnam(sys_get_temp_dir(), 'test_');
-        $content  = <<<EOF
-%PDF-1.4
-%Çì¢
-1 0 obj
-<</Length 6 0 R>>
-stream
-foo
-endstream
-endobj
-2 0 obj
-<</Length 6 0 R>>
-stream
-bar
-endstream
-3 0 obj
-<</Length 6 0 R>>
-stream
-baz
-endstream
-endobj
-invalid section
-xref
-0 3
-0000000000 65535 f
-0000000019 00000 n
-0000000073 00000 n
-0000000120 00000 n
-0000000174 00000 n
-trailer
-<< /Size 24 /Root 1 0 R /Info 2 0 R
-/ID [<984DA96B7C5E60408BB1AFE2FE6B6C03><984DA96B7C5E60408BB1AFE2FE6B6C03>]
->>
-startxref
-190
-%%EOF
-
-EOF;
-        file_put_contents($filename, $content);
-        $document = \Smalot\PdfParser\Document::parseFile($filename);
-        unlink($filename);
-        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-        $this->assert->array($document->getObjects())->hasSize(3);
-        $this->assert->string($document->getObjectById(1)->getContent())->isEqualTo('foo');
-        $this->assert->string($document->getObjectById(2)->getContent())->isEqualTo('bar');
-        $this->assert->string($document->getObjectById(3)->getContent())->isEqualTo('baz');
-
-        // Test invalid structure : "invalid section"
-        $filename = tempnam(sys_get_temp_dir(), 'test_');
-        $content  = <<<EOF
-%PDF-1.4
-%Çì¢
-1 0 obj
-<</Length 6 0 R>>
-stream
-foo
-endstream
-endobj
-2 0 obj
-<</Length 6 0 R>>
-stream
-foo
-endstream
-3 0 obj
-<</Length 6 0 R>>
-stream
-foo
-endstream
-endobj
-xref
-0 3
-0000000000 65535 f
-0000000019 00000 n
-0000000073 00000 n
-0000000100 00000 n
-trailer
-<< /Size 24 /Root 1 0 R /Info 2 0 R
-/ID [<984DA96B7C5E60408BB1AFE2FE6B6C03><984DA96B7C5E60408BB1AFE2FE6B6C03>]
->>
-startxref
-174
-%%EOF
-
-EOF;
-        file_put_contents($filename, $content);
-        $document = \Smalot\PdfParser\Document::parseFile($filename);
-        unlink($filename);
-        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-        $this->assert->array($document->getObjects())->hasSize(3);
-    }
-
-    public function testParseContent()
-    {
-        $content  = <<<EOT
-5 0 obj
-5198
-endobj
-2 0 obj
-<< /Type /Page /Parent 3 0 R /Resources 6 0 R /Contents 4 0 R /MediaBox [0 0 595.32 841.92]
->>
-endobj
-6 0 obj
-<< /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] /ColorSpace << /Cs1 13 0 R
-/Cs2 14 0 R >> /Font << /F5.1 16 0 R /F1.0 7 0 R /F4.1 12 0 R /F2.1 9 0 R
-/F3.0 10 0 R >> /XObject << /Im1 17 0 R >> >>
-endobj
-EOT;
-        $document = \Smalot\PdfParser\Document::parseContent($content);
-        $this->assert->object($document)->isInstanceOf('\Smalot\PdfParser\Document');
-        $this->assert->array($document->getObjects())->hasSize(3);
-        $this->assert->string($document->getObjectById(5)->getContent())->isEqualTo('5198');
-        $this->assert->castToString($document->getObjectById(2)->get('Type'))->isEqualTo('Page');
-        $object6 = $document->getObjectById(6)->get('ProcSet');
-        $this->assert->object($object6)->isInstanceOf('\Smalot\PdfParser\Element\ElementArray');
     }
 }

@@ -61,7 +61,7 @@ class Element extends atoum\test
 
         $this->assert->boolean(array_key_exists('XRefType', $elements))->isEqualTo(true);
         $this->assert->object($elements['XRefType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementXRef');
-        $this->assert->integer($elements['XRefType']->getId())->isEqualTo(2);
+        $this->assert->string($elements['XRefType']->getId())->isEqualTo('2_0');
 
         $this->assert->boolean(array_key_exists('NumericType', $elements))->isEqualTo(true);
         $this->assert->object($elements['NumericType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementNumeric');

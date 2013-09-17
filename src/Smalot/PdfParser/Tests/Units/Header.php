@@ -94,7 +94,7 @@ class Header extends atoum\test
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $object   = new \Smalot\PdfParser\Page($document, $header);
-        $document->setObjects(array(5 => $object));
+        $document->setObjects(array('5_0' => $object));
 
         $this->assert->object($header->get('Type'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
         $this->assert->object($header->get('SubType'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
@@ -103,9 +103,9 @@ class Header extends atoum\test
 
         try {
             $resources = $header->get('Resources');
-            $this->assert->boolean(false)->isEqualTo(true);
+            $this->assert->boolean(true)->isEqualTo(false);
         } catch (\Exception $e) {
-            $this->assert->exception($e)->hasMessage('Missing object reference #8.');
+            $this->assert->exception($e)->hasMessage('Missing object reference #8_0.');
         }
     }
 
@@ -116,14 +116,15 @@ class Header extends atoum\test
         $position = 0;
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $object   = new \Smalot\PdfParser\Page($document, $header);
-        $document->setObjects(array(5 => $object));
+        $document->setObjects(array('5_0' => $object));
 
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Object');
 
         try {
             $this->assert->object($header->get('Resources'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
+            $this->assert->boolean(true)->isEqualTo(false);
         } catch (\Exception $e) {
-            $this->assert->exception($e)->hasMessage('Missing object reference #8.');
+            $this->assert->exception($e)->hasMessage('Missing object reference #8_0.');
         }
     }
 }

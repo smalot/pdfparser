@@ -478,7 +478,7 @@ class Font extends Object
                 }
 
                 $text    = $result;
-                $unicode = ($this->table_size['to'] > 1);
+                $unicode = ($this->table_sizes['to'] > 1);
             }
         }
 
