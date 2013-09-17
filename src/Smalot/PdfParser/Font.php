@@ -15,7 +15,9 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Element\ElementXRef;
 
 /**
  * Class Font
@@ -35,6 +37,11 @@ class Font extends Object
     protected $table = null;
 
     /**
+     * @var array
+     */
+    protected $table_sizes = null;
+
+    /**
      * @var mixed
      */
     protected $encoding = null;
@@ -51,6 +58,53 @@ class Font extends Object
 
         // Load translate table.
         $this->loadTranslateTable();
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->has('BaseFont')?(string) $this->get('BaseFont'):'[Unknown]';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUnicode()
+    {
+        if ($this->has('Encoding')) {
+            $encoding = $this->get('Encoding')->getContent();
+            if (in_array($encoding, array('Identity-H'))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType()
+    {
+        return (string) $this->header->get('Subtype');
+    }
+
+    /**
+     * @return array
+     */
+    public function getDetails()
+    {
+        $details = array();
+
+        $details['Name']     = $this->getName();
+        $details['Type']     = $this->getType();
+        $details['Encoding'] = ($this->has('Encoding')?(string) $this->get('Encoding'):'Ansi');
+
+        $details += parent::getDetails();
+
+        return $details;
     }
 
     /**
@@ -76,17 +130,9 @@ class Font extends Object
     {
         $dec = hexdec(bin2hex($char));
 
-//        echo '<<<<<<<<<<<<<<<' . "\n";
-//        var_dump($char, '<' . bin2hex($char) . '>', $dec);
-
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
-//            var_dump($char);
-        } else {
-//            var_dump('unknown');
         }
-
-//        echo '>>>>>>>>>>>>>>>' . "\n";
 
         return $char;
 
@@ -111,11 +157,31 @@ class Font extends Object
             return $this->table;
         }
 
-        $this->table = array();
+        $this->table       = array();
+        $this->table_sizes = array(
+            'from' => 1,
+            'to'   => 1,
+        );
 
-        if ($this->getToUnicode() instanceof Object || true) {
+        if ($this->getToUnicode() instanceof Object) {
             $content = $this->getToUnicode()->getContent();
             $matches = array();
+
+            // Support for multiple spacerange sections
+            if (preg_match_all('/begincodespacerange(?<sections>.*?)endcodespacerange/s', $content, $matches)) {
+                foreach ($matches['sections'] as $section) {
+                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)>[ \r\n]+/is';
+
+                    preg_match_all($regexp, $section, $matches);
+
+                    $this->table_sizes = array(
+                        'from' => max(1, strlen(current($matches['from'])) / 2),
+                        'to'   => max(1, strlen(current($matches['to'])) / 2),
+                    );
+
+                    break;
+                }
+            }
 
             // Support for multiple bfchar sections
             if (preg_match_all('/beginbfchar(?<sections>.*?)endbfchar/s', $content, $matches)) {
@@ -241,6 +307,27 @@ class Font extends Object
     }
 
     /**
+     * @param $text
+     *
+     * @return string
+     */
+    public static function decodeEntities($text)
+    {
+        $parts = preg_split('/(#\d{2})/s', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $text  = '';
+
+        foreach ($parts as $part) {
+            if (preg_match('/^#\d{2}$/', $part)) {
+                $text .= chr(hexdec(trim($part, '#')));
+            } else {
+                $text .= $part;
+            }
+        }
+
+        return $text;
+    }
+
+    /**
      * @param string $text
      * @param bool  $unicode
      *
@@ -277,6 +364,7 @@ class Font extends Object
         $cur_start_pos = 0;
         $word_position = 0;
         $words         = array();
+        //$unicode       = $this->isUnicode();
 
         while (($cur_start_text = mb_strpos($text, '(', $cur_start_pos)) !== false) {
             // New text element found
@@ -329,9 +417,18 @@ class Font extends Object
         }
 
         foreach ($words as &$word) {
+            $loop_unicode = $unicode;
+            $word         = $this->decodeContent($word, $loop_unicode);
+
+//            echo 'has encoding: ' . ($this->has('Encoding')?'true':'false') . "\n";
+//            echo 'to unicode:   ' . ($this->has('ToUnicode')?'true':'false') . "\n";
 //            echo 'before decode: "' . $word . '"' . "\n";
-            $word = $this->decodeContent($word, $unicode);
-//            echo 'after decode : "' . $word . '"' . "\n";
+
+            if (!$loop_unicode) {
+                $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
+//                echo 'after decode : "' . $word . '"' . "\n";
+            }
+
 //            echo "-----------------------------------\n";
         }
 
@@ -344,17 +441,10 @@ class Font extends Object
      *
      * @return string
      */
-    protected function decodeContent($text, $unicode)
+    protected function decodeContent($text, &$unicode)
     {
-//        if (!$unicode) {
-//            $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
-//        }
-//        var_dump($unicode);
-
         if ($this->encoding instanceof Encoding) {
-
             if ($unicode) {
-//                echo 'using unicode' . "\n";
                 $chars  = preg_split('//s' . ($unicode?'u':''), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
                 $result = '';
 
@@ -366,37 +456,35 @@ class Font extends Object
 
                 $text = $result;
             } else {
-//                echo 'not using unicode' . "\n";
-                $chars = '';
+                $result = '';
 
                 for ($i=0;$i<strlen($text);$i++) {
                     $dec_av = hexdec(bin2hex($text[$i]));
                     $dec_ap = $this->encoding->translateChar($dec_av);
-                    $chars .= self::uchr($dec_ap);
+                    $result .= chr($dec_ap);
                 }
 
-                $text = $chars;
+                $text = $result;
             }
-
         }
 
         if ($this->has('ToUnicode')) {
-//            var_dump($this->get('ToUnicode')->getContent());
-//            die();
 
-//            var_dump($text);
+            $bytes  = $this->table_sizes['from'];
 
-            $chars  = preg_split('//s' . ($unicode?'u':''), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-            $result = '';
+            if ($bytes) {
+                $result = '';
+                $length = strlen($text);
 
-            foreach ($chars as $char) {
-                $result .= $this->translateChar($char);
+                for ($i=0; $i<=$length; $i+=$bytes) {
+                    $char   = substr($text, $i, $bytes);
+                    $char   = $this->translateChar($char);
+                    $result .= $char;
+                }
+
+                $text    = $result;
+                $unicode = ($this->table_size['to'] > 1);
             }
-
-            $text = $result;
-        } else {
-//            echo 'iconv convert CP1252 => UTF-8' . "\n";
-            $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
         }
 
         return $text;

@@ -24,4 +24,19 @@ use Smalot\PdfParser\Font;
  */
 class FontType1 extends Font
 {
+    /**
+     * @return bool
+     */
+    public function isUnicode()
+    {
+        if ($this->has('Encoding')) {
+            if (stripos($this->get('Encoding')->getContent(), 'ansi') !== false) {
+                return false;
+//            } elseif ($this->get('Encoding')->getContent() == '') {
+//                return false;
+            }
+        }
+
+        return true;
+    }
 }

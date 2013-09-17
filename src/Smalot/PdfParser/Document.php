@@ -16,6 +16,7 @@
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementBoolean;
+use Smalot\PdfParser\Element\ElementDate;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementString;
 
@@ -51,7 +52,7 @@ class Document
     protected $trailer = null;
 
     /**
-     * @var Header
+     * @var array
      */
     protected $details = null;
 
@@ -105,27 +106,33 @@ class Document
      */
     protected function buildDetails()
     {
-        // Set encrypted flag.
-        $this->encrypted = $this->trailer->has('Encrypt');
-
         // Build details array.
         $details = array();
 
+        // Set encrypted flag.
+        $details['Encrypted'] = $this->trailer->has('Encrypt');
+
+        // Extract document info
         if ($this->trailer->has('Info')) {
             /** @var Object $info */
-            $info    = $this->trailer->get('Info');
-            $details = $info->getHeader()->getElements();
+            $info     = $this->trailer->get('Info');
+            $elements = $info->getHeader()->getElements();
+
+            foreach ($elements as $name => $element) {
+                if ($element instanceof ElementDate) {
+                    $element->setFormat('c');
+                }
+                $details[$name] = (string) $element;
+            }
         }
 
-        $details['Pages'] = new ElementNumeric(0);
-
+        // Retrieve the page count
         try {
             $pages = $this->getPages();
-            $details['Pages'] = new ElementNumeric(count($pages));
+            $details['Pages'] = count($pages);
         } catch(\Exception $e) {
+            $details['Pages'] = 0;
         }
-
-        $details['Encrypted'] = new ElementBoolean($this->encrypted);
 
         $this->details = $details;
     }
@@ -189,6 +196,14 @@ class Document
         }
 
         return $objects;
+    }
+
+    /**
+     * @return \Object[]
+     */
+    public function getFonts()
+    {
+        return $this->getObjectsByType('Font');
     }
 
     /**

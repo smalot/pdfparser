@@ -15,6 +15,7 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Element\ElementXRef;
@@ -74,6 +75,38 @@ class Header
         }
 
         return $types;
+    }
+
+    /**
+     * @param bool $deep
+     *
+     * @return array
+     */
+    public function getValues($deep = true)
+    {
+        $values   = array();
+        $elements = $this->getElements();
+
+        foreach ($elements as $key => $element) {
+            if ($element instanceof Header && $deep) {
+                $values[$key] = $element->getValues($deep);
+            } elseif ($element instanceof Object && $deep) {
+                $values[$key] = $element->getDetails();
+            } elseif ($element instanceof ElementArray && $deep) {
+                $values[$key] = $element->getDetails();
+//                foreach ($element->getContent() as $position => $sub_element) {
+//                    if ($sub_element instanceof Object) {
+//                        $values[$key][$position] = $sub_element->getDetails();
+//                    } else {
+//                        $values[$key][$position] = $sub_element->getContent();
+//                    }
+//                }
+            } else {
+                $values[$key] = $element->getContent();
+            }
+        }
+
+        return $values;
     }
 
     /**

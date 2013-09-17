@@ -17,6 +17,7 @@ namespace Smalot\PdfParser\Element;
 
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Object;
 
 /**
@@ -45,6 +46,26 @@ class ElementArray extends Element
         }
 
         return parent::getContent();
+    }
+
+    public function getDetails($deep = true)
+    {
+        $values  = array();
+        $content = $this->getContent();
+
+        foreach ($content as $key => $element) {
+            if ($element instanceof Header && $deep) {
+                $values[$key] = $element->getValues($deep);
+            } elseif ($element instanceof Object && $deep) {
+                $values[$key] = $element->getDetails();
+            } elseif ($element instanceof ElementArray && $deep) {
+                $values[$key] = $element->getDetails();
+            } else {
+                $values[$key] = $element->getContent();
+            }
+        }
+
+        return $values;
     }
 
     /**
@@ -96,9 +117,8 @@ class ElementArray extends Element
             $offset = strpos($content, '[') + strlen(rtrim($sub));
 
             // Removes 1 level [ and ].
-            $sub = substr(trim($sub), 1, -1);
-
-            $values = Element::parse($sub, $document, $position, true);
+            $sub    = substr(trim($sub), 1, -1);
+            $values = Element::parse($sub, $document, $offset, true);
 
             return new self($values, $document);
         }

@@ -91,6 +91,21 @@ class Encoding extends Object
     }
 
     /**
+     * @return array
+     */
+    public function getDetails()
+    {
+        $details = array();
+
+        $details['BaseEncoding'] = ($this->has('BaseEncoding')?(string) $this->get('BaseEncoding'):'Ansi');
+        $details['Differences'] = ($this->has('Differences')?(string) $this->get('Differences'):'');
+
+        $details += parent::getDetails();
+
+        return $details;
+    }
+
+    /**
      * @param int $char
      *
      * @return int

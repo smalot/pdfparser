@@ -88,6 +88,18 @@ class Object
     }
 
     /**
+     * @return array
+     */
+    public function getDetails()
+    {
+        $details = array();
+
+        $details += $this->header->getValues();
+
+        return $details;
+    }
+
+    /**
      * @return null|string
      */
     public function getContent()
@@ -117,7 +129,6 @@ class Object
             $commands     = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
-//                echo '.';
 //                echo 'command: ' . $command['operator'] . ': ' . "\n";
 //                var_dump($command['command']);
 
@@ -136,7 +147,7 @@ class Object
                         if ((floatval($x) <= 0 && floatval($y) > 0) ||
                             ($current_position_td['y'] !== false && floatval($y) != floatval($current_position_td['y']))
                         ) {
-                            $text .= "\n";
+                            //$text .= "\n";
                         }
                         $current_position_td = array('x' => $x, 'y' => $y);
                         break;
@@ -158,6 +169,7 @@ class Object
                         //var_dump('fontsize:' . $command['command']);
                         $current_font = $page->getFont($id);
 //                        echo '!!!!  Changement de font #' . $id . "  !!!!\n";
+//                        echo 'type: ' . $current_font->getType() . "\n";
                         break;
 
                     case 'TJ':
@@ -170,8 +182,9 @@ class Object
                             $command['command'] = Font::decodeHexadecimal($command['command'], true);
                             $unicode = true;
                         } else {
-                            $unicode = false;
+                            $unicode = $current_font->isUnicode();
                         }
+//                        echo '*** encoded: "' . $command['command'] . "\"\n";
                         $sub_text = $current_font->decodeText($command['command'], $unicode);
 //                        echo '*** decoded: "' . $sub_text . "\"\n";
                         $text .= $sub_text;

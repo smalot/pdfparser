@@ -17,6 +17,7 @@ namespace Smalot\PdfParser\Element;
 
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Font;
 
 /**
  * Class ElementName
@@ -53,9 +54,10 @@ class ElementName extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\/(?<name>[A-Z0-9\-\+,]+)/is', $content, $match)) {
+        if (preg_match('/^\s*\/(?<name>[A-Z0-9\-\+,#]+)/is', $content, $match)) {
             $name   = $match['name'];
             $offset = strpos($content, $name) + strlen($name);
+            $name   = Font::decodeEntities($name);
 
             return new self($name, $document);
         }

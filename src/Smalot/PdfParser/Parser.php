@@ -72,6 +72,9 @@ class Parser
         $parser            = new \TCPDF_PARSER($content);
         list($xref, $data) = $parser->getParsedData();
 
+//        var_dump($xref, $data);
+//        die();
+
         // Create destination object.
         $document       = new Document();
         $this->objects  = array();
@@ -89,11 +92,9 @@ class Parser
 
         /** @var Object $infos */
         $infos = $document->getObjectById($xref['trailer']['info']);
-        foreach ($infos->getHeader()->getElements() as $name => $value) {
-            echo $name . ': ' . $value . "\n";
-        }
-
-        echo "\n";
+//        foreach ($infos->getHeader()->getElements() as $name => $value) {
+//            echo $name . ': ' . $value . "\n";
+//        }
 
         return $document;
     }
@@ -187,7 +188,7 @@ class Parser
                 return new ElementHexa($value, $document);
 
             case '/':
-                return new ElementName($value, $document);
+                return ElementName::parse('/' . $value, $document);
 
             case 'ojbref':
                 return new ElementXRef($value, $document);
