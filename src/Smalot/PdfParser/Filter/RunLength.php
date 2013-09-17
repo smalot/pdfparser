@@ -62,8 +62,8 @@ class RunLength
      * Decode
      * Decompresses data encoded using a byte-oriented run-length encoding algorithm.
      *
-     * @param $data (string) Data to decode.
-     * @param array  $params
+     * @param       $data (string) Data to decode.
+     * @param array $params
      *
      * @return string Decoded data string.
      * @throws \Exception

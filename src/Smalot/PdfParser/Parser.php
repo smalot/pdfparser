@@ -69,18 +69,18 @@ class Parser
     public function parseContent($content)
     {
         // Create structure using TCPDF Parser.
-        $parser            = new \TCPDF_PARSER($content);
+        $parser = new \TCPDF_PARSER($content);
         list($xref, $data) = $parser->getParsedData();
 
 //        var_dump($xref, $data);
 //        die();
 
         // Create destination object.
-        $document       = new Document();
-        $this->objects  = array();
+        $document      = new Document();
+        $this->objects = array();
 
         foreach ($data as $id => $structure) {
-            $object = $this->parseObject($id, $structure, $document);
+            $object             = $this->parseObject($id, $structure, $document);
             $this->objects[$id] = $object;
         }
 
@@ -92,6 +92,7 @@ class Parser
 
         /** @var Object $infos */
         $infos = $document->getObjectById($xref['trailer']['info']);
+
 //        foreach ($infos->getHeader()->getElements() as $name => $value) {
 //            echo $name . ': ' . $value . "\n";
 //        }
@@ -118,10 +119,10 @@ class Parser
                     break;
 
                 case 'stream':
-                    $content = isset($part[3][0])?$part[3][0]:$part[1];
+                    $content = isset($part[3][0]) ? $part[3][0] : $part[1];
                     $match   = array();
                     if (preg_match('/^\s*(\d+\s+\d+)\s+(<<.*>>.*)$/s', $content, $match)) {
-                        $object = Object::parse($document, $match[2]);
+                        $object                                          = Object::parse($document, $match[2]);
                         $this->objects[str_replace(' ', '_', $match[1])] = $object;
                     }
                     break;
@@ -143,10 +144,10 @@ class Parser
         $elements = array();
         $count    = count($structure);
 
-        for ($position=0 ; $position<$count; $position+=2) {
+        for ($position = 0; $position < $count; $position += 2) {
             $name  = $structure[$position][1];
-            $type  = $structure[$position+1][0];
-            $value = $structure[$position+1][1];
+            $type  = $structure[$position + 1][0];
+            $value = $structure[$position + 1][1];
 
             $elements[$name] = $this->parseHeaderElement($type, $value, $document);
         }

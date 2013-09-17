@@ -127,7 +127,7 @@ class Object
 //            echo 'textpart: "' . $text_part . '"' . "\n";
 //            echo "---------------------------------------------------\n";
 
-            $commands     = $this->getCommandsFromTextPart($text_part);
+            $commands = $this->getCommandsFromTextPart($text_part);
 
             foreach ($commands as $command) {
 //                if ($command['operator'][0] != 'T') continue;

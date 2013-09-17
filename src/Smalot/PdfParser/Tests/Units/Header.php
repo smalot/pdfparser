@@ -47,7 +47,7 @@ class Header extends atoum\test
         $this->assert->array($header->getElements())->hasSize(0);
 
         $position = 0;
-        $content = "<</CreationDate(D:20100309184803+01'00')/Author(Utilisateur)/Creator(PScript5.dll Version 5.2.2)/Producer(Acrobat Distiller 7.0.5 \(Windows\))/ModDate(D:20100310104810+01'00')/Title(Microsoft Word - CLEMI.docx)>>";
+        $content  = "<</CreationDate(D:20100309184803+01'00')/Author(Utilisateur)/Creator(PScript5.dll Version 5.2.2)/Producer(Acrobat Distiller 7.0.5 \(Windows\))/ModDate(D:20100310104810+01'00')/Title(Microsoft Word - CLEMI.docx)>>";
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $this->assert->integer($position)->isEqualTo(212);
 

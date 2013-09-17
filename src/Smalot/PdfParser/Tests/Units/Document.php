@@ -124,7 +124,9 @@ class Document extends atoum\test
         $content = '<</Type/Pages/Kids[3 0 R]>>';
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
         $object5 = new \Smalot\PdfParser\Pages($document, $header);
-        $document->setObjects(array('1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5));
+        $document->setObjects(
+            array('1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5)
+        );
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
@@ -149,7 +151,14 @@ class Document extends atoum\test
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
         $object6 = new \Smalot\PdfParser\Pages($document, $header);
         $document->setObjects(
-            array('1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5, '6_0' => $object6)
+            array(
+                '1_0' => $object1,
+                '2_0' => $object2,
+                '3_0' => $object3,
+                '4_0' => $object4,
+                '5_0' => $object5,
+                '6_0' => $object6
+            )
         );
         $pages = $document->getPages();
         $this->assert->integer(count($pages))->isEqualTo(3);

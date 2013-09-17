@@ -28,8 +28,8 @@ class Font extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>';
-        $font     = \Smalot\PdfParser\Object::parse($document, $content);
+        $content = '<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>';
+        $font    = \Smalot\PdfParser\Object::parse($document, $content);
 
         $content = '/CIDInit /ProcSet findresource begin
 14 dict begin
@@ -78,7 +78,7 @@ endcmap
 CMapName currentdict /CMap defineresource pop
 end
 end';
-        $unicode   = new \Smalot\PdfParser\Object($document, null, $content);
+        $unicode = new \Smalot\PdfParser\Object($document, null, $content);
 
         $document->setObjects(array('1_0' => $font, '2_0' => $unicode));
 
@@ -115,7 +115,9 @@ end';
         $hexa = '<00320020> 8 <0041>';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("\x002\x00  8 \x00A");
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("\x002\x00  8 \x00A");
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(\x002\x00 ) 8 (\x00A)");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo(
+            "(\x002\x00 ) 8 (\x00A)"
+        );
 
         $hexa = '<3220> 8 <41>';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("2  8 A");
@@ -124,7 +126,11 @@ end';
 
         $hexa = '<00320020005C>-10<0041>';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo("\x002\x00 \x00\\-10\x00A");
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo("\x002\x00 \x00\\-10\x00A");
-        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo("(\x002\x00 \x00\\\\)-10(\x00A)");
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, false))->isEqualTo(
+            "\x002\x00 \x00\\-10\x00A"
+        );
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo(
+            "(\x002\x00 \x00\\\\)-10(\x00A)"
+        );
     }
 }

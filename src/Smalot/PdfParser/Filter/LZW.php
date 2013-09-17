@@ -62,8 +62,8 @@ class LZW
      * Decode
      * Decompresses data encoded using the LZW (Lempel-Ziv-Welch) adaptive compression method, reproducing the original text or binary data.
      *
-     * @param $data (string) Data to decode.
-     * @param array  $params
+     * @param       $data (string) Data to decode.
+     * @param array $params
      *
      * @return string Decoded data string.
      * @public

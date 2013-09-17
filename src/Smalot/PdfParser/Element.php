@@ -44,12 +44,12 @@ class Element
     protected $value = null;
 
     /**
-     * @param mixed $value
+     * @param mixed    $value
      * @param Document $document
      */
     public function __construct($value, Document $document = null)
     {
-        $this->value = $value;
+        $this->value    = $value;
         $this->document = $document;
     }
 
@@ -109,39 +109,39 @@ class Element
     }
 
     /**
-     * @param string $content
+     * @param string   $content
      * @param Document $document
-     * @param int $position
+     * @param int      $position
      *
      * @return array
      * @throws \Exception
      */
     public static function parse($content, Document $document = null, &$position = 0)
     {
-        $args = func_get_args();
+        $args        = func_get_args();
         $only_values = false;
         if (isset($args[3])) {
             $only_values = $args[3];
         }
 
         $position = 0;
-        $content = trim($content);
-        $values = array();
+        $content  = trim($content);
+        $values   = array();
 
         do {
             $sub_content = substr($content, $position);
-            $offset = 0;
+            $offset      = 0;
 
             if (!$only_values) {
                 if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
                     break;
                 } else {
-                    $name = ltrim($match['name'], '/');
-                    $value = $match['value'];
+                    $name     = ltrim($match['name'], '/');
+                    $value    = $match['value'];
                     $position = strpos($content, $value, $position + strlen($match['name']));
                 }
             } else {
-                $name = count($values);
+                $name  = count($values);
                 $value = $sub_content;
             }
 

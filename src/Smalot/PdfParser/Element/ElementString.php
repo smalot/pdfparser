@@ -69,11 +69,11 @@ class ElementString extends Element
             }
 
             // Extract string.
-            $name    = substr($name, 0, $cur_start_pos);
-            $offset  = strpos($content, '(') + $cur_start_pos + 2; // 2 for '(' and ')'
-            $name    = str_replace(
+            $name   = substr($name, 0, $cur_start_pos);
+            $offset = strpos($content, '(') + $cur_start_pos + 2; // 2 for '(' and ')'
+            $name   = str_replace(
                 array('\\\\', '\(', '\)', '\n', '\r', '\t'),
-                array('\\',   '(',  ')',  "\n", "\r", "\t"),
+                array('\\', '(', ')', "\n", "\r", "\t"),
                 $name
             );
 
@@ -81,8 +81,8 @@ class ElementString extends Element
             $unicode = false;
             $name    = Font::decodeOctal($name);
 //            $name    = Font::decodeEntities($name);
-            $name    = Font::decodeHexadecimal($name, false);
-            $name    = Font::decodeUnicode($name, $unicode);
+            $name = Font::decodeHexadecimal($name, false);
+            $name = Font::decodeUnicode($name, $unicode);
 
             return new self($name, $document);
         }

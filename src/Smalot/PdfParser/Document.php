@@ -122,15 +122,15 @@ class Document
                 if ($element instanceof ElementDate) {
                     $element->setFormat('c');
                 }
-                $details[$name] = (string) $element;
+                $details[$name] = (string)$element;
             }
         }
 
         // Retrieve the page count
         try {
-            $pages = $this->getPages();
+            $pages            = $this->getPages();
             $details['Pages'] = count($pages);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $details['Pages'] = 0;
         }
 
@@ -313,8 +313,8 @@ class Document
         if (!preg_match('/(<<.*)/s', $content, $match)) {
             throw new \Exception('Invalid PDF: missing first object.');
         } else {
-            $document = new self();
-            $header   = Header::parse($match[1], $document);
+            $document   = new self();
+            $header     = Header::parse($match[1], $document);
             $linearized = $header->has('Linearized');
         }
 
@@ -476,10 +476,10 @@ class Document
             throw new \Exception('Secured PDF Files are not currently supported.');
         }
 
-        $objects  = array();
-        $regexp   = '/([\n\r]{1,2}\d+\s+\d+\s+obj)/s';
-        $parts    = preg_split($regexp, "\n" . $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-        $id       = 0;
+        $objects = array();
+        $regexp  = '/([\n\r]{1,2}\d+\s+\d+\s+obj)/s';
+        $parts   = preg_split($regexp, "\n" . $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $id      = 0;
 
         // Extract objects from content.
         foreach ($parts as $part) {

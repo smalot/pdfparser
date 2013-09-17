@@ -97,8 +97,8 @@ class Encoding extends Object
     {
         $details = array();
 
-        $details['BaseEncoding'] = ($this->has('BaseEncoding')?(string) $this->get('BaseEncoding'):'Ansi');
-        $details['Differences'] = ($this->has('Differences')?(string) $this->get('Differences'):'');
+        $details['BaseEncoding'] = ($this->has('BaseEncoding') ? (string)$this->get('BaseEncoding') : 'Ansi');
+        $details['Differences']  = ($this->has('Differences') ? (string)$this->get('Differences') : '');
 
         $details += parent::getDetails();
 

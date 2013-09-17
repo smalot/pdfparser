@@ -39,7 +39,7 @@ class Header
 
     /**
      * @param Element[] $elements   List of elements.
-     * @param Document  $document Document.
+     * @param Document  $document   Document.
      */
     public function __construct($elements = array(), Document $document = null)
     {

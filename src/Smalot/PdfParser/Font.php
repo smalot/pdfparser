@@ -65,7 +65,7 @@ class Font extends Object
      */
     public function getName()
     {
-        return $this->has('BaseFont')?(string) $this->get('BaseFont'):'[Unknown]';
+        return $this->has('BaseFont') ? (string)$this->get('BaseFont') : '[Unknown]';
     }
 
     /**
@@ -88,7 +88,7 @@ class Font extends Object
      */
     public function getType()
     {
-        return (string) $this->header->get('Subtype');
+        return (string)$this->header->get('Subtype');
     }
 
     /**
@@ -100,7 +100,7 @@ class Font extends Object
 
         $details['Name']     = $this->getName();
         $details['Type']     = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding')?(string) $this->get('Encoding'):'Ansi');
+        $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
 
         $details += parent::getDetails();
 
@@ -170,7 +170,7 @@ class Font extends Object
             // Support for multiple spacerange sections
             if (preg_match_all('/begincodespacerange(?<sections>.*?)endcodespacerange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -186,13 +186,13 @@ class Font extends Object
             // Support for multiple bfchar sections
             if (preg_match_all('/beginbfchar(?<sections>.*?)endbfchar/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp  = '/<(?<from>[0-9A-F]+)> +<(?<to>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?<from>[0-9A-F]+)> +<(?<to>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
                     foreach ($matches['from'] as $key => $from) {
-                        $to = $matches['to'][$key];
-                        $to = self::uchr(hexdec($to));
+                        $to                         = $matches['to'][$key];
+                        $to                         = self::uchr(hexdec($to));
                         $this->table[hexdec($from)] = $to;
 //                        var_dump($from, hexdec($from), $to);
 //                        echo "1---------------\n";
@@ -204,7 +204,7 @@ class Font extends Object
             if (preg_match_all('/beginbfrange(?<sections>.*?)endbfrange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
                     // Support for : <srcCode1> <srcCode2> <dstString>
-                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *<(?<offset>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *<(?<offset>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -221,7 +221,7 @@ class Font extends Object
                     }
 
                     // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
-                    $regexp  = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *\[(?<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
+                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *\[(?<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -324,7 +324,7 @@ class Font extends Object
 
     /**
      * @param string $text
-     * @param bool  $unicode
+     * @param bool   $unicode
      *
      * @return string
      */
@@ -339,7 +339,7 @@ class Font extends Object
             $decode = $text;
             $text   = '';
 
-            for ($i=0; $i<strlen($decode); $i+=2) {
+            for ($i = 0; $i < strlen($decode); $i += 2) {
                 $text .= self::uchr(hexdec(bin2hex(substr($decode, $i, 2))));
             }
         }
@@ -359,7 +359,7 @@ class Font extends Object
         $cur_start_pos = 0;
         $word_position = 0;
         $words         = array();
-        $unicode       = false;//$this->isUnicode();
+        $unicode       = false; //$this->isUnicode();
 
         while (($cur_start_text = mb_strpos($text, '(', $cur_start_pos)) !== false) {
             // New text element found
@@ -397,7 +397,7 @@ class Font extends Object
             $sub_text = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
             $sub_text = str_replace(
                 array('\\\\', '\(', '\)', '\n', '\r', '\t'),
-                array('\\',   '(',  ')',  "\n", "\r", "\t"),
+                array('\\', '(', ')', "\n", "\r", "\t"),
                 $sub_text
             );
 
@@ -418,7 +418,7 @@ class Font extends Object
 //
 //            echo '$unicode:   ' . $unicode . "\n";
 
-            $word         = $this->decodeContent($word, $loop_unicode);
+            $word = $this->decodeContent($word, $loop_unicode);
             if (!$loop_unicode) {
                 $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
             }
@@ -440,7 +440,12 @@ class Font extends Object
     {
         if ($this->encoding instanceof Encoding) {
             if ($unicode) {
-                $chars  = preg_split('//s' . ($unicode?'u':''), $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+                $chars  = preg_split(
+                    '//s' . ($unicode ? 'u' : ''),
+                    $text,
+                    -1,
+                    PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+                );
                 $result = '';
 
                 foreach ($chars as $char) {
@@ -453,7 +458,7 @@ class Font extends Object
             } else {
                 $result = '';
 
-                for ($i=0;$i<strlen($text);$i++) {
+                for ($i = 0; $i < strlen($text); $i++) {
                     $dec_av = hexdec(bin2hex($text[$i]));
                     $dec_ap = $this->encoding->translateChar($dec_av);
                     $result .= chr($dec_ap);
@@ -465,15 +470,15 @@ class Font extends Object
 
         if ($this->has('ToUnicode')) {
 
-            $bytes  = $this->table_sizes['from'];
+            $bytes = $this->table_sizes['from'];
 
             if ($bytes) {
                 $result = '';
                 $length = strlen($text);
 
-                for ($i=0; $i<=$length; $i+=$bytes) {
-                    $char   = substr($text, $i, $bytes);
-                    $char   = $this->translateChar($char);
+                for ($i = 0; $i <= $length; $i += $bytes) {
+                    $char = substr($text, $i, $bytes);
+                    $char = $this->translateChar($char);
                     $result .= $char;
                 }
 
