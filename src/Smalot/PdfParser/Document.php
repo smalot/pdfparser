@@ -252,7 +252,7 @@ class Document
         $texts = array();
         $pages = $this->getPages();
 
-        foreach ($pages as $page) {
+        foreach ($pages as $index => $page) {
             if ($text = trim($page->getText())) {
                 $texts[] = $text;
             }
@@ -285,65 +285,65 @@ class Document
         return $this->details;
     }
 
-    /**
-     * @return bool
-     */
-    public function isEncrypted()
-    {
-        return $this->encrypted;
-    }
+//    /**
+//     * @return bool
+//     */
+//    public function isEncrypted()
+//    {
+//        return $this->encrypted;
+//    }
+//
+//    /**
+//     * @param string $content
+//     *
+//     * @return array
+//     */
+//    protected static function detectInfo($content)
+//    {
+//        $match = array();
+//
+//        // Detect pdf version.
+//        if (!preg_match('/^\s*%PDF-([0-9\.]*)/s', $content, $match)) {
+//            throw new \Exception('Invalid PDF: missing pdf version.');
+//        } else {
+//            $version = $match[1];
+//        }
+//
+//        // Detect if pdf is linearized.
+//        if (!preg_match('/(<<.*)/s', $content, $match)) {
+//            throw new \Exception('Invalid PDF: missing first object.');
+//        } else {
+//            $document   = new self();
+//            $header     = Header::parse($match[1], $document);
+//            $linearized = $header->has('Linearized');
+//        }
+//
+//        // Detect if pdf is encrypted.
+/*        if (preg_match('/trailer\s*<<.*?(\/Encrypt\s+\d+\s+\d+\s+R).*?>>\s+startxref/s', $content, $match)) {*/
+//            $secured = true;
+//        } else {
+//            $secured = false;
+//        }
+//
+//        return array(
+//            'version'    => $version,
+//            'linearized' => $linearized,
+//            'secured'    => $secured,
+//        );
+//    }
 
-    /**
-     * @param string $content
-     *
-     * @return array
-     */
-    protected static function detectInfo($content)
-    {
-        $match = array();
-
-        // Detect pdf version.
-        if (!preg_match('/^\s*%PDF-([0-9\.]*)/s', $content, $match)) {
-            throw new \Exception('Invalid PDF: missing pdf version.');
-        } else {
-            $version = $match[1];
-        }
-
-        // Detect if pdf is linearized.
-        if (!preg_match('/(<<.*)/s', $content, $match)) {
-            throw new \Exception('Invalid PDF: missing first object.');
-        } else {
-            $document   = new self();
-            $header     = Header::parse($match[1], $document);
-            $linearized = $header->has('Linearized');
-        }
-
-        // Detect if pdf is encrypted.
-        if (preg_match('/trailer\s*<<.*?(\/Encrypt\s+\d+\s+\d+\s+R).*?>>\s+startxref/s', $content, $match)) {
-            $secured = true;
-        } else {
-            $secured = false;
-        }
-
-        return array(
-            'version'    => $version,
-            'linearized' => $linearized,
-            'secured'    => $secured,
-        );
-    }
-
-    /**
-     * @param $filename
-     *
-     * @return Document
-     * @throws \Exception
-     */
-    public static function parseFile($filename)
-    {
-        $content = file_get_contents($filename);
-
-        return self::parseContent($content);
-
+//    /**
+//     * @param $filename
+//     *
+//     * @return Document
+//     * @throws \Exception
+//     */
+//    public static function parseFile($filename)
+//    {
+//        $content = file_get_contents($filename);
+//
+//        return self::parseContent($content);
+//
 //        $infos = self::detectInfo($content);
 //
 //        if ($infos['linearized']) {
@@ -456,59 +456,59 @@ class Document
 //            // Fallback on raw content parsing.
 //            return self::parseContent($content);
 //        }
-    }
-
-    /**
-     * This method extract object from document using regular
-     * expressions. This is useful in case of missing xref section
-     * or invalid xref references.
-     *
-     * @param string $content
-     *
-     * @return Document
-     */
-    public static function parseContent($content)
-    {
-        $document = new self();
-        $infos    = self::detectInfo($content);
-
-        if ($infos['secured']) {
-            throw new \Exception('Secured PDF Files are not currently supported.');
-        }
-
-        $objects = array();
-        $regexp  = '/([\n\r]{1,2}\d+\s+\d+\s+obj)/s';
-        $parts   = preg_split($regexp, "\n" . $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-        $id      = 0;
-
-        // Extract objects from content.
-        foreach ($parts as $part) {
-//            echo "-------------------------------\n";
-            if (preg_match('/^([\n\r]{1,2}\d+\s+\d+\s+obj)$/s', $part)) {
-                if ($id != 0) {
-                    // In case of empty object content (strange situation).
-                    $objects[$id] = Object::parse($document, '');
-                }
-                $id = trim($part);
-            } elseif ($id != 0) {
-//                echo 'object#' . $id . "\n";
-                // Remove trailing 'endobj'.
-                $part         = preg_replace('/endobj\s*$/s', '', $part);
-                $objects[$id] = Object::parse($document, $part);
-                $id           = 0;
-            }
-        }
-
-        // Extract first trailer content.
-        if (!preg_match('/[\n\r]+trailer(.*?)startxref[\n\r]+/s', $content, $match)) {
-            throw new \Exception('Missing trailer.');
-        } else {
-            $trailer = Header::parse($match[1], $document);
-            $document->setTrailer($trailer);
-        }
-
-        $document->setObjects($objects);
-
-        return $document;
-    }
+//    }
+//
+//    /**
+//     * This method extract object from document using regular
+//     * expressions. This is useful in case of missing xref section
+//     * or invalid xref references.
+//     *
+//     * @param string $content
+//     *
+//     * @return Document
+//     */
+//    public static function parseContent($content)
+//    {
+//        $document = new self();
+//        $infos    = self::detectInfo($content);
+//
+//        if ($infos['secured']) {
+//            throw new \Exception('Secured PDF Files are not currently supported.');
+//        }
+//
+//        $objects = array();
+//        $regexp  = '/([\n\r]{1,2}\d+\s+\d+\s+obj)/s';
+//        $parts   = preg_split($regexp, "\n" . $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+//        $id      = 0;
+//
+//        // Extract objects from content.
+//        foreach ($parts as $part) {
+////            echo "-------------------------------\n";
+//            if (preg_match('/^([\n\r]{1,2}\d+\s+\d+\s+obj)$/s', $part)) {
+//                if ($id != 0) {
+//                    // In case of empty object content (strange situation).
+//                    $objects[$id] = Object::parse($document, '');
+//                }
+//                $id = trim($part);
+//            } elseif ($id != 0) {
+////                echo 'object#' . $id . "\n";
+//                // Remove trailing 'endobj'.
+//                $part         = preg_replace('/endobj\s*$/s', '', $part);
+//                $objects[$id] = Object::parse($document, $part);
+//                $id           = 0;
+//            }
+//        }
+//
+//        // Extract first trailer content.
+//        if (!preg_match('/[\n\r]+trailer(.*?)startxref[\n\r]+/s', $content, $match)) {
+//            throw new \Exception('Missing trailer.');
+//        } else {
+//            $trailer = Header::parse($match[1], $document);
+//            $document->setTrailer($trailer);
+//        }
+//
+//        $document->setObjects($objects);
+//
+//        return $document;
+//    }
 }

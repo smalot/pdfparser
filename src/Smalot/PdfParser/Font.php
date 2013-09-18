@@ -420,7 +420,7 @@ class Font extends Object
 
             $word = $this->decodeContent($word, $loop_unicode);
             if (!$loop_unicode) {
-                $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
+//                $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
             }
 //                echo ' >> : "' . $word . '"' . "\n";
 

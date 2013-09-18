@@ -174,7 +174,12 @@ class Header
     public static function parse($content, Document $document, &$position = 0)
     {
         /** @var Header $header */
-        $header = ElementStruct::parse($content, $document, $position);
+        if (substr(trim($content), 0, 2) == '<<') {
+            $header = ElementStruct::parse($content, $document, $position);
+        } else {
+            $elements = ElementArray::parse($content, $document, $position);
+            $header   = new self($elements, $document);
+        }
 
         if ($header) {
             return $header;

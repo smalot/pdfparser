@@ -80,12 +80,11 @@ class Parser
         $this->objects = array();
 
         foreach ($data as $id => $structure) {
-            $object             = $this->parseObject($id, $structure, $document);
-            $this->objects[$id] = $object;
+            $this->parseObject($id, $structure, $document);
         }
 
 //        foreach ($this->objects as $id => $object) {
-//            echo $id . "\n";
+//            echo $id . ' : ' . $object->get('Type')->getContent() . "\n";
 //        }
 
         $document->setObjects($this->objects);
@@ -104,11 +103,12 @@ class Parser
      * @param string   $id
      * @param array    $structure
      * @param Document $document
-     *
-     * @return Object
      */
-    protected function parseObject(&$id, $structure, $document)
+    protected function parseObject($id, $structure, $document)
     {
+//        echo "---------------\n";
+//        echo 'analyze: ' . $id . "\n";
+
         $header  = new Header(array(), $document);
         $content = '';
 
@@ -120,16 +120,67 @@ class Parser
 
                 case 'stream':
                     $content = isset($part[3][0]) ? $part[3][0] : $part[1];
-                    $match   = array();
-                    if (preg_match('/^\s*(\d+\s+\d+)\s+(<<.*>>.*)$/s', $content, $match)) {
-                        $object                                          = Object::parse($document, $match[2]);
-                        $this->objects[str_replace(' ', '_', $match[1])] = $object;
+
+                    if ($header->get('Type')->equals('ObjStm')) {
+                        $match   = array();
+
+                        // Split xrefs and contents.
+                        preg_match('/^([\d\s]+)(.*)$/s', $content, $match);
+                        $content = $match[2];
+
+                        // Extract xrefs.
+                        $xrefs = preg_split('/(\d+\s+\d+\s*)/s', $match[1], -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+                        $table = array();
+
+                        foreach ($xrefs as $xref) {
+                            list($id, $position) = explode(' ', trim($xref));
+                            $table[$position] = $id;
+                        }
+
+                        ksort($table);
+
+                        $ids       = array_values($table);
+                        $positions = array_keys($table);
+
+                        foreach ($positions as $index => $position) {
+                            $id = $ids[$index] . '_0';
+                            $next_position = isset($positions[$index+1])?$positions[$index+1]:strlen($content);
+//                            echo 'from: ' . $position . ' to: ' . $next_position . "\n";
+                            $sub_content = substr($content, $position, $next_position - $position);
+
+                            $sub_header = Header::parse($sub_content, $document);
+                            $object             = Object::factory($document, $sub_header, '');
+//                            echo '#' . $id . ': ' . get_class($object) . "\n";
+//                            echo $sub_content . "\n";
+//                            echo 'new str: ' . $id . "\n";
+                            $this->objects[$id] = $object;
+//                            echo 'ObjStm: ' . $id . "\n";
+                        }
+
+//                        var_dump($xrefs);
+//                        die();
+//
+//                        if (preg_match('/^\s*(\d+\s+\d+)\s+(<<.*>>.*)$/s', $content, $match)) {
+//                            $object                                          = Object::parse($document, $match[2]);
+//                            $this->objects[str_replace(' ', '_', $match[1])] = $object;
+//                        }
+
+                        // It is not necessary to store this content.
+                        $content = '';
+
+                        return;
+                    } else {
+//                        echo 'new obj: ' . $id . "\n";
+//                        $this->objects[$id] = Object::factory($document, $header, $content);
+//                        return;
                     }
                     break;
             }
         }
 
-        return Object::factory($document, $header, $content);
+        if (!isset($this->objects[$id])) {
+            $this->objects[$id] = Object::factory($document, $header, $content);
+        }
     }
 
     /**

@@ -131,8 +131,7 @@ class Object
 
             foreach ($commands as $command) {
 //                if ($command['operator'][0] != 'T') continue;
-//                echo 'command: ' . $command['operator'] . ': ' . "\n";
-//                var_dump($command['command']);
+//                echo 'command: ' . $command['operator'] . ' : "' . $command['command'] . "\"\n";
 
                 switch ($command['operator']) {
                     // set character spacing
@@ -170,6 +169,7 @@ class Object
                         list($id,) = preg_split('/\s/s', $command['command']);
                         //var_dump('fontsize:' . $command['command']);
                         $current_font = $page->getFont($id);
+//                        var_dump(get_class($current_font));
 //                        echo '!!!!  Changement de font #' . $id . "  !!!!\n";
 //                        echo 'type: ' . $current_font->getType() . "\n";
                         break;
@@ -178,7 +178,7 @@ class Object
                         $command['command'] = trim($command['command'], '[]');
                     case 'Tj':
                         // Skip if not previously defined
-//                        if (is_null($current_font)) continue;
+                        if (is_null($current_font)) continue;
 
                         if ($command['command'][0] == '<') {
                             $command['command'] = Font::decodeHexadecimal($command['command'], true);
