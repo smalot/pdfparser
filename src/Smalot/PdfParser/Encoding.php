@@ -86,6 +86,7 @@ class Encoding extends Object
             foreach ($this->differences as $code => $difference) {
                 /** @var string $difference */
                 $this->mapping[$code] = $table[$difference];
+//                $this->mapping[$code] = (isset($table[$difference])?$table[$difference]:' ');
             }
         }
     }

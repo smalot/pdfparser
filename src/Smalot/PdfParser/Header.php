@@ -178,7 +178,11 @@ class Header
             $header = ElementStruct::parse($content, $document, $position);
         } else {
             $elements = ElementArray::parse($content, $document, $position);
-            $header   = new self($elements, $document);
+            if ($elements) {
+                $header   = new self($elements, $document);
+            } else {
+                $header   = new self(array(), $document);
+            }
         }
 
         if ($header) {

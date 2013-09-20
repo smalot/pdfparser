@@ -73,7 +73,7 @@ class Parser
         list($xref, $data) = $parser->getParsedData();
 
 //        var_dump($xref, $data);
-//        die();
+//        die('parsed');
 
         // Create destination object.
         $document      = new Document();

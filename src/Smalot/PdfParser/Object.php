@@ -128,9 +128,11 @@ class Object
 //            echo "---------------------------------------------------\n";
 
             $commands = $this->getCommandsFromTextPart($text_part);
+//            var_dump($commands);
 
             foreach ($commands as $command) {
 //                if ($command['operator'][0] != 'T') continue;
+//                echo $command['operator'] . "\n";
 //                echo 'command: ' . $command['operator'] . ' : "' . $command['command'] . "\"\n";
 
                 switch ($command['operator']) {
@@ -174,21 +176,22 @@ class Object
 //                        echo 'type: ' . $current_font->getType() . "\n";
                         break;
 
-                    case 'TJ':
-                        $command['command'] = trim($command['command'], '[]');
+                    case "'":
                     case 'Tj':
+                        $command['command'] = array($command);
+                    case 'TJ':
                         // Skip if not previously defined
                         if (is_null($current_font)) continue;
 
-                        if ($command['command'][0] == '<') {
-                            $command['command'] = Font::decodeHexadecimal($command['command'], true);
+//                        if ($command['command'][0] == '<') {
+//                            $command['command'] = Font::decodeHexadecimal($command['command'], true);
 //                            $unicode = true;
-                        } else {
+//                        } else {
 //                            $unicode = $current_font->isUnicode();
-                        }
-                        $unicode = false;
+//                        }
+//                        $unicode = false;
 //                        echo '*** encoded: "' . $command['command'] . "\"\n";
-                        $sub_text = $current_font->decodeText($command['command'], $unicode);
+                        $sub_text = $current_font->decodeText($command['command']);
 //                        echo '*** decoded: "' . $sub_text . "\"\n";
                         $text .= $sub_text;
                         break;
@@ -296,6 +299,8 @@ class Object
         $regexp  = '/BT\s*(.*?)\s*ET/s';
         $matches = array();
 
+//        var_dump($this->content);
+
         preg_match_all($regexp, $this->content, $matches);
 
         return $matches[1];
@@ -303,35 +308,142 @@ class Object
 
     /**
      * @param string $text_part
+     * @param int    $offset
      *
      * @return array
      */
-    public function getCommandsFromTextPart($text_part)
+    public function getCommandsFromTextPart($text_part, &$offset = 0)
     {
-        $regexps = array(
-            'TJ'     => '(\[.*?\]\s*)(TJ)',
-            'Tj'     => '(\(.*?\)\s*)(Tj)',
-            'T*'     => '(T\*)',
-            'Tf'     => '(/[A-Za-z0-9\.]+\s+[0-9\.]+)(Tf)',
-            'others' => '(([0-9\.\-])+\s+)+([a-zA-Z]{1,2})',
-        );
+        $commands = $matches = array();
 
-        $regex    = '#' . implode('|', $regexps) . '#';
-        $matches  = array();
-        $commands = array();
+        while ($offset < strlen($text_part)) {
+//            echo '.';
+            // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
+            $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
+            $char   = $text_part[$offset];
 
-        if (preg_match_all($regex, $text_part, $matches)) {
+            $operator  = '';
+            $type      = '';
+            $command   = false;
 
-            foreach ($matches[0] as $pos => $command) {
-                preg_match('/^\s*(.*?)\s*([A-Z\*]+)\s*$/is', $command, $sub_match);
+//            echo $char;
 
-                $command  = $sub_match[1];
-                $operator = $sub_match[2];
+            switch ($char) {
+                case '/':
+                    $type = $char;
+                    if (preg_match('/^\/[A-Za-z0-9\._\-]+\s+[0-9\.]+\s+Tf/s', substr($text_part, $offset), $matches)) {
+                        $operator = 'Tf';
+                        $command = trim(substr($matches[0], 0, -2));
+                        $offset+= strlen($matches[0]);
+                    } elseif (preg_match('/^\/[A-Za-z0-9\._\-\s]+?scn/s', substr($text_part, $offset), $matches)) {
+                        $operator = 'scn';
+                        $command = trim(substr($matches[0], 0, -3));
+                        $offset+= strlen($matches[0]);
+                    }
+                    break;
 
+                case '[':
+                case ']':
+                    // array object
+                    $type = $char;
+                    if ($char == '[') {
+                        ++$offset;
+                        // get elements
+                        $command = $this->getCommandsFromTextPart($text_part, $offset);
+
+                        if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
+                            $operator = trim($matches[0]);
+                            $offset+= strlen($matches[0]);
+                        }
+                    } else {
+                        ++$offset;
+                        break;
+                    }
+                    break;
+
+                case '<':
+                case '>':
+                    // array object
+                    $type = $char;
+                    ++$offset;
+                    if ($char == '<') {
+                        $strpos = strpos($text_part, '>', $offset);
+                        $command = substr($text_part, $offset, ($strpos - $offset));
+                        $offset = $strpos + 1;
+                    }
+
+                    if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
+                        $command .= trim($matches[0]);
+                        $offset+= strlen($matches[0]);
+                    }
+                    break;
+
+                case '(':
+                case ')':
+                    ++$offset;
+                    $type   = $char;
+                    $strpos = $offset;
+                    if ($char == '(') {
+                        $open_bracket = 1;
+                        while ($open_bracket > 0) {
+                            if (!isset($text_part[$strpos])) {
+                                break;
+                            }
+                            $ch = $text_part[$strpos];
+                            switch ($ch) {
+                                case '\\': { // REVERSE SOLIDUS (5Ch) (Backslash)
+                                    // skip next character
+                                    ++$strpos;
+                                    break;
+                                }
+                                case '(': { // LEFT PARENHESIS (28h)
+                                    ++$open_bracket;
+                                    break;
+                                }
+                                case ')': { // RIGHT PARENTHESIS (29h)
+                                    --$open_bracket;
+                                    break;
+                                }
+                            }
+                            ++$strpos;
+                        }
+                        $command = substr($text_part, $offset, ($strpos - $offset - 1));
+                        $offset = $strpos;
+
+                        if (preg_match('/^\s*[A-Z\']{1,2}/si', substr($text_part, $offset), $matches)) {
+                            $operator = trim($matches[0]);
+                            $offset += strlen($matches[0]);
+                        }
+                    }
+                    break;
+
+                default:
+
+                    if (preg_match('/^(?<data>([0-9\.\-]+\s*?)+)(?<id>[A-Z]{1,2})/si', substr($text_part, $offset), $matches)) {
+                        $operator = $matches['id'];
+                        $command = trim($matches['data']);
+                        $offset+= strlen($matches[0]);
+                    } elseif (preg_match('/^([0-9\.\-]+\s*?)+/si', substr($text_part, $offset), $matches)) {
+                        $type    = 'numeric';
+                        $command = trim($matches[0]);
+                        $offset+= strlen($matches[0]);
+                    } elseif (substr($text_part, $offset, 2) == 'T*') {
+                        $operator = 'T*';
+                        $command  = '';
+                        $offset+= 2;
+                    }
+            }
+
+//            echo "\n";
+
+            if ($command !== false) {
                 $commands[] = array(
                     'operator' => $operator,
+                    'type'     => $type,
                     'command'  => $command,
                 );
+            } else {
+                break;
             }
         }
 

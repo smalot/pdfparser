@@ -128,11 +128,18 @@ class Font extends Object
      */
     public function translateChar($char)
     {
+//        var_dump('----xxx----');
+//        var_dump($char);
         $dec = hexdec(bin2hex($char));
+//        var_dump($dec);
 
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
+        } else {
+            $char = '$';
         }
+
+//        var_dump($char);
 
         return $char;
 
@@ -228,13 +235,13 @@ class Font extends Object
 //                    var_dump($matches['strings']);
                     foreach ($matches['from'] as $key => $from) {
                         $char_from = hexdec($from);
-                        $char_to   = hexdec($matches['to'][$key]);
+//                        $char_to   = hexdec($matches['to'][$key]);
                         $strings   = array();
 
-                        preg_match_all('/(?<string><[0-9A-F]+>) */is', $matches['strings'][$key], $strings);
+                        preg_match_all('/<(?<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
 
                         foreach ($strings['string'] as $position => $string) {
-                            $this->table[$char_from + $position] = Font::decodeHexadecimal($string);
+                            $this->table[$char_from + $position] = self::uchr(hexdec($string));
 //                            var_dump($char_from + $position, $string, $this->table[$char_from + $position]);
 //                            echo "3---------------\n";
                         }
@@ -348,82 +355,75 @@ class Font extends Object
     }
 
     /**
-     * @param string $text
-     * @param bool   $unicode
+     * @param array $commands
      *
      * @return string
      */
-    public function decodeText($text, $unicode)
+    public function decodeText($commands)
     {
-        $text          = self::decodeOctal($text);
+//        $text          = self::decodeOctal($text);
         $cur_start_pos = 0;
         $word_position = 0;
         $words         = array();
         $unicode       = false; //$this->isUnicode();
+        $spacing_size  = 0;
 
-        while (($cur_start_text = mb_strpos($text, '(', $cur_start_pos)) !== false) {
-            // New text element found
-            if ($cur_start_text - $cur_start_pos > 8) {
-                ;
-            } else {
-                $spacing_size = floatval(trim(mb_substr($text, $cur_start_pos, $cur_start_text - $cur_start_pos)));
+        foreach ($commands as $command) {
+            switch ($command['type']) {
+                case 'numeric':
+                    // TODO : do it better
+                    if (floatval(trim($command['command'])) < -50) {
+                        $word_position = count($words);
+                    }
+                    continue(2);
 
-                // TODO : use matrix to determine spacing
-                if ($spacing_size < -50) {
-                    $word_position++;
-                }
-            }
-
-            $cur_start_text++;
-            $start_search_end = $cur_start_text;
-
-            while (($cur_start_pos = mb_strpos($text, ')', $start_search_end)) !== false) {
-                $cur_extract = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
-                preg_match('/(?<escape>[\\\]*)$/s', $cur_extract, $match);
-
-                if (!(mb_strlen($match['escape']) % 2)) {
+                case '<':
+                    // Decode hexadecimal.
+                    $text = self::decodeHexadecimal('<' . $command['command'] . '>');
+                    $unicode = true;
+//                    var_dump($command['command'], $text);
                     break;
-                }
 
-                $start_search_end = $cur_start_pos + 1;
+                default:
+                    // Decode octal (if necessary).
+                    $text = self::decodeOctal($command['command']);
             }
 
-            // something wrong happened
-            if ($cur_start_pos === false) {
-                break;
-            }
-
-            // extract content
-            $sub_text = mb_substr($text, $cur_start_text, $cur_start_pos - $cur_start_text);
-            $sub_text = str_replace(
+            // replace escaped chars
+            $text = str_replace(
                 array('\\\\', '\(', '\)', '\n', '\r', '\t'),
                 array('\\', '(', ')', "\n", "\r", "\t"),
-                $sub_text
+                $text
             );
 
             // add content to result string
             if (isset($words[$word_position])) {
-                $words[$word_position] .= $sub_text;
+                $words[$word_position] .= $text;
             } else {
-                $words[$word_position] = $sub_text;
+                $words[$word_position] = $text;
             }
-
-            $cur_start_pos++;
         }
 
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
 
 //            echo ' << : "' . $word . '"' . "\n";
-//
-//            echo '$unicode:   ' . $unicode . "\n";
+//            echo 'encoding :   ' . $this->get('Encoding')->equals('MacRomanEncoding') . "\n";
+//            var_dump($this->encoding);
+//            die();
 
             $word = $this->decodeContent($word, $loop_unicode);
-            if (!$loop_unicode) {
-//                $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
-            }
-//                echo ' >> : "' . $word . '"' . "\n";
 
+            // Convert to unicode if not already done.
+            if (!$loop_unicode) {
+                if ($this->get('Encoding') instanceof Element &&
+                    $this->get('Encoding')->equals('MacRomanEncoding')) {
+                    $word = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $word);
+                } else {
+                    $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
+                }
+            }
+//            echo ' >> : "' . $word . '"' . "\n";
 //            echo "-----------------------------------\n";
         }
 
@@ -471,19 +471,22 @@ class Font extends Object
         if ($this->has('ToUnicode')) {
 
             $bytes = $this->table_sizes['from'];
+//            var_dump($bytes);
 
             if ($bytes) {
                 $result = '';
                 $length = strlen($text);
 
-                for ($i = 0; $i <= $length; $i += $bytes) {
+                for ($i = 0; $i < $length; $i += $bytes) {
                     $char = substr($text, $i, $bytes);
                     $char = $this->translateChar($char);
                     $result .= $char;
                 }
 
                 $text    = $result;
-                $unicode = ($this->table_sizes['to'] > 1);
+
+                // By definition, this code generates unicode chars.
+                $unicode = true;
             }
         }
 
