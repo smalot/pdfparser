@@ -150,7 +150,7 @@ class Object
                         if ((floatval($x) <= 0 && floatval($y) > 0) ||
                             ($current_position_td['y'] !== false && floatval($y) != floatval($current_position_td['y']))
                         ) {
-                            //$text .= "\n";
+                            $text .= "\n";
                         }
                         $current_position_td = array('x' => $x, 'y' => $y);
                         break;
