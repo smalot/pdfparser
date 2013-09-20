@@ -116,24 +116,20 @@ class Object
     public function getText(Page $page = null)
     {
         $text                = '';
-        $text_parts          = $this->getTextParts();
+        $text_parts          = $this->getCommands($this->content);
         $current_font_size   = 0;
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
 
-        foreach ($text_parts as $text_part) {
-//            echo "===================================================\n";
-//            echo 'textpart: "' . $text_part . '"' . "\n";
-//            echo "---------------------------------------------------\n";
+        foreach ($text_parts as $commands) {
 
-            $commands = $this->getCommandsFromTextPart($text_part);
-//            var_dump($commands);
+            // Skip non text bloc.
+            if ($commands['type'] != 'BT') {
+                continue;
+            }
 
-            foreach ($commands as $command) {
-//                if ($command['operator'][0] != 'T') continue;
-//                echo $command['operator'] . "\n";
-//                echo 'command: ' . $command['operator'] . ' : "' . $command['command'] . "\"\n";
+            foreach ($commands['command'] as $command) {
 
                 switch ($command['operator']) {
                     // set character spacing
@@ -142,8 +138,6 @@ class Object
 
                     // move text current point
                     case 'Td':
-//                        break;
-
                         $args = preg_split('/\s/s', $command['command']);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
@@ -161,7 +155,7 @@ class Object
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if (floatval($y)) {
-                            $text .= "\n";
+                            $text .= "\n\n";
                         } elseif (floatval($x) <= 0) {
                             $text .= ' ';
                         }
@@ -169,30 +163,17 @@ class Object
 
                     case 'Tf':
                         list($id,) = preg_split('/\s/s', $command['command']);
-                        //var_dump('fontsize:' . $command['command']);
                         $current_font = $page->getFont($id);
-//                        var_dump(get_class($current_font));
-//                        echo '!!!!  Changement de font #' . $id . "  !!!!\n";
-//                        echo 'type: ' . $current_font->getType() . "\n";
                         break;
 
                     case "'":
                     case 'Tj':
                         $command['command'] = array($command);
                     case 'TJ':
-                        // Skip if not previously defined
+                        // Skip if not previously defined, should never happened.
                         if (is_null($current_font)) continue;
 
-//                        if ($command['command'][0] == '<') {
-//                            $command['command'] = Font::decodeHexadecimal($command['command'], true);
-//                            $unicode = true;
-//                        } else {
-//                            $unicode = $current_font->isUnicode();
-//                        }
-//                        $unicode = false;
-//                        echo '*** encoded: "' . $command['command'] . "\"\n";
                         $sub_text = $current_font->decodeText($command['command']);
-//                        echo '*** decoded: "' . $sub_text . "\"\n";
                         $text .= $sub_text;
                         break;
 
@@ -208,7 +189,6 @@ class Object
                         if ($current_position_tm['y'] !== false) {
                             $delta = abs(floatval($y) - floatval($current_position_tm['y']));
                             if ($delta > 10) {
-//                                $text .= '(' . floatval($y) .' -> '. floatval($current_position_tm['y']) . ")\n";
                                 $text .= "\n";
                             }
                         }
@@ -274,10 +254,6 @@ class Object
                         //throw new \Exception('Operator not supported: ' . $command['operator']);
                 }
             }
-
-//            echo "---------------------------------------------------\n";
-//            echo 'result: "' . $text . '"' . "\n";
-//            echo "---------------------------------------------------\n";
         }
 
         return $text;
@@ -292,32 +268,16 @@ class Object
     }
 
     /**
-     * @return array
-     */
-    public function getTextParts()
-    {
-        $regexp  = '/BT\s*(.*?)\s*ET/s';
-        $matches = array();
-
-//        var_dump($this->content);
-
-        preg_match_all($regexp, $this->content, $matches);
-
-        return $matches[1];
-    }
-
-    /**
      * @param string $text_part
      * @param int    $offset
      *
      * @return array
      */
-    public function getCommandsFromTextPart($text_part, &$offset = 0)
+    public function getCommands($text_part, &$offset = 0)
     {
         $commands = $matches = array();
 
         while ($offset < strlen($text_part)) {
-//            echo '.';
             // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
             $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
             $char   = $text_part[$offset];
@@ -326,18 +286,12 @@ class Object
             $type      = '';
             $command   = false;
 
-//            echo $char;
-
             switch ($char) {
                 case '/':
                     $type = $char;
-                    if (preg_match('/^\/[A-Za-z0-9\._\-]+\s+[0-9\.]+\s+Tf/s', substr($text_part, $offset), $matches)) {
-                        $operator = 'Tf';
-                        $command = trim(substr($matches[0], 0, -2));
-                        $offset+= strlen($matches[0]);
-                    } elseif (preg_match('/^\/[A-Za-z0-9\._\-\s]+?scn/s', substr($text_part, $offset), $matches)) {
-                        $operator = 'scn';
-                        $command = trim(substr($matches[0], 0, -3));
+                    if (preg_match('/^\/[A-Z0-9\._\-\s]+?\s+([a-z]+)/si', substr($text_part, $offset), $matches)) {
+                        $operator = $matches[1];
+                        $command = trim(substr($matches[0], 0, strlen($operator) * -1));
                         $offset+= strlen($matches[0]);
                     }
                     break;
@@ -349,7 +303,7 @@ class Object
                     if ($char == '[') {
                         ++$offset;
                         // get elements
-                        $command = $this->getCommandsFromTextPart($text_part, $offset);
+                        $command = $this->getCommands($text_part, $offset);
 
                         if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
                             $operator = trim($matches[0]);
@@ -419,22 +373,36 @@ class Object
 
                 default:
 
-                    if (preg_match('/^(?<data>([0-9\.\-]+\s*?)+)(?<id>[A-Z]{1,2})/si', substr($text_part, $offset), $matches)) {
-                        $operator = $matches['id'];
-                        $command = trim($matches['data']);
-                        $offset+= strlen($matches[0]);
+                    if (substr($text_part, $offset, 2) == 'T*') {
+                        $operator = 'T*';
+                        $command  = '';
+                        $offset+= 2;
+                    } elseif (preg_match('/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})/si', substr($text_part, $offset), $matches)) {
+                        $operator = trim($matches['id']);
+                        $command  = trim($matches['data']);
+                        $offset   += strlen($matches[0]);
                     } elseif (preg_match('/^([0-9\.\-]+\s*?)+/si', substr($text_part, $offset), $matches)) {
                         $type    = 'numeric';
                         $command = trim($matches[0]);
                         $offset+= strlen($matches[0]);
-                    } elseif (substr($text_part, $offset, 2) == 'T*') {
-                        $operator = 'T*';
+                    } elseif (substr($text_part, $offset, 2) == 'BT' ||
+                              substr($text_part, $offset, 2) == 'ET') {
+                        if (substr($text_part, $offset, 2) == 'BT') {
+                            $type = 'BT';
+                            $offset += 2;
+                            // get elements
+                            $command = $this->getCommands($text_part, $offset);
+                        } else {
+                            $offset += 2;
+                            break;
+                        }
+                    } elseif (preg_match('/^([A-Z\*]+)/si', substr($text_part, $offset), $matches)) {
+                        $type     = '';
+                        $operator = $matches[0];
                         $command  = '';
-                        $offset+= 2;
+                        $offset   += strlen($matches[0]);
                     }
             }
-
-//            echo "\n";
 
             if ($command !== false) {
                 $commands[] = array(
@@ -472,11 +440,7 @@ class Object
 
         if (preg_match('/^\s*stream[\n\r]{0,2}(?<data>.*)endstream.*/s', $content, $matches)) {
             $content = preg_replace('/[\n\r]{1,2}$/', '', $matches['data']);
-            //echo 'extracted from stream' . "\n";
-            //$content = substr($content, strpos($content, 'stream') + strlen('stream') + $nb_chars, strrpos($content, 'endstream') - strlen('stream') - $nb_chars);
         }
-
-        //var_dump($header);
 
         if ($header->has('Filter')) {
             if ($header->has('DecodeParms')) {
@@ -493,19 +457,14 @@ class Object
             $filters = (array)($header->get('Filter')->getContent());
 
             foreach ($filters as $position => $filter) {
-//                echo 'apply filter: ' . $filter->getContent() . "\n";
                 try {
-//                    echo 'length (before "'.$filter.'"):' . strlen($content) . "\n";
-//                    if (strlen($content) > 50000) var_dump($content);
                     if (isset($decodeParms[$position])) {
                         $content = Filters::decodeFilter((string)$filter, $content, $decodeParms[$position]);
                     } else {
                         $content = Filters::decodeFilter((string)$filter, $content);
                     }
-//                    echo 'length (after  "'.$filter.'"):' . strlen($content) . "\n";
-//                var_dump($content);
                 } catch (\Exception $e) {
-                    echo 'error: ' . $e->getMessage() . "\n";
+//                    echo 'error: ' . $e->getMessage() . "\n";
                     trigger_error($e->getMessage());
                     $content = '';
                     break;

@@ -69,21 +69,6 @@ class Font extends Object
     }
 
     /**
-     * @return bool
-     */
-    public function isUnicode()
-    {
-        if ($this->has('Encoding')) {
-            $encoding = $this->get('Encoding')->getContent();
-            if (in_array($encoding, array('Identity-H'))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @return string
      */
     public function getType()
@@ -128,10 +113,7 @@ class Font extends Object
      */
     public function translateChar($char)
     {
-//        var_dump('----xxx----');
-//        var_dump($char);
         $dec = hexdec(bin2hex($char));
-//        var_dump($dec);
 
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
@@ -139,10 +121,7 @@ class Font extends Object
             $char = '$';
         }
 
-//        var_dump($char);
-
         return $char;
-
     }
 
     /**
@@ -201,8 +180,6 @@ class Font extends Object
                         $to                         = $matches['to'][$key];
                         $to                         = self::uchr(hexdec($to));
                         $this->table[hexdec($from)] = $to;
-//                        var_dump($from, hexdec($from), $to);
-//                        echo "1---------------\n";
                     }
                 }
             }
@@ -222,8 +199,6 @@ class Font extends Object
 
                         for ($char = $char_from; $char <= $char_to; $char++) {
                             $this->table[$char] = self::uchr($char - $char_from + $offset);
-//                            var_dump(dechex($char), $char, $this->table[$char]);
-//                            echo "2---------------\n";
                         }
                     }
 
@@ -232,7 +207,6 @@ class Font extends Object
 
                     preg_match_all($regexp, $section, $matches);
 
-//                    var_dump($matches['strings']);
                     foreach ($matches['from'] as $key => $from) {
                         $char_from = hexdec($from);
 //                        $char_to   = hexdec($matches['to'][$key]);
@@ -242,11 +216,8 @@ class Font extends Object
 
                         foreach ($strings['string'] as $position => $string) {
                             $this->table[$char_from + $position] = self::uchr(hexdec($string));
-//                            var_dump($char_from + $position, $string, $this->table[$char_from + $position]);
-//                            echo "3---------------\n";
                         }
                     }
-//                    var_dump($matches);
                 }
             }
         }
@@ -361,17 +332,14 @@ class Font extends Object
      */
     public function decodeText($commands)
     {
-//        $text          = self::decodeOctal($text);
-        $cur_start_pos = 0;
         $word_position = 0;
         $words         = array();
-        $unicode       = false; //$this->isUnicode();
-        $spacing_size  = 0;
+        $unicode       = false;
 
         foreach ($commands as $command) {
             switch ($command['type']) {
                 case 'numeric':
-                    // TODO : do it better
+                    // TODO : do it better.
                     if (floatval(trim($command['command'])) < -50) {
                         $word_position = count($words);
                     }
@@ -380,8 +348,8 @@ class Font extends Object
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<' . $command['command'] . '>');
+                    // TODO : check if necessary.
                     $unicode = true;
-//                    var_dump($command['command'], $text);
                     break;
 
                 default:
@@ -406,13 +374,7 @@ class Font extends Object
 
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
-
-//            echo ' << : "' . $word . '"' . "\n";
-//            echo 'encoding :   ' . $this->get('Encoding')->equals('MacRomanEncoding') . "\n";
-//            var_dump($this->encoding);
-//            die();
-
-            $word = $this->decodeContent($word, $loop_unicode);
+            $word         = $this->decodeContent($word, $loop_unicode);
 
             // Convert to unicode if not already done.
             if (!$loop_unicode) {
@@ -423,8 +385,6 @@ class Font extends Object
                     $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
                 }
             }
-//            echo ' >> : "' . $word . '"' . "\n";
-//            echo "-----------------------------------\n";
         }
 
         return implode(' ', $words);
@@ -471,7 +431,6 @@ class Font extends Object
         if ($this->has('ToUnicode')) {
 
             $bytes = $this->table_sizes['from'];
-//            var_dump($bytes);
 
             if ($bytes) {
                 $result = '';

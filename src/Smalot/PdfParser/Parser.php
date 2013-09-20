@@ -72,9 +72,6 @@ class Parser
         $parser = new \TCPDF_PARSER($content);
         list($xref, $data) = $parser->getParsedData();
 
-//        var_dump($xref, $data);
-//        die('parsed');
-
         // Create destination object.
         $document      = new Document();
         $this->objects = array();
@@ -82,10 +79,6 @@ class Parser
         foreach ($data as $id => $structure) {
             $this->parseObject($id, $structure, $document);
         }
-
-//        foreach ($this->objects as $id => $object) {
-//            echo $id . ' : ' . $object->get('Type')->getContent() . "\n";
-//        }
 
         $document->setObjects($this->objects);
 
@@ -106,9 +99,6 @@ class Parser
      */
     protected function parseObject($id, $structure, $document)
     {
-//        echo "---------------\n";
-//        echo 'analyze: ' . $id . "\n";
-
         $header  = new Header(array(), $document);
         $content = '';
 
@@ -145,34 +135,17 @@ class Parser
                         foreach ($positions as $index => $position) {
                             $id = $ids[$index] . '_0';
                             $next_position = isset($positions[$index+1])?$positions[$index+1]:strlen($content);
-//                            echo 'from: ' . $position . ' to: ' . $next_position . "\n";
                             $sub_content = substr($content, $position, $next_position - $position);
 
                             $sub_header = Header::parse($sub_content, $document);
                             $object             = Object::factory($document, $sub_header, '');
-//                            echo '#' . $id . ': ' . get_class($object) . "\n";
-//                            echo $sub_content . "\n";
-//                            echo 'new str: ' . $id . "\n";
                             $this->objects[$id] = $object;
-//                            echo 'ObjStm: ' . $id . "\n";
                         }
-
-//                        var_dump($xrefs);
-//                        die();
-//
-//                        if (preg_match('/^\s*(\d+\s+\d+)\s+(<<.*>>.*)$/s', $content, $match)) {
-//                            $object                                          = Object::parse($document, $match[2]);
-//                            $this->objects[str_replace(' ', '_', $match[1])] = $object;
-//                        }
 
                         // It is not necessary to store this content.
                         $content = '';
 
                         return;
-                    } else {
-//                        echo 'new obj: ' . $id . "\n";
-//                        $this->objects[$id] = Object::factory($document, $header, $content);
-//                        return;
                     }
                     break;
             }
@@ -260,37 +233,4 @@ class Parser
                 throw new \Exception('Invalid type: "' . $type . '".');
         }
     }
-
-//    /**
-//     * Convert a PDF into text.
-//     *
-//     * @return string The extracted text from the PDF
-//     */
-//    protected static function extractText(Document $pdf)
-//    {
-//        $pages = $pdf->getPages();
-//        $texts = array();
-//
-////        var_dump($pdf->getObjectById(1227)->getContent());
-////        var_dump($pdf->getObjectById(1227)->loadTranslateTable());
-////        die('test');
-//
-//        $details = $pdf->getDetails();
-//        foreach ($details as $key => $value) {
-//            echo $key . ': ' . $value . "\n";
-//        }
-//
-//        return 'test';
-//
-//        return $pages[2]->getText();
-//
-//        foreach ($pages as $page) {
-//            // Add a new text block if not empty.
-//            if ($text = $page->getText()) {
-//                $texts[] = $text;
-//            }
-//        }
-//
-//        return implode("\n\n", $texts);
-//    }
 }
