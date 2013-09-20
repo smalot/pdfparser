@@ -3,15 +3,15 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "b1e549b56e0b42153a270854ab2eeb9e",
+    "hash": "acdbd625b70ec61de957e19c97024bea",
     "packages": [
         {
             "name": "tecnick.com/tcpdf",
-            "version": "6.0.025",
+            "version": "6.0.031",
             "source": {
                 "type": "git",
                 "url": "http://git.code.sf.net/p/tcpdf/code",
-                "reference": "a8ec5fe7efc5a18d64ad95a760e2626a52674d43"
+                "reference": "0c26f23abf85a358f07008b76e128f4367f52aaf"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -60,7 +60,7 @@
                 "pdf417",
                 "qrcode"
             ],
-            "time": "2013-09-04 18:32:13"
+            "time": "2013-09-18 18:42:19"
         }
     ],
     "packages-dev": [
@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atoum/atoum.git",
-                "reference": "d72a56e361142ea16a78924136657db0e65b6b85"
+                "reference": "f77bf4ab71d38667675c2c08392af69c123a819e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atoum/atoum/zipball/d72a56e361142ea16a78924136657db0e65b6b85",
-                "reference": "d72a56e361142ea16a78924136657db0e65b6b85",
+                "url": "https://api.github.com/repos/atoum/atoum/zipball/f77bf4ab71d38667675c2c08392af69c123a819e",
+                "reference": "f77bf4ab71d38667675c2c08392af69c123a819e",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "test",
                 "unit testing"
             ],
-            "time": "2013-09-13 08:51:09"
+            "time": "2013-09-19 15:27:08"
         }
     ],
     "aliases": [
@@ -146,9 +146,9 @@
     "stability-flags": {
         "atoum/atoum": 20
     },
-    "platform": [
-
-    ],
+    "platform": {
+        "php": ">=5.3.0"
+    },
     "platform-dev": [
 
     ]
