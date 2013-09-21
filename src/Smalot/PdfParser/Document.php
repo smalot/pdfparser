@@ -57,11 +57,6 @@ class Document
     protected $details = null;
 
     /**
-     * @var bool
-     */
-    protected $encrypted = false;
-
-    /**
      *
      */
     public function __construct()
@@ -102,15 +97,12 @@ class Document
     }
 
     /**
-     * Build details array and set encrypted flag.
+     * Build details array.
      */
     protected function buildDetails()
     {
         // Build details array.
         $details = array();
-
-        // Set encrypted flag.
-        $details['Encrypted'] = $this->trailer->has('Encrypt');
 
         // Extract document info
         if ($this->trailer->has('Info')) {
@@ -147,7 +139,7 @@ class Document
 
     /**
      * @param Object[] $objects
-     */
+ */
     public function setObjects($objects = array())
     {
         $this->objects = (array)$objects;

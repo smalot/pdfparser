@@ -263,10 +263,10 @@ class Object
     /**
      * @return string
      */
-    public function __toString()
-    {
-        return (string)($this->getContent());
-    }
+//    public function __toString()
+//    {
+//        return (string)($this->getContent());
+//    }
 
     /**
      * @param string $text_part
@@ -425,56 +425,56 @@ class Object
      *
      * @return Font|Image|Object|Page
      */
-    public static function parse(Document $document, $content = '')
-    {
-        $matches = array();
+//    public static function parse(Document $document, $content = '')
+//    {
+//        $matches = array();
+//
 
-        //
-        if (preg_match('/^\s*<</s', $content, $matches)) {
-            $position = 0;
-            $header   = Header::parse($content, $document, $position);
-            $content  = trim(substr($content, $position), " \n\r");
-        } else {
-            $header  = new Header(array(), $document);
-            $content = trim($content, " \n\r");
-        }
-
-        if (preg_match('/^\s*stream[\n\r]{0,2}(?<data>.*)endstream.*/s', $content, $matches)) {
-            $content = preg_replace('/[\n\r]{1,2}$/', '', $matches['data']);
-        }
-
-        if ($header->has('Filter')) {
-            if ($header->has('DecodeParms')) {
-                $decodeParms = $header->get('DecodeParms');
-                if ($decodeParms instanceof ElementArray) {
-                    $decodeParms = $decodeParms->getContent();
-                } else {
-                    $decodeParms = array($decodeParms);
-                }
-            } else {
-                $decodeParms = array();
-            }
-
-            $filters = (array)($header->get('Filter')->getContent());
-
-            foreach ($filters as $position => $filter) {
-                try {
-                    if (isset($decodeParms[$position])) {
-                        $content = Filters::decodeFilter((string)$filter, $content, $decodeParms[$position]);
-                    } else {
-                        $content = Filters::decodeFilter((string)$filter, $content);
-                    }
-                } catch (\Exception $e) {
-//                    echo 'error: ' . $e->getMessage() . "\n";
-                    trigger_error($e->getMessage());
-                    $content = '';
-                    break;
-                }
-            }
-        }
-
-        return self::factory($document, $header, $content);
-    }
+//        if (preg_match('/^\s*<</s', $content, $matches)) {
+//            $position = 0;
+//            $header   = Header::parse($content, $document, $position);
+//            $content  = trim(substr($content, $position), " \n\r");
+//        } else {
+//            $header  = new Header(array(), $document);
+//            $content = trim($content, " \n\r");
+//        }
+//
+//        if (preg_match('/^\s*stream[\n\r]{0,2}(?<data>.*)endstream.*/s', $content, $matches)) {
+//            $content = preg_replace('/[\n\r]{1,2}$/', '', $matches['data']);
+//        }
+//
+//        if ($header->has('Filter')) {
+//            if ($header->has('DecodeParms')) {
+//                $decodeParms = $header->get('DecodeParms');
+//                if ($decodeParms instanceof ElementArray) {
+//                    $decodeParms = $decodeParms->getContent();
+//                } else {
+//                    $decodeParms = array($decodeParms);
+//                }
+//            } else {
+//                $decodeParms = array();
+//            }
+//
+//            $filters = (array)($header->get('Filter')->getContent());
+//
+//            foreach ($filters as $position => $filter) {
+//                try {
+//                    if (isset($decodeParms[$position])) {
+//                        $content = Filters::decodeFilter((string)$filter, $content, $decodeParms[$position]);
+//                    } else {
+//                        $content = Filters::decodeFilter((string)$filter, $content);
+//                    }
+//                } catch (\Exception $e) {
+////                    echo 'error: ' . $e->getMessage() . "\n";
+//                    trigger_error($e->getMessage());
+//                    $content = '';
+//                    break;
+//                }
+//            }
+//        }
+//
+//        return self::factory($document, $header, $content);
+//    }
 
     public static function factory($document, $header, $content)
     {

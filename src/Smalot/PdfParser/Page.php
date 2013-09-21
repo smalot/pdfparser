@@ -28,12 +28,12 @@ class Page extends Object
     /**
      * @var Object
      */
-    protected $resources = null;
+//    protected $resources = null;
 
     /**
      * @var Object
      */
-    protected $contents = null;
+//    protected $contents = null;
 
     /**
      * @var Font[]
@@ -43,7 +43,7 @@ class Page extends Object
     /**
      * @return Object
      */
-    public function getResources()
+    /*public function getResources()
     {
         if (!is_null($this->resources)) {
             return $this->resources;
@@ -52,12 +52,12 @@ class Page extends Object
         $resources = $this->get('Resources');
 
         return ($this->resources = $resources);
-    }
+    }*/
 
     /**
      * @return Object
      */
-    public function getContents()
+    /*public function getContents()
     {
         if (!is_null($this->contents)) {
             return $this->contents;
@@ -66,7 +66,7 @@ class Page extends Object
         $contents = $this->get('Contents');
 
         return ($this->contents = $contents);
-    }
+    }*/
 
     /**
      * @return Font[]
@@ -77,7 +77,7 @@ class Page extends Object
             return $this->fonts;
         }
 
-        $resources = $this->getResources();
+        $resources = $this->get('Resources');
 
         if ($resources->has('Font')) {
 
@@ -93,8 +93,10 @@ class Page extends Object
                 $table[$id] = $font;
 
                 // Store too on cleaned id value (only numeric)
-                $id         = preg_replace('/[^0-9\.\-_]/', '', $id);
-                $table[$id] = $font;
+                $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+                if ($id != '') {
+                    $table[$id] = $font;
+                }
             }
 
             return ($this->fonts = $table);
@@ -115,9 +117,13 @@ class Page extends Object
         if (isset($fonts[$id])) {
             return $fonts[$id];
         } else {
-            $id    = preg_replace('/[^0-9\.\-_]/', '', $id);
+            $id = preg_replace('/[^0-9\.\-_]/', '', $id);
 
-            return $fonts[$id];
+            if (isset($fonts[$id])) {
+                return $fonts[$id];
+            } else {
+                return null;
+            }
         }
     }
 
@@ -128,12 +134,13 @@ class Page extends Object
      */
     public function getText(Page $page = null)
     {
-        $contents = $this->getContents();
+        $contents = $this->get('Contents');
 
         if ($contents) {
             if ($contents instanceof ElementArray) {
                 // Create a virtual global content.
                 $new_content = '';
+
                 foreach ($contents->getContent() as $content) {
                     $new_content .= $content->getContent() . "\n";
                 }
@@ -146,7 +153,7 @@ class Page extends Object
                 return $contents->getText($this);
             }
         } else {
-            return null;
+            return '';
         }
     }
 }
