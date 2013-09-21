@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "acdbd625b70ec61de957e19c97024bea",
+    "hash": "760edbd45e1d75c7d2910526b6d223f6",
     "packages": [
         {
             "name": "tecnick.com/tcpdf",
