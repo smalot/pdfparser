@@ -90,6 +90,9 @@ class Page extends Object
             $table = array();
 
             foreach ($fonts as $id => $font) {
+                $table[$id] = $font;
+
+                // Store too on cleaned id value (only numeric)
                 $id         = preg_replace('/[^0-9\.\-_]/', '', $id);
                 $table[$id] = $font;
             }
@@ -108,9 +111,14 @@ class Page extends Object
     public function getFont($id)
     {
         $fonts = $this->getFonts();
-        $id    = preg_replace('/[^0-9\.\-_]/', '', $id);
 
-        return $fonts[$id];
+        if (isset($fonts[$id])) {
+            return $fonts[$id];
+        } else {
+            $id    = preg_replace('/[^0-9\.\-_]/', '', $id);
+
+            return $fonts[$id];
+        }
     }
 
     /**

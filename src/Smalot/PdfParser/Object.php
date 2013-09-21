@@ -162,7 +162,8 @@ class Object
                         break;
 
                     case 'Tf':
-                        list($id,) = preg_split('/\s/s', $command['command']);
+                        list($id,)    = preg_split('/\s/s', $command['command']);
+                        $id           = trim($id, '/');
                         $current_font = $page->getFont($id);
                         break;
 
