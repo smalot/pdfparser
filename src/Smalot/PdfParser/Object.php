@@ -88,15 +88,13 @@ class Object
     }
 
     /**
+     * @param bool $deep
+     *
      * @return array
      */
-    public function getDetails()
+    public function getDetails($deep = true)
     {
-        $details = array();
-
-        $details += $this->header->getValues();
-
-        return $details;
+        return $this->header->getDetails($deep);
     }
 
     /**

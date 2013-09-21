@@ -25,11 +25,6 @@ use Smalot\PdfParser\Element\ElementNumeric;
 class Encoding extends Object
 {
     /**
-     * Char fallback.
-     */
-    const MISSING = '?';
-
-    /**
      * @var array
      */
     protected $encoding;
@@ -90,7 +85,7 @@ class Encoding extends Object
 
             foreach ($this->differences as $code => $difference) {
                 /** @var string $difference */
-                $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : self::MISSING);
+                $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : Font::MISSING);
             }
         }
     }

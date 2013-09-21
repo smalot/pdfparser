@@ -48,19 +48,26 @@ class ElementArray extends Element
         return parent::getContent();
     }
 
+    /**
+     * @param bool $deep
+     *
+     * @return array
+     */
     public function getDetails($deep = true)
     {
-        $values  = array();
-        $content = $this->getContent();
+        $values   = array();
+        $elements = $this->getContent();
 
-        foreach ($content as $key => $element) {
+        foreach ($elements as $key => $element) {
             if ($element instanceof Header && $deep) {
-                $values[$key] = $element->getValues($deep);
+                $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof Object && $deep) {
-                $values[$key] = $element->getDetails();
-            } elseif ($element instanceof ElementArray && $deep) {
-                $values[$key] = $element->getDetails();
-            } else {
+                $values[$key] = $element->getDetails(false);
+            } elseif ($element instanceof ElementArray) {
+                if ($deep) {
+                    $values[$key] = $element->getDetails();
+                }
+            } elseif ($element instanceof Element && !($element instanceof ElementArray)) {
                 $values[$key] = $element->getContent();
             }
         }

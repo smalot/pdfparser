@@ -84,6 +84,10 @@ class ElementString extends atoum\test
 
         // Complex study case : Unicode + octal.
         $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse("(ABC\\))", null, $offset);
+        $this->assert->string($element->getContent())->isEqualTo('ABC)');
+        $this->assert->integer($offset)->isEqualTo(7);
+        $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse("(\xFE\xFF\\000M)", null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('M');
         $this->assert->integer($offset)->isEqualTo(9);

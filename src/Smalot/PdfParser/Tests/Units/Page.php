@@ -24,40 +24,6 @@ use mageekguy\atoum;
  */
 class Page extends atoum\test
 {
-    public function testGetResources()
-    {
-        // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
-        $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-
-        // the first to load data.
-        $resources = $page->getResources();
-        $this->assert->object($resources)->isInstanceOf('\Smalot\PdfParser\Header');
-        // the second to use cache.
-        $resources = $page->getResources();
-        $this->assert->object($resources)->isInstanceOf('\Smalot\PdfParser\Header');
-    }
-
-    public function testGetContents()
-    {
-        // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
-        $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-
-        // the first to load data.
-        $contents = $page->getContents();
-        $this->assert->object($contents)->isInstanceOf('\Smalot\PdfParser\Object');
-        // the second to use cache.
-        $contents = $page->getContents();
-        $this->assert->object($contents)->isInstanceOf('\Smalot\PdfParser\Object');
-    }
-
     public function testGetFonts()
     {
         // Document with text.
@@ -117,6 +83,8 @@ class Page extends atoum\test
         $pages    = $document->getPages();
         $page     = $pages[0];
         $text     = $page->getText();
+
+        var_dump($text);
 
         $this->assert->string($text)->hasLengthGreaterThan(150);
         $this->assert->string($text)->contains('Document title');

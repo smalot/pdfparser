@@ -27,6 +27,11 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Font extends Object
 {
     /**
+     *
+     */
+    const MISSING = '?';
+
+    /**
      * @var array
      */
     protected $table = null;
@@ -37,20 +42,10 @@ class Font extends Object
     protected $tableSizes = null;
 
     /**
-     * @var mixed
-     */
-    protected $encoding = null;
-
-    /**
      *
      */
     public function init()
     {
-        // Load encoding informations.
-        $encoding = $this->get('Encoding');
-
-        $this->encoding = $encoding;
-
         // Load translate table.
         $this->loadTranslateTable();
     }
@@ -99,7 +94,7 @@ class Font extends Object
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
-            $char = '$';
+            $char = self::MISSING;
         }
 
         return $char;
@@ -130,7 +125,7 @@ class Font extends Object
             'to'   => 1,
         );
 
-        if ($this->has('ToUnicode') instanceof Object) {
+        if ($this->has('ToUnicode')) {
             $content = $this->get('ToUnicode')->getContent();
             $matches = array();
 
@@ -284,9 +279,9 @@ class Font extends Object
      */
     public static function decodeUnicode($text)
     {
-        // Strip U+FEFF byte order marker.
         if ($unicode = preg_match('/^\xFE\xFF/i', $text)) {
-            $decode = $text;
+            // Strip U+FEFF byte order marker.
+            $decode = substr($text, 2);
             $text   = '';
 
             for ($i = 0; $i < strlen($decode); $i += 2) {
@@ -371,7 +366,10 @@ class Font extends Object
      */
     protected function decodeContent($text, &$unicode)
     {
-        if ($this->encoding instanceof Encoding) {
+        if ($this->has('Encoding')) {
+            /** @var Encoding $encoding */
+            $encoding = $this->get('Encoding');
+
             if ($unicode) {
                 $chars  = preg_split(
                     '//s' . ($unicode ? 'u' : ''),
@@ -383,7 +381,7 @@ class Font extends Object
 
                 foreach ($chars as $char) {
                     $dec_av = hexdec(bin2hex($char));
-                    $dec_ap = $this->encoding->translateChar($dec_av);
+                    $dec_ap = $encoding->translateChar($dec_av);
                     $result .= self::uchr($dec_ap);
                 }
 
@@ -393,7 +391,7 @@ class Font extends Object
 
                 for ($i = 0; $i < strlen($text); $i++) {
                     $dec_av = hexdec(bin2hex($text[$i]));
-                    $dec_ap = $this->encoding->translateChar($dec_av);
+                    $dec_ap = $encoding->translateChar($dec_av);
                     $result .= chr($dec_ap);
                 }
 

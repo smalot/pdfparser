@@ -82,26 +82,21 @@ class Header
      *
      * @return array
      */
-    public function getValues($deep = true)
+    public function getDetails($deep = true)
     {
         $values   = array();
         $elements = $this->getElements();
 
         foreach ($elements as $key => $element) {
             if ($element instanceof Header && $deep) {
-                $values[$key] = $element->getValues($deep);
+                $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof Object && $deep) {
-                $values[$key] = $element->getDetails();
-            } elseif ($element instanceof ElementArray && $deep) {
-                $values[$key] = $element->getDetails();
-//                foreach ($element->getContent() as $position => $sub_element) {
-//                    if ($sub_element instanceof Object) {
-//                        $values[$key][$position] = $sub_element->getDetails();
-//                    } else {
-//                        $values[$key][$position] = $sub_element->getContent();
-//                    }
-//                }
-            } else {
+                $values[$key] = $element->getDetails(false);
+            } elseif ($element instanceof ElementArray) {
+                if ($deep) {
+                    $values[$key] = $element->getDetails();
+                }
+            } elseif ($element instanceof Element && !($element instanceof ElementArray)) {
                 $values[$key] = $element->getContent();
             }
         }
