@@ -139,7 +139,7 @@ class Document
 
     /**
      * @param Object[] $objects
- */
+     */
     public function setObjects($objects = array())
     {
         $this->objects = (array)$objects;

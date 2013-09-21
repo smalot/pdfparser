@@ -27,11 +27,6 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Font extends Object
 {
     /**
-     * @var Object
-     */
-    protected $toUnicode = false;
-
-    /**
      * @var array
      */
     protected $table = null;
@@ -39,7 +34,7 @@ class Font extends Object
     /**
      * @var array
      */
-    protected $table_sizes = null;
+    protected $tableSizes = null;
 
     /**
      * @var mixed
@@ -93,20 +88,6 @@ class Font extends Object
     }
 
     /**
-     * @return null|Object
-     */
-    public function getToUnicode()
-    {
-        if ($this->toUnicode !== false) {
-            return $this->toUnicode;
-        }
-
-        $toUnicode = $this->get('ToUnicode');
-
-        return ($this->toUnicode = $toUnicode);
-    }
-
-    /**
      * @param string $char
      *
      * @return string
@@ -143,14 +124,14 @@ class Font extends Object
             return $this->table;
         }
 
-        $this->table       = array();
-        $this->table_sizes = array(
+        $this->table      = array();
+        $this->tableSizes = array(
             'from' => 1,
             'to'   => 1,
         );
 
-        if ($this->getToUnicode() instanceof Object) {
-            $content = $this->getToUnicode()->getContent();
+        if ($this->has('ToUnicode') instanceof Object) {
+            $content = $this->get('ToUnicode')->getContent();
             $matches = array();
 
             // Support for multiple spacerange sections
@@ -160,7 +141,7 @@ class Font extends Object
 
                     preg_match_all($regexp, $section, $matches);
 
-                    $this->table_sizes = array(
+                    $this->tableSizes = array(
                         'from' => max(1, strlen(current($matches['from'])) / 2),
                         'to'   => max(1, strlen(current($matches['to'])) / 2),
                     );
@@ -177,9 +158,7 @@ class Font extends Object
                     preg_match_all($regexp, $section, $matches);
 
                     foreach ($matches['from'] as $key => $from) {
-                        $to                         = $matches['to'][$key];
-                        $to                         = self::uchr(hexdec($to));
-                        $this->table[hexdec($from)] = $to;
+                        $this->table[hexdec($from)] = self::uchr(hexdec($matches['to'][$key]));
                     }
                 }
             }
@@ -209,7 +188,6 @@ class Font extends Object
 
                     foreach ($matches['from'] as $key => $from) {
                         $char_from = hexdec($from);
-//                        $char_to   = hexdec($matches['to'][$key]);
                         $strings   = array();
 
                         preg_match_all('/<(?<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
@@ -259,11 +237,10 @@ class Font extends Object
 
     /**
      * @param string $text
-     * @param bool   $unicode
      *
      * @return string
      */
-    public static function decodeOctal($text, $unicode = false)
+    public static function decodeOctal($text)
     {
         $parts = preg_split('/(\\\\\d{3})/s', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
         $text  = '';
@@ -302,18 +279,13 @@ class Font extends Object
 
     /**
      * @param string $text
-     * @param bool   $unicode
      *
      * @return string
      */
-    public static function decodeUnicode($text, &$unicode = false)
+    public static function decodeUnicode($text)
     {
         // Strip U+FEFF byte order marker.
         if ($unicode = preg_match('/^\xFE\xFF/i', $text)) {
-            $text = substr($text, 2);
-        }
-
-        if ($unicode) {
             $decode = $text;
             $text   = '';
 
@@ -379,7 +351,8 @@ class Font extends Object
             // Convert to unicode if not already done.
             if (!$loop_unicode) {
                 if ($this->get('Encoding') instanceof Element &&
-                    $this->get('Encoding')->equals('MacRomanEncoding')) {
+                    $this->get('Encoding')->equals('MacRomanEncoding')
+                ) {
                     $word = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $word);
                 } else {
                     $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
@@ -430,7 +403,7 @@ class Font extends Object
 
         if ($this->has('ToUnicode')) {
 
-            $bytes = $this->table_sizes['from'];
+            $bytes = $this->tableSizes['from'];
 
             if ($bytes) {
                 $result = '';
@@ -442,7 +415,7 @@ class Font extends Object
                     $result .= $char;
                 }
 
-                $text    = $result;
+                $text = $result;
 
                 // By definition, this code generates unicode chars.
                 $unicode = true;

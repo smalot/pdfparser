@@ -78,11 +78,10 @@ class ElementString extends Element
             );
 
             // Decode string.
-            $unicode = false;
-            $name    = Font::decodeOctal($name);
-//            $name    = Font::decodeEntities($name);
+            $name = Font::decodeOctal($name);
+            $name = Font::decodeEntities($name);
             $name = Font::decodeHexadecimal($name, false);
-            $name = Font::decodeUnicode($name, $unicode);
+            $name = Font::decodeUnicode($name);
 
             return new self($name, $document);
         }

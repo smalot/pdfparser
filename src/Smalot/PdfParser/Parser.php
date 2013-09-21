@@ -112,14 +112,19 @@ class Parser
                     $content = isset($part[3][0]) ? $part[3][0] : $part[1];
 
                     if ($header->get('Type')->equals('ObjStm')) {
-                        $match   = array();
+                        $match = array();
 
                         // Split xrefs and contents.
                         preg_match('/^([\d\s]+)(.*)$/s', $content, $match);
                         $content = $match[2];
 
                         // Extract xrefs.
-                        $xrefs = preg_split('/(\d+\s+\d+\s*)/s', $match[1], -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+                        $xrefs = preg_split(
+                            '/(\d+\s+\d+\s*)/s',
+                            $match[1],
+                            -1,
+                            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                        );
                         $table = array();
 
                         foreach ($xrefs as $xref) {
@@ -133,11 +138,11 @@ class Parser
                         $positions = array_keys($table);
 
                         foreach ($positions as $index => $position) {
-                            $id = $ids[$index] . '_0';
-                            $next_position = isset($positions[$index+1])?$positions[$index+1]:strlen($content);
-                            $sub_content = substr($content, $position, $next_position - $position);
+                            $id            = $ids[$index] . '_0';
+                            $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : strlen($content);
+                            $sub_content   = substr($content, $position, $next_position - $position);
 
-                            $sub_header = Header::parse($sub_content, $document);
+                            $sub_header         = Header::parse($sub_content, $document);
                             $object             = Object::factory($document, $sub_header, '');
                             $this->objects[$id] = $object;
                         }

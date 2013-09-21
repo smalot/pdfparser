@@ -162,7 +162,7 @@ class Object
                         break;
 
                     case 'Tf':
-                        list($id,)    = preg_split('/\s/s', $command['command']);
+                        list($id,) = preg_split('/\s/s', $command['command']);
                         $id           = trim($id, '/');
                         $current_font = $page->getFont($id);
                         break;
@@ -172,7 +172,9 @@ class Object
                         $command['command'] = array($command);
                     case 'TJ':
                         // Skip if not previously defined, should never happened.
-                        if (is_null($current_font)) continue;
+                        if (is_null($current_font)) {
+                            continue;
+                        }
 
                         $sub_text = $current_font->decodeText($command['command']);
                         $text .= $sub_text;
@@ -281,19 +283,19 @@ class Object
         while ($offset < strlen($text_part)) {
             // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
             $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
-            $char   = $text_part[$offset];
+            $char = $text_part[$offset];
 
-            $operator  = '';
-            $type      = '';
-            $command   = false;
+            $operator = '';
+            $type     = '';
+            $command  = false;
 
             switch ($char) {
                 case '/':
                     $type = $char;
                     if (preg_match('/^\/[A-Z0-9\._\-\s]+?\s+([a-z]+)/si', substr($text_part, $offset), $matches)) {
                         $operator = $matches[1];
-                        $command = trim(substr($matches[0], 0, strlen($operator) * -1));
-                        $offset+= strlen($matches[0]);
+                        $command  = trim(substr($matches[0], 0, strlen($operator) * -1));
+                        $offset += strlen($matches[0]);
                     }
                     break;
 
@@ -308,7 +310,7 @@ class Object
 
                         if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
                             $operator = trim($matches[0]);
-                            $offset+= strlen($matches[0]);
+                            $offset += strlen($matches[0]);
                         }
                     } else {
                         ++$offset;
@@ -322,14 +324,14 @@ class Object
                     $type = $char;
                     ++$offset;
                     if ($char == '<') {
-                        $strpos = strpos($text_part, '>', $offset);
+                        $strpos  = strpos($text_part, '>', $offset);
                         $command = substr($text_part, $offset, ($strpos - $offset));
-                        $offset = $strpos + 1;
+                        $offset  = $strpos + 1;
                     }
 
                     if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
                         $command .= trim($matches[0]);
-                        $offset+= strlen($matches[0]);
+                        $offset += strlen($matches[0]);
                     }
                     break;
 
@@ -346,16 +348,19 @@ class Object
                             }
                             $ch = $text_part[$strpos];
                             switch ($ch) {
-                                case '\\': { // REVERSE SOLIDUS (5Ch) (Backslash)
+                                case '\\':
+                                { // REVERSE SOLIDUS (5Ch) (Backslash)
                                     // skip next character
                                     ++$strpos;
                                     break;
                                 }
-                                case '(': { // LEFT PARENHESIS (28h)
+                                case '(':
+                                { // LEFT PARENHESIS (28h)
                                     ++$open_bracket;
                                     break;
                                 }
-                                case ')': { // RIGHT PARENTHESIS (29h)
+                                case ')':
+                                { // RIGHT PARENTHESIS (29h)
                                     --$open_bracket;
                                     break;
                                 }
@@ -363,7 +368,7 @@ class Object
                             ++$strpos;
                         }
                         $command = substr($text_part, $offset, ($strpos - $offset - 1));
-                        $offset = $strpos;
+                        $offset  = $strpos;
 
                         if (preg_match('/^\s*[A-Z\']{1,2}/si', substr($text_part, $offset), $matches)) {
                             $operator = trim($matches[0]);
@@ -377,17 +382,23 @@ class Object
                     if (substr($text_part, $offset, 2) == 'T*') {
                         $operator = 'T*';
                         $command  = '';
-                        $offset+= 2;
-                    } elseif (preg_match('/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})/si', substr($text_part, $offset), $matches)) {
+                        $offset += 2;
+                    } elseif (preg_match(
+                        '/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})/si',
+                        substr($text_part, $offset),
+                        $matches
+                    )
+                    ) {
                         $operator = trim($matches['id']);
                         $command  = trim($matches['data']);
-                        $offset   += strlen($matches[0]);
+                        $offset += strlen($matches[0]);
                     } elseif (preg_match('/^([0-9\.\-]+\s*?)+/si', substr($text_part, $offset), $matches)) {
                         $type    = 'numeric';
                         $command = trim($matches[0]);
-                        $offset+= strlen($matches[0]);
+                        $offset += strlen($matches[0]);
                     } elseif (substr($text_part, $offset, 2) == 'BT' ||
-                              substr($text_part, $offset, 2) == 'ET') {
+                        substr($text_part, $offset, 2) == 'ET'
+                    ) {
                         if (substr($text_part, $offset, 2) == 'BT') {
                             $type = 'BT';
                             $offset += 2;
@@ -401,7 +412,7 @@ class Object
                         $type     = '';
                         $operator = $matches[0];
                         $command  = '';
-                        $offset   += strlen($matches[0]);
+                        $offset += strlen($matches[0]);
                     }
             }
 
@@ -418,63 +429,6 @@ class Object
 
         return $commands;
     }
-
-    /**
-     * @param Document $document
-     * @param string   $content
-     *
-     * @return Font|Image|Object|Page
-     */
-//    public static function parse(Document $document, $content = '')
-//    {
-//        $matches = array();
-//
-
-//        if (preg_match('/^\s*<</s', $content, $matches)) {
-//            $position = 0;
-//            $header   = Header::parse($content, $document, $position);
-//            $content  = trim(substr($content, $position), " \n\r");
-//        } else {
-//            $header  = new Header(array(), $document);
-//            $content = trim($content, " \n\r");
-//        }
-//
-//        if (preg_match('/^\s*stream[\n\r]{0,2}(?<data>.*)endstream.*/s', $content, $matches)) {
-//            $content = preg_replace('/[\n\r]{1,2}$/', '', $matches['data']);
-//        }
-//
-//        if ($header->has('Filter')) {
-//            if ($header->has('DecodeParms')) {
-//                $decodeParms = $header->get('DecodeParms');
-//                if ($decodeParms instanceof ElementArray) {
-//                    $decodeParms = $decodeParms->getContent();
-//                } else {
-//                    $decodeParms = array($decodeParms);
-//                }
-//            } else {
-//                $decodeParms = array();
-//            }
-//
-//            $filters = (array)($header->get('Filter')->getContent());
-//
-//            foreach ($filters as $position => $filter) {
-//                try {
-//                    if (isset($decodeParms[$position])) {
-//                        $content = Filters::decodeFilter((string)$filter, $content, $decodeParms[$position]);
-//                    } else {
-//                        $content = Filters::decodeFilter((string)$filter, $content);
-//                    }
-//                } catch (\Exception $e) {
-////                    echo 'error: ' . $e->getMessage() . "\n";
-//                    trigger_error($e->getMessage());
-//                    $content = '';
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return self::factory($document, $header, $content);
-//    }
 
     public static function factory($document, $header, $content)
     {

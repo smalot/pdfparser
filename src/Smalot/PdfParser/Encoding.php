@@ -25,6 +25,11 @@ use Smalot\PdfParser\Element\ElementNumeric;
 class Encoding extends Object
 {
     /**
+     * Char fallback.
+     */
+    const MISSING = '?';
+
+    /**
      * @var array
      */
     protected $encoding;
@@ -85,8 +90,7 @@ class Encoding extends Object
 
             foreach ($this->differences as $code => $difference) {
                 /** @var string $difference */
-                $this->mapping[$code] = $table[$difference];
-//                $this->mapping[$code] = (isset($table[$difference])?$table[$difference]:' ');
+                $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : self::MISSING);
             }
         }
     }
@@ -115,8 +119,6 @@ class Encoding extends Object
     {
         if (isset($this->mapping[$dec])) {
             $dec = $this->mapping[$dec];
-//        } elseif (isset($this->encoding[$dec])) {
-//            $dec = $dec;
         }
 
         return $dec;
