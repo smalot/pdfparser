@@ -370,32 +370,34 @@ class Font extends Object
             /** @var Encoding $encoding */
             $encoding = $this->get('Encoding');
 
-            if ($unicode) {
-                $chars  = preg_split(
-                    '//s' . ($unicode ? 'u' : ''),
-                    $text,
-                    -1,
-                    PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-                );
-                $result = '';
+            if ($encoding instanceof Object) {
+                if ($unicode) {
+                    $chars  = preg_split(
+                        '//s' . ($unicode ? 'u' : ''),
+                        $text,
+                        -1,
+                        PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+                    );
+                    $result = '';
 
-                foreach ($chars as $char) {
-                    $dec_av = hexdec(bin2hex($char));
-                    $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= self::uchr($dec_ap);
+                    foreach ($chars as $char) {
+                        $dec_av = hexdec(bin2hex($char));
+                        $dec_ap = $encoding->translateChar($dec_av);
+                        $result .= self::uchr($dec_ap);
+                    }
+
+                    $text = $result;
+                } else {
+                    $result = '';
+
+                    for ($i = 0; $i < strlen($text); $i++) {
+                        $dec_av = hexdec(bin2hex($text[$i]));
+                        $dec_ap = $encoding->translateChar($dec_av);
+                        $result .= chr($dec_ap);
+                    }
+
+                    $text = $result;
                 }
-
-                $text = $result;
-            } else {
-                $result = '';
-
-                for ($i = 0; $i < strlen($text); $i++) {
-                    $dec_av = hexdec(bin2hex($text[$i]));
-                    $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= chr($dec_ap);
-                }
-
-                $text = $result;
             }
         }
 
