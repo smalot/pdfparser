@@ -24,6 +24,12 @@ use Smalot\PdfParser\Element\ElementMissing;
  */
 class Object
 {
+    const TYPE = 't';
+
+    const OPERATOR = 'o';
+
+    const COMMAND = 'c';
+
     /**
      * @var Document
      */
@@ -106,6 +112,85 @@ class Object
     }
 
     /**
+     * @param $content
+     */
+    public function cleanContent($content, $char = 'X')
+    {
+        $content = str_replace('\\\\', $char . $char, $content);
+        $content = str_replace('\\)', $char. $char, $content);
+        $content = str_replace('\\(', $char . $char, $content);
+
+        // Remove image bloc with binary content
+        preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[0] as $part) {
+            $text    = $part[0];
+            $offset  = $part[1];
+            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+        }
+
+        // Clean content in square brackets [.....]
+        preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $text    = $part[0];
+            $offset  = $part[1];
+            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+        }
+
+        // Clean content in round brackets (.....)
+        preg_match_all('/\((.*?)\)/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $text    = $part[0];
+            $offset  = $part[1];
+            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+        }
+
+        // Clean structure
+        if ($parts = preg_split('/(<<|>>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
+            $content = '';
+            $level   = 0;
+            foreach ($parts as $part) {
+                if ($part == '<<') {
+                    $level++;
+                }
+
+                if ($level == 0) {
+                    $content .= $part;
+                } else {
+                    $content .= str_repeat($char, strlen($part));
+                }
+
+                if ($part == '>>') {
+                    $level--;
+                }
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * @param $content
+     *
+     * @return array
+     */
+    public function getSectionsText($content)
+    {
+        $sections = array();
+        $textCleaned = $this->cleanContent($content);
+
+        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET\s+/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[1] as $part) {
+                $text   = $part[0];
+                $offset = $part[1];
+                $section = substr($content, $offset, strlen($text));
+                $sections[] = $section;
+            }
+        }
+
+        return $sections;
+    }
+
+    /**
      * @param Page
      *
      * @return string
@@ -113,43 +198,51 @@ class Object
      */
     public function getText(Page $page = null)
     {
-        $text                = '';
-        $text_parts          = $this->getCommands($this->content);
+        $text = '';
+        $sections = $this->getSectionsText($this->content);
+//        var_dump($text_parts, memory_get_peak_usage(true));
+//        die('debug');
         $current_font_size   = 0;
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
 
-        foreach ($text_parts as $commands) {
+        foreach ($sections as $section) {
 
-            // Skip non text bloc.
-            if ($commands['type'] != 'BT') {
-                continue;
-            }
+            $commands = $this->getCommandsText($section);
 
-            foreach ($commands['command'] as $command) {
+            foreach ($commands as $command) {
 
-                switch ($command['operator']) {
+//                echo 'operator: ' . $command[self::OPERATOR] . ' : ' . print_r($command[self::COMMAND], true) . "\n";
+
+                switch ($command[self::OPERATOR]) {
                     // set character spacing
                     case 'Tc':
                         break;
 
                     // move text current point
                     case 'Td':
-                        $args = preg_split('/\s/s', $command['command']);
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
-                        if ((floatval($x) <= 0 && floatval($y) > 0) ||
-                            ($current_position_td['y'] !== false && floatval($y) != floatval($current_position_td['y']))
+                        if ((floatval($x) <= 0) ||
+                            ($current_position_td['y'] !== false && floatval($y) < floatval($current_position_td['y']))
                         ) {
+                            // vertical offset
                             $text .= "\n";
+                        } elseif ($current_position_td['x'] !== false && floatval($x) > floatval(
+                                $current_position_td['x']
+                            )
+                        ) {
+                            // horizontal offset
+                            $text .= ' ';
                         }
                         $current_position_td = array('x' => $x, 'y' => $y);
                         break;
 
                     // move text current point and set leading
                     case 'TD':
-                        $args = preg_split('/\s/s', $command['command']);
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if (floatval($y)) {
@@ -160,21 +253,21 @@ class Object
                         break;
 
                     case 'Tf':
-                        list($id,) = preg_split('/\s/s', $command['command']);
+                        list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
                         $id           = trim($id, '/');
                         $current_font = $page->getFont($id);
                         break;
 
                     case "'":
                     case 'Tj':
-                        $command['command'] = array($command);
+                        $command[self::COMMAND] = array($command);
                     case 'TJ':
                         // Skip if not previously defined, should never happened.
                         if (is_null($current_font)) {
                             continue;
                         }
 
-                        $sub_text = $current_font->decodeText($command['command']);
+                        $sub_text = $current_font->decodeText($command[self::COMMAND]);
                         $text .= $sub_text;
                         break;
 
@@ -184,7 +277,7 @@ class Object
                         break;
 
                     case 'Tm':
-                        $args = preg_split('/\s/s', $command['command']);
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if ($current_position_tm['y'] !== false) {
@@ -260,12 +353,67 @@ class Object
         return $text;
     }
 
-    /**
-     * @return string
-     */
-//    public function __toString()
+//    /**
+//     * @param string $text_part
+//     * @param int    $offset
+//     *
+//     * @return array
+//     */
+//    public function getCommandsImage($text_part, &$offset = 0)
 //    {
-//        return (string)($this->getContent());
+//        $commands = $matches = array();
+//        $length   = strlen($text_part);
+//        $is_last  = false;
+//
+//        // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
+//        $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
+//
+//        while ($offset < $length) {
+//            $sub_text = substr($text_part, $offset, 200);
+//
+//            $operator = '';
+//            $type     = '';
+//            $command  = false;
+//
+//            if (preg_match('/^ID (.*?)(\r?\nEI)/s', substr($text_part, $offset), $matches)) {
+//                $operator = 'ID';
+//                $command  = $matches[1];
+//                $offset += strlen($matches[0]) - 2;
+//                $is_last = true;
+//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s*(\/[A-Z0-9#\-_]+)\s*/si', $sub_text, $matches)) {
+//                $type     = '/';
+//                $operator = ltrim($matches[1], '/');
+//                $command  = ltrim($matches[2], '/');
+//                $offset += strlen($matches[0]);
+//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s+([A-Z0-9\.\-_]+)\s*/si', $sub_text, $matches)) {
+//                $type     = '/';
+//                $operator = ltrim($matches[1], '/');
+//                $command  = $matches[2];
+//                $offset += strlen($matches[0]);
+//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s*<<\s*/si', $sub_text, $matches)) {
+//                $operator = ltrim($matches[1], '/');
+//                $type     = 'struct';
+//                $offset += strlen($matches[0]);
+//                $command = $this->getCommandsImage($text_part, $offset);
+//                $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset) + 2;
+//                $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
+//            }
+//
+//            if ($command !== false) {
+//                $commands[] = array(
+//                    self::TYPE     => $type,
+//                    self::OPERATOR => $operator,
+//                    self::COMMAND  => $command,
+//                );
+//                if ($is_last) {
+//                    break;
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        return $commands;
 //    }
 
     /**
@@ -274,13 +422,11 @@ class Object
      *
      * @return array
      */
-    public function getCommands($text_part, &$offset = 0)
+    public function getCommandsText($text_part, &$offset = 0)
     {
         $commands = $matches = array();
 
         while ($offset < strlen($text_part)) {
-            // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
-            $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
             $char = $text_part[$offset];
 
             $operator = '';
@@ -290,9 +436,14 @@ class Object
             switch ($char) {
                 case '/':
                     $type = $char;
-                    if (preg_match('/^\/[A-Z0-9\._\-\s]+?\s+([a-z]+)/si', substr($text_part, $offset), $matches)) {
-                        $operator = $matches[1];
-                        $command  = trim(substr($matches[0], 0, strlen($operator) * -1));
+                    if (preg_match(
+                        '/^\/([A-Z0-9\._]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
+                        substr($text_part, $offset),
+                        $matches
+                    )
+                    ) {
+                        $operator = $matches[2];
+                        $command  = $matches[1];
                         $offset += strlen($matches[0]);
                     }
                     break;
@@ -304,9 +455,9 @@ class Object
                     if ($char == '[') {
                         ++$offset;
                         // get elements
-                        $command = $this->getCommands($text_part, $offset);
+                        $command = $this->getCommandsText($text_part, $offset);
 
-                        if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
+                        if (preg_match('/^\s*[A-Z]{1,2}\s*/si', substr($text_part, $offset), $matches)) {
                             $operator = trim($matches[0]);
                             $offset += strlen($matches[0]);
                         }
@@ -327,8 +478,8 @@ class Object
                         $offset  = $strpos + 1;
                     }
 
-                    if (preg_match('/^\s*[A-Z]{1,2}/si', substr($text_part, $offset), $matches)) {
-                        $command .= trim($matches[0]);
+                    if (preg_match('/^\s*[A-Z]{1,2}\s*/si', substr($text_part, $offset), $matches)) {
+                        $operator = trim($matches[0]);
                         $offset += strlen($matches[0]);
                     }
                     break;
@@ -368,8 +519,8 @@ class Object
                         $command = substr($text_part, $offset, ($strpos - $offset - 1));
                         $offset  = $strpos;
 
-                        if (preg_match('/^\s*[A-Z\']{1,2}/si', substr($text_part, $offset), $matches)) {
-                            $operator = trim($matches[0]);
+                        if (preg_match('/^\s*([A-Z\']{1,2})\s*/si', substr($text_part, $offset), $matches)) {
+                            $operator = $matches[1];
                             $offset += strlen($matches[0]);
                         }
                     }
@@ -377,12 +528,10 @@ class Object
 
                 default:
 
-                    if (substr($text_part, $offset, 2) == 'T*') {
-                        $operator = 'T*';
-                        $command  = '';
-                        $offset += 2;
+                    if (substr($text_part, $offset, 2) == 'ET') {
+                        break;
                     } elseif (preg_match(
-                        '/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})/si',
+                        '/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )
@@ -390,25 +539,13 @@ class Object
                         $operator = trim($matches['id']);
                         $command  = trim($matches['data']);
                         $offset += strlen($matches[0]);
-                    } elseif (preg_match('/^([0-9\.\-]+\s*?)+/si', substr($text_part, $offset), $matches)) {
-                        $type    = 'numeric';
+                    } elseif (preg_match('/^([0-9\.\-]+\s*?)+\s*/si', substr($text_part, $offset), $matches)) {
+                        $type    = 'n';
                         $command = trim($matches[0]);
                         $offset += strlen($matches[0]);
-                    } elseif (substr($text_part, $offset, 2) == 'BT' ||
-                        substr($text_part, $offset, 2) == 'ET'
-                    ) {
-                        if (substr($text_part, $offset, 2) == 'BT') {
-                            $type = 'BT';
-                            $offset += 2;
-                            // get elements
-                            $command = $this->getCommands($text_part, $offset);
-                        } else {
-                            $offset += 2;
-                            break;
-                        }
-                    } elseif (preg_match('/^([A-Z\*]+)/si', substr($text_part, $offset), $matches)) {
+                    } elseif (preg_match('/^([A-Z\*]+)\s*/si', substr($text_part, $offset), $matches)) {
                         $type     = '';
-                        $operator = $matches[0];
+                        $operator = $matches[1];
                         $command  = '';
                         $offset += strlen($matches[0]);
                     }
@@ -416,9 +553,9 @@ class Object
 
             if ($command !== false) {
                 $commands[] = array(
-                    'operator' => $operator,
-                    'type'     => $type,
-                    'command'  => $command,
+                    self::TYPE     => $type,
+                    self::OPERATOR => $operator,
+                    self::COMMAND  => $command,
                 );
             } else {
                 break;

@@ -99,12 +99,12 @@ class Font extends atoum\test
 
     public function testTranslateChar()
     {
-        $filename  = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser    = new \Smalot\PdfParser\Parser();
-        $document  = $parser->parseFile($filename);
-        $fonts     = $document->getFonts();
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser   = new \Smalot\PdfParser\Parser();
+        $document = $parser->parseFile($filename);
+        $fonts    = $document->getFonts();
         /** @var \Smalot\PdfParser\Font $font */
-        $font      = reset($fonts);
+        $font = reset($fonts);
 
         $this->assert->string($font->translateChar("\x01"))->isEqualTo('D');
         $this->assert->string($font->translateChar("\x02"))->isEqualTo('o');
@@ -246,39 +246,39 @@ end';
 
     public function testDecodeText()
     {
-        $filename  = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser    = new \Smalot\PdfParser\Parser();
-        $document  = $parser->parseFile($filename);
-        $fonts     = $document->getFonts();
+        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser   = new \Smalot\PdfParser\Parser();
+        $document = $parser->parseFile($filename);
+        $fonts    = $document->getFonts();
         /** @var \Smalot\PdfParser\Font $font */
         // Cambria
-        $font      = reset($fonts);
-        $commands  = array(
+        $font     = reset($fonts);
+        $commands = array(
             array(
-                'type'    => '',
-                'command' => "\x01\x02",
+                't' => '',
+                'c' => "\x01\x02",
             ),
             array(
-                'type'    => 'numeric',
-                'command' => -10,
+                't' => 'n',
+                'c' => -10,
             ),
             array(
-                'type'    => '',
-                'command' => "\x03",
+                't' => '',
+                'c' => "\x03",
             ),
             array(
-                'type'    => '',
-                'command' => "\x04",
+                't' => '',
+                'c' => "\x04",
             ),
             array(
-                'type'    => 'numeric',
-                'command' => -100,
+                't' => 'n',
+                'c' => -100,
             ),
             array(
-                'type'    => '<',
-                'command' => "0102030499",
+                't' => '<',
+                'c' => "01020304",
             ),
         );
-        $this->assert->string($font->decodeText($commands))->isEqualTo('Docu Docu' . \Smalot\PdfParser\Font::MISSING);
+        $this->assert->string($font->decodeText($commands))->isEqualTo('Docu Docu');
     }
 }

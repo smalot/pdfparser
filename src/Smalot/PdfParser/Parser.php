@@ -72,6 +72,8 @@ class Parser
         $parser = new \TCPDF_PARSER($content);
         list($xref, $data) = $parser->getParsedData();
 
+//        var_dump($xref);
+//        die();
         // Create destination object.
         $document      = new Document();
         $this->objects = array();
@@ -104,6 +106,18 @@ class Parser
 
         foreach ($structure as $position => $part) {
             switch ($part[0]) {
+                case '[':
+                    $elements = array();
+
+                    foreach ($part[1] as $sub_element) {
+                        $sub_type  = $sub_element[0];
+                        $sub_value = $sub_element[1];
+                        $elements[]  = $this->parseHeaderElement($sub_type, $sub_value, $document);
+                    }
+
+                    $header   = new Header($elements, $document);
+                    break;
+
                 case '<<':
                     $header = $this->parseHeader($part[1], $document);
                     break;

@@ -84,17 +84,18 @@ class Font extends Object
 
     /**
      * @param string $char
+     * @param bool   $use_default
      *
      * @return string
      */
-    public function translateChar($char)
+    public function translateChar($char, $use_default = true)
     {
         $dec = hexdec(bin2hex($char));
 
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
-            $char = self::MISSING;
+            $char = ($use_default?self::MISSING:false);
         }
 
         return $char;
@@ -304,24 +305,24 @@ class Font extends Object
         $unicode       = false;
 
         foreach ($commands as $command) {
-            switch ($command['type']) {
-                case 'numeric':
+            switch ($command[Object::TYPE]) {
+                case 'n':
                     // TODO : do it better.
-                    if (floatval(trim($command['command'])) < -50) {
+                    if (floatval(trim($command[Object::COMMAND])) < -50) {
                         $word_position = count($words);
                     }
                     continue(2);
 
                 case '<':
                     // Decode hexadecimal.
-                    $text = self::decodeHexadecimal('<' . $command['command'] . '>');
+                    $text = self::decodeHexadecimal('<' . $command[Object::COMMAND] . '>');
                     // TODO : check if necessary.
                     $unicode = true;
                     break;
 
                 default:
                     // Decode octal (if necessary).
-                    $text = self::decodeOctal($command['command']);
+                    $text = self::decodeOctal($command[Object::COMMAND]);
             }
 
             // replace escaped chars
@@ -341,18 +342,10 @@ class Font extends Object
 
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
+//            echo 'avant: "' . $word . "\"\n";
+//            echo 'avant: "' . hexdec(bin2hex($word)) . "\"\n";
             $word         = $this->decodeContent($word, $loop_unicode);
-
-            // Convert to unicode if not already done.
-            if (!$loop_unicode) {
-                if ($this->get('Encoding') instanceof Element &&
-                    $this->get('Encoding')->equals('MacRomanEncoding')
-                ) {
-                    $word = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $word);
-                } else {
-                    $word = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $word);
-                }
-            }
+//            echo 'apres: "' . $word . "\"\n";
         }
 
         return implode(' ', $words);
@@ -366,7 +359,57 @@ class Font extends Object
      */
     protected function decodeContent($text, &$unicode)
     {
-        if ($this->has('Encoding')) {
+        if ($this->has('ToUnicode')) {
+
+            $bytes = $this->tableSizes['from'];//($unicode?1:$this->tableSizes['from']);
+
+            if ($bytes) {
+                $result = '';
+                $length = strlen($text);
+
+                for ($i = 0; $i < $length; $i += $bytes) {
+                    $char = substr($text, $i, $bytes);
+
+//                    echo 'text    : ' . $text . "\n";
+//                    echo 'char    : ' . $char . "\n";
+//                    echo 'char hex: ' . bin2hex($char) . "\n";
+//                    echo 'char dec: ' . hexdec(bin2hex($char)) . "\n";
+
+                    if (($decoded = $this->translateChar($char, false)) !== false) {
+                        $char = $decoded;
+                    } elseif ($this->has('DescendantFonts')) {
+                        $fonts   = $this->get('DescendantFonts')->getHeader()->getElements();
+                        $decoded = false;
+
+                        foreach ($fonts as $font) {
+                            if ($font instanceof Font) {
+                                if (($decoded = $font->translateChar($char, false)) !== false) {
+                                    $decoded = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $decoded);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if ($decoded !== false) {
+                            $char = $decoded;
+                        } else {
+                            $char = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $char);
+                        }
+                    } else {
+//                        echo "not found\n";
+                        $char = 'X';
+                    }
+
+                    $result .= $char;
+//                    $result .= '['.$bytes.$char.']';
+                }
+
+                $text = $result;
+
+                // By definition, this code generates unicode chars.
+                $unicode = true;
+            }
+        } elseif ($this->has('Encoding')) {
             /** @var Encoding $encoding */
             $encoding = $this->get('Encoding');
 
@@ -401,24 +444,14 @@ class Font extends Object
             }
         }
 
-        if ($this->has('ToUnicode')) {
-
-            $bytes = $this->tableSizes['from'];
-
-            if ($bytes) {
-                $result = '';
-                $length = strlen($text);
-
-                for ($i = 0; $i < $length; $i += $bytes) {
-                    $char = substr($text, $i, $bytes);
-                    $char = $this->translateChar($char);
-                    $result .= $char;
-                }
-
-                $text = $result;
-
-                // By definition, this code generates unicode chars.
-                $unicode = true;
+        // Convert to unicode if not already done.
+        if (!$unicode) {
+            if ($this->get('Encoding') instanceof Element &&
+                $this->get('Encoding')->equals('MacRomanEncoding')
+            ) {
+                $text = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $text);
+            } else {
+                $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
             }
         }
 
