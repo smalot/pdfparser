@@ -110,12 +110,12 @@ class Parser
                     $elements = array();
 
                     foreach ($part[1] as $sub_element) {
-                        $sub_type  = $sub_element[0];
-                        $sub_value = $sub_element[1];
-                        $elements[]  = $this->parseHeaderElement($sub_type, $sub_value, $document);
+                        $sub_type   = $sub_element[0];
+                        $sub_value  = $sub_element[1];
+                        $elements[] = $this->parseHeaderElement($sub_type, $sub_value, $document);
                     }
 
-                    $header   = new Header($elements, $document);
+                    $header = new Header($elements, $document);
                     break;
 
                 case '<<':

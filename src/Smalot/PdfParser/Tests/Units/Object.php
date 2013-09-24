@@ -130,85 +130,85 @@ BI";
         $parts     = $object->getCommandsText($content, $offset);
         $reference = array(
             array(
-                self::TYPE => '/',
+                self::TYPE     => '/',
                 self::OPERATOR => 'Tf',
-                self::COMMAND => 'R14 30',
+                self::COMMAND  => 'R14 30',
             ),
             array(
-                self::TYPE => '',
+                self::TYPE     => '',
                 self::OPERATOR => 'Tm',
-                self::COMMAND => "0.999016 0 0 1 137.4\n342.561",
+                self::COMMAND  => "0.999016 0 0 1 137.4\n342.561",
             ),
             array(
-                self::TYPE => '[',
+                self::TYPE     => '[',
                 self::OPERATOR => 'TJ',
-                self::COMMAND => array(
+                self::COMMAND  => array(
                     array(
-                        self::TYPE => '(',
+                        self::TYPE     => '(',
                         self::OPERATOR => '',
-                        self::COMMAND => 'A',
+                        self::COMMAND  => 'A',
                     ),
                     array(
-                        self::TYPE => 'n',
+                        self::TYPE     => 'n',
                         self::OPERATOR => '',
-                        self::COMMAND => '-168.854',
+                        self::COMMAND  => '-168.854',
                     ),
                     array(
-                        self::TYPE => '(',
+                        self::TYPE     => '(',
                         self::OPERATOR => '',
-                        self::COMMAND => ' BC D',
+                        self::COMMAND  => ' BC D',
                     ),
                     array(
-                        self::TYPE => 'n',
+                        self::TYPE     => 'n',
                         self::OPERATOR => '',
-                        self::COMMAND => '-220.905',
+                        self::COMMAND  => '-220.905',
                     ),
                     array(
-                        self::TYPE => '(',
+                        self::TYPE     => '(',
                         self::OPERATOR => '',
-                        self::COMMAND => '\\(E\\)',
+                        self::COMMAND  => '\\(E\\)',
                     ),
                     array(
-                        self::TYPE => 'n',
+                        self::TYPE     => 'n',
                         self::OPERATOR => '',
-                        self::COMMAND => '20.905',
+                        self::COMMAND  => '20.905',
                     ),
                     array(
-                        self::TYPE => '<',
+                        self::TYPE     => '<',
                         self::OPERATOR => '',
-                        self::COMMAND => '20',
+                        self::COMMAND  => '20',
                     ),
                 ),
             ),
             array(
-                self::TYPE => '/',
+                self::TYPE     => '/',
                 self::OPERATOR => 'Tf',
-                self::COMMAND => 'R14 17.16',
+                self::COMMAND  => 'R14 17.16',
             ),
             array(
-                self::TYPE => '<',
+                self::TYPE     => '<',
                 self::OPERATOR => 'Tj',
-                self::COMMAND => '20',
+                self::COMMAND  => '20',
             ),
             array(
-                self::TYPE => '',
+                self::TYPE     => '',
                 self::OPERATOR => 'Tm',
-                self::COMMAND => '0.999014 0 0 1 336.84 319.161',
+                self::COMMAND  => '0.999014 0 0 1 336.84 319.161',
             ),
             array(
-                self::TYPE => '',
+                self::TYPE     => '',
                 self::OPERATOR => 'T*',
-                self::COMMAND => '',
+                self::COMMAND  => '',
             ),
             array(
-                self::TYPE => '(',
+                self::TYPE     => '(',
                 self::OPERATOR => 'Tj',
-                self::COMMAND => " \x00m",
+                self::COMMAND  => " \x00m",
             ),
             array(
-                self::TYPE => '/',
+                self::TYPE     => '/',
                 self::OPERATOR => 'Tf',
-                self::COMMAND => 'R14 20.04',
+                self::COMMAND  => 'R14 20.04',
             ),
         );
 
@@ -256,9 +256,9 @@ ET
 q
 0.03 841';
 
-        $document  = new \Smalot\PdfParser\Document();
-        $object    = new \Smalot\PdfParser\Object($document);
-        $cleaned     = $object->cleanContent($content, 'X');
+        $document = new \Smalot\PdfParser\Document();
+        $object   = new \Smalot\PdfParser\Object($document);
+        $cleaned  = $object->cleanContent($content, 'X');
 
         $this->assert->string($cleaned)->isEqualTo($expected);
 //        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
@@ -285,9 +285,9 @@ ET
 q
 0.03 841';
 
-        $document  = new \Smalot\PdfParser\Document();
-        $object    = new \Smalot\PdfParser\Object($document);
-        $sections  = $object->getSectionsText($content);
+        $document = new \Smalot\PdfParser\Document();
+        $object   = new \Smalot\PdfParser\Object($document);
+        $sections = $object->getSectionsText($content);
 //        var_dump($sections);
 
 //        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));

@@ -120,16 +120,16 @@ class ElementArray extends atoum\test
         $document = $parser->parseFile($filename);
         $object   = $document->getObjectById('3_0');
         /** @var \Smalot\PdfParser\Element\ElementArray $kids */
-        $kids     = $object->get('Kids');
-        $details  = $kids->getDetails();
+        $kids    = $object->get('Kids');
+        $details = $kids->getDetails();
 
         $this->assert->array($details)->hasSize(1);
         $this->assert->string($details[0]['Type'])->isEqualTo('Page');
 
-        $document = new Document();
-        $content  = '<</Type/Page/Sizes[1 2 3 4 5 <</Subtype/XObject>> [8 [9 <</FontSize 10>>]]]>>';
+        $document          = new Document();
+        $content           = '<</Type/Page/Sizes[1 2 3 4 5 <</Subtype/XObject>> [8 [9 <</FontSize 10>>]]]>>';
         $details_reference = array(
-            'Type' => 'Page',
+            'Type'  => 'Page',
             'Sizes' => array(
                 1,
                 2,
@@ -150,8 +150,8 @@ class ElementArray extends atoum\test
                 ),
             ),
         );
-        $header   = Header::parse($content, $document);
-        $details  = $header->getDetails();
+        $header            = Header::parse($content, $document);
+        $details           = $header->getDetails();
 
         $this->assert->array($details)->hasSize(2);
         $this->assert->array($details)->isEqualTo($details_reference);

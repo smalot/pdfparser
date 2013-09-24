@@ -95,7 +95,7 @@ class Font extends Object
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
-            $char = ($use_default?self::MISSING:false);
+            $char = ($use_default ? self::MISSING : false);
         }
 
         return $char;
@@ -342,10 +342,7 @@ class Font extends Object
 
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
-//            echo 'avant: "' . $word . "\"\n";
-//            echo 'avant: "' . hexdec(bin2hex($word)) . "\"\n";
             $word         = $this->decodeContent($word, $loop_unicode);
-//            echo 'apres: "' . $word . "\"\n";
         }
 
         return implode(' ', $words);
@@ -361,7 +358,7 @@ class Font extends Object
     {
         if ($this->has('ToUnicode')) {
 
-            $bytes = $this->tableSizes['from'];//($unicode?1:$this->tableSizes['from']);
+            $bytes = $this->tableSizes['from'];
 
             if ($bytes) {
                 $result = '';
@@ -369,11 +366,6 @@ class Font extends Object
 
                 for ($i = 0; $i < $length; $i += $bytes) {
                     $char = substr($text, $i, $bytes);
-
-//                    echo 'text    : ' . $text . "\n";
-//                    echo 'char    : ' . $char . "\n";
-//                    echo 'char hex: ' . bin2hex($char) . "\n";
-//                    echo 'char dec: ' . hexdec(bin2hex($char)) . "\n";
 
                     if (($decoded = $this->translateChar($char, false)) !== false) {
                         $char = $decoded;
@@ -396,12 +388,10 @@ class Font extends Object
                             $char = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $char);
                         }
                     } else {
-//                        echo "not found\n";
-                        $char = 'X';
+                        $char = self::MISSING;
                     }
 
                     $result .= $char;
-//                    $result .= '['.$bytes.$char.']';
                 }
 
                 $text = $result;

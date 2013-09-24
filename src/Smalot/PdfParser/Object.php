@@ -117,7 +117,7 @@ class Object
     public function cleanContent($content, $char = 'X')
     {
         $content = str_replace('\\\\', $char . $char, $content);
-        $content = str_replace('\\)', $char. $char, $content);
+        $content = str_replace('\\)', $char . $char, $content);
         $content = str_replace('\\(', $char . $char, $content);
 
         // Remove image bloc with binary content
@@ -175,14 +175,14 @@ class Object
      */
     public function getSectionsText($content)
     {
-        $sections = array();
+        $sections    = array();
         $textCleaned = $this->cleanContent($content);
 
-        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET\s+/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
-                $text   = $part[0];
-                $offset = $part[1];
-                $section = substr($content, $offset, strlen($text));
+                $text       = $part[0];
+                $offset     = $part[1];
+                $section    = substr($content, $offset, strlen($text));
                 $sections[] = $section;
             }
         }
@@ -198,10 +198,8 @@ class Object
      */
     public function getText(Page $page = null)
     {
-        $text = '';
-        $sections = $this->getSectionsText($this->content);
-//        var_dump($text_parts, memory_get_peak_usage(true));
-//        die('debug');
+        $text                = '';
+        $sections            = $this->getSectionsText($this->content);
         $current_font_size   = 0;
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
@@ -212,8 +210,6 @@ class Object
             $commands = $this->getCommandsText($section);
 
             foreach ($commands as $command) {
-
-//                echo 'operator: ' . $command[self::OPERATOR] . ' : ' . print_r($command[self::COMMAND], true) . "\n";
 
                 switch ($command[self::OPERATOR]) {
                     // set character spacing
@@ -427,6 +423,7 @@ class Object
         $commands = $matches = array();
 
         while ($offset < strlen($text_part)) {
+            $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
             $char = $text_part[$offset];
 
             $operator = '';
@@ -531,7 +528,7 @@ class Object
                     if (substr($text_part, $offset, 2) == 'ET') {
                         break;
                     } elseif (preg_match(
-                        '/^(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})\s*/si',
+                        '/^\s*(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )
@@ -539,11 +536,11 @@ class Object
                         $operator = trim($matches['id']);
                         $command  = trim($matches['data']);
                         $offset += strlen($matches[0]);
-                    } elseif (preg_match('/^([0-9\.\-]+\s*?)+\s*/si', substr($text_part, $offset), $matches)) {
+                    } elseif (preg_match('/^\s*([0-9\.\-]+\s*?)+\s*/si', substr($text_part, $offset), $matches)) {
                         $type    = 'n';
                         $command = trim($matches[0]);
                         $offset += strlen($matches[0]);
-                    } elseif (preg_match('/^([A-Z\*]+)\s*/si', substr($text_part, $offset), $matches)) {
+                    } elseif (preg_match('/^\s*([A-Z\*]+)\s*/si', substr($text_part, $offset), $matches)) {
                         $type     = '';
                         $operator = $matches[1];
                         $command  = '';
