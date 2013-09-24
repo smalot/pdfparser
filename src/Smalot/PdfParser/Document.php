@@ -272,7 +272,7 @@ class Document
     /**
      * @return array
      */
-    public function getDetails()
+    public function getDetails($deep = true)
     {
         return $this->details;
     }

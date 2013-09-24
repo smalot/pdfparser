@@ -69,7 +69,7 @@ class Font extends Object
     /**
      * @return array
      */
-    public function getDetails()
+    public function getDetails($deep = true)
     {
         $details = array();
 
@@ -77,7 +77,7 @@ class Font extends Object
         $details['Type']     = $this->getType();
         $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
 
-        $details += parent::getDetails();
+        $details += parent::getDetails($deep);
 
         return $details;
     }
