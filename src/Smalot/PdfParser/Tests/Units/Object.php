@@ -218,7 +218,7 @@ BI";
 
     public function testCleanContent()
     {
-        $content = '/Shape <</MCID << /Font 8 >> BT >>BDC
+        $content = '/Shape <</MCID << /Font<8>>> BT >>BDC
 Q
 /CS0 cs 1 1 0  scn
 1 i
@@ -237,7 +237,7 @@ ET
 q
 0.03 841';
 
-        $expected = '/Shape XXXXXXXXXXXXXXXXXXXXXXXXXXXBDC
+        $expected = '_____________________________________
 Q
 /CS0 cs 1 1 0  scn
 1 i
@@ -245,24 +245,24 @@ Q
 BT
 /TT0 1 Tf
 0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
-(XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)Tj
-EMC
-(XXX) Tj
+(________________________________________________)Tj
+___
+(___) Tj
 
-[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX] TD
+[_____________________________________] TD
 
 ET
-/Shape XXXXXXXXXXXXBDC
+______________________
 q
 0.03 841';
 
         $document = new \Smalot\PdfParser\Document();
         $object   = new \Smalot\PdfParser\Object($document);
-        $cleaned  = $object->cleanContent($content, 'X');
+        $cleaned  = $object->cleanContent($content, '_');
 
+        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
         $this->assert->string($cleaned)->isEqualTo($expected);
-//        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
-    }
+        }
 
     public function testGetSectionText()
     {
@@ -278,7 +278,7 @@ BT
 EMC
 (ABC) Tj
 
-[ (a)-4.5(b)6(c)8.8 ( fsdfsdfsdf[ sd) ] TD
+[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD
 
 ET
 /Shape <</MCID [BT] >>BDC BT /TT1 1.5 Tf (BT )Tj ET

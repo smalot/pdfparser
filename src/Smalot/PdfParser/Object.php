@@ -116,6 +116,7 @@ class Object
      */
     public function cleanContent($content, $char = 'X')
     {
+        $char    = $char[0];
         $content = str_replace('\\\\', $char . $char, $content);
         $content = str_replace('\\)', $char . $char, $content);
         $content = str_replace('\\(', $char . $char, $content);
@@ -145,11 +146,11 @@ class Object
         }
 
         // Clean structure
-        if ($parts = preg_split('/(<<|>>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
+        if ($parts = preg_split('/(<|>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
             $content = '';
             $level   = 0;
             foreach ($parts as $part) {
-                if ($part == '<<') {
+                if ($part == '<') {
                     $level++;
                 }
 
@@ -159,10 +160,25 @@ class Object
                     $content .= str_repeat($char, strlen($part));
                 }
 
-                if ($part == '>>') {
+                if ($part == '>') {
                     $level--;
                 }
             }
+        }
+
+        // Clean BDC and EMC markup
+        preg_match_all('/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $text    = $part[0];
+            $offset  = $part[1];
+            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+        }
+
+        preg_match_all('/\s(EMC)\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $text    = $part[0];
+            $offset  = $part[1];
+            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
         }
 
         return $content;
@@ -176,13 +192,17 @@ class Object
     public function getSectionsText($content)
     {
         $sections    = array();
-        $textCleaned = $this->cleanContent($content);
+        $textCleaned = $this->cleanContent($content, '_');
 
         if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
                 $text       = $part[0];
                 $offset     = $part[1];
                 $section    = substr($content, $offset, strlen($text));
+
+                // Clean BDC and EMC markup
+                $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section);
+
                 $sections[] = $section;
             }
         }
@@ -435,6 +455,15 @@ class Object
                     $type = $char;
                     if (preg_match(
                         '/^\/([A-Z0-9\._]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
+                        substr($text_part, $offset),
+                        $matches
+                    )
+                    ) {
+                        $operator = $matches[2];
+                        $command  = $matches[1];
+                        $offset += strlen($matches[0]);
+                    } elseif (preg_match(
+                        '/^\/([A-Z0-9\._]+)\s+([A-Z]+)\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )
