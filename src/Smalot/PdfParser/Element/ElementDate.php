@@ -109,14 +109,12 @@ class ElementDate extends ElementString
                 return false;
             }
 
-            $offset = strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
             $format = self::$formats[strlen($name)];
-
-            if (strlen($name) == 19) {
-                $date = \DateTime::createFromFormat($format, $name);
-            } elseif (strlen($name) == 14) {
-                $date = \DateTime::createFromFormat($format, $name);
+            $date   = \DateTime::createFromFormat($format, $name);
+            if (!$date) {
+                return false;
             }
+            $offset = strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
 
             $element = new self($date, $document);
             $element->setFormat($format);

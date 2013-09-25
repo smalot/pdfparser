@@ -200,8 +200,8 @@ class Object
                 $offset     = $part[1];
                 $section    = substr($content, $offset, strlen($text));
 
-                // Clean BDC and EMC markup
-                $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section);
+                // Removes BDC and EMC markup.
+                $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section . ' ');
 
                 $sections[] = $section;
             }
