@@ -192,9 +192,10 @@ class Object
     public function getSectionsText($content)
     {
         $sections    = array();
+        $content     = ' ' . $content . ' ';
         $textCleaned = $this->cleanContent($content, '_');
 
-        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', ' ' . $textCleaned . ' ', $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
                 $text       = $part[0];
                 $offset     = $part[1];
