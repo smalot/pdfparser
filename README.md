@@ -24,7 +24,8 @@ Features included :
 
 Currently, secured documents are not supported.
 
-This Library is still under active development. As a result, users must expect BC breaks when using the master version.
+This Library is still under active development.
+As a result, users must expect BC breaks when using the master version.
 
 ## Documentation ##
 
