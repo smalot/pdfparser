@@ -8,6 +8,8 @@ Pdf Parser, a standalone PHP library, provides various tools to extract data fro
 
 Website : [http://www.pdfparser.org](http://www.pdfparser.org/?utm_source=GitHub&utm_medium=website&utm_campaign=GitHub)
 
+Test the API on our [demo page](http://www.pdfparser.org/demo).
+
 This project is supported by [Actualys](http://www.actualys.com).
 
 ## Features ##
