@@ -72,6 +72,10 @@ class Parser
         $parser = new \TCPDF_PARSER($content);
         list($xref, $data) = $parser->getParsedData();
 
+        if (isset($xref['trailer']['encrypt'])) {
+            throw new \Exception('Secured pdf file are currently not supported.');
+        }
+
 //        var_dump($xref);
 //        die();
         // Create destination object.
