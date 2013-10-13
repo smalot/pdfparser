@@ -3,15 +3,15 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "b18669aba89c40a91547c4325b02c7f2",
+    "hash": "af5e2c297f7135151b6e907e611c79ae",
     "packages": [
         {
             "name": "tecnick.com/tcpdf",
-            "version": "6.0.035",
+            "version": "6.0.039",
             "source": {
                 "type": "git",
                 "url": "http://git.code.sf.net/p/tcpdf/code",
-                "reference": "6640bd863d05dae86e597513c43bd007a22ba091"
+                "reference": "2ba0248a7187f1626df6c128750650416267f0e7"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -60,7 +60,7 @@
                 "pdf417",
                 "qrcode"
             ],
-            "time": "2013-09-25 14:24:06"
+            "time": "2013-10-13 16:11:17"
         }
     ],
     "packages-dev": [
@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atoum/atoum.git",
-                "reference": "6741f90cf7b96fc67ec13efee9c08c6bd44534ee"
+                "reference": "fd5e6b8468e6fa1c3808e759e46a8956785088a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atoum/atoum/zipball/6741f90cf7b96fc67ec13efee9c08c6bd44534ee",
-                "reference": "6741f90cf7b96fc67ec13efee9c08c6bd44534ee",
+                "url": "https://api.github.com/repos/atoum/atoum/zipball/fd5e6b8468e6fa1c3808e759e46a8956785088a3",
+                "reference": "fd5e6b8468e6fa1c3808e759e46a8956785088a3",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "test",
                 "unit testing"
             ],
-            "time": "2013-09-26 09:44:29"
+            "time": "2013-10-12 14:00:32"
         }
     ],
     "aliases": [
