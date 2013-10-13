@@ -238,6 +238,7 @@ class Parser
             case '/':
                 return ElementName::parse('/' . $value, $document);
 
+            case 'objref': // old mistake in tcpdf parser
             case 'ojbref':
                 return new ElementXRef($value, $document);
 

@@ -93,8 +93,8 @@ class ElementName extends atoum\test
         $this->assert->integer($offset)->isEqualTo(6);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementName::parse('/Flate.Decode2', null, $offset);
-        $this->assert->string($element->getContent())->isEqualTo('Flate');
-        $this->assert->integer($offset)->isEqualTo(6);
+        $this->assert->string($element->getContent())->isEqualTo('Flate.Decode2');
+        $this->assert->integer($offset)->isEqualTo(14);
     }
 
     public function testGetContent()
