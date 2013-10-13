@@ -403,7 +403,7 @@ class Font extends Object
             /** @var Encoding $encoding */
             $encoding = $this->get('Encoding');
 
-            if ($encoding instanceof Object) {
+            if ($encoding instanceof Encoding) {
                 if ($unicode) {
                     $chars  = preg_split(
                         '//s' . ($unicode ? 'u' : ''),
