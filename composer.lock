@@ -3,15 +3,15 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "af5e2c297f7135151b6e907e611c79ae",
+    "hash": "e5d55474e4882ee9bf356505effd584c",
     "packages": [
         {
             "name": "tecnick.com/tcpdf",
-            "version": "6.0.039",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "http://git.code.sf.net/p/tcpdf/code",
-                "reference": "2ba0248a7187f1626df6c128750650416267f0e7"
+                "url": "git://git.code.sf.net/p/tcpdf/code",
+                "reference": "977539641b4c8806de127ed350927c97045471d9"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -60,7 +60,7 @@
                 "pdf417",
                 "qrcode"
             ],
-            "time": "2013-10-13 16:11:17"
+            "time": "2013-10-13 21:02:11"
         }
     ],
     "packages-dev": [
@@ -144,6 +144,7 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
+        "tecnick.com/tcpdf": 20,
         "atoum/atoum": 20
     },
     "platform": {
