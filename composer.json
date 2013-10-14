@@ -16,7 +16,7 @@
     "homepage": "http://www.pdfparser.org",
     "require": {
         "php": ">=5.3.0",
-        "tecnick.com/tcpdf": ">=6.0.39"
+        "tecnick.com/tcpdf": "dev-master"
     },
     "require-dev": {
         "atoum/atoum": "dev-master"
