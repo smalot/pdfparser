@@ -262,7 +262,7 @@ q
 
         $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
         $this->assert->string($cleaned)->isEqualTo($expected);
-        }
+    }
 
     public function testGetSectionText()
     {

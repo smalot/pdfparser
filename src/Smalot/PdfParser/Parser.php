@@ -76,7 +76,7 @@ class Parser
             throw new \Exception('Secured pdf file are currently not supported.');
         }
 
-//        var_dump($xref);
+//        var_dump($data);
 //        die();
         // Create destination object.
         $document      = new Document();
@@ -238,8 +238,8 @@ class Parser
             case '/':
                 return ElementName::parse('/' . $value, $document);
 
-            case 'objref': // old mistake in tcpdf parser
-            case 'ojbref':
+            case 'ojbref': // old mistake in tcpdf parser
+            case 'objref':
                 return new ElementXRef($value, $document);
 
             case '[':

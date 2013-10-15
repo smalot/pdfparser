@@ -41,6 +41,11 @@ class Page extends Object
     protected $fonts = null;
 
     /**
+     * @var Object[]
+     */
+    protected $xobjects = null;
+
+    /**
      * @return Object
      */
     /*public function getResources()
@@ -128,6 +133,67 @@ class Page extends Object
     }
 
     /**
+     * Support for XObject
+     *
+     * @return Object[]
+     */
+    public function getXObjects()
+    {
+        if (!is_null($this->xobjects)) {
+            return $this->xobjects;
+        }
+
+        $resources = $this->get('Resources');
+
+        if ($resources->has('XObject')) {
+
+            if ($resources->get('XObject') instanceof Header) {
+                $xobjects = $resources->get('XObject')->getElements();
+            } else {
+                $xobjects = $resources->get('XObject')->getHeader()->getElements();
+            }
+
+            $table = array();
+
+            foreach ($xobjects as $id => $xobject) {
+                $table[$id] = $xobject;
+
+                // Store too on cleaned id value (only numeric)
+                $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+                if ($id != '') {
+                    $table[$id] = $xobject;
+                }
+            }
+
+            return ($this->xobjects = $table);
+        } else {
+            return array();
+        }
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return Object
+     */
+    public function getXObject($id)
+    {
+        $xobjects = $this->getXObjects();
+
+        if (isset($xobjects[$id])) {
+            return $xobjects[$id];
+        } else {
+            $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+
+            if (isset($xobjects[$id])) {
+                return $xobjects[$id];
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
      * @param Page
      *
      * @return string
@@ -152,8 +218,8 @@ class Page extends Object
             } elseif (!($contents instanceof ElementMissing)) {
                 return $contents->getText($this);
             }
-        } else {
-            return '';
         }
+
+        return '';
     }
 }
