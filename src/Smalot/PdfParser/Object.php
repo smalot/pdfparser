@@ -655,7 +655,11 @@ class Object
                 $subtype   = $header->get('Subtype')->getContent();
                 $classname = '\Smalot\PdfParser\Font\Font' . $subtype;
 
-                return new $classname($document, $header, $content);
+                if (class_exists($classname)) {
+                    return new $classname($document, $header, $content);
+                } else {
+                    return new Font($document, $header, $content);
+                }
 
             default:
                 return new Object($document, $header, $content);
