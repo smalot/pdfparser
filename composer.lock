@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atoum/atoum.git",
-                "reference": "fd5e6b8468e6fa1c3808e759e46a8956785088a3"
+                "reference": "beee40036cd791ff29367091723ff3e7ff22b82b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atoum/atoum/zipball/fd5e6b8468e6fa1c3808e759e46a8956785088a3",
-                "reference": "fd5e6b8468e6fa1c3808e759e46a8956785088a3",
+                "url": "https://api.github.com/repos/atoum/atoum/zipball/beee40036cd791ff29367091723ff3e7ff22b82b",
+                "reference": "beee40036cd791ff29367091723ff3e7ff22b82b",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "test",
                 "unit testing"
             ],
-            "time": "2013-10-12 14:00:32"
+            "time": "2013-10-14 10:18:47"
         }
     ],
     "aliases": [

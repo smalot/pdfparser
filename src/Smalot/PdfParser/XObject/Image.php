@@ -13,12 +13,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Smalot\PdfParser;
+namespace Smalot\PdfParser\XObject;
+
+use Smalot\PdfParser\Object;
 
 /**
  * Class Image
  *
- * @package Smalot\PdfParser
+ * @package Smalot\PdfParser\XObject
  */
 class Image extends Object
 {

@@ -16,6 +16,8 @@
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\XObject\Form;
+use Smalot\PdfParser\XObject\Image;
 
 /**
  * Class Object
@@ -167,7 +169,12 @@ class Object
         }
 
         // Clean BDC and EMC markup
-        preg_match_all('/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all(
+            '/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s',
+            $content,
+            $matches,
+            PREG_OFFSET_CAPTURE
+        );
         foreach ($matches[1] as $part) {
             $text    = $part[0];
             $offset  = $part[1];
@@ -195,14 +202,26 @@ class Object
         $content     = ' ' . $content . ' ';
         $textCleaned = $this->cleanContent($content, '_');
 
+        // Extract text blocks.
         if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
-                $text       = $part[0];
-                $offset     = $part[1];
-                $section    = substr($content, $offset, strlen($text));
+                $text    = $part[0];
+                $offset  = $part[1];
+                $section = substr($content, $offset, strlen($text));
 
                 // Removes BDC and EMC markup.
                 $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section . ' ');
+
+                $sections[] = $section;
+            }
+        }
+
+        // Extract 'do' commands.
+        if (preg_match_all('/(\/[A-Za-z0-9\.\-_]+\s+Do)\s/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[1] as $part) {
+                $text    = $part[0];
+                $offset  = $part[1];
+                $section = substr($content, $offset, strlen($text));
 
                 $sections[] = $section;
             }
@@ -325,6 +344,14 @@ class Object
                         break;
 
                     case 'Da':
+                        break;
+
+                    case 'Do':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $id   = trim(array_pop($args), '/ ');
+                        if ($xobject = $page->getXObject($id)) {
+                            $text .= $xobject->getText();
+                        }
                         break;
 
                     case 'rg':
@@ -592,6 +619,13 @@ class Object
         return $commands;
     }
 
+    /**
+     * @param $document Document
+     * @param $header   Header
+     * @param $content  string
+     *
+     * @return Object
+     */
     public static function factory($document, $header, $content)
     {
         switch ($header->get('Type')->getContent()) {
@@ -599,6 +633,9 @@ class Object
                 switch ($header->get('Subtype')->getContent()) {
                     case 'Image':
                         return new Image($document, $header, $content);
+
+                    case 'Form':
+                        return new Form($document, $header, $content);
 
                     default:
                         return new Object($document, $header, $content);
@@ -617,11 +654,8 @@ class Object
             case 'Font':
                 $subtype   = $header->get('Subtype')->getContent();
                 $classname = '\Smalot\PdfParser\Font\Font' . $subtype;
-                if (class_exists($classname)) {
-                    return new $classname($document, $header, $content);
-                } else {
-                    return new Font($document, $header, $content);
-                }
+
+                return new $classname($document, $header, $content);
 
             default:
                 return new Object($document, $header, $content);
