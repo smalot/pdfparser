@@ -106,7 +106,7 @@ class Font extends Object
      *
      * @return string
      */
-    protected static function uchr($code)
+    public static function uchr($code)
     {
         return html_entity_decode('&#' . ((int)$code) . ';', ENT_NOQUOTES, 'UTF-8');
     }
@@ -153,8 +153,20 @@ class Font extends Object
 
                     preg_match_all($regexp, $section, $matches);
 
+                    $this->tableSizes['from'] = max(1, strlen(current($matches['from'][0])) / 2);
+
                     foreach ($matches['from'] as $key => $from) {
-                        $this->table[hexdec($from)] = self::uchr(hexdec($matches['to'][$key]));
+                        $parts = preg_split(
+                            '/([0-9A-F]{4})/i',
+                            $matches['to'][$key],
+                            0,
+                            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                        );
+                        $text  = '';
+                        foreach ($parts as $part) {
+                            $text .= self::uchr(hexdec($part));
+                        }
+                        $this->table[hexdec($from)] = $text;
                     }
                 }
             }
@@ -189,7 +201,17 @@ class Font extends Object
                         preg_match_all('/<(?<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
 
                         foreach ($strings['string'] as $position => $string) {
-                            $this->table[$char_from + $position] = self::uchr(hexdec($string));
+                            $parts = preg_split(
+                                '/([0-9A-F]{4})/i',
+                                $string,
+                                0,
+                                PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                            );
+                            $text  = '';
+                            foreach ($parts as $part) {
+                                $text .= self::uchr(hexdec($part));
+                            }
+                            $this->table[$char_from + $position] = $text;
                         }
                     }
                 }
@@ -294,6 +316,14 @@ class Font extends Object
     }
 
     /**
+     * @return int
+     */
+    protected function getFontSpaceLimit()
+    {
+        return -50;
+    }
+
+    /**
      * @param array $commands
      *
      * @return string
@@ -303,12 +333,13 @@ class Font extends Object
         $word_position = 0;
         $words         = array();
         $unicode       = false;
+        $font_space    = $this->getFontSpaceLimit();
 
         foreach ($commands as $command) {
             switch ($command[Object::TYPE]) {
                 case 'n':
                     // TODO : do it better.
-                    if (floatval(trim($command[Object::COMMAND])) < -50) {
+                    if (floatval(trim($command[Object::COMMAND])) < $font_space) {
                         $word_position = count($words);
                     }
                     continue(2);
@@ -430,12 +461,19 @@ class Font extends Object
                     }
 
                     $text = $result;
+
+                    if ($encoding->get('BaseEncoding')->equals('MacRomanEncoding')) {
+                        $text = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $text);
+
+                        return $text;
+                    }
                 }
             }
         }
 
         // Convert to unicode if not already done.
         if (!$unicode) {
+
             if ($this->get('Encoding') instanceof Element &&
                 $this->get('Encoding')->equals('MacRomanEncoding')
             ) {

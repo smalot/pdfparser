@@ -24,4 +24,13 @@ use Smalot\PdfParser\Object;
  */
 class Image extends Object
 {
+    /**
+     * @param Page
+     *
+     * @return string
+     */
+    public function getText(Page $page = null)
+    {
+        return '';
+    }
 }

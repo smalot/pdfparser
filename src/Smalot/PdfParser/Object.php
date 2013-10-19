@@ -281,8 +281,8 @@ class Object
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
-                        if (floatval($y)) {
-                            $text .= "\n\n";
+                        if (floatval($y) < 0) {
+                            $text .= "\n";
                         } elseif (floatval($x) <= 0) {
                             $text .= ' ';
                         }
@@ -394,7 +394,7 @@ class Object
             }
         }
 
-        return $text;
+        return $text . ' ';
     }
 
 //    /**
