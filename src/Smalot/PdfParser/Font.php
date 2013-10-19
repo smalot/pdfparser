@@ -153,7 +153,7 @@ class Font extends Object
 
                     preg_match_all($regexp, $section, $matches);
 
-                    $this->tableSizes['from'] = max(1, strlen(current($matches['from'][0])) / 2);
+                    $this->tableSizes['from'] = max(1, strlen(current($matches['from'])) / 2);
 
                     foreach ($matches['from'] as $key => $from) {
                         $parts = preg_split(
