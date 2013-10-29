@@ -338,7 +338,6 @@ class Font extends Object
         foreach ($commands as $command) {
             switch ($command[Object::TYPE]) {
                 case 'n':
-                    // TODO : do it better.
                     if (floatval(trim($command[Object::COMMAND])) < $font_space) {
                         $word_position = count($words);
                     }
@@ -347,7 +346,6 @@ class Font extends Object
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<' . $command[Object::COMMAND] . '>');
-                    // TODO : check if necessary.
                     $unicode = true;
                     break;
 
