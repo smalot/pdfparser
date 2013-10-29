@@ -240,7 +240,6 @@ class Object
     {
         $text                = '';
         $sections            = $this->getSectionsText($this->content);
-        $current_font_size   = 0;
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);

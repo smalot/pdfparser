@@ -302,12 +302,13 @@ class Font extends Object
      */
     public static function decodeUnicode($text)
     {
-        if ($unicode = preg_match('/^\xFE\xFF/i', $text)) {
+        if (preg_match('/^\xFE\xFF/i', $text)) {
             // Strip U+FEFF byte order marker.
             $decode = substr($text, 2);
             $text   = '';
+            $length = strlen($decode);
 
-            for ($i = 0; $i < strlen($decode); $i += 2) {
+            for ($i = 0; $i < $length; $i += 2) {
                 $text .= self::uchr(hexdec(bin2hex(substr($decode, $i, 2))));
             }
         }
@@ -451,8 +452,9 @@ class Font extends Object
                     $text = $result;
                 } else {
                     $result = '';
+                    $length = strlen($text);
 
-                    for ($i = 0; $i < strlen($text); $i++) {
+                    for ($i = 0; $i < $length; $i++) {
                         $dec_av = hexdec(bin2hex($text[$i]));
                         $dec_ap = $encoding->translateChar($dec_av);
                         $result .= chr($dec_ap);

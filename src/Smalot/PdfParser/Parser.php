@@ -76,8 +76,6 @@ class Parser
             throw new \Exception('Secured pdf file are currently not supported.');
         }
 
-//        var_dump($data);
-//        die();
         // Create destination object.
         $document      = new Document();
         $this->objects = array();
@@ -87,13 +85,6 @@ class Parser
         }
 
         $document->setObjects($this->objects);
-
-        /** @var Object $infos */
-        $infos = $document->getObjectById($xref['trailer']['info']);
-
-//        foreach ($infos->getHeader()->getElements() as $name => $value) {
-//            echo $name . ': ' . $value . "\n";
-//        }
 
         return $document;
     }

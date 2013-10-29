@@ -31,11 +31,14 @@ class ElementHexa extends ElementString
      */
     public function __construct($value, Document $document = null)
     {
-        $text = '';
-        for ($i = 0; $i < strlen($value); $i += 4) {
+        $text   = '';
+        $length = strlen($value);
+
+        for ($i = 0; $i < $length; $i += 4) {
             $hex = substr($value, $i, 4);
             $text .= '&#' . hexdec($hex) . ';';
         }
+        
         $text = html_entity_decode($text, ENT_NOQUOTES, 'UTF-8');
 
         parent::__construct($text, null);
