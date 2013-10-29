@@ -397,69 +397,6 @@ class Object
         return $text . ' ';
     }
 
-//    /**
-//     * @param string $text_part
-//     * @param int    $offset
-//     *
-//     * @return array
-//     */
-//    public function getCommandsImage($text_part, &$offset = 0)
-//    {
-//        $commands = $matches = array();
-//        $length   = strlen($text_part);
-//        $is_last  = false;
-//
-//        // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
-//        $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
-//
-//        while ($offset < $length) {
-//            $sub_text = substr($text_part, $offset, 200);
-//
-//            $operator = '';
-//            $type     = '';
-//            $command  = false;
-//
-//            if (preg_match('/^ID (.*?)(\r?\nEI)/s', substr($text_part, $offset), $matches)) {
-//                $operator = 'ID';
-//                $command  = $matches[1];
-//                $offset += strlen($matches[0]) - 2;
-//                $is_last = true;
-//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s*(\/[A-Z0-9#\-_]+)\s*/si', $sub_text, $matches)) {
-//                $type     = '/';
-//                $operator = ltrim($matches[1], '/');
-//                $command  = ltrim($matches[2], '/');
-//                $offset += strlen($matches[0]);
-//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s+([A-Z0-9\.\-_]+)\s*/si', $sub_text, $matches)) {
-//                $type     = '/';
-//                $operator = ltrim($matches[1], '/');
-//                $command  = $matches[2];
-//                $offset += strlen($matches[0]);
-//            } elseif (preg_match('/^(\/[A-Z0-9_]+)\s*<<\s*/si', $sub_text, $matches)) {
-//                $operator = ltrim($matches[1], '/');
-//                $type     = 'struct';
-//                $offset += strlen($matches[0]);
-//                $command = $this->getCommandsImage($text_part, $offset);
-//                $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset) + 2;
-//                $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
-//            }
-//
-//            if ($command !== false) {
-//                $commands[] = array(
-//                    self::TYPE     => $type,
-//                    self::OPERATOR => $operator,
-//                    self::COMMAND  => $command,
-//                );
-//                if ($is_last) {
-//                    break;
-//                }
-//            } else {
-//                break;
-//            }
-//        }
-//
-//        return $commands;
-//    }
-
     /**
      * @param string $text_part
      * @param int    $offset

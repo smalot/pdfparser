@@ -3,15 +3,15 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "e5d55474e4882ee9bf356505effd584c",
+    "hash": "1270ee0ba20ef68ad707af0504bdccec",
     "packages": [
         {
             "name": "tecnick.com/tcpdf",
-            "version": "dev-master",
+            "version": "6.0.042",
             "source": {
                 "type": "git",
                 "url": "git://git.code.sf.net/p/tcpdf/code",
-                "reference": "977539641b4c8806de127ed350927c97045471d9"
+                "reference": "8510efc6cfe7a537fff810616b5e279a66ade068"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -60,7 +60,7 @@
                 "pdf417",
                 "qrcode"
             ],
-            "time": "2013-10-13 21:02:11"
+            "time": "2013-10-25 17:18:08"
         }
     ],
     "packages-dev": [
@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atoum/atoum.git",
-                "reference": "beee40036cd791ff29367091723ff3e7ff22b82b"
+                "reference": "15a74c2054df413f9ace524b0d2344df1c1bc700"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atoum/atoum/zipball/beee40036cd791ff29367091723ff3e7ff22b82b",
-                "reference": "beee40036cd791ff29367091723ff3e7ff22b82b",
+                "url": "https://api.github.com/repos/atoum/atoum/zipball/15a74c2054df413f9ace524b0d2344df1c1bc700",
+                "reference": "15a74c2054df413f9ace524b0d2344df1c1bc700",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "test",
                 "unit testing"
             ],
-            "time": "2013-10-14 10:18:47"
+            "time": "2013-10-29 14:36:54"
         }
     ],
     "aliases": [
@@ -144,7 +144,6 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "tecnick.com/tcpdf": 20,
         "atoum/atoum": 20
     },
     "platform": {
