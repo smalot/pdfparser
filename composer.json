@@ -25,5 +25,8 @@
         "psr-0": {
             "Smalot\\PdfParser\\": "src/"
         }
+    },
+    "config": {
+        "process-timeout": 1200
     }
 }
