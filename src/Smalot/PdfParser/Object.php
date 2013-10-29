@@ -388,7 +388,6 @@ class Object
                         break;
 
                     default:
-                        //throw new \Exception('Operator not supported: ' . $command['operator']);
                 }
             }
         }
