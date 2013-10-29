@@ -563,7 +563,7 @@ class Object
      *
      * @return Object
      */
-    public static function factory($document, $header, $content)
+    public static function factory(Document $document, Header $header, $content)
     {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
