@@ -15,10 +15,7 @@
 
 namespace Smalot\PdfParser;
 
-use Smalot\PdfParser\Element\ElementBoolean;
 use Smalot\PdfParser\Element\ElementDate;
-use Smalot\PdfParser\Element\ElementNumeric;
-use Smalot\PdfParser\Element\ElementString;
 
 /**
  * Technical references :

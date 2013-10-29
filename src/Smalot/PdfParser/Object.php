@@ -15,7 +15,6 @@
 
 namespace Smalot\PdfParser;
 
-use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\XObject\Form;
 use Smalot\PdfParser\XObject\Image;
 

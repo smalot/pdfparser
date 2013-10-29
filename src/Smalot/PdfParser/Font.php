@@ -15,10 +15,6 @@
 
 namespace Smalot\PdfParser;
 
-use Smalot\PdfParser\Element\ElementArray;
-use Smalot\PdfParser\Element\ElementMissing;
-use Smalot\PdfParser\Element\ElementXRef;
-
 /**
  * Class Font
  *

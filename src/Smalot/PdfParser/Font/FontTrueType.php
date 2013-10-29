@@ -15,7 +15,6 @@
 
 namespace Smalot\PdfParser\Font;
 
-use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Font;
 
 /**

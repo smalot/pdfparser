@@ -18,7 +18,6 @@ namespace Smalot\PdfParser\Element;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
-use Smalot\PdfParser\Object;
 
 /**
  * Class ElementStruct
