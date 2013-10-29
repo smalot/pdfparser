@@ -16,6 +16,7 @@
 namespace Smalot\PdfParser\XObject;
 
 use Smalot\PdfParser\Object;
+use Smalot\PdfParser\Page;
 
 /**
  * Class Image
