@@ -118,32 +118,24 @@ class Object
     public function cleanContent($content, $char = 'X')
     {
         $char    = $char[0];
-        $content = str_replace('\\\\', $char . $char, $content);
-        $content = str_replace('\\)', $char . $char, $content);
-        $content = str_replace('\\(', $char . $char, $content);
+        $content = str_replace(array('\\\\', '\\)', '\\('), $char . $char, $content);
 
         // Remove image bloc with binary content
         preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
         foreach ($matches[0] as $part) {
-            $text    = $part[0];
-            $offset  = $part[1];
-            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
         }
 
         // Clean content in square brackets [.....]
         preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
-            $text    = $part[0];
-            $offset  = $part[1];
-            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
         }
 
         // Clean content in round brackets (.....)
         preg_match_all('/\((.*?)\)/s', $content, $matches, PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
-            $text    = $part[0];
-            $offset  = $part[1];
-            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
         }
 
         // Clean structure
@@ -155,11 +147,7 @@ class Object
                     $level++;
                 }
 
-                if ($level == 0) {
-                    $content .= $part;
-                } else {
-                    $content .= str_repeat($char, strlen($part));
-                }
+                $content .= ($level == 0 ? $part : str_repeat($char, strlen($part)));
 
                 if ($part == '>') {
                     $level--;
@@ -175,16 +163,12 @@ class Object
             PREG_OFFSET_CAPTURE
         );
         foreach ($matches[1] as $part) {
-            $text    = $part[0];
-            $offset  = $part[1];
-            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
         }
 
         preg_match_all('/\s(EMC)\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
-            $text    = $part[0];
-            $offset  = $part[1];
-            $content = substr_replace($content, str_repeat($char, strlen($text)), $offset, strlen($text));
+            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
         }
 
         return $content;
