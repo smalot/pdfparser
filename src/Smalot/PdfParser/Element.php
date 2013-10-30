@@ -125,7 +125,6 @@ class Element
 
         do {
             $old_position = $position;
-//            $sub_content  = substr($content, $position);
 
             if (!$only_values) {
                 if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', substr($content, $position), $match)) {
