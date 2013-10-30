@@ -55,7 +55,7 @@ class ElementHexa extends ElementString
     {
         if (preg_match('/^\s*\<(?<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name   = $match['name'];
-            $offset = strpos($content, '<' . $name) + strlen($name) + 2; // 1 for '>'
+            $offset += strpos($content, '<' . $name) + strlen($name) + 2; // 1 for '>'
 
             return new self($name, $document);
         }

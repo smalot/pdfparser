@@ -82,6 +82,7 @@ class ElementName extends atoum\test
         $element = \Smalot\PdfParser\Element\ElementName::parse('/OJHCYD+Cambria', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('OJHCYD+Cambria');
         $this->assert->integer($offset)->isEqualTo(15);
+        $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementName::parse('/OJHCYD+Cambria,Bold', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('OJHCYD+Cambria,Bold');
         $this->assert->integer($offset)->isEqualTo(20);

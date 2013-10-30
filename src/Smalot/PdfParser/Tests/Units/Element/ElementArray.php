@@ -114,22 +114,25 @@ class ElementArray extends atoum\test
 
     public function testGetDetails()
     {
-        // Document with text.
-        $filename = __DIR__ . '/../../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
-        $document = $parser->parseFile($filename);
-        $object   = $document->getObjectById('3_0');
-        /** @var \Smalot\PdfParser\Element\ElementArray $kids */
-        $kids    = $object->get('Kids');
-        $details = $kids->getDetails();
-
-        $this->assert->array($details)->hasSize(1);
-        $this->assert->string($details[0]['Type'])->isEqualTo('Page');
+//        // Document with text.
+//        $filename = __DIR__ . '/../../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+//        $parser   = new \Smalot\PdfParser\Parser();
+//        $document = $parser->parseFile($filename);
+//        $object   = $document->getObjectById('3_0');
+//        /** @var \Smalot\PdfParser\Element\ElementArray $kids */
+//        $kids    = $object->get('Kids');
+//        $details = $kids->getDetails();
+//
+//        $this->assert->array($details)->hasSize(1);
+//        $this->assert->string($details[0]['Type'])->isEqualTo('Page');
 
         $document          = new Document();
-        $content           = '<</Type/Page/Sizes[1 2 3 4 5 <</Subtype/XObject>> [8 [9 <</FontSize 10>>]]]>>';
+        $content           = '<</Type/Page/Types[8]/Sizes[1 2 3 4 5 <</Subtype/XObject>> [8 [9 <</FontSize 10>>]]]>>';
         $details_reference = array(
             'Type'  => 'Page',
+            'Types' => array(
+                8,
+            ),
             'Sizes' => array(
                 1,
                 2,
@@ -153,12 +156,8 @@ class ElementArray extends atoum\test
         $header            = Header::parse($content, $document);
         $details           = $header->getDetails();
 
-        $this->assert->array($details)->hasSize(2);
+        $this->assert->array($details)->hasSize(3);
         $this->assert->array($details)->isEqualTo($details_reference);
-
-        /** @var Page $page */
-//        $page     = $pages[0];
-//        var_dump($page->getDetails());
     }
 
     public function test__toString()

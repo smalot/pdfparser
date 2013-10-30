@@ -119,22 +119,16 @@ class Element
     public static function parse($content, Document $document = null, &$position = 0)
     {
         $args        = func_get_args();
-        $only_values = false;
-        if (isset($args[3])) {
-            $only_values = $args[3];
-        }
-
-        $position = $old_position = 0;
-        $content  = trim($content);
-        $values   = array();
+        $only_values = isset($args[3]) ? $args[3] : false;
+        $content     = trim($content);
+        $values      = array();
 
         do {
             $old_position = $position;
-            $sub_content  = substr($content, $position);
-            $offset       = 0;
+//            $sub_content  = substr($content, $position);
 
             if (!$only_values) {
-                if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', $sub_content, $match)) {
+                if (!preg_match('/^\s*(?<name>\/[A-Z0-9\._]+)(?<value>.*)/si', substr($content, $position), $match)) {
                     break;
                 } else {
                     $name     = ltrim($match['name'], '/');
@@ -143,44 +137,32 @@ class Element
                 }
             } else {
                 $name  = count($values);
-                $value = $sub_content;
+                $value = substr($content, $position);
             }
 
-            if ($element = ElementName::parse($value, $document, $offset)) {
+            if ($element = ElementName::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementXRef::parse($value, $document, $offset)) {
+            } elseif ($element = ElementXRef::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementNumeric::parse($value, $document, $offset)) {
+            } elseif ($element = ElementNumeric::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementStruct::parse($value, $document, $offset)) {
+            } elseif ($element = ElementStruct::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementBoolean::parse($value, $document, $offset)) {
+            } elseif ($element = ElementBoolean::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementNull::parse($value, $document, $offset)) {
+            } elseif ($element = ElementNull::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementDate::parse($value, $document, $offset)) {
+            } elseif ($element = ElementDate::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementString::parse($value, $document, $offset)) {
+            } elseif ($element = ElementString::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementHexa::parse($value, $document, $offset)) {
+            } elseif ($element = ElementHexa::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
-            } elseif ($element = ElementArray::parse($value, $document, $offset)) {
+            } elseif ($element = ElementArray::parse($value, $document, $position)) {
                 $values[$name] = $element;
-                $position += $offset;
             } else {
-                // Revert position
                 $position = $old_position;
-
-                return $values;
+                break;
             }
         } while ($position < strlen($content));
 

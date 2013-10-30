@@ -114,7 +114,7 @@ class ElementDate extends ElementString
             if (!$date) {
                 return false;
             }
-            $offset = strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
+            $offset += strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
 
             $element = new self($date, $document);
             $element->setFormat($format);

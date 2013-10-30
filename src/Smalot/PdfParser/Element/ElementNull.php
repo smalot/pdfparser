@@ -62,7 +62,7 @@ class ElementNull extends Element
     public static function parse($content, Document $document = null, &$offset = 0)
     {
         if (preg_match('/^\s*(null)/s', $content, $match)) {
-            $offset = strpos($content, 'null') + strlen('null');
+            $offset += strpos($content, 'null') + strlen('null');
 
             return new self(null, $document);
         }

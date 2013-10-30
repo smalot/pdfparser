@@ -63,9 +63,9 @@ class ElementXRef extends Element
     public static function parse($content, Document $document = null, &$offset = 0)
     {
         if (preg_match('/^\s*(?<id>[0-9]+\s+[0-9]+\s+R)/s', $content, $match)) {
-            $id     = $match['id'];
-            $offset = strpos($content, $id) + strlen($id);
-            $id     = str_replace(' ', '_', rtrim($id, ' R'));
+            $id = $match['id'];
+            $offset += strpos($content, $id) + strlen($id);
+            $id = str_replace(' ', '_', rtrim($id, ' R'));
 
             return new self($id, $document);
         }
