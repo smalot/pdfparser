@@ -51,16 +51,14 @@ class Encoding extends Object
         if ($this->has('BaseEncoding')) {
             // Load reference table charset.
             $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-            $encoding     = array();
-            $file         = __DIR__ . '/Encoding/' . $baseEncoding . '.php';
+            $className    = '\\Smalot\\PdfParser\\Encoding\\' . $baseEncoding;
 
-            if (file_exists($file)) {
-                include $file;
+            if (class_exists($className)) {
+                $class = new $className();
+                $this->encoding = $class->getTranslations();
             } else {
-                throw new \Exception('Missing encoding data file: "' . $file . '".');
+                throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
             }
-
-            $this->encoding = $encoding;
 
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();
