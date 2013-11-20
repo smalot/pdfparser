@@ -329,10 +329,12 @@ class Object
                         break;
 
                     case 'Do':
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $id   = trim(array_pop($args), '/ ');
-                        if ($xobject = $page->getXObject($id)) {
-                            $text .= $xobject->getText();
+                        if (!is_null($page)) {
+                            $args = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id   = trim(array_pop($args), '/ ');
+                            if ($xobject = $page->getXObject($id)) {
+                                $text .= $xobject->getText($page);
+                            }
                         }
                         break;
 
