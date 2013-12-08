@@ -396,7 +396,12 @@ class Font extends Object
                     if (($decoded = $this->translateChar($char, false)) !== false) {
                         $char = $decoded;
                     } elseif ($this->has('DescendantFonts')) {
-                        $fonts   = $this->get('DescendantFonts')->getHeader()->getElements();
+
+                        if ($this->get('DescendantFonts') instanceof Object) {
+                            $fonts   = $this->get('DescendantFonts')->getHeader()->getElements();
+                        } else {
+                            $fonts   = $this->get('DescendantFonts')->getContent();
+                        }
                         $decoded = false;
 
                         foreach ($fonts as $font) {
