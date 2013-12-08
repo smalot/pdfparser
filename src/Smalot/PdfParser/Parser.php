@@ -84,9 +84,32 @@ class Parser
             $this->parseObject($id, $structure, $document);
         }
 
+        $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
         $document->setObjects($this->objects);
 
         return $document;
+    }
+
+    protected function parseTrailer($structure, $document)
+    {
+        $trailer = array();
+
+        foreach ($structure as $name => $values) {
+            $name = ucfirst($name);
+
+            if (is_numeric($values)) {
+                $trailer[$name] = new ElementNumeric($values, $document);
+            } elseif (is_array($values)) {
+                $value = $this->parseTrailer($values, $document);
+                $trailer[$name] = new ElementArray($value, $document);
+            } elseif (strpos($values, '_') !== false) {
+                $trailer[$name] = new ElementXRef($values, $document);
+            } else {
+                $trailer[$name] = new ElementString($values, $document);
+            }
+        }
+
+        return new Header($trailer, $document);
     }
 
     /**

@@ -259,14 +259,6 @@ class Document
     }
 
     /**
-     * @param array $details
-     */
-    public function setDetails(array $details)
-    {
-        $this->details = $details;
-    }
-
-    /**
      * @return array
      */
     public function getDetails($deep = true)
