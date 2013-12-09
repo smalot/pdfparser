@@ -96,8 +96,8 @@ class Header
                 if ($deep) {
                     $values[$key] = $element->getDetails();
                 }
-            } elseif ($element instanceof Element && !($element instanceof ElementArray)) {
-                $values[$key] = $element->getContent();
+            } elseif ($element instanceof Element) {
+                $values[$key] = (string) $element;
             }
         }
 

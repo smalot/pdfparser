@@ -100,12 +100,12 @@ class Parser
             if (is_numeric($values)) {
                 $trailer[$name] = new ElementNumeric($values, $document);
             } elseif (is_array($values)) {
-                $value = $this->parseTrailer($values, $document);
-                $trailer[$name] = new ElementArray($value, $document);
+                $value = $this->parseTrailer($values, null);
+                $trailer[$name] = new ElementArray($value, null);
             } elseif (strpos($values, '_') !== false) {
                 $trailer[$name] = new ElementXRef($values, $document);
             } else {
-                $trailer[$name] = new ElementString($values, $document);
+                $trailer[$name] = $this->parseHeaderElement('(', $values, $document);
             }
         }
 
@@ -185,6 +185,14 @@ class Parser
                         return;
                     }
                     break;
+
+                default:
+                    $element = $this->parseHeaderElement($part[0], $part[1], $document);
+                    if ($element) {
+                        $header  = new Header(array($element), $document);
+                    }
+                    break;
+
             }
         }
 
@@ -266,6 +274,10 @@ class Parser
                 }
 
                 return new ElementArray($values, $document);
+
+            case 'endstream':
+                // Nothing to do with.
+                break;
 
             default:
                 throw new \Exception('Invalid type: "' . $type . '".');

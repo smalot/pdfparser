@@ -105,14 +105,7 @@ class Document
         if ($this->trailer->has('Info')) {
             /** @var Object $info */
             $info     = $this->trailer->get('Info');
-            $elements = $info->getHeader()->getElements();
-
-            foreach ($elements as $name => $element) {
-                if ($element instanceof ElementDate) {
-                    $element->setFormat('c');
-                }
-                $details[$name] = (string)$element;
-            }
+            $details  = $info->getHeader()->getDetails();
         }
 
         // Retrieve the page count

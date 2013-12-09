@@ -89,6 +89,12 @@ class ElementDate extends atoum\test
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
         $this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55')))->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(21);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementDate::parse("(D:20131206091846Z00'00')", null, $offset);
+        $element->setFormat('c');
+        $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
+        //$this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55')))->isEqualTo(true);
+        $this->assert->integer($offset)->isEqualTo(25);
 
         // Format invalid
         $offset  = 0;

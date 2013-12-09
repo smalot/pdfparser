@@ -95,6 +95,10 @@ class ElementString extends atoum\test
         $element = \Smalot\PdfParser\Element\ElementString::parse("(<20>)", null, $offset);
         $this->assert->string($element->getContent())->isEqualTo(' ');
         $this->assert->integer($offset)->isEqualTo(6);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse("(Gutter\\ console\\ assembly)", null, $offset);
+        $this->assert->string($element->getContent())->isEqualTo('Gutter console assembly');
+        $this->assert->integer($offset)->isEqualTo(27);
     }
 
     public function testGetContent()

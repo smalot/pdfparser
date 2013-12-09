@@ -105,8 +105,12 @@ class ElementDate extends ElementString
 
             // Smallest format : Y
             // Full format     : YmdHisP
-            if (!preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
+            if (!preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
                 return false;
+            }
+
+            if ($pos = strpos($name, 'Z')) {
+                $name = substr($name, 0, $pos + 1);
             }
 
             $format = self::$formats[strlen($name)];
@@ -117,7 +121,7 @@ class ElementDate extends ElementString
             $offset += strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
 
             $element = new self($date, $document);
-            $element->setFormat($format);
+            //$element->setFormat($format);
 
             return $element;
         }
