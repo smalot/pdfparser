@@ -187,9 +187,12 @@ class Parser
                     break;
 
                 default:
-                    $element = $this->parseHeaderElement($part[0], $part[1], $document);
-                    if ($element) {
-                        $header  = new Header(array($element), $document);
+                    if ($part != 'null') {
+                        $element = $this->parseHeaderElement($part[0], $part[1], $document);
+
+                        if ($element) {
+                            $header  = new Header(array($element), $document);
+                        }
                     }
                     break;
 
@@ -276,6 +279,7 @@ class Parser
                 return new ElementArray($values, $document);
 
             case 'endstream':
+            case '':
                 // Nothing to do with.
                 break;
 
