@@ -62,12 +62,12 @@ class ElementHexa extends ElementString
         if (substr($value, 0, 2) == '00') {
             for ($i = 0; $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
-                $text .= '&#' . hexdec($hex) . ';';
+                $text .= '&#' . str_pad(hexdec($hex), 4, '0', STR_PAD_LEFT) . ';';
             }
         } else {
             for ($i = 0; $i < $length; $i += 2) {
                 $hex = substr($value, $i, 2);
-                $text .= '&#' . hexdec($hex) . ';';
+                $text .= '&#' . str_pad(hexdec($hex), 2, '0', STR_PAD_LEFT) . ';';
             }
         }
         
