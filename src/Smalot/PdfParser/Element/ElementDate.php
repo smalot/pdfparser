@@ -102,26 +102,32 @@ class ElementDate extends ElementString
         if (preg_match('/^\s*\(D\:(?<name>.*?)\)/s', $content, $match)) {
             $name = $match['name'];
             $name = str_replace("'", '', $name);
+            $date = false;
 
             // Smallest format : Y
             // Full format     : YmdHisP
-            if (!preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
-                return false;
+            if (preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
+                if ($pos = strpos($name, 'Z')) {
+                    $name = substr($name, 0, $pos + 1);
+                }
+
+                $format = self::$formats[strlen($name)];
+                $date   = \DateTime::createFromFormat($format, $name);
+            } else {
+                // special cases
+                if (preg_match('/^\d{1,2}-\d{1,2}-\d{4},?\s+\d{2}:\d{2}:\d{2}[\+-]\d{4}$/', $name)) {
+                    $name   = str_replace(',', '', $name);
+                    $format = 'n-j-Y H:i:sO';
+                    $date   = \DateTime::createFromFormat($format, $name);
+                }
             }
 
-            if ($pos = strpos($name, 'Z')) {
-                $name = substr($name, 0, $pos + 1);
-            }
-
-            $format = self::$formats[strlen($name)];
-            $date   = \DateTime::createFromFormat($format, $name);
             if (!$date) {
                 return false;
             }
-            $offset += strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
 
+            $offset += strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
             $element = new self($date, $document);
-            //$element->setFormat($format);
 
             return $element;
         }
