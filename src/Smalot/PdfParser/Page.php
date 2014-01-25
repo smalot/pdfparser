@@ -165,7 +165,7 @@ class Page extends Object
     {
         if ($contents = $this->get('Contents')) {
 
-            if ($elements instanceof ElementMissing) {
+            if ($contents instanceof ElementMissing) {
                 return '';
             } elseif ($contents instanceof Object) {
                 $elements = $contents->getHeader()->getElements();
