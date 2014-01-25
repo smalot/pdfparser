@@ -84,7 +84,7 @@ class ElementHexa extends atoum\test
         $this->assert->integer($offset)->isEqualTo(31);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <443a3230313331323137313334303435303027303027> ", null, $offset);
-        $this->assert->castToString($element->getContent())->isEqualTo('ReportBuilder');
+        $this->assert->castToString($element)->isEqualTo('ReportBuilder');
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Element\ElementDate');
         $this->assert->castToString($element)->isEqualTo('2013-12-17T13:40:45+00:00');
         $this->assert->integer($offset)->isEqualTo(49);
