@@ -164,23 +164,26 @@ class Page extends Object
     public function getText(Page $page = null)
     {
         if ($contents = $this->get('Contents')) {
-            $elements = $contents->getHeader()->getElements();
 
-            if (is_numeric(key($elements))) {
-                $new_content = '';
+            if ($elements instanceof ElementMissing) {
+                return '';
+            } elseif ($contents instanceof Object) {
+                $elements = $contents->getHeader()->getElements();
 
-                foreach ($elements as $element) {
-                    if ($element instanceof ElementXRef) {
-                        $new_content .= $element->getObject()->getContent();
-                    } else {
-                        $new_content .= $element->getContent();
+                if (is_numeric(key($elements))) {
+                    $new_content = '';
+
+                    foreach ($elements as $element) {
+                        if ($element instanceof ElementXRef) {
+                            $new_content .= $element->getObject()->getContent();
+                        } else {
+                            $new_content .= $element->getContent();
+                        }
                     }
+
+                    $header   = new Header(array(), $this->document);
+                    $contents = new Object($this->document, $header, $new_content);
                 }
-
-                $header   = new Header(array(), $this->document);
-                $contents = new Object($this->document, $header, $new_content);
-
-                return $contents->getText($this);
             } elseif ($contents instanceof ElementArray) {
                 // Create a virtual global content.
                 $new_content = '';
@@ -191,11 +194,9 @@ class Page extends Object
 
                 $header   = new Header(array(), $this->document);
                 $contents = new Object($this->document, $header, $new_content);
-
-                return $contents->getText($this);
-            } elseif (!($contents instanceof ElementMissing)) {
-                return $contents->getText($this);
             }
+
+            return $contents->getText($this);
         }
 
         return '';
