@@ -68,7 +68,7 @@ class Element extends atoum\test
         $this->assert->castToString($elements['NumericType'])->isEqualTo('8');
 
         $this->assert->boolean(array_key_exists('HexaType', $elements))->isEqualTo(true);
-        $this->assert->object($elements['HexaType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementHexa');
+        $this->assert->object($elements['HexaType'])->isInstanceOf('\Smalot\PdfParser\Element\ElementString');
         $this->assert->string($elements['HexaType']->getContent())->isEqualTo(' ');
 
         $this->assert->boolean(array_key_exists('BooleanType', $elements))->isEqualTo(true);
