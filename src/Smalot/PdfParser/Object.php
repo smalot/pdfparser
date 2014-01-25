@@ -402,7 +402,7 @@ class Object
                 case '/':
                     $type = $char;
                     if (preg_match(
-                        '/^\/([A-Z0-9\._]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
+                        '/^\/([A-Z0-9\._,\+]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )
@@ -411,7 +411,7 @@ class Object
                         $command  = $matches[1];
                         $offset += strlen($matches[0]);
                     } elseif (preg_match(
-                        '/^\/([A-Z0-9\._]+)\s+([A-Z]+)\s*/si',
+                        '/^\/([A-Z0-9\._,\+]+)\s+([A-Z]+)\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )

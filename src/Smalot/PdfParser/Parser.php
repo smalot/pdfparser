@@ -258,7 +258,7 @@ class Parser
                 }
 
             case '<':
-                return new ElementHexa($value, $document);
+                return $this->parseHeaderElement('(', ElementHexa::decode($value, $document), $document);
 
             case '/':
                 return ElementName::parse('/' . $value, $document);

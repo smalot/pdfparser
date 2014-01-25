@@ -73,9 +73,23 @@ class ElementHexa extends atoum\test
         $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <0020> ", null, $offset);
         $this->assert->string($element->getContent())->isEqualTo(' ');
         $this->assert->integer($offset)->isEqualTo(9);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <5465616d204d616e6167656d656e742053797374656d73> ", null, $offset);
+        $this->assert->string($element->getContent())->isEqualTo('Team Management Systems');
+        $this->assert->integer($offset)->isEqualTo(51);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <5265706f72744275696c646572> ", null, $offset);
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Element\ElementString');
+        $this->assert->string($element->getContent())->isEqualTo('ReportBuilder');
+        $this->assert->integer($offset)->isEqualTo(31);
+        $offset  = 0;
+        $element = \Smalot\PdfParser\Element\ElementHexa::parse(" \n <443a3230313331323137313334303435303027303027> ", null, $offset);
+        $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Element\ElementDate');
+        $this->assert->castToString($element)->isEqualTo('2013-12-17T13:40:45+00:00');
+        $this->assert->integer($offset)->isEqualTo(49);
     }
 
-    public function testGetContent()
+    /*public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
         $this->assert->string($element->getContent())->isEqualTo(' ');
@@ -99,5 +113,5 @@ class ElementHexa extends atoum\test
     {
         $element = new \Smalot\PdfParser\Element\ElementHexa('0020');
         $this->assert->castToString($element)->isEqualTo(' ');
-    }
+    }*/
 }

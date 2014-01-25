@@ -37,6 +37,7 @@ class ElementDate extends ElementString
         14 => 'YmdHis',
         15 => 'YmdHise',
         17 => 'YmdHisO',
+        18 => 'YmdHisO',
         19 => 'YmdHisO',
     );
 
@@ -106,9 +107,11 @@ class ElementDate extends ElementString
 
             // Smallest format : Y
             // Full format     : YmdHisP
-            if (preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
+            if (preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]?\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
                 if ($pos = strpos($name, 'Z')) {
                     $name = substr($name, 0, $pos + 1);
+                } elseif (strlen($name) == 18 && preg_match('/[^\+-]0000$/', $name)) {
+                    $name = substr($name, 0, -4) . '+0000';
                 }
 
                 $format = self::$formats[strlen($name)];
