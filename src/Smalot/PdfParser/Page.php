@@ -17,6 +17,7 @@ namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Element\ElementXRef;
 
 /**
  * Class Page
@@ -26,16 +27,6 @@ use Smalot\PdfParser\Element\ElementMissing;
 class Page extends Object
 {
     /**
-     * @var Object
-     */
-//    protected $resources = null;
-
-    /**
-     * @var Object
-     */
-//    protected $contents = null;
-
-    /**
      * @var Font[]
      */
     protected $fonts = null;
@@ -44,34 +35,6 @@ class Page extends Object
      * @var Object[]
      */
     protected $xobjects = null;
-
-    /**
-     * @return Object
-     */
-    /*public function getResources()
-    {
-        if (!is_null($this->resources)) {
-            return $this->resources;
-        }
-
-        $resources = $this->get('Resources');
-
-        return ($this->resources = $resources);
-    }*/
-
-    /**
-     * @return Object
-     */
-    /*public function getContents()
-    {
-        if (!is_null($this->contents)) {
-            return $this->contents;
-        }
-
-        $contents = $this->get('Contents');
-
-        return ($this->contents = $contents);
-    }*/
 
     /**
      * @return Font[]
@@ -200,10 +163,25 @@ class Page extends Object
      */
     public function getText(Page $page = null)
     {
-        $contents = $this->get('Contents');
+        if ($contents = $this->get('Contents')) {
+            $elements = $contents->getHeader()->getElements();
 
-        if ($contents) {
-            if ($contents instanceof ElementArray) {
+            if (is_numeric(key($elements))) {
+                $new_content = '';
+
+                foreach ($elements as $element) {
+                    if ($element instanceof ElementXRef) {
+                        $new_content .= $element->getObject()->getContent();
+                    } else {
+                        $new_content .= $element->getContent();
+                    }
+                }
+
+                $header   = new Header(array(), $this->document);
+                $contents = new Object($this->document, $header, $new_content);
+
+                return $contents->getText($this);
+            } elseif ($contents instanceof ElementArray) {
                 // Create a virtual global content.
                 $new_content = '';
 

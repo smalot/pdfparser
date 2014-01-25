@@ -49,6 +49,14 @@ class ElementArray extends Element
     }
 
     /**
+     * @return array
+     */
+    public function getRawContent()
+    {
+        return $this->value;
+    }
+
+    /**
      * @param bool $deep
      *
      * @return array

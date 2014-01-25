@@ -34,6 +34,14 @@ class ElementXRef extends Element
     }
 
     /**
+     * @return mixed
+     */
+    public function getObject()
+    {
+        return $this->document->getObjectById($this->getId());
+    }
+
+    /**
      * @param mixed $value
      *
      * @return bool

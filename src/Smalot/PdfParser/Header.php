@@ -174,7 +174,7 @@ class Header
         } else {
             $elements = ElementArray::parse($content, $document, $position);
             if ($elements) {
-                $header = new self($elements->getContent(), $document);
+                $header = new self($elements->getRawContent(), null);//$document);
             } else {
                 $header = new self(array(), $document);
             }
