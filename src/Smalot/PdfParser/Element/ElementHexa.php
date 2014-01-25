@@ -67,7 +67,7 @@ class ElementHexa extends ElementString
         } else {
             for ($i = 0; $i < $length; $i += 2) {
                 $hex = substr($value, $i, 2);
-                $text .= '&#' . str_pad(hexdec($hex), 2, '0', STR_PAD_LEFT) . ';';
+                $text .= chr(hexdec($hex));
             }
         }
         
