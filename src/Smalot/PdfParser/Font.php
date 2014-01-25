@@ -353,8 +353,8 @@ class Font extends Object
 
             // replace escaped chars
             $text = str_replace(
-                array('\\\\', '\(', '\)', '\n', '\r', '\t'),
-                array('\\', '(', ')', "\n", "\r", "\t"),
+                array('\\\\', '\(', '\)', '\n', '\r', '\t', '\ '),
+                array('\\', '(', ')', "\n", "\r", "\t", ' '),
                 $text
             );
 
