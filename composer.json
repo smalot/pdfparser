@@ -1,7 +1,7 @@
 {
     "name": "smalot/pdfparser",
     "description": "Pdf parser library. Can read and extract information from pdf file.",
-    "license": "GPL-2.0",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "Sebastien MALOT",
@@ -16,7 +16,7 @@
     "homepage": "http://www.pdfparser.org",
     "require": {
         "php": ">=5.3.0",
-        "tecnick.com/tcpdf": ">=6.0.040"
+        "tecnick.com/tcpdf": ">=6.0.050"
     },
     "require-dev": {
         "atoum/atoum": "dev-master"

@@ -36,5 +36,5 @@ As a result, users must expect BC breaks when using the master version.
 
 ## License ##
 
-This library is under the [GPLv2 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
+This library is under the [GPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
 
