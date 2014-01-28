@@ -50,7 +50,7 @@ class ElementStruct extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*<<(?<struct>.*)/is', $content)) {
+        if (preg_match('/^\s*<<(?P<struct>.*)/is', $content)) {
             preg_match_all('/(.*?)(<<|>>)/s', trim($content), $matches);
 
             $level = 0;

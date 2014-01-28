@@ -48,7 +48,7 @@ class ElementHexa extends ElementString
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\<(?<name>[A-F0-9]+)\>/is', $content, $match)) {
+        if (preg_match('/^\s*\<(?P<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name    = $match['name'];
             $offset += strpos($content, '<' . $name) + strlen($name) + 2; // 1 for '>'
             // repackage string as standard

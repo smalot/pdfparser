@@ -115,7 +115,7 @@ class ElementDate extends ElementString
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\(D\:(?<name>.*?)\)/s', $content, $match)) {
+        if (preg_match('/^\s*\(D\:(?P<name>.*?)\)/s', $content, $match)) {
             $name = $match['name'];
             $name = str_replace("'", '', $name);
             $date = false;

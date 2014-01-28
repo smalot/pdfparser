@@ -131,7 +131,7 @@ class ElementArray extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\[(?<array>.*)/is', $content, $match)) {
+        if (preg_match('/^\s*\[(?P<array>.*)/is', $content, $match)) {
             preg_match_all('/(.*?)(\[|\])/s', trim($content), $matches);
 
             $level = 0;

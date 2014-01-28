@@ -142,9 +142,9 @@ class Font extends Object
             $matches = array();
 
             // Support for multiple spacerange sections
-            if (preg_match_all('/begincodespacerange(?<sections>.*?)endcodespacerange/s', $content, $matches)) {
+            if (preg_match_all('/begincodespacerange(?P<sections>.*?)endcodespacerange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -158,9 +158,9 @@ class Font extends Object
             }
 
             // Support for multiple bfchar sections
-            if (preg_match_all('/beginbfchar(?<sections>.*?)endbfchar/s', $content, $matches)) {
+            if (preg_match_all('/beginbfchar(?P<sections>.*?)endbfchar/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    $regexp = '/<(?<from>[0-9A-F]+)> +<(?<to>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?P<from>[0-9A-F]+)> +<(?P<to>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -183,10 +183,10 @@ class Font extends Object
             }
 
             // Support for multiple bfrange sections
-            if (preg_match_all('/beginbfrange(?<sections>.*?)endbfrange/s', $content, $matches)) {
+            if (preg_match_all('/beginbfrange(?P<sections>.*?)endbfrange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
                     // Support for : <srcCode1> <srcCode2> <dstString>
-                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *<(?<offset>[0-9A-F]+)>[ \r\n]+/is';
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *<(?P<offset>[0-9A-F]+)>[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -201,7 +201,7 @@ class Font extends Object
                     }
 
                     // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
-                    $regexp = '/<(?<from>[0-9A-F]+)> *<(?<to>[0-9A-F]+)> *\[(?<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *\[(?P<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
@@ -209,7 +209,7 @@ class Font extends Object
                         $char_from = hexdec($from);
                         $strings   = array();
 
-                        preg_match_all('/<(?<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
+                        preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
 
                         foreach ($strings['string'] as $position => $string) {
                             $parts = preg_split(

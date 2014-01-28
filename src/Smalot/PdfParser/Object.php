@@ -520,7 +520,7 @@ class Object
                     if (substr($text_part, $offset, 2) == 'ET') {
                         break;
                     } elseif (preg_match(
-                        '/^\s*(?<data>([0-9\.\-]+\s*?)+)\s+(?<id>[A-Z]{1,3})\s*/si',
+                        '/^\s*(?P<data>([0-9\.\-]+\s*?)+)\s+(?P<id>[A-Z]{1,3})\s*/si',
                         substr($text_part, $offset),
                         $matches
                     )

@@ -76,7 +76,7 @@ class ElementBoolean extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*(?<value>true|false)/is', $content, $match)) {
+        if (preg_match('/^\s*(?P<value>true|false)/is', $content, $match)) {
             $value  = $match['value'];
             $offset += strpos($content, $value) + strlen($value);
 

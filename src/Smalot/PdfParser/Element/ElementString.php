@@ -69,14 +69,14 @@ class ElementString extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\((?<name>.*)/s', $content, $match)) {
+        if (preg_match('/^\s*\((?P<name>.*)/s', $content, $match)) {
             $name = $match['name'];
 
             // Find next ')' not escaped.
             $cur_start_text = $start_search_end = 0;
             while (($cur_start_pos = strpos($name, ')', $start_search_end)) !== false) {
                 $cur_extract = substr($name, $cur_start_text, $cur_start_pos - $cur_start_text);
-                preg_match('/(?<escape>[\\\]*)$/s', $cur_extract, $match);
+                preg_match('/(?P<escape>[\\\]*)$/s', $cur_extract, $match);
                 if (!(strlen($match['escape']) % 2)) {
                     break;
                 }
