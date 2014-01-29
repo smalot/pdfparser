@@ -297,6 +297,9 @@ class Object
                     case 'TJ':
                         // Skip if not previously defined, should never happened.
                         if (is_null($current_font)) {
+                            // Fallback
+                            // TODO : Improve
+                            $text .= $command[self::COMMAND][0][self::COMMAND];
                             continue;
                         }
 

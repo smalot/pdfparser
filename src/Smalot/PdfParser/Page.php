@@ -161,13 +161,14 @@ class Page extends Object
         if (isset($xobjects[$id])) {
             return $xobjects[$id];
         } else {
-            $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+            return null;
+            /*$id = preg_replace('/[^0-9\.\-_]/', '', $id);
 
             if (isset($xobjects[$id])) {
                 return $xobjects[$id];
             } else {
                 return null;
-            }
+            }*/
         }
     }
 
