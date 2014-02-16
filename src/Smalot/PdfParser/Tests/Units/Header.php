@@ -71,9 +71,6 @@ class Header extends atoum\test
         $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $this->assert->integer($position)->isEqualTo(8);
         $this->assert->array($header->getElements())->hasSize(1);
-
-//        var_dump($header);
-//        die();
     }
 
     public function testGetElements()

@@ -84,11 +84,15 @@ class Parser
     public function parseContent($content)
     {
         // Create structure using TCPDF Parser.
-        $parser = new \TCPDF_PARSER($content);
+        $parser = new \TCPDF_PARSER(ltrim($content));
         list($xref, $data) = $parser->getParsedData();
 
         if (isset($xref['trailer']['encrypt'])) {
             throw new \Exception('Secured pdf file are currently not supported.');
+        }
+
+        if (empty($data)) {
+            throw new \Exception('Object list not found. Possible secured file.');
         }
 
         // Create destination object.
@@ -115,7 +119,7 @@ class Parser
             if (is_numeric($values)) {
                 $trailer[$name] = new ElementNumeric($values, $document);
             } elseif (is_array($values)) {
-                $value = $this->parseTrailer($values, null);
+                $value          = $this->parseTrailer($values, null);
                 $trailer[$name] = new ElementArray($value, null);
             } elseif (strpos($values, '_') !== false) {
                 $trailer[$name] = new ElementXRef($values, $document);
@@ -162,15 +166,15 @@ class Parser
                         $match = array();
 
                         // Split xrefs and contents.
-                        preg_match('/^([\d\s]+)(.*)$/s', $content, $match);
-                        $content = $match[2];
+                        preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
+                        $content = $match[3];
 
                         // Extract xrefs.
                         $xrefs = preg_split(
                             '/(\d+\s+\d+\s*)/s',
                             $match[1],
                             -1,
-                            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                          PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
                         );
                         $table = array();
 
@@ -206,7 +210,7 @@ class Parser
                         $element = $this->parseHeaderElement($part[0], $part[1], $document);
 
                         if ($element) {
-                            $header  = new Header(array($element), $document);
+                            $header = new Header(array($element), $document);
                         }
                     }
                     break;

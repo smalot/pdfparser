@@ -303,7 +303,6 @@ q
         $document = new \Smalot\PdfParser\Document();
         $object   = new \Smalot\PdfParser\Object($document);
         $sections = $object->getSectionsText($content);
-//        var_dump($sections);
 
 //        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
 //        $this->assert->string($cleaned)->isEqualTo($expected);

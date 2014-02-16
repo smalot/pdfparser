@@ -87,7 +87,11 @@ class Encoding extends Object
                 }
 
                 // ElementName
-                $this->differences[$code] = $difference->getContent();
+                if (is_object($difference)) {
+                    $this->differences[$code] = $difference->getContent();
+                } else {
+                    $this->differences[$code] = $difference;
+                }
 
                 // For the next char.
                 $code++;

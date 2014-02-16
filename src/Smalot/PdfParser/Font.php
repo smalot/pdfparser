@@ -106,7 +106,7 @@ class Font extends Object
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
-            $char = ($use_default ? self::MISSING : false);
+            $char = ($use_default ? self::MISSING : $char);
         }
 
         return $char;
@@ -244,13 +244,13 @@ class Font extends Object
         $parts = preg_split('/(<[a-z0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
-            if (preg_match('/^<.*>$/', $part)) {
+            if (preg_match('/^<.*>$/', $part) && strpos($part, '<?xml') === false) {
                 $part = trim($part, '<>');
                 if ($add_braces) {
                     $text .= '(';
                 }
 
-                $part = pack("H*", $part);
+                $part = pack('H*', $part);
                 $text .= ($add_braces ? preg_replace('/\\\/s', '\\\\\\', $part) : $part);
 
                 if ($add_braces) {
