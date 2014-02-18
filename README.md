@@ -38,3 +38,7 @@ As a result, users must expect BC breaks when using the master version.
 
 This library is under the [GPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/smalot/pdfparser/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
