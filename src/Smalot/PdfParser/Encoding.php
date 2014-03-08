@@ -75,6 +75,7 @@ class Encoding extends Object
             throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
         }
 
+        /** @var Encoding\EncodingInterface $class */
         $class = new $className();
         $this->encoding = $class->getTranslations();
 

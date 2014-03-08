@@ -37,7 +37,7 @@ namespace Smalot\PdfParser\Encoding;
  *
  * @package Smalot\PdfParser\Encoding
  */
-class ISOLatin9Encoding
+class ISOLatin9Encoding implements EncodingInterface
 {
     public function getTranslations()
     {
