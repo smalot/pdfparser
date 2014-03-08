@@ -85,10 +85,9 @@ class Font extends Object
     public function getDetails($deep = true)
     {
         $details = array();
-
-        $details['Name']     = $this->getName();
-        $details['Type']     = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
+        $details['Name'] = $this->getName();
+        $details['Type'] = $this->getType();
+        $details['BaseEncoding'] = ($this->has('BaseEncoding') ? (string)$this->get('BaseEncoding') : 'Ansi');
 
         $details += parent::getDetails($deep);
 
