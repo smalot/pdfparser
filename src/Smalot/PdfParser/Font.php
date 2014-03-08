@@ -78,6 +78,8 @@ class Font extends Object
     }
 
     /**
+     * @param bool $deep
+     *
      * @return array
      */
     public function getDetails($deep = true)

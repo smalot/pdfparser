@@ -119,6 +119,8 @@ class Encoding extends Object
     }
 
     /**
+     * @param bool $deep
+     *
      * @return array
      */
     public function getDetails($deep = true)
@@ -134,7 +136,7 @@ class Encoding extends Object
     }
 
     /**
-     * @param int $char
+     * @param int $dec
      *
      * @return int
      */
