@@ -58,11 +58,14 @@ class Parser
      * @param string $filename
      *
      * @return Document
+     * @throws \Exception
      */
     public function parseFile($filename)
     {
         $content = file_get_contents($filename);
-
+        if (false === $content) {
+            throw new \Exception("Could not read file: {$filename}");
+        }
         return $this->parseContent($content);
     }
 
