@@ -53,14 +53,6 @@ class Parser
     protected $objects = array();
 
     /**
-     *
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * Parse PDF file
      *
      * @param string $filename
@@ -80,6 +72,7 @@ class Parser
      * @param string $content
      *
      * @return Document
+     * @throws \Exception
      */
     public function parseContent($content)
     {
