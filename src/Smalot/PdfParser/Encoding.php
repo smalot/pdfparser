@@ -75,9 +75,17 @@ class Encoding extends Object
                 throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
             }
 
+            if (!$this->has('Differences')) {
+                return;
+            }
+
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();
-            $code        = 0;
+            if (false === $differences) {
+                throw new \Exception("Could not find differences");
+            }
+
+            $code = 0;
 
             foreach ($differences as $difference) {
                 /** @var ElementNumeric $difference */
