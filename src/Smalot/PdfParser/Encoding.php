@@ -80,6 +80,9 @@ class Encoding extends Object
             throw new \Exception("Could not find differences");
         }
 
+        // Build final mapping (custom => standard).
+        $table = array_flip(array_reverse($this->encoding, true));
+
         $code = 0;
 
         foreach ($differences as $difference) {
@@ -99,9 +102,6 @@ class Encoding extends Object
             // For the next char.
             $code++;
         }
-
-        // Build final mapping (custom => standard).
-        $table = array_flip(array_reverse($this->encoding, true));
 
         foreach ($this->differences as $code => $difference) {
             /** @var string $difference */
