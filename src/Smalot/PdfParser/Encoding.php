@@ -67,17 +67,8 @@ class Encoding extends Object
             return;
         }
 
-        // Load reference table charset.
-        $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-        $className    = '\\Smalot\\PdfParser\\Encoding\\' . $baseEncoding;
-
-        if (!class_exists($className)) {
-            throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
-        }
-
-        /** @var Encoding\EncodingInterface $class */
-        $class = new $className();
-        $this->encoding = $class->getTranslations();
+        $baseEncoding = $this->getBaseEncoding();
+        $this->encoding = $this->getEncoding($baseEncoding);
 
         if (!$this->has('Differences')) {
             return;
@@ -147,5 +138,34 @@ class Encoding extends Object
         }
 
         return $dec;
+    }
+
+    /**
+     * @return string
+     */
+    private function getBaseEncoding()
+    {
+        // Load reference table charset.
+        $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
+        return $baseEncoding;
+    }
+
+    /**
+     * @param string $baseEncoding
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function getEncoding($baseEncoding)
+    {
+        $className    = '\\Smalot\\PdfParser\\Encoding\\' . $baseEncoding;
+
+        if (!class_exists($className)) {
+            throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
+        }
+
+        /** @var Encoding\EncodingInterface $class */
+        $class = new $className();
+        return $class->getTranslations();
     }
 }
