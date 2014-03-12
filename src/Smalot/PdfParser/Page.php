@@ -62,7 +62,7 @@ class Page extends Object
 
         $resources = $this->get('Resources');
 
-        if ($resources->has('Font')) {
+        if (method_exists($resources, 'has') && $resources->has('Font')) {
 
             if ($resources->get('Font') instanceof Header) {
                 $fonts = $resources->get('Font')->getElements();
