@@ -123,7 +123,7 @@ class Page extends Object
 
         $resources = $this->get('Resources');
 
-        if ($resources->has('XObject')) {
+        if (method_exists($resources, 'has') && $resources->has('XObject')) {
 
             if ($resources->get('XObject') instanceof Header) {
                 $xobjects = $resources->get('XObject')->getElements();
