@@ -135,21 +135,19 @@ class Object
         $char    = $char[0];
         $content = str_replace(array('\\\\', '\\)', '\\('), $char . $char, $content);
 
-        // callback function to clean text
-        // callback is memoory efficient, and faster than a foreach loop.
-        $_clean = function($part) use ($char, &$_count) {
+        // this function is more memory efficient, and significantly faster than
+        $_clean = function($part) use($char) {
             return str_replace($part[1],str_repeat($char,strlen($part[1])), $part[0]);
         };
 
         // Remove image bloc with binary content
-        $content = preg_replace_callback('/\((.*?)\)/s', $_clean, $content);
+        $content = preg_replace_callback('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s',$_clean,$content);
 
         // Clean content in square brackets [.....]
-        $content = preg_replace_callback('/\((.*?)\)/s', $_clean, $content);
+        $content = preg_replace_callback('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s',$_clean,$content);
 
         // Clean content in round brackets (.....)
-        $_count2 = 0;
-        $content = preg_replace_callback('/\((.*?)\)/s', $_clean, $content);
+        $content = preg_replace_callback('/\((.*?)\)/s',$_clean,$content);
 
         // Clean structure
         if ($parts = preg_split('/(<|>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
@@ -169,11 +167,8 @@ class Object
         }
 
         // Clean BDC and EMC markup
-        $str = '/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s';
-        $content = preg_replace_callback($str, $_clean, $content);
-
-        // preg_replace_callback('/\s(EMC)\s/s', $_clean, $content);
-        $content = preg_replace_callback('/\s(EMC)\s/s', $_clean, $content);
+        $content = preg_replace_callback('/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s',$_clean,$content);
+        $content = preg_replace_callback('/\s(EMC)\s/s',$_clean,$content);
 
         return $content;
     }
