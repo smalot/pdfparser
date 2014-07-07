@@ -73,12 +73,14 @@ class Page extends Object
             $table = array();
 
             foreach ($fonts as $id => $font) {
-                $table[$id] = $font;
-
-                // Store too on cleaned id value (only numeric)
-                $id = preg_replace('/[^0-9\.\-_]/', '', $id);
-                if ($id != '') {
+                if ($font instanceof Font) {
                     $table[$id] = $font;
+
+                    // Store too on cleaned id value (only numeric)
+                    $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+                    if ($id != '') {
+                        $table[$id] = $font;
+                    }
                 }
             }
 
