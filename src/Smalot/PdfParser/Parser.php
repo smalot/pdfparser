@@ -53,24 +53,19 @@ class Parser
     protected $objects = array();
 
     /**
-     *
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * Parse PDF file
      *
      * @param string $filename
      *
      * @return Document
+     * @throws \Exception
      */
     public function parseFile($filename)
     {
         $content = file_get_contents($filename);
-
+        if (false === $content) {
+            throw new \Exception("Could not read file: {$filename}");
+        }
         return $this->parseContent($content);
     }
 
@@ -80,6 +75,7 @@ class Parser
      * @param string $content
      *
      * @return Document
+     * @throws \Exception
      */
     public function parseContent($content)
     {

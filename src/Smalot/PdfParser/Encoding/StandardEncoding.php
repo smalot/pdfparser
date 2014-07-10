@@ -37,7 +37,7 @@ namespace Smalot\PdfParser\Encoding;
  *
  * @package Smalot\PdfParser\Encoding
  */
-class StandardEncoding
+class StandardEncoding implements EncodingInterface
 {
     public function getTranslations()
     {

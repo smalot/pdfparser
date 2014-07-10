@@ -37,7 +37,7 @@ namespace Smalot\PdfParser\Encoding;
  *
  * @package Smalot\PdfParser\Encoding
  */
-class MacRomanEncoding
+class MacRomanEncoding implements EncodingInterface
 {
     public function getTranslations()
     {
