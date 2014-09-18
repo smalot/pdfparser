@@ -347,13 +347,13 @@ class Object
                         break;
 
                     case 'Do':
-                        if (!is_null($page)) {
-                            $args = preg_split('/\s/s', $command[self::COMMAND]);
-                            $id   = trim(array_pop($args), '/ ');
-                            if ($xobject = $page->getXObject($id)) {
-                                $text .= $xobject->getText($page);
-                            }
-                        }
+                        // if (!is_null($page)) {
+                        //     $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        //     $id   = trim(array_pop($args), '/ ');
+                        //     if ($xobject = $page->getXObject($id)) {
+                        //         $text .= $xobject->getText($page);
+                        //     }
+                        // }
                         break;
 
                     case 'rg':
