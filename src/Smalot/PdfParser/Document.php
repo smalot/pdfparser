@@ -120,7 +120,7 @@ class Document
         if ($this->trailer->has('Info')) {
             /** @var Object $info */
             $info     = $this->trailer->get('Info');
-            $details  = $info->getHeader()->getDetails();
+            //$details  = $info->getHeader()->getDetails();
         }
 
         // Retrieve the page count
