@@ -137,20 +137,18 @@ class Header
 
     /**
      * @param string $name
+     *
      * @return Element|Object
      */
     public function get($name)
     {
         if (array_key_exists($name, $this->elements)) {
-            try {
-                return $this->resolveXRef($name);
-            } catch (MyException $e) {
-                return new ElementMissing(null, null);
-            }
-
+            return $this->resolveXRef($name);
         }
+
         return new ElementMissing(null, null);
     }
+
     /**
      * Resolve XRef to object.
      *
@@ -165,9 +163,9 @@ class Header
             /** @var ElementXRef $obj */
             $object = $this->document->getObjectById($obj->getId());
 
-            if (is_null($object)) {
-                throw new \Exception('Missing object reference #' . $obj->getId() . '.');
-            }
+            // if (is_null($object)) {
+            //     throw new \Exception('Missing object reference #' . $obj->getId() . '.');
+            // }
 
             // Update elements list for future calls.
             $this->elements[$name] = $object;
