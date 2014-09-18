@@ -137,7 +137,6 @@ class Header
 
     /**
      * @param string $name
-     *
      * @return Element|Object
      */
     public function get($name)
@@ -150,7 +149,6 @@ class Header
             }
 
         }
-
         return new ElementMissing(null, null);
     }
     /**
