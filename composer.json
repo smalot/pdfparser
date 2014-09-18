@@ -1,5 +1,5 @@
 {
-    "name": "smalot/pdfparser",
+    "name": "waldemarnt/pdfparser",
     "description": "Pdf parser library. Can read and extract information from pdf file.",
     "license": "GPL-3.0",
     "authors": [
