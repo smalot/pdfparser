@@ -143,12 +143,16 @@ class Header
     public function get($name)
     {
         if (array_key_exists($name, $this->elements)) {
-            return $this->resolveXRef($name);
+            try {
+                return $this->resolveXRef($name);
+            } catch (MyException $e) {
+                return new ElementMissing(null, null);
+            }
+
         }
 
         return new ElementMissing(null, null);
     }
-
     /**
      * Resolve XRef to object.
      *
