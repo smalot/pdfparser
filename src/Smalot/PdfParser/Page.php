@@ -219,4 +219,50 @@ class Page extends Object
 
         return '';
     }
+
+	/**
+	 * @param Page
+	 *
+	 * @return array
+	 */
+	public function getTextArray(Page $page = null)
+	{
+		if ($contents = $this->get('Contents')) {
+
+			if ($contents instanceof ElementMissing) {
+				return array();
+			} elseif ($contents instanceof Object) {
+				$elements = $contents->getHeader()->getElements();
+
+				if (is_numeric(key($elements))) {
+					$new_content = '';
+
+					foreach ($elements as $element) {
+						if ($element instanceof ElementXRef) {
+							$new_content .= $element->getObject()->getContent();
+						} else {
+							$new_content .= $element->getContent();
+						}
+					}
+
+					$header   = new Header(array(), $this->document);
+					$contents = new Object($this->document, $header, $new_content);
+				}
+			} elseif ($contents instanceof ElementArray) {
+				// Create a virtual global content.
+				$new_content = '';
+
+				foreach ($contents->getContent() as $content) {
+					$new_content .= $content->getContent() . "\n";
+				}
+
+				$header   = new Header(array(), $this->document);
+				$contents = new Object($this->document, $header, $new_content);
+			}
+
+			return $contents->getTextArray($this);
+		}
+
+		return array();
+	}
 }
