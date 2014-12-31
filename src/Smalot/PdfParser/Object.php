@@ -201,9 +201,12 @@ class Object
         $textCleaned = $this->cleanContent($content, '_');
 
         // Extract text blocks.
-        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s+ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s*ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
                 $text    = $part[0];
+                if ($text === '') {
+                    continue;
+                }
                 $offset  = $part[1];
                 $section = substr($content, $offset, strlen($text));
 
