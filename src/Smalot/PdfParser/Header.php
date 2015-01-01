@@ -163,9 +163,9 @@ class Header
             /** @var ElementXRef $obj */
             $object = $this->document->getObjectById($obj->getId());
 
-            if (is_null($object)) {
-                throw new \Exception('Missing object reference #' . $obj->getId() . '.');
-            }
+            // if (is_null($object)) {
+            //     throw new \Exception('Missing object reference #' . $obj->getId() . '.');
+            // }
 
             // Update elements list for future calls.
             $this->elements[$name] = $object;

@@ -120,7 +120,7 @@ class Document
         if ($this->trailer->has('Info')) {
             /** @var Object $info */
             $info     = $this->trailer->get('Info');
-            $details  = $info->getHeader()->getDetails();
+            //$details  = $info->getHeader()->getDetails();
         }
 
         // Retrieve the page count
@@ -215,9 +215,13 @@ class Document
 
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
-            $pages  = $object->getPages(true);
+            $pages = null;
 
+            if($object) { 
+                $pages  = $object->getPages(true);
+            }
             return $pages;
+    
         } elseif (isset($this->dictionary['Pages'])) {
             // Search for pages to list kids.
             $pages = array();
@@ -248,10 +252,11 @@ class Document
     {
         $texts = array();
         $pages = $this->getPages();
-
-        foreach ($pages as $index => $page) {
-            if ($text = trim($page->getText())) {
-                $texts[] = $text;
+        if($pages) { 
+            foreach ($pages as $index => $page) {
+                if ($text = trim($page->getText())) {
+                    $texts[] = $text;
+                }
             }
         }
 
