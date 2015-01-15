@@ -244,6 +244,7 @@ class Object
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
+        $object_hash         = spl_object_hash($this);
 
         foreach ($sections as $section) {
 
@@ -351,9 +352,12 @@ class Object
 
                     case 'Do':
                         if (!is_null($page)) {
-                            $args = preg_split('/\s/s', $command[self::COMMAND]);
-                            $id   = trim(array_pop($args), '/ ');
-                            if ($xobject = $page->getXObject($id)) {
+                            $args    = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id      = trim(array_pop($args), '/ ');
+                            $xobject = $page->getXObject($id);
+
+                            if ( is_object($xobject) && $object_hash !== spl_object_hash($xobject) ) {
+                                // Not a circular reference.
                                 $text .= $xobject->getText($page);
                             }
                         }
