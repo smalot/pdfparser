@@ -79,6 +79,10 @@ class Encoding extends Object
             $differences = $this->get('Differences')->getContent();
             $code        = 0;
 
+            if (!is_array($differences)) {
+                return;
+            }
+
             foreach ($differences as $difference) {
                 /** @var ElementNumeric $difference */
                 if ($difference instanceof ElementNumeric) {
