@@ -84,8 +84,11 @@ class Parser
     public function parseContent($content)
     {
         // Create structure using TCPDF Parser.
+        ob_start();
         $parser = new \TCPDF_PARSER(ltrim($content));
         list($xref, $data) = $parser->getParsedData();
+        unset($parser);
+        ob_end_clean();
 
         if (isset($xref['trailer']['encrypt'])) {
             throw new \Exception('Secured pdf file are currently not supported.');
@@ -101,6 +104,7 @@ class Parser
 
         foreach ($data as $id => $structure) {
             $this->parseObject($id, $structure, $document);
+            unset($data[$id]);
         }
 
         $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
