@@ -215,11 +215,7 @@ class Document
 
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
-            $pages  = null;
-            
-            if ($object) {
-                $object->getPages(true);
-            }
+            $pages  = $object->getPages(true);
 
             return $pages;
         } elseif (isset($this->dictionary['Pages'])) {
@@ -253,11 +249,9 @@ class Document
         $texts = array();
         $pages = $this->getPages();
 
-        if (is_array($pages)) {
-            foreach ($pages as $index => $page) {
-                if ($text = trim($page->getText())) {
-                    $texts[] = $text;
-                }
+        foreach ($pages as $index => $page) {
+            if ($text = trim($page->getText())) {
+                $texts[] = $text;
             }
         }
 

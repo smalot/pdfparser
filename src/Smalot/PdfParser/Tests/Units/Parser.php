@@ -56,7 +56,7 @@ class Parser extends atoum\test
                         $content  = $page->getText();
                         $this->assert->string($content);
                     } catch (\Exception $e) {
-                        if ($e->getMessage() != 'Secured pdf file are currently not supported.') {
+                        if ($e->getMessage() != 'Secured pdf file are currently not supported.' && strpos($e->getMessage(), 'TCPDF_PARSER') != 0) {
                             throw $e;
                         }
                     }
