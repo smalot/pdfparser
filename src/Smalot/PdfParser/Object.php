@@ -47,6 +47,13 @@ class Object
     const COMMAND = 'c';
 
     /**
+     * The recursion stack.
+     *
+     * @var array
+     */
+    static $recursionStack = array();
+
+    /**
      * @var Document
      */
     protected $document = null;
@@ -244,7 +251,8 @@ class Object
         $current_font        = new Font($this->document);
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
-        $object_hash         = spl_object_hash($this);
+
+        array_push(self::$recursionStack, $this->getUniqueId());
 
         foreach ($sections as $section) {
 
@@ -356,7 +364,7 @@ class Object
                             $id      = trim(array_pop($args), '/ ');
                             $xobject = $page->getXObject($id);
 
-                            if ( is_object($xobject) && $object_hash !== spl_object_hash($xobject) ) {
+                            if ( is_object($xobject) && !in_array($xobject->getUniqueId(), self::$recursionStack) ) {
                                 // Not a circular reference.
                                 $text .= $xobject->getText($page);
                             }
@@ -401,6 +409,8 @@ class Object
                 }
             }
         }
+
+        array_pop(self::$recursionStack);
 
         return $text . ' ';
     }
@@ -609,5 +619,15 @@ class Object
             default:
                 return new Object($document, $header, $content);
         }
+    }
+
+    /**
+     * Returns unique id identifying the object.
+     *
+     * @return string
+     */
+    protected function getUniqueId()
+    {
+        return spl_object_hash($this);
     }
 }
