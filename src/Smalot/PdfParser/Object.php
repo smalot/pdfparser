@@ -204,7 +204,12 @@ class Object
     public function getSectionsText($content)
     {
         $sections    = array();
-        $content     = ' ' . $content . ' ';
+		if (is_array($content )){
+			$content   = ' ' . implode('', $content) . ' ';
+		}
+		else{
+			$content   = ' ' .  $content . ' ';
+		}
         $textCleaned = $this->cleanContent($content, '_');
 
         // Extract text blocks.
@@ -413,6 +418,189 @@ class Object
         array_pop(self::$recursionStack);
 
         return $text . ' ';
+    }
+	
+	/**
+     * @param Page
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getArray(Page $page = null)
+    {
+        $text                = array();
+        $sections            = $this->getSectionsText($this->content);
+        $current_font        = new Font($this->document);
+        $current_position_td = array('x' => false, 'y' => false);
+        $current_position_tm = array('x' => false, 'y' => false);
+
+        array_push(self::$recursionStack, $this->getUniqueId());
+		$row = 0;
+        foreach ($sections as $section) {
+
+            $commands = $this->getCommandsText($section);
+
+            foreach ($commands as $command) {
+				
+                switch ($command[self::OPERATOR]) {
+                    // set character spacing
+                    case 'Tc':
+                        break;
+
+                    // move text current point
+                    case 'Td':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        if ((floatval($x) <= 0) ||
+                            ($current_position_td['y'] !== false && floatval($y) < floatval($current_position_td['y']))
+                        ) {
+                            // vertical offset
+                            $row++;
+						} 
+//                        } elseif ($current_position_td['x'] !== false && floatval($x) > floatval( // not useful for array
+//                                $current_position_td['x']
+//                            )
+//                        ) {
+//                            // horizontal offset
+//                            $text .= ' ';
+//                        }
+                        $current_position_td = array('x' => $x, 'y' => $y);
+                        break;
+
+                    // move text current point and set leading
+                    case 'TD':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        if (floatval($y) < 0) {
+							$row++;
+                          //$text .= "\n";
+                        } elseif (floatval($x) <= 0) {
+                          //  $text .= ' ';
+                        }
+                        break;
+
+                    case 'Tf':
+                        list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
+                        $id           = trim($id, '/');
+                        $current_font = $page->getFont($id);
+                        break;
+
+                    case "'":
+                    case 'Tj':
+                        $command[self::COMMAND] = array($command);
+                    case 'TJ':
+                        // Skip if not previously defined, should never happened.
+                        if (is_null($current_font)) {
+                            // Fallback
+                            // TODO : Improve
+                            $text[$row][] = $command[self::COMMAND][0][self::COMMAND];
+                            continue;
+                        }
+
+                        $sub_text = $current_font->decodeText($command[self::COMMAND]);
+                         $text[$row][] = $sub_text;
+                        break;
+
+                    // set leading
+                    case 'TL':
+						// $text .= ' ';
+						$row++;
+                        break;
+
+                    case 'Tm':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        if ($current_position_tm['y'] !== false) {
+                            $delta = abs(floatval($y) - floatval($current_position_tm['y']));
+                            if ($delta > 10) {
+								$row++;
+                             //   $text .= "\n";
+                            }
+                        }
+                        $current_position_tm = array('x' => $x, 'y' => $y);
+                        break;
+
+                    // set super/subscripting text rise
+                    case 'Ts':
+                        break;
+
+                    // set word spacing
+                    case 'Tw':
+                        break;
+
+                    // set horizontal scaling
+                    case 'Tz':
+						$row++;
+                      //  $text .= "\n";
+                        break;
+
+                    // move to start of next line
+                    case 'T*':
+						$row++;
+                     //   $text .= "\n";
+                        break;
+
+                    case 'Da':
+                        break;
+
+                    case 'Do':
+                        if (!is_null($page)) {
+                            $args    = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id      = trim(array_pop($args), '/ ');
+                            $xobject = $page->getXObject($id);
+
+                            if ( is_object($xobject) && !in_array($xobject->getUniqueId(), self::$recursionStack) ) {
+                                // Not a circular reference.
+                                $text[$row][] = $xobject->getText($page);
+                            }
+                        }
+                        break;
+
+                    case 'rg':
+                    case 'RG':
+                        break;
+
+                    case 're':
+                        break;
+
+                    case 'co':
+                        break;
+
+                    case 'cs':
+                        break;
+
+                    case 'gs':
+                        break;
+
+                    case 'en':
+                        break;
+
+                    case 'sc':
+                    case 'SC':
+                        break;
+
+                    case 'g':
+                    case 'G':
+                        break;
+
+                    case 'V':
+                        break;
+
+                    case 'vo':
+                    case 'Vo':
+                        break;
+
+                    default:
+                }
+            }
+        }
+
+        array_pop(self::$recursionStack);
+
+        return $text;
     }
 
     /**
