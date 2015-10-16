@@ -1,6 +1,6 @@
 {
-    "name": “anamarialazar/smalotpdfparser",
-    "description": “Updates to Smalot Pdf parser library. Can read and extract information from pdf file.",
+    "name": "smalot/pdfparser",
+    "description": "Pdf parser library. Can read and extract information from pdf file.",
     "license": "GPL-3.0",
     "authors": [
         {
