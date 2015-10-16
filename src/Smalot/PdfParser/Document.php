@@ -257,6 +257,25 @@ class Document
 
         return implode("\n\n", $texts);
     }
+	
+	/**
+     * @param Page $page
+     *
+     * @return array
+     */
+    public function getArray(Page $page = null)
+    {
+        $texts = array();
+        $pages = $this->getPages();
+
+        foreach ($pages as $index => $page) {
+            if ($text = trim($page->getText())) {
+                $texts[] = $text;
+            }
+        }
+
+        return $texts;
+    }
 
     /**
      * @param Header $header
