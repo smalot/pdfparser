@@ -215,7 +215,6 @@ class Document
 
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
-
             if (method_exists($object, 'getPages')) {
                 $pages  = $object->getPages(true);
                 return $pages;
