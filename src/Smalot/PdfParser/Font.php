@@ -358,7 +358,11 @@ class Font extends Object
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<' . $command[Object::COMMAND] . '>');
-                    $unicode = true;
+                    
+                    if (mb_check_encoding($text, "UTF-8")) {
+                        $unicode = true;
+                    }
+                    
                     break;
 
                 default:
