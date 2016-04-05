@@ -302,6 +302,7 @@ class Parser
                 return new ElementArray($values, $document);
 
             case 'endstream':
+            case 'obj': //I don't know what it means but got my project fixed.
             case '':
                 // Nothing to do with.
                 break;
