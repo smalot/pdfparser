@@ -300,7 +300,9 @@ class Object
                     case 'Tf':
                         list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
                         $id           = trim($id, '/');
-                        $current_font = $page->getFont($id);
+                        if (!is_null($page)) {
+                            $current_font = $page->getFont($id);
+                        }
                         break;
 
                     case "'":
