@@ -35,6 +35,9 @@ As a result, users must expect BC breaks when using the master version.
 
 [Read the documentation on website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
 
+Original PDF References files can be downloaded from this url : http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
+
+
 ## License ##
 
 This library is under the [GPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
