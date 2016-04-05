@@ -233,6 +233,14 @@ class Font extends Object
     }
 
     /**
+     * @param array $table
+     */
+    public function setTable($table)
+    {
+        $this->table = $table;
+    }
+
+    /**
      * @param string $hexa
      * @param bool   $add_braces
      *

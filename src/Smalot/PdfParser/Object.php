@@ -248,7 +248,19 @@ class Object
     {
         $text                = '';
         $sections            = $this->getSectionsText($this->content);
-        $current_font        = new Font($this->document);
+        $current_font = null;
+
+        foreach ($this->document->getObjects() as $obj) {
+            if ($obj instanceof Font) {
+                $current_font = $obj;
+                break;
+            }
+        }
+
+        if ($current_font === null) {
+            $current_font = new Font($this->document);
+        }
+
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
 
