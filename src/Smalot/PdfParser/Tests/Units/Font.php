@@ -295,5 +295,28 @@ end';
             ),
         );
         $this->assert->string($font->decodeText($commands))->isEqualTo('Docu Docu');
+        
+        //Check if ANSI/Unicode detection is working properly
+        $filename = __DIR__ . '/../../../../../samples/bugs/Issue95_ANSI.pdf';
+        $parser   = new \Smalot\PdfParser\Parser();
+        $document = $parser->parseFile($filename);
+        $fonts    = $document->getFonts();
+        /** @var \Smalot\PdfParser\Font $font */
+        $font     = reset($fonts);
+        $commands = array(
+            array(
+                't' => '<',
+                'c' => "E6F6FC", //ANSI encoded string
+            ),
+        );
+        $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');    
+        
+        $commands = array(
+            array(
+                't' => '<',
+                'c' => "C3A6C3B6C3BC", //Unicode encoded string
+            ),
+        );
+        $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');
     }
 }
