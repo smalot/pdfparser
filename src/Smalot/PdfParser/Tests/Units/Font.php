@@ -296,7 +296,7 @@ end';
         );
         $this->assert->string($font->decodeText($commands))->isEqualTo('Docu Docu');
         
-        //Check if ANSI/Unicode detection and conversion is working properly
+        //Check if ANSI/Unicode detection is working properly
         $filename = __DIR__ . '/../../../../../samples/bugs/Issue95_ANSI.pdf';
         $parser   = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
@@ -309,7 +309,6 @@ end';
                 'c' => "E6F6FC", //ANSI encoded string
             ),
         );
-        echo("----------------------------------------------------------------\n");
         $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');    
         
         $commands = array(
@@ -318,7 +317,6 @@ end';
                 'c' => "C3A6C3B6C3BC", //Unicode encoded string
             ),
         );
-        echo("----------------------------------------------------------------\n");
         $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');
     }
 }
