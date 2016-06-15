@@ -39,7 +39,6 @@ use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementString;
 use Smalot\PdfParser\Element\ElementXRef;
-use Com\Tecnick\Pdf\Parser\Parser as TCPDF_Parser;;
 
 /**
  * Class Parser
@@ -86,8 +85,8 @@ class Parser
     {
         // Create structure using TCPDF Parser.
         ob_start();
-        @$parser = new TCPDF_Parser();
-        list($xref, $data) = $parser->parse(ltrim($content));
+	@$parser = new \TCPDF_PARSER(ltrim($content));
+        list($xref, $data) = $parser->getParsedData();
         unset($parser);
         ob_end_clean();
 
