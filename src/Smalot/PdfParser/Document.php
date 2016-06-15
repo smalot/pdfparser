@@ -215,10 +215,13 @@ class Document
 
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
-            $pages  = $object->getPages(true);
+            if (method_exists($object, 'getPages')) {
+                $pages  = $object->getPages(true);
+                return $pages;
+            }
+        }
 
-            return $pages;
-        } elseif (isset($this->dictionary['Pages'])) {
+        if (isset($this->dictionary['Pages'])) {
             // Search for pages to list kids.
             $pages = array();
 
@@ -229,14 +232,16 @@ class Document
             }
 
             return $pages;
-        } elseif (isset($this->dictionary['Page'])) {
+        }
+
+        if (isset($this->dictionary['Page'])) {
             // Search for 'page' (unordered pages).
             $pages = $this->getObjectsByType('Page');
 
             return array_values($pages);
-        } else {
-            throw new \Exception('Missing catalog.');
         }
+
+        throw new \Exception('Missing catalog.');
     }
 
     /**

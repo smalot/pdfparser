@@ -233,6 +233,14 @@ class Font extends Object
     }
 
     /**
+     * @param array $table
+     */
+    public function setTable($table)
+    {
+        $this->table = $table;
+    }
+
+    /**
      * @param string $hexa
      * @param bool   $add_braces
      *
@@ -358,7 +366,11 @@ class Font extends Object
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<' . $command[Object::COMMAND] . '>');
-                    $unicode = true;
+                    
+                    if (mb_check_encoding($text, "UTF-8")) {
+                        $unicode = true;
+                    }
+                    
                     break;
 
                 default:
