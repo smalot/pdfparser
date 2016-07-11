@@ -155,10 +155,7 @@ class Object
         }
 
         // Clean content in round brackets (.....)
-        preg_match_all('/\((.*?)\)/s', $content, $matches, PREG_OFFSET_CAPTURE);
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
-        }
+        $content = preg_replace('/\((.*?)\)/s', " ", $content);
 
         // Clean structure
         if ($parts = preg_split('/(<|>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
@@ -178,20 +175,11 @@ class Object
         }
 
         // Clean BDC and EMC markup
-        preg_match_all(
-            '/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s',
-            $content,
-            $matches,
-            PREG_OFFSET_CAPTURE
-        );
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
-        }
+        $content = preg_replace('/(\/[A-Za-z0-9\_]*\s*' . preg_quote($char) . '*BDC)/s', " ", $content);
 
-        preg_match_all('/\s(EMC)\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, strlen($part[0])), $part[1], strlen($part[0]));
-        }
+        $content = preg_replace('/\s(EMC)\s/s', " ", $content);
+
+        $content = preg_replace("/[[:blank:]]+/", " ", $content);
 
         return $content;
     }
@@ -572,8 +560,13 @@ class Object
     public function getCommandsText($text_part, &$offset = 0)
     {
         $commands = $matches = array();
-
+        $prevOffset = null;
         while ($offset < strlen($text_part)) {
+            if ($prevOffset > $offset) {
+                return $commands;
+            }
+            $prevOffset = $offset;
+
             $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
             $char = $text_part[$offset];
 

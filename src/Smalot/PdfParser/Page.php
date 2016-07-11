@@ -207,7 +207,9 @@ class Page extends Object
                 $new_content = '';
 
                 foreach ($contents->getContent() as $content) {
-                    $new_content .= $content->getContent() . "\n";
+                    if (!is_null($content)) {
+                        $new_content .= $content->getContent() . "\n";
+                    }
                 }
 
                 $header   = new Header(array(), $this->document);
