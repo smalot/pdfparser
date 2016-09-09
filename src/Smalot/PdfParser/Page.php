@@ -33,6 +33,7 @@ namespace Smalot\PdfParser;
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementXRef;
+use Smalot\PdfParser\Element\ElementNull;
 
 /**
  * Class Page
@@ -185,6 +186,8 @@ class Page extends Object
 
             if ($contents instanceof ElementMissing) {
                 return '';
+			} elseif ($contents instanceof ElementNull) {
+				return '';
             } elseif ($contents instanceof Object) {
                 $elements = $contents->getHeader()->getElements();
 
@@ -230,6 +233,8 @@ class Page extends Object
 		if ($contents = $this->get('Contents')) {
 
 			if ($contents instanceof ElementMissing) {
+				return array();
+			} elseif ($contents instanceof ElementNull) {
 				return array();
 			} elseif ($contents instanceof Object) {
 				$elements = $contents->getHeader()->getElements();
