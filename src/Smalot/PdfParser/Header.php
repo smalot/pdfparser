@@ -53,8 +53,8 @@ class Header
     protected $elements = null;
 
     /**
-     * @param Element[] $elements   List of elements.
-     * @param Document  $document   Document.
+     * @param Element[] $elements List of elements.
+     * @param Document $document Document.
      */
     public function __construct($elements = array(), Document $document = null)
     {
@@ -99,7 +99,7 @@ class Header
      */
     public function getDetails($deep = true)
     {
-        $values   = array();
+        $values = array();
         $elements = $this->getElements();
 
         foreach ($elements as $key => $element) {
@@ -112,7 +112,7 @@ class Header
                     $values[$key] = $element->getDetails();
                 }
             } elseif ($element instanceof Element) {
-                $values[$key] = (string) $element;
+                $values[$key] = (string)$element;
             }
         }
 
@@ -164,7 +164,7 @@ class Header
             $object = $this->document->getObjectById($obj->getId());
 
             if (is_null($object)) {
-                throw new \Exception('Missing object reference #' . $obj->getId() . '.');
+                return null;
             }
 
             // Update elements list for future calls.
@@ -175,9 +175,9 @@ class Header
     }
 
     /**
-     * @param string   $content  The content to parse
+     * @param string $content The content to parse
      * @param Document $document The document
-     * @param int      $position The new position of the cursor after parsing
+     * @param int $position The new position of the cursor after parsing
      *
      * @return Header
      */
