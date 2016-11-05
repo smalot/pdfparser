@@ -119,13 +119,15 @@ class Document
         // Extract document info
         if ($this->trailer->has('Info')) {
             /** @var Object $info */
-            $info     = $this->trailer->get('Info');
-            $details  = $info->getHeader()->getDetails();
+            $info = $this->trailer->get('Info');
+            if ($info !== null) {
+                $details = $info->getHeader()->getDetails();
+            }
         }
 
         // Retrieve the page count
         try {
-            $pages            = $this->getPages();
+            $pages = $this->getPages();
             $details['Pages'] = count($pages);
         } catch (\Exception $e) {
             $details['Pages'] = 0;
@@ -216,7 +218,7 @@ class Document
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
             if (method_exists($object, 'getPages')) {
-                $pages  = $object->getPages(true);
+                $pages = $object->getPages(true);
                 return $pages;
             }
         }

@@ -164,7 +164,7 @@ class Header
             $object = $this->document->getObjectById($obj->getId());
 
             if (is_null($object)) {
-                throw new \Exception('Missing object reference #' . $obj->getId() . '.');
+                return null;
             }
 
             // Update elements list for future calls.
