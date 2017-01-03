@@ -1,13 +1,13 @@
 {
     "name": "smalot/pdfparser",
     "description": "Pdf parser library. Can read and extract information from pdf file.",
-    "license": "GPL-3.0",
+    "keywords": ["PDF", "text", "parser", "parse", "extract"],
+    "type": "library",
+    "license": "LGPLv3",
     "authors": [
         {
             "name": "Sebastien MALOT",
-            "email": "sebastien@malot.fr",
-            "role": "Developer",
-            "homepage": "http://www.malot.fr"
+            "email": "sebastien@malot.fr"
         }
     ],
     "support": {

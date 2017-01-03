@@ -40,5 +40,5 @@ Original PDF References files can be downloaded from this url : http://www.adobe
 
 ## License ##
 
-This library is under the [GPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE).
+This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).
 
