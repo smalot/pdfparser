@@ -558,7 +558,7 @@ class Object
 					default:
 				}
 				$positionArray=explode(' ',$position);
-				if (isset($sub_text) && $textValue==$sub_text && $positionArray[0]>$startPositionX && $positionArray[1]<$startPositionY) return $position;
+				if (isset($sub_text) && $textValue==$sub_text && ($positionArray[0]>$startPositionX || $positionArray[1]<$startPositionY)) return $position;
 			}
 		}
 
