@@ -270,10 +270,10 @@ class Page extends Object
 
 		return array();
 	}
-		public function getTextPosition(Page $page = null, $textValue)
+		public function getTextPosition(Page $page = null, $textValue,$startPositionX=0,$startPositionY=100000)
 	{ 
 		if ($contents = $this->get('Contents')) {
-			return $contents->getTextPosition($this, $textValue);
+			return $contents->getTextPosition($this, $textValue,$startPositionX,$startPositionY);
 		}
 	}
 }
