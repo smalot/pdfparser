@@ -430,7 +430,7 @@ class Object
     }
 	
 	
-		public function getTextPosition(Page $page = null, $textValue,$startPositionX=0,$startPositionY=0)
+		public function getTextPosition(Page $page = null, $textValue,$startPositionX=0,$startPositionY=100000)
 	{ 
 				$text                = array();
 		$sections            = $this->getSectionsText($this->content);
@@ -558,7 +558,7 @@ class Object
 					default:
 				}
 				$positionArray=explode(' ',$position);
-				if (isset($sub_text) && $textValue==$sub_text && $positionArray[0]>$startPositionX && $positionArray[1]<$startPositionY) return $position;
+				if (isset($sub_text) && $textValue==$sub_text && $positionArray[0]>=$startPositionX && $positionArray[1]<=$startPositionY) return $position;
 			}
 		}
 
