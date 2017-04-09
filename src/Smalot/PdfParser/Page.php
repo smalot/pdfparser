@@ -270,6 +270,15 @@ class Page extends Object
 
 		return array();
 	}
+	
+	/**
+	 * @param Page
+	 * @param textValue
+	 * @param startPositionX
+	 * @param startPositionY
+	 *
+	 * @return string
+	 */
 		public function getTextPosition(Page $page = null, $textValue,$startPositionX=0,$startPositionY=100000)
 	{ 
 		if ($contents = $this->get('Contents')) {

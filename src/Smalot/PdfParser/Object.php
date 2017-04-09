@@ -429,10 +429,18 @@ class Object
         return $text . ' ';
     }
 	
-	
+	/**
+	 * @param Page
+	 * @param textValue
+	 * @param startPositionX
+	 * @param startPositionY
+	 *
+	 * @return string
+	 */
 		public function getTextPosition(Page $page = null, $textValue,$startPositionX=0,$startPositionY=100000)
 	{ 
 				$text                = array();
+				$position ='';
 		$sections            = $this->getSectionsText($this->content);
 		$current_font        = new Font($this->document);
 
