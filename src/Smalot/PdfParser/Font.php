@@ -201,7 +201,8 @@ class Font extends Object
                     }
 
                     // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
-                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *\[(?P<strings>[<>0-9A-F ]+)\][ \r\n]+/is';
+                    // Some PDF file has 2-byte Unicode values on new lines > added \r\n
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *\[(?P<strings>[\r\n<>0-9A-F ]+)\][ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
