@@ -4,7 +4,6 @@ Pdf Parser, a standalone PHP library, provides various tools to extract data fro
 
 [![Build Status](https://travis-ci.org/smalot/pdfparser.png?branch=master)](https://travis-ci.org/smalot/pdfparser)
 [![Current Version](https://poser.pugx.org/smalot/pdfparser/v/stable.png)](https://packagist.org/packages/smalot/pdfparser)
-[![HHVM Status](http://hhvm.h4cc.de/badge/smalot/pdfparser.png)](http://hhvm.h4cc.de/package/smalot/pdfparser)
 [![composer.lock](https://poser.pugx.org/smalot/pdfparser/composerlock)](https://packagist.org/packages/smalot/pdfparser)
 
 [![Total Downloads](https://poser.pugx.org/smalot/pdfparser/downloads.png)](https://packagist.org/packages/smalot/pdfparser)
