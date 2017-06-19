@@ -266,6 +266,25 @@ class Document
     }
 
     /**
+     * @param Page $page
+     *
+     * @return array
+     */
+    public function getTextArrayByPageAndSection(Page $page = null)
+    {
+        $textArrayByPageAndSection = array();
+        $pages = $this->getPages();
+
+        foreach ($pages as $index => $page) {
+            if ($textArrayBySection = $page->getTextArrayBySection()) {
+                $textArrayByPageAndSection[$index] = $textArrayBySection;
+            }
+        }
+
+        return $textArrayByPageAndSection;
+    }
+
+    /**
      * @param Header $trailer
      */
     public function setTrailer(Header $trailer)
