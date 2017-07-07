@@ -266,6 +266,14 @@ class Document
     }
 
     /**
+     * @return Header
+     */
+    public function getTrailer()
+    {
+        return $this->trailer;
+    }
+
+    /**
      * @param Header $trailer
      */
     public function setTrailer(Header $trailer)
