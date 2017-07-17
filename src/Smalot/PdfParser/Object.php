@@ -342,6 +342,12 @@ class Object
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
+                        if ($current_position_tm['x'] !== false) {
+                            $delta = abs(floatval($x) - floatval($current_position_tm['x']));
+                            if ($delta > 10) {
+                                $text .= "\t";
+                            }
+                        }
                         if ($current_position_tm['y'] !== false) {
                             $delta = abs(floatval($y) - floatval($current_position_tm['y']));
                             if ($delta > 10) {
