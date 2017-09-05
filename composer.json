@@ -16,7 +16,8 @@
     "homepage": "http://www.pdfparser.org",
     "require": {
         "php": ">=5.3.0",
-        "ext-iconv": "*",
+        "ext-mbstring": "*",
+        "ext-zlib": "*",
         "tecnickcom/tcpdf": "~6.0"
     },
     "require-dev": {
