@@ -35,7 +35,7 @@ namespace Smalot\PdfParser;
  *
  * @package Smalot\PdfParser
  */
-class Font extends Object
+class Font extends PDFObject
 {
     /**
      *
@@ -357,16 +357,16 @@ class Font extends Object
         $font_space    = $this->getFontSpaceLimit();
 
         foreach ($commands as $command) {
-            switch ($command[Object::TYPE]) {
+            switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if (floatval(trim($command[Object::COMMAND])) < $font_space) {
+                    if (floatval(trim($command[PDFObject::COMMAND])) < $font_space) {
                         $word_position = count($words);
                     }
                     continue(2);
 
                 case '<':
                     // Decode hexadecimal.
-                    $text = self::decodeHexadecimal('<' . $command[Object::COMMAND] . '>');
+                    $text = self::decodeHexadecimal('<' . $command[PDFObject::COMMAND] . '>');
 
                     if (mb_check_encoding($text, "UTF-8")) {
                         $unicode = true;
@@ -376,7 +376,7 @@ class Font extends Object
 
                 default:
                     // Decode octal (if necessary).
-                    $text = self::decodeOctal($command[Object::COMMAND]);
+                    $text = self::decodeOctal($command[PDFObject::COMMAND]);
             }
 
             // replace escaped chars
@@ -425,7 +425,7 @@ class Font extends Object
                         $char = $decoded;
                     } elseif ($this->has('DescendantFonts')) {
 
-                        if ($this->get('DescendantFonts') instanceof Object) {
+                        if ($this->get('DescendantFonts') instanceof PDFObject) {
                             $fonts   = $this->get('DescendantFonts')->getHeader()->getElements();
                         } else {
                             $fonts   = $this->get('DescendantFonts')->getContent();

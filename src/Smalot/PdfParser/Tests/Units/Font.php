@@ -186,7 +186,7 @@ endcmap
 CMapName currentdict /CMap defineresource pop
 end
 end';
-        $unicode = new \Smalot\PdfParser\Object($document, null, $content);
+        $unicode = new \Smalot\PdfParser\PDFObject($document, null, $content);
 
         $document->setObjects(array('1_0' => $font, '2_0' => $unicode));
 

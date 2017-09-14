@@ -33,11 +33,11 @@ namespace Smalot\PdfParser\Tests\Units;
 use mageekguy\atoum;
 
 /**
- * Class Object
+ * Class PDFObject
  *
  * @package Smalot\PdfParser\Tests\Units
  */
-class Object extends atoum\test
+class PDFObject extends atoum\test
 {
     const TYPE = 't';
 
@@ -66,7 +66,7 @@ class Object extends atoum\test
 //";
 //
 //        $document  = new \Smalot\PdfParser\Document();
-//        $object    = new \Smalot\PdfParser\Object($document);
+//        $object    = new \Smalot\PdfParser\PDFObject($document);
 //        $offset    = 0;
 //        $parts     = $object->getCommandsImage($content, $offset);
 //        $reference = array(
@@ -140,7 +140,7 @@ q -124.774 124.127 5.64213 5.67154 930.307 4436.95 cm
 BI";
 
         $document  = new \Smalot\PdfParser\Document();
-        $object    = new \Smalot\PdfParser\Object($document);
+        $object    = new \Smalot\PdfParser\PDFObject($document);
         $offset    = 0;
         $parts     = $object->getCommandsText($content, $offset);
         $reference = array(
@@ -272,7 +272,7 @@ q
 0.03 841';
 
         $document = new \Smalot\PdfParser\Document();
-        $object   = new \Smalot\PdfParser\Object($document);
+        $object   = new \Smalot\PdfParser\PDFObject($document);
         $cleaned  = $object->cleanContent($content, '_');
 
         $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
@@ -301,7 +301,7 @@ q
 0.03 841';
 
         $document = new \Smalot\PdfParser\Document();
-        $object   = new \Smalot\PdfParser\Object($document);
+        $object   = new \Smalot\PdfParser\PDFObject($document);
         $sections = $object->getSectionsText($content);
 
 //        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));

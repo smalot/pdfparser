@@ -105,7 +105,7 @@ class Header
         foreach ($elements as $key => $element) {
             if ($element instanceof Header && $deep) {
                 $values[$key] = $element->getDetails($deep);
-            } elseif ($element instanceof Object && $deep) {
+            } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
             } elseif ($element instanceof ElementArray) {
                 if ($deep) {
@@ -138,7 +138,7 @@ class Header
     /**
      * @param string $name
      *
-     * @return Element|Object
+     * @return Element|PDFObject
      */
     public function get($name)
     {
@@ -154,7 +154,7 @@ class Header
      *
      * @param string $name
      *
-     * @return Element|Object
+     * @return Element|PDFObject
      * @throws \Exception
      */
     protected function resolveXRef($name)

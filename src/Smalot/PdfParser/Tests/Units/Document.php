@@ -42,27 +42,27 @@ class Document extends atoum\test
     public function testSetObjects()
     {
         $document = new \Smalot\PdfParser\Document();
-        $object   = new \Smalot\PdfParser\Object($document);
+        $object   = new \Smalot\PdfParser\PDFObject($document);
         // Obj #1 is missing
         $this->assert->variable($document->getObjectById(1))->isNull();
         $document->setObjects(array(1 => $object));
         // Obj #1 exists
-        $this->assert->object($document->getObjectById(1))->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($document->getObjectById(1))->isInstanceOf('\Smalot\PdfParser\PDFObject');
 
         $content = '<</Type/Page>>';
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
-        $object  = new \Smalot\PdfParser\Object($document, $header);
+        $object  = new \Smalot\PdfParser\PDFObject($document, $header);
         $document->setObjects(array(2 => $object));
         // Obj #1 is missing
         $this->assert->assert->variable($document->getObjectById(1))->isNull();
         // Obj #2 exists
-        $this->assert->object($document->getObjectById(2))->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($document->getObjectById(2))->isInstanceOf('\Smalot\PdfParser\PDFObject');
     }
 
     public function testGetObjects()
     {
         $document = new \Smalot\PdfParser\Document();
-        $object1  = new \Smalot\PdfParser\Object($document);
+        $object1  = new \Smalot\PdfParser\PDFObject($document);
         $content  = '<</Type/Page>>unparsed content';
         $header   = \Smalot\PdfParser\Header::parse($content, $document);
 
@@ -70,8 +70,8 @@ class Document extends atoum\test
         $document->setObjects(array(1 => $object1, 2 => $object2));
 
         $this->assert->integer(count($objects = $document->getObjects()))->isEqualTo(2);
-        $this->assert->object($objects[1])->isInstanceOf('\Smalot\PdfParser\Object');
-        $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($objects[1])->isInstanceOf('\Smalot\PdfParser\PDFObject');
+        $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\PDFObject');
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
     }
 
@@ -79,7 +79,7 @@ class Document extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
         $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(0);
-        $object1 = new \Smalot\PdfParser\Object($document);
+        $object1 = new \Smalot\PdfParser\PDFObject($document);
         $content = '<</Type/Page>>';
         $header  = \Smalot\PdfParser\Header::parse($content, $document);
         $object2 = new \Smalot\PdfParser\Page($document, $header);
@@ -92,13 +92,13 @@ class Document extends atoum\test
     public function testGetObjectsByType()
     {
         $document = new \Smalot\PdfParser\Document();
-        $object1  = new \Smalot\PdfParser\Object($document);
+        $object1  = new \Smalot\PdfParser\PDFObject($document);
         $content  = '<</Type/Page>>';
         $header   = \Smalot\PdfParser\Header::parse($content, $document);
         $object2  = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array(1 => $object1, 2 => $object2));
         $this->assert->integer(count($objects = $document->getObjectsByType('Page')))->isEqualTo(1);
-        $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\PDFObject');
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
     }
 

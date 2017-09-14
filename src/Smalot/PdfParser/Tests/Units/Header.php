@@ -132,7 +132,7 @@ class Header extends atoum\test
         $object   = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects(array('5_0' => $object));
 
-        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Object');
+        $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\PDFObject');
 
         $header=$header->get('Resources');
         try {

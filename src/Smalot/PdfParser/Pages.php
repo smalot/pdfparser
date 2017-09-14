@@ -35,7 +35,7 @@ namespace Smalot\PdfParser;
  *
  * @package Smalot\PdfParser
  */
-class Pages extends Object
+class Pages extends PDFObject
 {
     /**
      * @param bool $deep

@@ -30,7 +30,7 @@
 
 namespace Smalot\PdfParser\XObject;
 
-use Smalot\PdfParser\Object;
+use Smalot\PdfParser\PDFObject;
 use Smalot\PdfParser\Page;
 
 /**
@@ -38,10 +38,10 @@ use Smalot\PdfParser\Page;
  *
  * @package Smalot\PdfParser\XObject
  */
-class Image extends Object
+class Image extends PDFObject
 {
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return string
      */

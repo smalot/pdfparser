@@ -37,7 +37,7 @@ use Smalot\PdfParser\Element\ElementNumeric;
  *
  * @package Smalot\PdfParser
  */
-class Encoding extends Object
+class Encoding extends PDFObject
 {
     /**
      * @var array

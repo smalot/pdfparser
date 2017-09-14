@@ -33,7 +33,7 @@ namespace Smalot\PdfParser\Element;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
-use Smalot\PdfParser\Object;
+use Smalot\PdfParser\PDFObject;
 
 /**
  * Class ElementArray
@@ -84,7 +84,7 @@ class ElementArray extends Element
         foreach ($elements as $key => $element) {
             if ($element instanceof Header && $deep) {
                 $values[$key] = $element->getDetails($deep);
-            } elseif ($element instanceof Object && $deep) {
+            } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
             } elseif ($element instanceof ElementArray) {
                 if ($deep) {
@@ -109,12 +109,12 @@ class ElementArray extends Element
     /**
      * @param string $name
      *
-     * @return Element|Object
+     * @return Element|PDFObject
      */
     protected function resolveXRef($name)
     {
         if (($obj = $this->value[$name]) instanceof ElementXRef) {
-            /** @var Object $obj */
+            /** @var PDFObject $obj */
             $obj                = $this->document->getObjectById($obj->getId());
             $this->value[$name] = $obj;
         }

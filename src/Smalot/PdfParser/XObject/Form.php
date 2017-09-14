@@ -31,7 +31,7 @@
 namespace Smalot\PdfParser\XObject;
 
 use Smalot\PdfParser\Header;
-use Smalot\PdfParser\Object;
+use Smalot\PdfParser\PDFObject;
 use Smalot\PdfParser\Page;
 
 /**
@@ -42,14 +42,14 @@ use Smalot\PdfParser\Page;
 class Form extends Page
 {
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return string
      */
     public function getText(Page $page = null)
     {
         $header   = new Header(array(), $this->document);
-        $contents = new Object($this->document, $header, $this->content);
+        $contents = new PDFObject($this->document, $header, $this->content);
 
         return $contents->getText($this);
     }

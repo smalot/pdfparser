@@ -48,7 +48,7 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Parser
 {
     /**
-     * @var Object[]
+     * @var PDFObject[]
      */
     protected $objects = array();
 
@@ -198,7 +198,7 @@ class Parser
                             $sub_content   = substr($content, $position, $next_position - $position);
 
                             $sub_header         = Header::parse($sub_content, $document);
-                            $object             = Object::factory($document, $sub_header, '');
+                            $object             = PDFObject::factory($document, $sub_header, '');
                             $this->objects[$id] = $object;
                         }
 
@@ -223,7 +223,7 @@ class Parser
         }
 
         if (!isset($this->objects[$id])) {
-            $this->objects[$id] = Object::factory($document, $header, $content);
+            $this->objects[$id] = PDFObject::factory($document, $header, $content);
         }
     }
 

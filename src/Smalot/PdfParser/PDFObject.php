@@ -34,11 +34,11 @@ use Smalot\PdfParser\XObject\Form;
 use Smalot\PdfParser\XObject\Image;
 
 /**
- * Class Object
+ * Class PDFObject
  *
  * @package Smalot\PdfParser
  */
-class Object
+class PDFObject
 {
     const TYPE = 't';
 
@@ -99,7 +99,7 @@ class Object
     /**
      * @param string $name
      *
-     * @return Element|Object
+     * @return Element|PDFObject
      */
     public function get($name)
     {
@@ -733,7 +733,7 @@ class Object
      * @param $header   Header
      * @param $content  string
      *
-     * @return Object
+     * @return PDFObject
      */
     public static function factory(Document $document, Header $header, $content)
     {
@@ -747,7 +747,7 @@ class Object
                         return new Form($document, $header, $content);
 
                     default:
-                        return new Object($document, $header, $content);
+                        return new PDFObject($document, $header, $content);
                 }
                 break;
 
@@ -771,7 +771,7 @@ class Object
                 }
 
             default:
-                return new Object($document, $header, $content);
+                return new PDFObject($document, $header, $content);
         }
     }
 
