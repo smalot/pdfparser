@@ -169,7 +169,7 @@ class Parser
                     if ($header->get('Type')->equals('ObjStm')) {
                         $match = array();
 
-                        // Split xrefs and contents.
+                        // Split xrefs and contents. 
                         $p = strpos($content, "<<");
                         $match = [
                             "",
