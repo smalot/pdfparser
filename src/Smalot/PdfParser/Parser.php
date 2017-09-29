@@ -170,7 +170,13 @@ class Parser
                         $match = array();
 
                         // Split xrefs and contents.
-                        preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
+                        $p = strpos($content, "<<");
+                        $match = [
+                            "",
+                            trim(substr($content,0,$p)),
+                            "",
+                            trim(substr($content,$p)),
+                        ];
                         $content = $match[3];
 
                         // Extract xrefs.
