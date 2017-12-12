@@ -368,7 +368,7 @@ class Font extends PDFObject
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<' . $command[PDFObject::COMMAND] . '>');
 
-                    if (mb_check_encoding($text, "UTF-8")) {
+                    if ((function_exists('mb_check_encoding') && mb_check_encoding($text, 'UTF-8')) || self::isUtf8($text)) {
                         $unicode = true;
                     }
 
@@ -400,6 +400,15 @@ class Font extends PDFObject
         }
 
         return implode(' ', $words);
+    }
+
+    /**
+     * @param  string $text
+     * @return bool
+     */
+    private static function isUtf8($text): bool
+    {
+        return strlen($text) > strlen(utf8_decode($text));
     }
 
     /**
