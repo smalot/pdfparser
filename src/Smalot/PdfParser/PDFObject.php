@@ -384,7 +384,9 @@ class PDFObject
                             $id      = trim(array_pop($args), '/ ');
                             $xobject = $page->getXObject($id);
 
-                            if ( is_object($xobject) && !in_array($xobject->getUniqueId(), self::$recursionStack) ) {
+
+                             // @todo $xobject could be a ElementXRef object, which would then throw an error
+                             if ( is_object($xobject) && $xobject instanceof PDFObject && !in_array($xobject->getUniqueId(), self::$recursionStack) ) {
                                 // Not a circular reference.
                                 $text .= $xobject->getText($page);
                             }
