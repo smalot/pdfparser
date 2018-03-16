@@ -257,14 +257,10 @@ class Document
         $pages = $this->getPages();
 
         foreach ($pages as $index => $page) {
-            /*
-             * @doganoo Dogan Ucar, dogan@dogan-ucar.de
-             *
-             * in some cases, the $page variable may be null.
-             * It is necessary to verify that the variable is not
-             * null before calling the getText() method.
+            /**
+             * In some cases, the $page variable may be null.
              */
-            if ($page == null) {
+            if (is_null($page)) {
                 continue;
             }
             if ($text = trim($page->getText())) {
