@@ -118,9 +118,7 @@ class Header extends atoum\test
         $this->assert->object($header->get('SubType'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($header->get('Image'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
-        $resources = $header->get('Resources');
-
-        $this->assert->variable($resources)->isNull();
+        $this->assert->object($header->get('Resources'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
     }
 
     public function testResolveXRef()
@@ -134,12 +132,7 @@ class Header extends atoum\test
 
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\PDFObject');
 
-        $header=$header->get('Resources');
-        try {
-            $this->assert->variable($header)->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
-            $this->assert->boolean(true)->isEqualTo(false);
-        } catch (\Exception $e) {
-            $this->assert->variable($header)->isNull();
-        }
+        $header = $header->get('Resources');
+        $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
     }
 }
