@@ -120,7 +120,9 @@ class Document
         if ($this->trailer->has('Info')) {
             /** @var PDFObject $info */
             $info = $this->trailer->get('Info');
-            if ($info !== null) {
+            // This could be an ElementMissing object, so we need to check for
+            // the getHeader method first.
+            if ($info !== null && method_exists($info, 'getHeader')) {
                 $details = $info->getHeader()->getDetails();
             }
         }
