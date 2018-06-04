@@ -164,7 +164,7 @@ class Header
             $object = $this->document->getObjectById($obj->getId());
 
             if (is_null($object)) {
-                return null;
+                return new ElementMissing(null, null);
             }
 
             // Update elements list for future calls.
