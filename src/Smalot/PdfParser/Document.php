@@ -120,7 +120,9 @@ class Document
         if ($this->trailer->has('Info')) {
             /** @var PDFObject $info */
             $info = $this->trailer->get('Info');
-            if ($info !== null) {
+            // This could be an ElementMissing object, so we need to check for
+            // the getHeader method first.
+            if ($info !== null && method_exists($info, 'getHeader')) {
                 $details = $info->getHeader()->getDetails();
             }
         }
@@ -257,14 +259,10 @@ class Document
         $pages = $this->getPages();
 
         foreach ($pages as $index => $page) {
-            /*
-             * @doganoo Dogan Ucar, dogan@dogan-ucar.de
-             *
-             * in some cases, the $page variable may be null.
-             * It is necessary to verify that the variable is not
-             * null before calling the getText() method.
+            /**
+             * In some cases, the $page variable may be null.
              */
-            if ($page == null) {
+            if (is_null($page)) {
                 continue;
             }
             if ($text = trim($page->getText())) {
