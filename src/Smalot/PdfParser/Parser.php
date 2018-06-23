@@ -174,8 +174,14 @@ class Parser
                     if ($header->get('Type')->equals('ObjStm')) {
                         $match = array();
 
-                        // Split xrefs and contents.
-                        preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
+                        // Split xrefs and contents. 
+                        $p = strpos($content, "<<");
+                        $match = [
+                            "",
+                            trim(substr($content,0,$p)),
+                            "",
+                            trim(substr($content,$p)),
+                        ];
                         $content = $match[3];
 
                         // Extract xrefs.
