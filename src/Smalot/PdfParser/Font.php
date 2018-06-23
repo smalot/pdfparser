@@ -435,7 +435,7 @@ class Font extends PDFObject
                         foreach ($fonts as $font) {
                             if ($font instanceof Font) {
                                 if (($decoded = $font->translateChar($char, false)) !== false) {
-                                    $decoded = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $decoded);
+                                    $decoded = mb_convert_encoding($decoded, 'UTF-8', 'Windows-1252');
                                     break;
                                 }
                             }
@@ -444,7 +444,7 @@ class Font extends PDFObject
                         if ($decoded !== false) {
                             $char = $decoded;
                         } else {
-                            $char = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $char);
+                            $char = mb_convert_encoding($char, 'UTF-8', 'Windows-1252');
                         }
                     } else {
                         $char = self::MISSING;
@@ -492,7 +492,7 @@ class Font extends PDFObject
                     $text = $result;
 
                     if ($encoding->get('BaseEncoding')->equals('MacRomanEncoding')) {
-                        $text = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $text);
+                        $text = mb_convert_encoding($text, 'UTF-8', 'Mac');
 
                         return $text;
                     }
@@ -506,9 +506,9 @@ class Font extends PDFObject
             if ($this->get('Encoding') instanceof Element &&
                 $this->get('Encoding')->equals('MacRomanEncoding')
             ) {
-                $text = @iconv('Mac', 'UTF-8//TRANSLIT//IGNORE', $text);
+                $text = mb_convert_encoding($text, 'UTF-8', 'Mac');
             } else {
-                $text = @iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $text);
+                $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
             }
         }
 
