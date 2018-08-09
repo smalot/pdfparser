@@ -259,7 +259,8 @@ class Font extends PDFObject
                     $text .= '(';
                 }
 
-                $part = pack('H*', $part);
+                //$part = pack('H*', $part);
+                $part = strtr(rtrim(base64_encode(pack('H*', sprintf('%u', $part))), '='), '+/', '-_');
                 $text .= ($add_braces ? preg_replace('/\\\/s', '\\\\\\', $part) : $part);
 
                 if ($add_braces) {
