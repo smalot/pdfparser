@@ -8,11 +8,13 @@ php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3
   - hhvm
   
 matrix:
   allow_failures:
     - php: hhvm
+    - php: 7.3
   
 before_script:
   - composer self-update || true
