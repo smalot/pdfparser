@@ -14,7 +14,6 @@ php:
 matrix:
   allow_failures:
     - php: hhvm
-    - php: 7.3
   
 before_script:
   - composer self-update || true
