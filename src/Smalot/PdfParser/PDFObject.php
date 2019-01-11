@@ -326,7 +326,7 @@ class PDFObject
                             // Fallback
                             // TODO : Improve
                             $text .= $command[self::COMMAND][0][self::COMMAND];
-                            continue;
+                            break;
                         }
 
                         $sub_text = $current_font->decodeText($command[self::COMMAND]);
@@ -483,7 +483,7 @@ class PDFObject
 							// Fallback
 							// TODO : Improve
 							$text[] = $command[self::COMMAND][0][self::COMMAND];
-							continue;
+							break;
 						}
 
 						$sub_text = $current_font->decodeText($command[self::COMMAND]);
