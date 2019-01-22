@@ -250,7 +250,7 @@ class Font extends PDFObject
     public static function decodeHexadecimal($hexa, $add_braces = false)
     {
         $text  = '';
-        $parts = preg_split('/(<[a-z0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
             if (preg_match('/^<.*>$/', $part) && strpos($part, '<?xml') === false) {
