@@ -255,7 +255,7 @@ class Font extends PDFObject
         }
 
         $text  = '';
-        $parts = preg_split('/(<[a-z0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
             if (preg_match('/^<.*>$/', $part) && stripos($part, '<?xml') === false) {
