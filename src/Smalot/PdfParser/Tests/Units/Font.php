@@ -240,6 +240,11 @@ end';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa, true))->isEqualTo(
             "(\x002\x00 \x00\\\\)-10(\x00A)"
         );
+
+        // If it contents XML, the function need to return the same value.
+        $hexa = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:19.10.0" xfa:spec="2.0.2"  style="font-size:12.0pt;text-align:left;color: 0000;font-weight:normal;font-style:norm\
+al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-family:Helvetica">Example</span></p></body>';
+        $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo($hexa);
     }
 
     public function testDecodeOctal()
@@ -318,5 +323,16 @@ end';
             ),
         );
         $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');
+    }
+
+    public function testXmlContent()
+    {
+        $filename = __DIR__ . '/../../../../../samples/bugs/Issue18.pdf';
+        $parser   = new \Smalot\PdfParser\Parser();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $text = trim($pages[0]->getText());
+
+        $this->assert->string($text)->isEqualTo('Example PDF');
     }
 }
