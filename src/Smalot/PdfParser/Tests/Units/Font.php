@@ -242,8 +242,8 @@ end';
         );
 
         // If it contents XML, the function need to return the same value.
-        $hexa = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:19.10.0" xfa:spec="2.0.2"  style="font-size:12.0pt;text-align:left;color: 0000;font-weight:normal;font-style:norm\
-al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-family:Helvetica">Example</span></p></body>';
+        $hexa = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:19.10.0" xfa:spec="2.0.2"  style="font-size:12.0pt;text-align:left;color:#000000;font-weight:normal;font-style:norm\
+        al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-family:Helvetica">Example</span></p></body>';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo($hexa);
     }
 

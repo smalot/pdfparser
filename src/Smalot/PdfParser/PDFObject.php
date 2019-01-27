@@ -457,22 +457,34 @@ class PDFObject
 
 				switch ($command[self::OPERATOR]) {
 					// set character spacing
-					case 'Tc':
-						break;
+					// set character spacing
+                    case 'Tc':
+                        break;
 
-					// move text current point
-					case 'Td':
-						break;
+                    // move text current point
+                    case 'Td':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        
+                        $current_position_td = array('x' => $x, 'y' => $y);
+                        break;
 
-					// move text current point and set leading
-					case 'TD':
-						break;
+                    // move text current point and set leading
+                    case 'TD':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
 
-					case 'Tf':
-						list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
-						$id           = trim($id, '/');
-						$current_font = $page->getFont($id);
-						break;
+                        break;
+
+                    case 'Tf':
+                        list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
+                        $id           = trim($id, '/');
+                        if (!is_null($page)) {
+                            $current_font = $page->getFont($id);
+                        }
+                        break;
 
 					case "'":
 					case 'Tj':
@@ -568,7 +580,170 @@ class PDFObject
 		}
 
 		return $text;
-	}
+    }
+    
+    /**
+     * @param Page
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function getTextArrayWithCoordinates(Page $page = null)
+    {
+        $text                = array();
+        $sections            = $this->getSectionsText($this->content);
+        $current_font        = new Font($this->document);
+
+        $current_position_td = array('x' => false, 'y' => false);
+        $current_position_tm = array('x' => false, 'y' => false);
+
+        foreach ($sections as $section) {
+
+            $commands = $this->getCommandsText($section);
+
+            foreach ($commands as $command) {
+
+                switch ($command[self::OPERATOR]) {
+                    // set character spacing
+                    case 'Tc':
+                        break;
+
+                    // move text current point
+                    case 'Td':
+                        break;
+
+                    // move text current point and set leading
+                    case 'TD':
+                        break;
+
+                    case 'Tf':
+                        list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
+                        $id           = trim($id, '/');
+                        $current_font = $page->getFont($id);
+                        break;
+
+                    case "'":
+                    case 'Tj':
+                        $command[self::COMMAND] = array($command);
+                    case 'TJ':
+                        // Skip if not previously defined, should never happened.
+                        if (is_null($current_font)) {
+                            // Fallback
+                            // TODO : Improve
+                            //$text[] = $command[self::COMMAND][0][self::COMMAND];
+                            throw new \Exception('Unknown font detected while decoding PDF string.');
+                            continue;
+                        }
+
+                        $sub_text = $current_font->decodeText($command[self::COMMAND]);
+
+                        if (isset($text[$current_position_tm['y']])) {
+                            $text[$current_position_tm['y']]['text'] .= $sub_text;
+                            $text[$current_position_tm['y']]['details'][] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y']
+                            ];
+                        } else {
+                            $text[$current_position_tm['y']] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y'],
+                                'details' => []
+                            ];
+
+                           $text[$current_position_tm['y']]['details'][] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y']
+                            ];
+                        }
+                        break;
+
+                    // set leading
+                    case 'TL':
+                        break;
+
+                    case 'Tm':
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+                        
+                        $current_position_tm = array('x' => $x, 'y' => $y);
+                        break;
+
+                    // set super/subscripting text rise
+                    case 'Ts':
+                        break;
+
+                    // set word spacing
+                    case 'Tw':
+                        break;
+
+                    // set horizontal scaling
+                    case 'Tz':
+                        //$text .= "\n";
+                        break;
+
+                    // move to start of next line
+                    case 'T*':
+                        //$text .= "\n";
+                        break;
+
+                    case 'Da':
+                        break;
+
+                    case 'Do':
+                        /* if (!is_null($page)) {
+                            $args = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id   = trim(array_pop($args), '/ ');
+                            if ($xobject = $page->getXObject($id)) {
+                                $text[] = $xobject->getText($page);
+                            }
+                        } */
+                        break;
+
+                    case 'rg':
+                    case 'RG':
+                        break;
+
+                    case 're':
+                        break;
+
+                    case 'co':
+                        break;
+
+                    case 'cs':
+                        break;
+
+                    case 'gs':
+                        break;
+
+                    case 'en':
+                        break;
+
+                    case 'sc':
+                    case 'SC':
+                        break;
+
+                    case 'g':
+                    case 'G':
+                        break;
+
+                    case 'V':
+                        break;
+
+                    case 'vo':
+                    case 'Vo':
+                        break;
+
+                    default:
+                }
+            }
+        }
+
+		return $text;
+    }
 
 
     /**
