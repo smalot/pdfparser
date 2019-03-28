@@ -130,13 +130,13 @@ class ElementDate extends ElementString
                 }
 
                 $format = self::$formats[strlen($name)];
-                $date   = \DateTime::createFromFormat($format, $name);
+                $date   = \DateTime::createFromFormat($format, $name, new \DateTimeZone('UTC'));
             } else {
                 // special cases
                 if (preg_match('/^\d{1,2}-\d{1,2}-\d{4},?\s+\d{2}:\d{2}:\d{2}[\+-]\d{4}$/', $name)) {
                     $name   = str_replace(',', '', $name);
                     $format = 'n-j-Y H:i:sO';
-                    $date   = \DateTime::createFromFormat($format, $name);
+                    $date   = \DateTime::createFromFormat($format, $name, new \DateTimeZone('UTC'));
                 }
             }
 
