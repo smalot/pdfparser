@@ -86,7 +86,12 @@ class Font extends PDFObject
 
         $details['Name']     = $this->getName();
         $details['Type']     = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
+
+        try {
+            $details['Encoding'] = ($this->has('Encoding') ? (string) $this->get('Encoding') : 'Ansi');
+        } catch (\Exception $e) {
+            $details['Encoding'] = 'Ansi';
+        }
 
         $details += parent::getDetails($deep);
 
