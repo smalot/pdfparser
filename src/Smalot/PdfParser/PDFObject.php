@@ -292,7 +292,7 @@ class PDFObject
                             )
                         ) {
                             // horizontal offset
-                            $text .= ' ';
+                            //$text .= ' ';
                         }
                         $current_position_td = array('x' => $x, 'y' => $y);
                         break;
@@ -305,7 +305,7 @@ class PDFObject
                         if (floatval($y) < 0) {
                             $text .= "\n";
                         } elseif (floatval($x) <= 0) {
-                            $text .= ' ';
+                            //$text .= ' ';
                         }
                         break;
 
@@ -335,7 +335,7 @@ class PDFObject
 
                     // set leading
                     case 'TL':
-                        $text .= ' ';
+                        //$text .= ' ';
                         break;
 
                     case 'Tm':
