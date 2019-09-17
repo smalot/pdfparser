@@ -238,6 +238,23 @@ class PDFObject
         return $sections;
     }
 
+    private function getDefaultFont(Page $page = null)
+    {
+        $fonts = [];
+        if (!is_null($page)) {
+            $fonts = $page->getFonts();
+        }
+
+        $fonts = array_merge($fonts, array_values($this->document->getFonts()));
+
+        if (count($fonts) > 0)
+        {
+            return reset($fonts);
+        }
+
+        return new Font($this->document);
+    }
+
     /**
      * @param Page
      *
@@ -248,18 +265,7 @@ class PDFObject
     {
         $text                = '';
         $sections            = $this->getSectionsText($this->content);
-        $current_font = null;
-
-        foreach ($this->document->getObjects() as $obj) {
-            if ($obj instanceof Font) {
-                $current_font = $obj;
-                break;
-            }
-        }
-
-        if ($current_font === null) {
-            $current_font = new Font($this->document);
-        }
+        $current_font        = $this->getDefaultFont($page);
 
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
@@ -321,14 +327,6 @@ class PDFObject
                     case 'Tj':
                         $command[self::COMMAND] = array($command);
                     case 'TJ':
-                        // Skip if not previously defined, should never happened.
-                        if (is_null($current_font)) {
-                            // Fallback
-                            // TODO : Improve
-                            $text .= $command[self::COMMAND][0][self::COMMAND];
-                            break;
-                        }
-
                         $sub_text = $current_font->decodeText($command[self::COMMAND]);
                         $text .= $sub_text;
                         break;
@@ -447,7 +445,7 @@ class PDFObject
 	{
 		$text                = array();
 		$sections            = $this->getSectionsText($this->content);
-		$current_font        = new Font($this->document);
+		$current_font        = $this->getDefaultFont($page);
 
 		foreach ($sections as $section) {
 
@@ -469,23 +467,17 @@ class PDFObject
 						break;
 
 					case 'Tf':
-						list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
-						$id           = trim($id, '/');
-						$current_font = $page->getFont($id);
+						if (!is_null($page)) {
+							list($id,) = preg_split('/\s/s', $command[self::COMMAND]);
+							$id           = trim($id, '/');
+							$current_font = $page->getFont($id);
+						}
 						break;
 
 					case "'":
 					case 'Tj':
 						$command[self::COMMAND] = array($command);
 					case 'TJ':
-						// Skip if not previously defined, should never happened.
-						if (is_null($current_font)) {
-							// Fallback
-							// TODO : Improve
-							$text[] = $command[self::COMMAND][0][self::COMMAND];
-							break;
-						}
-
 						$sub_text = $current_font->decodeText($command[self::COMMAND]);
 						$text[] = $sub_text;
 						break;
