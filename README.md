@@ -1,5 +1,5 @@
 # PdfParser #
-This is a Fork for the original Smalot/PdfParser to be used with Izabala/PdfExtractor. 
+This is a Fork for the original Smalot/PdfParser to be used with Izabala/PdfExtractor project. 
 
 Pdf Parser, a standalone PHP library, provides various tools to extract data from a PDF file.
 
