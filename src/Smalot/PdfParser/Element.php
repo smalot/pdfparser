@@ -56,7 +56,7 @@ class Element
     /**
      * @var mixed
      */
-    protected $value = null;
+    public $value = null;
 
     /**
      * @param mixed    $value
