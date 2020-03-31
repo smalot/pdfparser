@@ -272,4 +272,43 @@ class Page extends PDFObject
 
 		return array();
 	}
+	/**
+	 * Gets the page text boxes info and data
+	 *
+	 * @return array
+	 */
+    public function extractData() {
+        
+        /** gets internal text box info */
+        $text = $this->getText();
+        
+        $content = $this->get("Contents");
+        $values = $content->value;
+        $contentArray = [];
+        foreach ($values as $value){
+            $contentArray[] = $value->getContent();
+        }
+        $extractedData = [];
+        foreach ($contentArray as $contentItems){
+            $arrayItems = explode("\n", $contentItems); #split in lines
+            $line = null;
+            foreach ($arrayItems as $text){
+                $textEnd = substr($text, -2);
+                if ($textEnd == "Tm"){
+                    if (isset($line) and $line){
+                        $extractedData[] = $line;
+                        $line = [];
+                    }
+                    $line[] = substr($text, 0, -3);
+                } elseif ($textEnd == "Tj"){
+                    $line[] = substr($text, 1, -4);
+                }
+            }
+            if (isset($line) and $line){
+                $extractedData[] = $line;
+                $line = null;
+            }
+        }
+        return $extractedData;
+    }
 }
