@@ -497,7 +497,7 @@ class Font extends PDFObject
                     $text = $result;
 
                     if ($encoding->get('BaseEncoding')->equals('MacRomanEncoding')) {
-                        $text = mb_convert_encoding($text, 'UTF-8', 'Mac');
+                        $text = mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
 
                         return $text;
                     }
@@ -511,7 +511,7 @@ class Font extends PDFObject
             if ($this->get('Encoding') instanceof Element &&
                 $this->get('Encoding')->equals('MacRomanEncoding')
             ) {
-                $text = mb_convert_encoding($text, 'UTF-8', 'Mac');
+                $text = mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
             } else {
                 $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
             }
