@@ -267,6 +267,7 @@ class Parser
     {
         switch ($type) {
             case '<<':
+            case '>>':
                 return $this->parseHeader($value, $document);
 
             case 'numeric':
