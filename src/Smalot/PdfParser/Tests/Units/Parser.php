@@ -30,6 +30,7 @@
 
 namespace Smalot\PdfParser\Tests\Units;
 
+use Exception;
 use mageekguy\atoum;
 
 /**
@@ -39,6 +40,10 @@ use mageekguy\atoum;
  */
 class Parser extends atoum\test
 {
+
+    /**
+     * @throws \Exception
+     */
     public function testParseFile()
     {
         $directory = getcwd() . '/samples/bugs';
@@ -52,11 +57,14 @@ class Parser extends atoum\test
                     try {
                         $document = $parser->parseFile($directory . '/' . $file);
                         $pages    = $document->getPages();
-                        $page     = $pages[0];
-                        $content  = $page->getText();
-                        $this->assert->string($content);
-                    } catch (\Exception $e) {
-                        if ($e->getMessage() != 'Secured pdf file are currently not supported.' && strpos($e->getMessage(), 'TCPDF_PARSER') != 0) {
+                        $this->assert->integer(count($pages))->isGreaterThan(0);
+
+                        foreach ($pages as $page) {
+                            $content  = $page->getText();
+                            $this->assert->string($content);
+                        }
+                    } catch (Exception $e) {
+                        if ($e->getMessage() !== 'Secured pdf file are currently not supported.' && strpos($e->getMessage(), 'TCPDF_PARSER') != 0) {
                             throw $e;
                         }
                     }
