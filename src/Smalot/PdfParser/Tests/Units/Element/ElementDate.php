@@ -102,7 +102,7 @@ class ElementDate extends atoum\test
         $element = \Smalot\PdfParser\Element\ElementDate::parse(" \n (D:20130901235555) ", null, $offset);
         $element->setFormat('c');
         $this->assert->object($element->getContent())->isInstanceOf('\DateTime');
-        $this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55')))->isEqualTo(true);
+        $this->assert->boolean($element->equals(new \DateTime('2013-09-01T23:55:55+00:00')))->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(21);
         $offset  = 0;
         $element = \Smalot\PdfParser\Element\ElementDate::parse("(D:20131206091846Z00'00')", null, $offset);
