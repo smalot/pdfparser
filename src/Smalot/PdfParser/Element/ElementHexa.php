@@ -74,7 +74,7 @@ class ElementHexa extends ElementString
         $text   = '';
         $length = strlen($value);
 
-        if (substr($value, 0, 2) == '00') {
+        if (substr($value, 0, 2) === '00') {
             for ($i = 0; $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
                 $text .= '&#' . str_pad(hexdec($hex), 4, '0', STR_PAD_LEFT) . ';';
