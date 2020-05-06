@@ -413,7 +413,7 @@ class Font extends PDFObject
      *
      * @return string
      */
-    protected function decodeContent($text, &$unicode)
+    public function decodeContent($text, &$unicode)
     {
         if ($this->has('ToUnicode')) {
 
