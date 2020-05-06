@@ -43,11 +43,6 @@ use Smalot\PdfParser\Element\ElementNull;
 class Page extends PDFObject
 {
     /**
-     * The array index where the x and y coordinates are in the Text Matrix (Tm)
-     */
-    public const xTm = 4;
-    public const yTm = 5;
-    /**
      * @var Font[]
      */
     protected $fonts = null;
@@ -569,8 +564,8 @@ class Page extends PDFObject
         /*
          * Setting where are the X and Y coordinates in the matrix (Tm)
          */
-        $x = self::xTm;
-        $y = self::yTm;
+        $x = 4;
+        $y = 5;
         $Tx = 0;
         $Ty = 0;
         
@@ -784,8 +779,8 @@ class Page extends PDFObject
         $extractedData = [];
         foreach ($this->dataTm as $item){
             $tm = $item[0];
-            $xTm = (float) $tm[self::xTm];
-            $yTm = (float) $tm[self::yTm];
+            $xTm = (float) $tm[4];
+            $yTm = (float) $tm[5];
             $text = $item[1];
             if (!isset($y)){
                 if (($xTm >= ($x - $xError)) and 
