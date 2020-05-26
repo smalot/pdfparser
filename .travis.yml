@@ -9,18 +9,18 @@ php:
   - 7.2
   - 7.3
   - 7.4
-  - hhvm
+  - nightly
 
 jobs:
   fast_finish: true
   allow_failures:
-    - php: hhvm
+    - php: nightly
   include:
     - php: 7.2
       env: COMPOSER_FLAGS="--prefer-lowest"
 
 install:
   - composer self-update
-  - composer update --prefer-source -o $COMPOSER_FLAGS
+  - composer update --prefer-dist --no-progress --no-suggest --optimize-autoloader $COMPOSER_FLAGS
 
 script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc
