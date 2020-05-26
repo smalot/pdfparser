@@ -120,11 +120,11 @@ class ElementDate extends ElementString
             if (preg_match('/^\d{4}(\d{2}(\d{2}(\d{2}(\d{2}(\d{2}(Z(\d{2,4})?|[\+-]?\d{2}(\d{2})?)?)?)?)?)?)?$/', $name)) {
                 if ($pos = strpos($name, 'Z')) {
                     $name = substr($name, 0, $pos + 1);
-                } elseif (18 == strlen($name) && preg_match('/[^\+-]0000$/', $name)) {
+                } elseif (18 == \strlen($name) && preg_match('/[^\+-]0000$/', $name)) {
                     $name = substr($name, 0, -4).'+0000';
                 }
 
-                $format = self::$formats[strlen($name)];
+                $format = self::$formats[\strlen($name)];
                 $date = \DateTime::createFromFormat($format, $name, new \DateTimeZone('UTC'));
             } else {
                 // special cases
@@ -139,7 +139,7 @@ class ElementDate extends ElementString
                 return false;
             }
 
-            $offset += strpos($content, '(D:') + strlen($match['name']) + 4; // 1 for '(D:' and ')'
+            $offset += strpos($content, '(D:') + \strlen($match['name']) + 4; // 1 for '(D:' and ')'
             $element = new self($date, $document);
 
             return $element;

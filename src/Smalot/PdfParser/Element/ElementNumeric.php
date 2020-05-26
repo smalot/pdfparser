@@ -44,7 +44,7 @@ class ElementNumeric extends Element
      */
     public function __construct($value, Document $document = null)
     {
-        parent::__construct(floatval($value), null);
+        parent::__construct((float) $value, null);
     }
 
     /**
@@ -58,7 +58,7 @@ class ElementNumeric extends Element
     {
         if (preg_match('/^\s*(?P<value>\-?[0-9\.]+)/s', $content, $match)) {
             $value = $match['value'];
-            $offset += strpos($content, $value) + strlen($value);
+            $offset += strpos($content, $value) + \strlen($value);
 
             return new self($value, $document);
         }

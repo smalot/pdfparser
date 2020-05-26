@@ -125,7 +125,7 @@ class Parser
 
             if (is_numeric($values)) {
                 $trailer[$name] = new ElementNumeric($values, $document);
-            } elseif (is_array($values)) {
+            } elseif (\is_array($values)) {
                 $value = $this->parseTrailer($values, null);
                 $trailer[$name] = new ElementArray($value, null);
             } elseif (false !== strpos($values, '_')) {
@@ -197,7 +197,7 @@ class Parser
 
                         foreach ($positions as $index => $position) {
                             $id = $ids[$index].'_0';
-                            $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : strlen($content);
+                            $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
                             $sub_content = substr($content, $position, $next_position - $position);
 
                             $sub_header = Header::parse($sub_content, $document);
@@ -240,7 +240,7 @@ class Parser
     protected function parseHeader($structure, $document)
     {
         $elements = [];
-        $count = count($structure);
+        $count = \count($structure);
 
         for ($position = 0; $position < $count; $position += 2) {
             $name = $structure[$position][1];

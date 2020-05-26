@@ -74,7 +74,7 @@ class Encoding extends PDFObject
             $differences = $this->get('Differences')->getContent();
             $code = 0;
 
-            if (!is_array($differences)) {
+            if (!\is_array($differences)) {
                 return;
             }
 
@@ -86,7 +86,7 @@ class Encoding extends PDFObject
                 }
 
                 // ElementName
-                if (is_object($difference)) {
+                if (\is_object($difference)) {
                     $this->differences[$code] = $difference->getContent();
                 } else {
                     $this->differences[$code] = $difference;

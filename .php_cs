@@ -3,13 +3,14 @@
 return PhpCsFixer\Config::create()
     ->setRules([
         '@Symfony' => true,
+        '@Symfony:risky' => true,
         'array_syntax' => ['syntax' => 'short'],
-        'no_unused_imports' => true,
         'no_empty_phpdoc' => true,
-        'ordered_imports' => true,
-        'protected_to_private' => false,
-        'php_unit_test_class_requires_covers' => false,
+        'no_unused_imports' => true,
         'no_superfluous_phpdoc_tags' => true,
+        'ordered_imports' => true,
+        'phpdoc_annotation_without_dot' => true,
+        'protected_to_private' => false,
      ])
     ->setRiskyAllowed(true)
     ->setFinder(

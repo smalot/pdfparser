@@ -95,7 +95,7 @@ class Font extends PDFObject
     {
         $dec = hexdec(bin2hex($char));
 
-        if (array_key_exists($dec, $this->table)) {
+        if (\array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
             $char = ($use_default ? self::MISSING : $char);
@@ -119,7 +119,7 @@ class Font extends PDFObject
      */
     public function loadTranslateTable()
     {
-        if (!is_null($this->table)) {
+        if (null !== $this->table) {
             return $this->table;
         }
 
@@ -141,8 +141,8 @@ class Font extends PDFObject
                     preg_match_all($regexp, $section, $matches);
 
                     $this->tableSizes = [
-                        'from' => max(1, strlen(current($matches['from'])) / 2),
-                        'to' => max(1, strlen(current($matches['to'])) / 2),
+                        'from' => max(1, \strlen(current($matches['from'])) / 2),
+                        'to' => max(1, \strlen(current($matches['to'])) / 2),
                     ];
 
                     break;
@@ -156,7 +156,7 @@ class Font extends PDFObject
 
                     preg_match_all($regexp, $section, $matches);
 
-                    $this->tableSizes['from'] = max(1, strlen(current($matches['from'])) / 2);
+                    $this->tableSizes['from'] = max(1, \strlen(current($matches['from'])) / 2);
 
                     foreach ($matches['from'] as $key => $from) {
                         $parts = preg_split(
@@ -282,7 +282,7 @@ class Font extends PDFObject
 
         foreach ($parts as $part) {
             if (preg_match('/^\\\\\d{3}$/', $part)) {
-                $text .= chr(octdec(trim($part, '\\')));
+                $text .= \chr(octdec(trim($part, '\\')));
             } else {
                 $text .= $part;
             }
@@ -303,7 +303,7 @@ class Font extends PDFObject
 
         foreach ($parts as $part) {
             if (preg_match('/^#\d{2}$/', $part)) {
-                $text .= chr(hexdec(trim($part, '#')));
+                $text .= \chr(hexdec(trim($part, '#')));
             } else {
                 $text .= $part;
             }
@@ -323,7 +323,7 @@ class Font extends PDFObject
             // Strip U+FEFF byte order marker.
             $decode = substr($text, 2);
             $text = '';
-            $length = strlen($decode);
+            $length = \strlen($decode);
 
             for ($i = 0; $i < $length; $i += 2) {
                 $text .= self::uchr(hexdec(bin2hex(substr($decode, $i, 2))));
@@ -356,8 +356,8 @@ class Font extends PDFObject
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if (floatval(trim($command[PDFObject::COMMAND])) < $font_space) {
-                        $word_position = count($words);
+                    if ((float) (trim($command[PDFObject::COMMAND])) < $font_space) {
+                        $word_position = \count($words);
                     }
                     continue 2;
 
@@ -408,7 +408,7 @@ class Font extends PDFObject
 
             if ($bytes) {
                 $result = '';
-                $length = strlen($text);
+                $length = \strlen($text);
 
                 for ($i = 0; $i < $length; $i += $bytes) {
                     $char = substr($text, $i, $bytes);
@@ -424,7 +424,7 @@ class Font extends PDFObject
                         $decoded = false;
 
                         foreach ($fonts as $font) {
-                            if ($font instanceof Font) {
+                            if ($font instanceof self) {
                                 if (false !== ($decoded = $font->translateChar($char, false))) {
                                     $decoded = mb_convert_encoding($decoded, 'UTF-8', 'Windows-1252');
                                     break;
@@ -472,12 +472,12 @@ class Font extends PDFObject
                     $text = $result;
                 } else {
                     $result = '';
-                    $length = strlen($text);
+                    $length = \strlen($text);
 
                     for ($i = 0; $i < $length; ++$i) {
                         $dec_av = hexdec(bin2hex($text[$i]));
                         $dec_ap = $encoding->translateChar($dec_av);
-                        $result .= chr($dec_ap);
+                        $result .= \chr($dec_ap);
                     }
 
                     $text = $result;

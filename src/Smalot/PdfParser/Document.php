@@ -120,7 +120,7 @@ class Document
         // Retrieve the page count
         try {
             $pages = $this->getPages();
-            $details['Pages'] = count($pages);
+            $details['Pages'] = \count($pages);
         } catch (\Exception $e) {
             $details['Pages'] = 0;
         }
@@ -180,7 +180,7 @@ class Document
 
         foreach ($this->objects as $id => $object) {
             if ($object->getHeader()->get('Type') == $type &&
-                (is_null($subtype) || $object->getHeader()->get('Subtype') == $subtype)
+                (null === $subtype || $object->getHeader()->get('Subtype') == $subtype)
             ) {
                 $objects[$id] = $object;
             }
@@ -254,7 +254,7 @@ class Document
             /**
              * In some cases, the $page variable may be null.
              */
-            if (is_null($page)) {
+            if (null === $page) {
                 continue;
             }
             if ($text = trim($page->getText())) {

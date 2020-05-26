@@ -67,7 +67,7 @@ class ElementName extends Element
     {
         if (preg_match('/^\s*\/(?P<name>[A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
             $name = $match['name'];
-            $offset += strpos($content, $name) + strlen($name);
+            $offset += strpos($content, $name) + \strlen($name);
             $name = Font::decodeEntities($name);
 
             return new self($name, $document);

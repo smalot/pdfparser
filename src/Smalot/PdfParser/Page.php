@@ -55,7 +55,7 @@ class Page extends PDFObject
      */
     public function getFonts()
     {
-        if (!is_null($this->fonts)) {
+        if (null !== $this->fonts) {
             return $this->fonts;
         }
 
@@ -117,7 +117,7 @@ class Page extends PDFObject
      */
     public function getXObjects()
     {
-        if (!is_null($this->xobjects)) {
+        if (null !== $this->xobjects) {
             return $this->xobjects;
         }
 
@@ -176,7 +176,7 @@ class Page extends PDFObject
      *
      * @return string
      */
-    public function getText(Page $page = null)
+    public function getText(self $page = null)
     {
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
@@ -223,7 +223,7 @@ class Page extends PDFObject
      *
      * @return array
      */
-    public function getTextArray(Page $page = null)
+    public function getTextArray(self $page = null)
     {
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {

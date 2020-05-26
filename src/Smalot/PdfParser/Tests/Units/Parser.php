@@ -54,7 +54,7 @@ class Parser extends atoum\test
                     try {
                         $document = $parser->parseFile($directory.'/'.$file);
                         $pages = $document->getPages();
-                        $this->assert->integer(count($pages))->isGreaterThan(0);
+                        $this->assert->integer(\count($pages))->isGreaterThan(0);
 
                         foreach ($pages as $page) {
                             $content = $page->getText();

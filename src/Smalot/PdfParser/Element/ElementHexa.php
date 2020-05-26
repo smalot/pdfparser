@@ -48,7 +48,7 @@ class ElementHexa extends ElementString
     {
         if (preg_match('/^\s*\<(?P<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name = $match['name'];
-            $offset += strpos($content, '<'.$name) + strlen($name) + 2; // 1 for '>'
+            $offset += strpos($content, '<'.$name) + \strlen($name) + 2; // 1 for '>'
             // repackage string as standard
             $name = '('.self::decode($name, $document).')';
             $element = false;
@@ -70,7 +70,7 @@ class ElementHexa extends ElementString
     public static function decode($value, Document $document = null)
     {
         $text = '';
-        $length = strlen($value);
+        $length = \strlen($value);
 
         if ('00' === substr($value, 0, 2)) {
             for ($i = 0; $i < $length; $i += 4) {
@@ -80,7 +80,7 @@ class ElementHexa extends ElementString
         } else {
             for ($i = 0; $i < $length; $i += 2) {
                 $hex = substr($value, $i, 2);
-                $text .= chr(hexdec($hex));
+                $text .= \chr(hexdec($hex));
             }
         }
 

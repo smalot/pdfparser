@@ -61,7 +61,7 @@ class ElementStruct extends Element
                 }
             }
 
-            $offset += strpos($content, '<<') + strlen(rtrim($sub));
+            $offset += strpos($content, '<<') + \strlen(rtrim($sub));
 
             // Removes '<<' and '>>'.
             $sub = trim(preg_replace('/^\s*<<(.*)>>\s*$/s', '\\1', $sub));

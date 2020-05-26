@@ -68,30 +68,30 @@ class ElementNull extends atoum\test
         // Valid.
         $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNull::parse(' null ', null, $offset);
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(5);
         $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNull::parse(' null ', null, $offset);
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(5);
         $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNull::parse(' null', null, $offset);
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(5);
         $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNull::parse('null', null, $offset);
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(4);
         $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNull::parse(" \n null ", null, $offset);
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
         $this->assert->integer($offset)->isEqualTo(7);
     }
 
     public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementNull('null');
-        $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
+        $this->assert->boolean(null === $element->getContent())->isEqualTo(true);
     }
 
     public function testEquals()

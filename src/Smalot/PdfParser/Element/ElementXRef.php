@@ -56,7 +56,7 @@ class ElementXRef extends Element
      */
     public function equals($value)
     {
-        $id = ($value instanceof ElementXRef) ? $value->getId() : $value;
+        $id = ($value instanceof self) ? $value->getId() : $value;
 
         return $this->getId() == $id;
     }
@@ -80,7 +80,7 @@ class ElementXRef extends Element
     {
         if (preg_match('/^\s*(?P<id>[0-9]+\s+[0-9]+\s+R)/s', $content, $match)) {
             $id = $match['id'];
-            $offset += strpos($content, $id) + strlen($id);
+            $offset += strpos($content, $id) + \strlen($id);
             $id = str_replace(' ', '_', rtrim($id, ' R'));
 
             return new self($id, $document);

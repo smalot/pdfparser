@@ -81,11 +81,11 @@ class ElementArray extends Element
                 $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
-            } elseif ($element instanceof ElementArray) {
+            } elseif ($element instanceof self) {
                 if ($deep) {
                     $values[$key] = $element->getDetails();
                 }
-            } elseif ($element instanceof Element && !($element instanceof ElementArray)) {
+            } elseif ($element instanceof Element && !($element instanceof self)) {
                 $values[$key] = $element->getContent();
             }
         }
@@ -146,7 +146,7 @@ class ElementArray extends Element
 
             $offset += strpos($content, '[') + 1;
             // Find next ']' position
-            $offset += strlen($sub) + 1;
+            $offset += \strlen($sub) + 1;
 
             return new self($values, $document);
         }

@@ -79,7 +79,7 @@ class Element
      */
     public function contains($value)
     {
-        if (is_array($this->value)) {
+        if (\is_array($this->value)) {
             /** @var Element $val */
             foreach ($this->value as $val) {
                 if ($val->equals($value)) {
@@ -117,7 +117,7 @@ class Element
      */
     public static function parse($content, Document $document = null, &$position = 0)
     {
-        $args = func_get_args();
+        $args = \func_get_args();
         $only_values = isset($args[3]) ? $args[3] : false;
         $content = trim($content);
         $values = [];
@@ -131,10 +131,10 @@ class Element
                 } else {
                     $name = ltrim($match['name'], '/');
                     $value = $match['value'];
-                    $position = strpos($content, $value, $position + strlen($match['name']));
+                    $position = strpos($content, $value, $position + \strlen($match['name']));
                 }
             } else {
-                $name = count($values);
+                $name = \count($values);
                 $value = substr($content, $position);
             }
 
@@ -162,7 +162,7 @@ class Element
                 $position = $old_position;
                 break;
             }
-        } while ($position < strlen($content));
+        } while ($position < \strlen($content));
 
         return $values;
     }

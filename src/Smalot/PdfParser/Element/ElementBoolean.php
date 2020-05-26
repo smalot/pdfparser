@@ -74,7 +74,7 @@ class ElementBoolean extends Element
     {
         if (preg_match('/^\s*(?P<value>true|false)/is', $content, $match)) {
             $value = $match['value'];
-            $offset += strpos($content, $value) + strlen($value);
+            $offset += strpos($content, $value) + \strlen($value);
 
             return new self($value, $document);
         }

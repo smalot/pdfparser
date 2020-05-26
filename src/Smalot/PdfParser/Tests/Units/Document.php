@@ -67,7 +67,7 @@ class Document extends atoum\test
         $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects([1 => $object1, 2 => $object2]);
 
-        $this->assert->integer(count($objects = $document->getObjects()))->isEqualTo(2);
+        $this->assert->integer(\count($objects = $document->getObjects()))->isEqualTo(2);
         $this->assert->object($objects[1])->isInstanceOf('\Smalot\PdfParser\PDFObject');
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\PDFObject');
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
@@ -76,14 +76,14 @@ class Document extends atoum\test
     public function testDictionary()
     {
         $document = new \Smalot\PdfParser\Document();
-        $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(0);
+        $this->assert->integer(\count($objects = $document->getDictionary()))->isEqualTo(0);
         $object1 = new \Smalot\PdfParser\PDFObject($document);
         $content = '<</Type/Page>>';
         $header = \Smalot\PdfParser\Header::parse($content, $document);
         $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects([1 => $object1, 2 => $object2]);
-        $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(1);
-        $this->assert->integer(count($objects['Page']))->isEqualTo(1);
+        $this->assert->integer(\count($objects = $document->getDictionary()))->isEqualTo(1);
+        $this->assert->integer(\count($objects['Page']))->isEqualTo(1);
         $this->assert->integer($objects['Page'][2])->isEqualTo(2);
     }
 
@@ -95,7 +95,7 @@ class Document extends atoum\test
         $header = \Smalot\PdfParser\Header::parse($content, $document);
         $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects([1 => $object1, 2 => $object2]);
-        $this->assert->integer(count($objects = $document->getObjectsByType('Page')))->isEqualTo(1);
+        $this->assert->integer(\count($objects = $document->getObjectsByType('Page')))->isEqualTo(1);
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\PDFObject');
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
     }
@@ -119,7 +119,7 @@ class Document extends atoum\test
         $object2 = new \Smalot\PdfParser\Page($document, $header);
         $document->setObjects([1 => $object1, 2 => $object2]);
         $pages = $document->getPages();
-        $this->assert->integer(count($pages))->isEqualTo(2);
+        $this->assert->integer(\count($pages))->isEqualTo(2);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[1])->isInstanceOf('\Smalot\PdfParser\Page');
 
@@ -141,7 +141,7 @@ class Document extends atoum\test
             ['1_0' => $object1, '2_0' => $object2, '3_0' => $object3, '4_0' => $object4, '5_0' => $object5]
         );
         $pages = $document->getPages();
-        $this->assert->integer(count($pages))->isEqualTo(3);
+        $this->assert->integer(\count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[1])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[2])->isInstanceOf('\Smalot\PdfParser\Page');
@@ -174,7 +174,7 @@ class Document extends atoum\test
             ]
         );
         $pages = $document->getPages();
-        $this->assert->integer(count($pages))->isEqualTo(3);
+        $this->assert->integer(\count($pages))->isEqualTo(3);
         $this->assert->object($pages[0])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[1])->isInstanceOf('\Smalot\PdfParser\Page');
         $this->assert->object($pages[2])->isInstanceOf('\Smalot\PdfParser\Page');

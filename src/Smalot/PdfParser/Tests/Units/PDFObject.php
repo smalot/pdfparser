@@ -273,7 +273,7 @@ q
         $object = new \Smalot\PdfParser\PDFObject($document);
         $cleaned = $object->cleanContent($content, '_');
 
-        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
+        $this->assert->string($cleaned)->length->isEqualTo(\strlen($content));
         $this->assert->string($cleaned)->isEqualTo($expected);
     }
 

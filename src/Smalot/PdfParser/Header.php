@@ -82,7 +82,7 @@ class Header
         $types = [];
 
         foreach ($this->elements as $key => $element) {
-            $types[$key] = get_class($element);
+            $types[$key] = \get_class($element);
         }
 
         return $types;
@@ -99,7 +99,7 @@ class Header
         $elements = $this->getElements();
 
         foreach ($elements as $key => $element) {
-            if ($element instanceof Header && $deep) {
+            if ($element instanceof self && $deep) {
                 $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
@@ -124,7 +124,7 @@ class Header
      */
     public function has($name)
     {
-        if (array_key_exists($name, $this->elements)) {
+        if (\array_key_exists($name, $this->elements)) {
             return true;
         } else {
             return false;
@@ -138,7 +138,7 @@ class Header
      */
     public function get($name)
     {
-        if (array_key_exists($name, $this->elements)) {
+        if (\array_key_exists($name, $this->elements)) {
             return $this->resolveXRef($name);
         }
 
@@ -156,11 +156,11 @@ class Header
      */
     protected function resolveXRef($name)
     {
-        if (($obj = $this->elements[$name]) instanceof ElementXRef && !is_null($this->document)) {
+        if (($obj = $this->elements[$name]) instanceof ElementXRef && null !== $this->document) {
             /** @var ElementXRef $obj */
             $object = $this->document->getObjectById($obj->getId());
 
-            if (is_null($object)) {
+            if (null === $object) {
                 return new ElementMissing(null, null);
             }
 
