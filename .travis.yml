@@ -1,24 +1,26 @@
+os: linux
+dist: xenial
 language: php
 
 php:
-#  - 5.3
-#  - 5.4
-#  - 5.5
   - 5.6
   - 7.0
   - 7.1
   - 7.2
   - 7.3
   - 7.4
-  - hhvm
-  
-matrix:
+  - nightly
+
+jobs:
+  fast_finish: true
   allow_failures:
-    - php: hhvm
-  
-before_script:
-  - composer self-update || true
-  - composer update
-  - composer --prefer-source --dev install
+    - php: nightly
+  include:
+    - php: 7.2
+      env: COMPOSER_FLAGS="--prefer-lowest"
+
+install:
+  - composer self-update
+  - composer update --prefer-dist --no-progress --no-suggest --optimize-autoloader $COMPOSER_FLAGS
 
 script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc
