@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,15 +26,12 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
 
 /**
- * Class Pages
- *
- * @package Smalot\PdfParser
+ * Class Pages.
  */
 class Pages extends PDFObject
 {
@@ -45,15 +43,13 @@ class Pages extends PDFObject
     public function getPages($deep = false)
     {
         if ($this->has('Kids')) {
-
             if (!$deep) {
                 return $this->get('Kids')->getContent();
             } else {
-                $kids  = $this->get('Kids')->getContent();
-                $pages = array();
+                $kids = $this->get('Kids')->getContent();
+                $pages = [];
 
                 foreach ($kids as $kid) {
-
                     if ($kid instanceof Pages) {
                         $pages = array_merge($pages, $kid->getPages(true));
                     } else {
@@ -65,6 +61,6 @@ class Pages extends PDFObject
             }
         }
 
-        return array();
+        return [];
     }
 }

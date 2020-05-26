@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units\Element;
@@ -33,22 +33,20 @@ namespace Smalot\PdfParser\Tests\Units\Element;
 use mageekguy\atoum;
 
 /**
- * Class ElementStruct
- *
- * @package Smalot\PdfParser\Tests\Units\Element
+ * Class ElementStruct.
  */
 class ElementStruct extends atoum\test
 {
-    public function testParse()
+    public function testParse(): void
     {
-        $document = new \Smalot\PdfParser\Document(array());
+        $document = new \Smalot\PdfParser\Document([]);
 
         // Skipped.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse('ABC', $document, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(
             ' [ << /Filter /FlateDecode >> ]',
             $document,
@@ -56,15 +54,15 @@ class ElementStruct extends atoum\test
         );
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' / << /Filter /FlateDecode >> ', $document, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' 0 << /Filter /FlateDecode >> ', $document, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(
             " 0 \n << /Filter /FlateDecode >> ",
             $document,
@@ -74,19 +72,19 @@ class ElementStruct extends atoum\test
         $this->assert->integer($offset)->isEqualTo(0);
 
         // Valid.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' << /Filter /FlateDecode >> ', $document, $offset);
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(27);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(' << /Filter /FlateDecode >>', $document, $offset);
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(27);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse('<< /Filter /FlateDecode >>', $document, $offset);
         $this->assert->object($element)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($offset)->isEqualTo(26);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementStruct::parse(
             " \n << /Filter /FlateDecode >> ",
             $document,

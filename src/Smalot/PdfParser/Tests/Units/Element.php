@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units;
@@ -33,22 +33,20 @@ namespace Smalot\PdfParser\Tests\Units;
 use mageekguy\atoum;
 
 /**
- * Class Element
- *
- * @package Smalot\PdfParser\Tests\Units
+ * Class Element.
  */
 class Element extends atoum\test
 {
-    public function testParse()
+    public function testParse(): void
     {
-        $document = new \Smalot\PdfParser\Document(array());
+        $document = new \Smalot\PdfParser\Document([]);
 
         // Only_values = false.
-        $content  = '/NameType /FlateDecode
+        $content = '/NameType /FlateDecode
         /Contents[4 0 R 42]/Fonts<</F1 41/F2 43>>/NullType
         null/StringType(hello)/DateType(D:20130901235555+02\'00\')/XRefType 2 0 R
         /NumericType 8/HexaType<0020>/BooleanType false';
-        $offset   = 0;
+        $offset = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
 
         $this->assert->array($elements)->hasKey('NameType');
@@ -91,23 +89,23 @@ class Element extends atoum\test
         $this->assert->boolean($elements['BooleanType']->getContent())->isEqualTo(false);
 
         // Only_values = true.
-        $content  = '/NameType /FlateDecode';
-        $offset   = 0;
+        $content = '/NameType /FlateDecode';
+        $offset = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, true);
         $this->assert->array($elements)->hasSize(2);
         $this->assert->integer($offset)->isEqualTo(22);
 
         // Test error.
-        $content  = '/NameType /FlateDecode $$$';
-        $offset   = 0;
+        $content = '/NameType /FlateDecode $$$';
+        $offset = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
         $this->assert->array($elements)->hasSize(1);
         $this->assert->integer($offset)->isEqualTo(22);
         $this->assert->string(key($elements))->isEqualTo('NameType');
         $this->assert->object(current($elements))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
 
-        $content  = '/NameType $$$';
-        $offset   = 0;
+        $content = '/NameType $$$';
+        $offset = 0;
         $elements = \Smalot\PdfParser\Element::parse($content, $document, $offset, false);
         $this->assert->integer($offset)->isEqualTo(0);
         $this->assert->array($elements)->isEmpty();
@@ -117,18 +115,18 @@ class Element extends atoum\test
         $this->assert->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');*/
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new \Smalot\PdfParser\Element(42);
         $content = $element->getContent();
         $this->assert->integer($content)->isEqualTo(42);
 
-        $element = new \Smalot\PdfParser\Element(array(4, 2));
+        $element = new \Smalot\PdfParser\Element([4, 2]);
         $content = $element->getContent();
         $this->assert->array($content)->hasSize(2);
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new \Smalot\PdfParser\Element(2);
 
@@ -136,17 +134,17 @@ class Element extends atoum\test
         $this->assert->boolean($element->equals(8))->isEqualTo(false);
     }
 
-    public function testContains()
+    public function testContains(): void
     {
-        $val_4   = new \Smalot\PdfParser\Element(4);
-        $val_2   = new \Smalot\PdfParser\Element(2);
-        $element = new \Smalot\PdfParser\Element(array($val_4, $val_2));
+        $val_4 = new \Smalot\PdfParser\Element(4);
+        $val_2 = new \Smalot\PdfParser\Element(2);
+        $element = new \Smalot\PdfParser\Element([$val_4, $val_2]);
 
         $this->assert->boolean($element->contains(2))->isEqualTo(true);
         $this->assert->boolean($element->contains(8))->isEqualTo(false);
     }
 
-    public function test__toString()
+    public function test__toString(): void
     {
         $element = new \Smalot\PdfParser\Element(2);
         $this->assert->castToString($element)->isEqualTo('2');

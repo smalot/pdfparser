@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units\Element;
@@ -33,64 +33,62 @@ namespace Smalot\PdfParser\Tests\Units\Element;
 use mageekguy\atoum;
 
 /**
- * Class ElementNumeric
- *
- * @package Smalot\PdfParser\Tests\Units\Element
+ * Class ElementNumeric.
  */
 class ElementNumeric extends atoum\test
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse('ABC', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' [ 2 ]', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' /2', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(" /2 \n 2", null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
 
         // Valid.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' -2', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(-2.0);
         $this->assert->integer($offset)->isEqualTo(3);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse('2BC', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(2.0);
         $this->assert->integer($offset)->isEqualTo(1);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' 2BC', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(2.0);
         $this->assert->integer($offset)->isEqualTo(2);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' -2BC', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(-2.0);
         $this->assert->integer($offset)->isEqualTo(3);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' -2', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(-2.0);
         $this->assert->integer($offset)->isEqualTo(3);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(' 2 0 obj', null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(2.0);
         $this->assert->integer($offset)->isEqualTo(2);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementNumeric::parse(" \n -2 ", null, $offset);
         $this->assert->float($element->getContent())->isEqualTo(-2.0);
         $this->assert->integer($offset)->isEqualTo(5);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementNumeric('B');
         $this->assert->float($element->getContent())->isEqualTo(0.0);
@@ -106,7 +104,7 @@ class ElementNumeric extends atoum\test
         $this->assert->float($element->getContent())->isEqualTo(2.0);
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementNumeric('1');
         $this->assert->boolean($element->equals('B'))->isEqualTo(false);
@@ -134,7 +132,7 @@ class ElementNumeric extends atoum\test
         $this->assert->boolean($element->equals('-3.5'))->isEqualTo(false);
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementNumeric('1');
         $this->assert->boolean($element->contains('B'))->isEqualTo(false);
@@ -162,7 +160,7 @@ class ElementNumeric extends atoum\test
         $this->assert->boolean($element->contains('-3.5'))->isEqualTo(false);
     }
 
-    public function test__toString()
+    public function test__toString(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementNumeric('B');
         $this->assert->castToString($element)->isEqualTo('0');

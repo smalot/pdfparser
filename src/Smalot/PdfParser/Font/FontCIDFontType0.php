@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Font;
@@ -33,9 +33,7 @@ namespace Smalot\PdfParser\Font;
 use Smalot\PdfParser\Font;
 
 /**
- * Class FontCIDFontType0
- *
- * @package Smalot\PdfParser\Font
+ * Class FontCIDFontType0.
  */
 class FontCIDFontType0 extends Font
 {

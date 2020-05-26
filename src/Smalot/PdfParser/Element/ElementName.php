@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,19 +26,16 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Font;
 
 /**
- * Class ElementName
- *
- * @package Smalot\PdfParser\Element
+ * Class ElementName.
  */
 class ElementName extends Element
 {
@@ -51,8 +49,6 @@ class ElementName extends Element
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
@@ -70,9 +66,9 @@ class ElementName extends Element
     public static function parse($content, Document $document = null, &$offset = 0)
     {
         if (preg_match('/^\s*\/(?P<name>[A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
-            $name   = $match['name'];
+            $name = $match['name'];
             $offset += strpos($content, $name) + strlen($name);
-            $name   = Font::decodeEntities($name);
+            $name = Font::decodeEntities($name);
 
             return new self($name, $document);
         }

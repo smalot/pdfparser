@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,16 +26,15 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 
 /**
- * Class ElementMissing
+ * Class ElementMissing.
  */
 class ElementMissing extends Element
 {
@@ -48,8 +48,6 @@ class ElementMissing extends Element
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
@@ -58,8 +56,6 @@ class ElementMissing extends Element
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function contains($value)

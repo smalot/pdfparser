@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,12 +26,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
-
-use Smalot\PdfParser\Element\ElementDate;
 
 /**
  * Technical references :
@@ -40,23 +38,21 @@ use Smalot\PdfParser\Element\ElementDate;
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/ISOLatin1Encoding.pm
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/ISOLatin9Encoding.pm
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/StandardEncoding.pm
- * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/WinAnsiEncoding.pm
+ * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/WinAnsiEncoding.pm.
  *
  * Class Document
- *
- * @package Smalot\PdfParser
  */
 class Document
 {
     /**
      * @var PDFObject[]
      */
-    protected $objects = array();
+    protected $objects = [];
 
     /**
      * @var array
      */
-    protected $dictionary = array();
+    protected $dictionary = [];
 
     /**
      * @var Header
@@ -68,18 +64,12 @@ class Document
      */
     protected $details = null;
 
-    /**
-     *
-     */
     public function __construct()
     {
-        $this->trailer = new Header(array(), $this);
+        $this->trailer = new Header([], $this);
     }
 
-    /**
-     *
-     */
-    public function init()
+    public function init(): void
     {
         $this->buildDictionary();
 
@@ -94,10 +84,10 @@ class Document
     /**
      * Build dictionary based on type header field.
      */
-    protected function buildDictionary()
+    protected function buildDictionary(): void
     {
         // Build dictionary.
-        $this->dictionary = array();
+        $this->dictionary = [];
 
         foreach ($this->objects as $id => $object) {
             $type = $object->getHeader()->get('Type')->getContent();
@@ -111,10 +101,10 @@ class Document
     /**
      * Build details array.
      */
-    protected function buildDetails()
+    protected function buildDetails(): void
     {
         // Build details array.
-        $details = array();
+        $details = [];
 
         // Extract document info
         if ($this->trailer->has('Info')) {
@@ -122,7 +112,7 @@ class Document
             $info = $this->trailer->get('Info');
             // This could be an ElementMissing object, so we need to check for
             // the getHeader method first.
-            if ($info !== null && method_exists($info, 'getHeader')) {
+            if (null !== $info && method_exists($info, 'getHeader')) {
                 $details = $info->getHeader()->getDetails();
             }
         }
@@ -149,9 +139,9 @@ class Document
     /**
      * @param PDFObject[] $objects
      */
-    public function setObjects($objects = array())
+    public function setObjects($objects = []): void
     {
-        $this->objects = (array)$objects;
+        $this->objects = (array) $objects;
 
         $this->init();
     }
@@ -186,7 +176,7 @@ class Document
      */
     public function getObjectsByType($type, $subtype = null)
     {
-        $objects = array();
+        $objects = [];
 
         foreach ($this->objects as $id => $object) {
             if ($object->getHeader()->get('Type') == $type &&
@@ -209,6 +199,7 @@ class Document
 
     /**
      * @return Page[]
+     *
      * @throws \Exception
      */
     public function getPages()
@@ -221,13 +212,14 @@ class Document
             $object = $this->objects[$id]->get('Pages');
             if (method_exists($object, 'getPages')) {
                 $pages = $object->getPages(true);
+
                 return $pages;
             }
         }
 
         if (isset($this->dictionary['Pages'])) {
             // Search for pages to list kids.
-            $pages = array();
+            $pages = [];
 
             /** @var Pages[] $objects */
             $objects = $this->getObjectsByType('Pages');
@@ -255,7 +247,7 @@ class Document
      */
     public function getText(Page $page = null)
     {
-        $texts = array();
+        $texts = [];
         $pages = $this->getPages();
 
         foreach ($pages as $index => $page) {
@@ -281,10 +273,7 @@ class Document
         return $this->trailer;
     }
 
-    /**
-     * @param Header $trailer
-     */
-    public function setTrailer(Header $trailer)
+    public function setTrailer(Header $trailer): void
     {
         $this->trailer = $trailer;
     }

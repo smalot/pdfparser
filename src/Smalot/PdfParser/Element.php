@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
@@ -42,9 +42,7 @@ use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Element
- *
- * @package Smalot\PdfParser
+ * Class Element.
  */
 class Element
 {
@@ -53,42 +51,30 @@ class Element
      */
     protected $document = null;
 
-    /**
-     * @var mixed
-     */
     protected $value = null;
 
     /**
-     * @param mixed    $value
      * @param Document $document
      */
     public function __construct($value, Document $document = null)
     {
-        $this->value    = $value;
+        $this->value = $value;
         $this->document = $document;
     }
 
-    /**
-     *
-     */
-    public function init()
+    public function init(): void
     {
-
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
     {
-        return ($value == $this->value);
+        return $value == $this->value;
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function contains($value)
@@ -107,9 +93,6 @@ class Element
         }
     }
 
-    /**
-     * @return mixed
-     */
     public function getContent()
     {
         return $this->value;
@@ -120,7 +103,7 @@ class Element
      */
     public function __toString()
     {
-        return (string)($this->value);
+        return (string) ($this->value);
     }
 
     /**
@@ -129,14 +112,15 @@ class Element
      * @param int      $position
      *
      * @return array
+     *
      * @throws \Exception
      */
     public static function parse($content, Document $document = null, &$position = 0)
     {
-        $args        = func_get_args();
+        $args = func_get_args();
         $only_values = isset($args[3]) ? $args[3] : false;
-        $content     = trim($content);
-        $values      = array();
+        $content = trim($content);
+        $values = [];
 
         do {
             $old_position = $position;
@@ -145,12 +129,12 @@ class Element
                 if (!preg_match('/^\s*(?P<name>\/[A-Z0-9\._]+)(?P<value>.*)/si', substr($content, $position), $match)) {
                     break;
                 } else {
-                    $name     = ltrim($match['name'], '/');
-                    $value    = $match['value'];
+                    $name = ltrim($match['name'], '/');
+                    $value = $match['value'];
                     $position = strpos($content, $value, $position + strlen($match['name']));
                 }
             } else {
-                $name  = count($values);
+                $name = count($values);
                 $value = substr($content, $position);
             }
 

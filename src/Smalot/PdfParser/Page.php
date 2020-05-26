@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,20 +26,17 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
-use Smalot\PdfParser\Element\ElementXRef;
 use Smalot\PdfParser\Element\ElementNull;
+use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Page
- *
- * @package Smalot\PdfParser
+ * Class Page.
  */
 class Page extends PDFObject
 {
@@ -64,14 +62,13 @@ class Page extends PDFObject
         $resources = $this->get('Resources');
 
         if (method_exists($resources, 'has') && $resources->has('Font')) {
-
             if ($resources->get('Font') instanceof Header) {
                 $fonts = $resources->get('Font')->getElements();
             } else {
                 $fonts = $resources->get('Font')->getHeader()->getElements();
             }
 
-            $table = array();
+            $table = [];
 
             foreach ($fonts as $id => $font) {
                 if ($font instanceof Font) {
@@ -79,15 +76,15 @@ class Page extends PDFObject
 
                     // Store too on cleaned id value (only numeric)
                     $id = preg_replace('/[^0-9\.\-_]/', '', $id);
-                    if ($id != '') {
+                    if ('' != $id) {
                         $table[$id] = $font;
                     }
                 }
             }
 
-            return ($this->fonts = $table);
+            return $this->fonts = $table;
         } else {
-            return array();
+            return [];
         }
     }
 
@@ -114,7 +111,7 @@ class Page extends PDFObject
     }
 
     /**
-     * Support for XObject
+     * Support for XObject.
      *
      * @return PDFObject[]
      */
@@ -127,28 +124,27 @@ class Page extends PDFObject
         $resources = $this->get('Resources');
 
         if (method_exists($resources, 'has') && $resources->has('XObject')) {
-
             if ($resources->get('XObject') instanceof Header) {
                 $xobjects = $resources->get('XObject')->getElements();
             } else {
                 $xobjects = $resources->get('XObject')->getHeader()->getElements();
             }
 
-            $table = array();
+            $table = [];
 
             foreach ($xobjects as $id => $xobject) {
                 $table[$id] = $xobject;
 
                 // Store too on cleaned id value (only numeric)
                 $id = preg_replace('/[^0-9\.\-_]/', '', $id);
-                if ($id != '') {
+                if ('' != $id) {
                     $table[$id] = $xobject;
                 }
             }
 
-            return ($this->xobjects = $table);
+            return $this->xobjects = $table;
         } else {
-            return array();
+            return [];
         }
     }
 
@@ -183,11 +179,10 @@ class Page extends PDFObject
     public function getText(Page $page = null)
     {
         if ($contents = $this->get('Contents')) {
-
             if ($contents instanceof ElementMissing) {
                 return '';
-			} elseif ($contents instanceof ElementNull) {
-				return '';
+            } elseif ($contents instanceof ElementNull) {
+                return '';
             } elseif ($contents instanceof PDFObject) {
                 $elements = $contents->getHeader()->getElements();
 
@@ -202,7 +197,7 @@ class Page extends PDFObject
                         }
                     }
 
-                    $header   = new Header(array(), $this->document);
+                    $header = new Header([], $this->document);
                     $contents = new PDFObject($this->document, $header, $new_content);
                 }
             } elseif ($contents instanceof ElementArray) {
@@ -210,10 +205,10 @@ class Page extends PDFObject
                 $new_content = '';
 
                 foreach ($contents->getContent() as $content) {
-                    $new_content .= $content->getContent() . "\n";
+                    $new_content .= $content->getContent()."\n";
                 }
 
-                $header   = new Header(array(), $this->document);
+                $header = new Header([], $this->document);
                 $contents = new PDFObject($this->document, $header, $new_content);
             }
 
@@ -223,53 +218,52 @@ class Page extends PDFObject
         return '';
     }
 
-	/**
-	 * @param Page
-	 *
-	 * @return array
-	 */
-	public function getTextArray(Page $page = null)
-	{
-		if ($contents = $this->get('Contents')) {
+    /**
+     * @param Page
+     *
+     * @return array
+     */
+    public function getTextArray(Page $page = null)
+    {
+        if ($contents = $this->get('Contents')) {
+            if ($contents instanceof ElementMissing) {
+                return [];
+            } elseif ($contents instanceof ElementNull) {
+                return [];
+            } elseif ($contents instanceof PDFObject) {
+                $elements = $contents->getHeader()->getElements();
 
-			if ($contents instanceof ElementMissing) {
-				return array();
-			} elseif ($contents instanceof ElementNull) {
-				return array();
-			} elseif ($contents instanceof PDFObject) {
-				$elements = $contents->getHeader()->getElements();
+                if (is_numeric(key($elements))) {
+                    $new_content = '';
 
-				if (is_numeric(key($elements))) {
-					$new_content = '';
+                    /** @var PDFObject $element */
+                    foreach ($elements as $element) {
+                        if ($element instanceof ElementXRef) {
+                            $new_content .= $element->getObject()->getContent();
+                        } else {
+                            $new_content .= $element->getContent();
+                        }
+                    }
 
-					/** @var PDFObject $element */
-					foreach ($elements as $element) {
-						if ($element instanceof ElementXRef) {
-							$new_content .= $element->getObject()->getContent();
-						} else {
-							$new_content .= $element->getContent();
-						}
-					}
+                    $header = new Header([], $this->document);
+                    $contents = new PDFObject($this->document, $header, $new_content);
+                }
+            } elseif ($contents instanceof ElementArray) {
+                // Create a virtual global content.
+                $new_content = '';
 
-					$header   = new Header(array(), $this->document);
-					$contents = new PDFObject($this->document, $header, $new_content);
-				}
-			} elseif ($contents instanceof ElementArray) {
-				// Create a virtual global content.
-				$new_content = '';
+                /** @var PDFObject $content */
+                foreach ($contents->getContent() as $content) {
+                    $new_content .= $content->getContent()."\n";
+                }
 
-				/** @var PDFObject $content */
-          foreach ($contents->getContent() as $content) {
-					$new_content .= $content->getContent() . "\n";
-				}
+                $header = new Header([], $this->document);
+                $contents = new PDFObject($this->document, $header, $new_content);
+            }
 
-				$header   = new Header(array(), $this->document);
-				$contents = new PDFObject($this->document, $header, $new_content);
-			}
+            return $contents->getTextArray($this);
+        }
 
-			return $contents->getTextArray($this);
-		}
-
-		return array();
-	}
+        return [];
+    }
 }

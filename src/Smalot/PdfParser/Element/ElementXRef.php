@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,18 +26,15 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 
 /**
- * Class ElementXRef
- *
- * @package Smalot\PdfParser\Element
+ * Class ElementXRef.
  */
 class ElementXRef extends Element
 {
@@ -48,17 +46,12 @@ class ElementXRef extends Element
         return $this->getContent();
     }
 
-    /**
-     * @return mixed
-     */
     public function getObject()
     {
         return $this->document->getObjectById($this->getId());
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
@@ -73,7 +66,7 @@ class ElementXRef extends Element
      */
     public function __toString()
     {
-        return '#Obj#' . $this->getId();
+        return '#Obj#'.$this->getId();
     }
 
     /**

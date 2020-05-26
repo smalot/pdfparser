@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units\Element;
@@ -33,13 +33,11 @@ namespace Smalot\PdfParser\Tests\Units\Element;
 use mageekguy\atoum;
 
 /**
- * Class ElementMissing
- *
- * @package Smalot\PdfParser\Tests\Units\Element
+ * Class ElementMissing.
  */
 class ElementMissing extends atoum\test
 {
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->equals(null))->isEqualTo(false);
@@ -48,13 +46,13 @@ class ElementMissing extends atoum\test
         $this->assert->boolean($element->equals(false))->isEqualTo(false);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->getContent())->isEqualTo(false);
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->contains(null))->isEqualTo(false);
@@ -63,7 +61,7 @@ class ElementMissing extends atoum\test
         $this->assert->boolean($element->contains(false))->isEqualTo(false);
     }
 
-    public function test__toString()
+    public function test__toString(): void
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->castToString($element)->isEqualTo('');
