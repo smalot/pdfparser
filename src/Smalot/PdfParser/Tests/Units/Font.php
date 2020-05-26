@@ -34,7 +34,7 @@ use mageekguy\atoum;
 use Smalot\PdfParser\Header;
 
 /**
- * Class Font.
+ * Class Font
  */
 class Font extends atoum\test
 {

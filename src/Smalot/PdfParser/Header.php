@@ -36,7 +36,7 @@ use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Header.
+ * Class Header
  */
 class Header
 {

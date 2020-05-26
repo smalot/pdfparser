@@ -34,7 +34,7 @@ use Exception;
 use mageekguy\atoum;
 
 /**
- * Class Parser.
+ * Class Parser
  */
 class Parser extends atoum\test
 {

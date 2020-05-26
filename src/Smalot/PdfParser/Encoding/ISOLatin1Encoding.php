@@ -33,7 +33,7 @@
 namespace Smalot\PdfParser\Encoding;
 
 /**
- * Class ISOLatin1Encoding.
+ * Class ISOLatin1Encoding
  */
 class ISOLatin1Encoding
 {

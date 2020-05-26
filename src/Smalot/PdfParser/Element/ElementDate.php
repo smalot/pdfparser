@@ -33,7 +33,7 @@ namespace Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
 
 /**
- * Class ElementDate.
+ * Class ElementDate
  */
 class ElementDate extends ElementString
 {

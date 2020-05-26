@@ -34,7 +34,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 
 /**
- * Class ElementBoolean.
+ * Class ElementBoolean
  */
 class ElementBoolean extends Element
 {

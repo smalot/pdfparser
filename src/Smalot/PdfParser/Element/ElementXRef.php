@@ -34,7 +34,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 
 /**
- * Class ElementXRef.
+ * Class ElementXRef
  */
 class ElementXRef extends Element
 {

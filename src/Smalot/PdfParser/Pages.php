@@ -31,7 +31,7 @@
 namespace Smalot\PdfParser;
 
 /**
- * Class Pages.
+ * Class Pages
  */
 class Pages extends PDFObject
 {

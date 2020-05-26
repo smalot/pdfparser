@@ -33,7 +33,7 @@
 namespace Smalot\PdfParser\Encoding;
 
 /**
- * Class StandardEncoding.
+ * Class StandardEncoding
  */
 class StandardEncoding
 {

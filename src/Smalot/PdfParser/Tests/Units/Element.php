@@ -33,7 +33,7 @@ namespace Smalot\PdfParser\Tests\Units;
 use mageekguy\atoum;
 
 /**
- * Class Element.
+ * Class Element
  */
 class Element extends atoum\test
 {

@@ -36,7 +36,7 @@ use Smalot\PdfParser\Header;
 use Smalot\PdfParser\PDFObject;
 
 /**
- * Class ElementArray.
+ * Class ElementArray
  */
 class ElementArray extends Element
 {

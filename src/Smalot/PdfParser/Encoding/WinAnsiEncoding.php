@@ -33,7 +33,7 @@
 namespace Smalot\PdfParser\Encoding;
 
 /**
- * Class WinAnsiEncoding.
+ * Class WinAnsiEncoding
  */
 class WinAnsiEncoding
 {

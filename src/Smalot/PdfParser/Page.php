@@ -36,7 +36,7 @@ use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Page.
+ * Class Page
  */
 class Page extends PDFObject
 {
@@ -111,7 +111,7 @@ class Page extends PDFObject
     }
 
     /**
-     * Support for XObject.
+     * Support for XObject
      *
      * @return PDFObject[]
      */

@@ -35,7 +35,7 @@ use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Font;
 
 /**
- * Class ElementName.
+ * Class ElementName
  */
 class ElementName extends Element
 {

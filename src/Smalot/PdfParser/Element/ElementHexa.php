@@ -33,7 +33,7 @@ namespace Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
 
 /**
- * Class ElementHexa.
+ * Class ElementHexa
  */
 class ElementHexa extends ElementString
 {

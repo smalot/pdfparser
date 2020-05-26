@@ -31,7 +31,7 @@
 namespace Smalot\PdfParser;
 
 /**
- * Class Font.
+ * Class Font
  */
 class Font extends PDFObject
 {

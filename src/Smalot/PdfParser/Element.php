@@ -42,7 +42,7 @@ use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Element.
+ * Class Element
  */
 class Element
 {

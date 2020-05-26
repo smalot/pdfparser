@@ -33,7 +33,7 @@
 namespace Smalot\PdfParser\Encoding;
 
 /**
- * Class MacRomanEncoding.
+ * Class MacRomanEncoding
  */
 class MacRomanEncoding
 {

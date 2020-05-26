@@ -34,7 +34,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 
 /**
- * Class ElementMissing.
+ * Class ElementMissing
  */
 class ElementMissing extends Element
 {

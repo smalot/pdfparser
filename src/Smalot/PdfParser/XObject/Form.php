@@ -35,7 +35,7 @@ use Smalot\PdfParser\Page;
 use Smalot\PdfParser\PDFObject;
 
 /**
- * Class Form.
+ * Class Form
  */
 class Form extends Page
 {

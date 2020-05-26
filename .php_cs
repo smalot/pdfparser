@@ -9,7 +9,7 @@ return PhpCsFixer\Config::create()
         'no_unused_imports' => true,
         'no_superfluous_phpdoc_tags' => true,
         'ordered_imports' => true,
-        'phpdoc_annotation_without_dot' => true,
+        'phpdoc_summary' => false,
         'protected_to_private' => false,
      ])
     ->setRiskyAllowed(true)

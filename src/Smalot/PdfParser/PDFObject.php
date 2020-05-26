@@ -34,7 +34,7 @@ use Smalot\PdfParser\XObject\Form;
 use Smalot\PdfParser\XObject\Image;
 
 /**
- * Class PDFObject.
+ * Class PDFObject
  */
 class PDFObject
 {

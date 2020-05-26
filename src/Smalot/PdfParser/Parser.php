@@ -41,7 +41,7 @@ use Smalot\PdfParser\Element\ElementString;
 use Smalot\PdfParser\Element\ElementXRef;
 
 /**
- * Class Parser.
+ * Class Parser
  */
 class Parser
 {

@@ -36,7 +36,7 @@ use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 
 /**
- * Class ElementArray.
+ * Class ElementArray
  */
 class ElementArray extends atoum\test
 {

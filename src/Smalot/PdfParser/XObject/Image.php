@@ -34,7 +34,7 @@ use Smalot\PdfParser\Page;
 use Smalot\PdfParser\PDFObject;
 
 /**
- * Class Image.
+ * Class Image
  */
 class Image extends PDFObject
 {

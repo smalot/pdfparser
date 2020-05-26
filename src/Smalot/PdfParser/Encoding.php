@@ -33,7 +33,7 @@ namespace Smalot\PdfParser;
 use Smalot\PdfParser\Element\ElementNumeric;
 
 /**
- * Class Encoding.
+ * Class Encoding
  */
 class Encoding extends PDFObject
 {
