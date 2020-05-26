@@ -69,7 +69,7 @@ class Document
         $this->trailer = new Header([], $this);
     }
 
-    public function init(): void
+    public function init()
     {
         $this->buildDictionary();
 
@@ -84,7 +84,7 @@ class Document
     /**
      * Build dictionary based on type header field.
      */
-    protected function buildDictionary(): void
+    protected function buildDictionary()
     {
         // Build dictionary.
         $this->dictionary = [];
@@ -101,7 +101,7 @@ class Document
     /**
      * Build details array.
      */
-    protected function buildDetails(): void
+    protected function buildDetails()
     {
         // Build details array.
         $details = [];
@@ -139,7 +139,7 @@ class Document
     /**
      * @param PDFObject[] $objects
      */
-    public function setObjects($objects = []): void
+    public function setObjects($objects = [])
     {
         $this->objects = (array) $objects;
 
@@ -273,7 +273,7 @@ class Document
         return $this->trailer;
     }
 
-    public function setTrailer(Header $trailer): void
+    public function setTrailer(Header $trailer)
     {
         $this->trailer = $trailer;
     }

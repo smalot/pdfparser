@@ -41,7 +41,7 @@ class Parser extends atoum\test
     /**
      * @throws \Exception
      */
-    public function testParseFile(): void
+    public function testParseFile()
     {
         $directory = getcwd().'/samples/bugs';
 

@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementString extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -114,13 +114,13 @@ class ElementString extends atoum\test
         $this->assert->integer($offset)->isEqualTo(27);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementString('Copyright');
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementString('CopyRight');
         $this->assert->boolean($element->equals('CopyRight'))->isEqualTo(true);
@@ -135,7 +135,7 @@ class ElementString extends atoum\test
         $this->assert->boolean($element->equals('Flate-Decode3'))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementString('CopyRight');
         $this->assert->boolean($element->contains('CopyRight'))->isEqualTo(true);
@@ -146,7 +146,7 @@ class ElementString extends atoum\test
         $this->assert->boolean($element->contains('CopyRight3'))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementString('CopyRight');
         $this->assert->castToString($element)->isEqualTo('CopyRight');

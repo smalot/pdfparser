@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementBoolean extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -92,7 +92,7 @@ class ElementBoolean extends atoum\test
         $this->assert->integer($offset)->isEqualTo(7);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementBoolean('true');
         $this->assert->boolean($element->getContent())->isEqualTo(true);
@@ -100,7 +100,7 @@ class ElementBoolean extends atoum\test
         $this->assert->boolean($element->getContent())->isEqualTo(false);
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementBoolean('true');
         $this->assert->boolean($element->equals(true))->isEqualTo(true);
@@ -115,7 +115,7 @@ class ElementBoolean extends atoum\test
         $this->assert->boolean($element->equals(null))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementBoolean('true');
         $this->assert->boolean($element->contains(true))->isEqualTo(true);
@@ -123,7 +123,7 @@ class ElementBoolean extends atoum\test
         $this->assert->boolean($element->contains(1))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementBoolean('true');
         $this->assert->castToString($element)->isEqualTo('true');

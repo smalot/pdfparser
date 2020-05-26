@@ -40,7 +40,7 @@ use Smalot\PdfParser\Page;
  */
 class ElementArray extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         $document = new \Smalot\PdfParser\Document([]);
 
@@ -89,7 +89,7 @@ class ElementArray extends atoum\test
         $this->assert->integer($offset)->isEqualTo(10);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $val_4 = new \Smalot\PdfParser\Element\ElementNumeric('4');
         $val_2 = new \Smalot\PdfParser\Element\ElementNumeric('2');
@@ -99,7 +99,7 @@ class ElementArray extends atoum\test
         $this->assert->array($content)->hasSize(2);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $val_4 = new \Smalot\PdfParser\Element\ElementNumeric('4');
         $val_2 = new \Smalot\PdfParser\Element\ElementNumeric('2');
@@ -109,7 +109,7 @@ class ElementArray extends atoum\test
         $this->assert->boolean($element->contains(8))->isEqualTo(false);
     }
 
-    public function testResolveXRef(): void
+    public function testResolveXRef()
     {
         // Document with text.
         $filename = __DIR__.'/../../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
@@ -125,7 +125,7 @@ class ElementArray extends atoum\test
         $this->assert->object(reset($pages))->isInstanceOf('\Smalot\PdfParser\Page');
     }
 
-    public function testGetDetails(): void
+    public function testGetDetails()
     {
 //        // Document with text.
 //        $filename = __DIR__ . '/../../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
@@ -173,7 +173,7 @@ class ElementArray extends atoum\test
         $this->assert->array($details)->isEqualTo($details_reference);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $val_4 = new \Smalot\PdfParser\Element\ElementNumeric('4');
         $val_2 = new \Smalot\PdfParser\Element\ElementNumeric('2');

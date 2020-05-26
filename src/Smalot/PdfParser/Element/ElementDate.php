@@ -74,7 +74,7 @@ class ElementDate extends ElementString
     /**
      * @param string $format
      */
-    public function setFormat($format): void
+    public function setFormat($format)
     {
         $this->format = $format;
     }

@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementName extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -110,13 +110,13 @@ class ElementName extends atoum\test
         $this->assert->integer($offset)->isEqualTo(14);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementName('FlateDecode');
         $this->assert->string($element->getContent())->isEqualTo('FlateDecode');
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementName('FlateDecode');
         $this->assert->boolean($element->equals('FlateDecode'))->isEqualTo(true);
@@ -131,7 +131,7 @@ class ElementName extends atoum\test
         $this->assert->boolean($element->equals('Flate-Decode3'))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementName('FlateDecode');
         $this->assert->boolean($element->contains('FlateDecode'))->isEqualTo(true);
@@ -146,7 +146,7 @@ class ElementName extends atoum\test
         $this->assert->boolean($element->contains('Flate-Decode3'))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementName('FlateDecode');
         $this->assert->castToString($element)->isEqualTo('FlateDecode');

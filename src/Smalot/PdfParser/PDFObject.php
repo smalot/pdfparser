@@ -77,7 +77,7 @@ class PDFObject
         $this->content = $content;
     }
 
-    public function init(): void
+    public function init()
     {
     }
 

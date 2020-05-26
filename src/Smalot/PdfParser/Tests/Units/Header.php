@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class Header extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         $document = new \Smalot\PdfParser\Document();
 
@@ -71,7 +71,7 @@ class Header extends atoum\test
         $this->assert->array($header->getElements())->hasSize(1);
     }
 
-    public function testGetElements(): void
+    public function testGetElements()
     {
         $document = new \Smalot\PdfParser\Document();
 
@@ -88,7 +88,7 @@ class Header extends atoum\test
         $this->assert->string($types['Subtype'])->isEqualTo('Smalot\PdfParser\Element\ElementName');
     }
 
-    public function testHas(): void
+    public function testHas()
     {
         $document = new \Smalot\PdfParser\Document();
 
@@ -102,7 +102,7 @@ class Header extends atoum\test
         $this->assert->boolean($header->has('Text'))->isEqualTo(false);
     }
 
-    public function testGet(): void
+    public function testGet()
     {
         $document = new \Smalot\PdfParser\Document();
 
@@ -119,7 +119,7 @@ class Header extends atoum\test
         $this->assert->object($header->get('Resources'))->isInstanceOf('\Smalot\PdfParser\Element\ElementMissing');
     }
 
-    public function testResolveXRef(): void
+    public function testResolveXRef()
     {
         $document = new \Smalot\PdfParser\Document();
         $content = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';

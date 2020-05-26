@@ -43,7 +43,7 @@ class PDFObject extends atoum\test
 
     const COMMAND = 'c';
 
-    public function testGetTextParts(): void
+    public function testGetTextParts()
     {
     }
 
@@ -125,7 +125,7 @@ class PDFObject extends atoum\test
 //        $this->assert->integer($offset)->isEqualTo(83);
 //    }
 
-    public function testGetCommandsText(): void
+    public function testGetCommandsText()
     {
         $content = "/R14 30 Tf 0.999016 0 0 1 137.4
 342.561 Tm
@@ -229,7 +229,7 @@ BI";
         $this->assert->integer($offset)->isEqualTo(172);
     }
 
-    public function testCleanContent(): void
+    public function testCleanContent()
     {
         $content = '/Shape <</MCID << /Font<8>>> BT >>BDC
 Q
@@ -277,7 +277,7 @@ q
         $this->assert->string($cleaned)->isEqualTo($expected);
     }
 
-    public function testGetSectionText(): void
+    public function testGetSectionText()
     {
         $content = '/Shape <</MCID 1 >>BDC
 Q

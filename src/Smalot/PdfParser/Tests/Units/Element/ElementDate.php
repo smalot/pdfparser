@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementDate extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -122,7 +122,7 @@ class ElementDate extends atoum\test
         $this->assert->integer($offset)->isEqualTo(0);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $this->assert->dateTime($element->getContent())->isEqualTo(new \DateTime('2013-09-01 21:55:55+00:00'));
@@ -135,7 +135,7 @@ class ElementDate extends atoum\test
         }
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $element->setFormat('c');
@@ -146,14 +146,14 @@ class ElementDate extends atoum\test
         $this->assert->boolean($element->equals('ABC'))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $this->assert->boolean($element->contains('2013-09-01T21:55:55+00:00'))->isEqualTo(true);
         $this->assert->boolean($element->contains('2013-06-15'))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $element->setFormat('c');

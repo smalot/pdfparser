@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementXRef extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -88,19 +88,19 @@ class ElementXRef extends atoum\test
         $this->assert->integer($offset)->isEqualTo(8);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementXRef('5_0');
         $this->assert->string($element->getContent())->isEqualTo('5_0');
     }
 
-    public function testGetId(): void
+    public function testGetId()
     {
         $element = new \Smalot\PdfParser\Element\ElementXRef('5_0');
         $this->assert->string($element->getId())->isEqualTo('5_0');
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementXRef('5_0');
         $this->assert->boolean($element->equals(5))->isEqualTo(true);
@@ -108,7 +108,7 @@ class ElementXRef extends atoum\test
         $this->assert->boolean($element->equals($element))->isEqualTo(true);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementXRef('5_0');
         $this->assert->boolean($element->contains(5))->isEqualTo(true);
@@ -116,7 +116,7 @@ class ElementXRef extends atoum\test
         $this->assert->boolean($element->contains($element))->isEqualTo(true);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementXRef('5_0');
         $this->assert->castToString($element)->isEqualTo('#Obj#5_0');

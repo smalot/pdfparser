@@ -38,7 +38,7 @@ use Smalot\PdfParser\Header;
  */
 class Font extends atoum\test
 {
-    public function testGetName(): void
+    public function testGetName()
     {
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $parser = new \Smalot\PdfParser\Parser();
@@ -49,7 +49,7 @@ class Font extends atoum\test
         $this->assert->string($font->getName())->isEqualTo('OJHCYD+Cambria,Bold');
     }
 
-    public function testGetType(): void
+    public function testGetType()
     {
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $parser = new \Smalot\PdfParser\Parser();
@@ -60,7 +60,7 @@ class Font extends atoum\test
         $this->assert->string($font->getType())->isEqualTo('TrueType');
     }
 
-    public function testGetDetails(): void
+    public function testGetDetails()
     {
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $parser = new \Smalot\PdfParser\Parser();
@@ -107,7 +107,7 @@ class Font extends atoum\test
         $this->assert->array($font->getDetails())->isEqualTo($reference);
     }
 
-    public function testTranslateChar(): void
+    public function testTranslateChar()
     {
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $parser = new \Smalot\PdfParser\Parser();
@@ -123,7 +123,7 @@ class Font extends atoum\test
         $this->assert->string($font->translateChar("\x99"))->isEqualTo(\Smalot\PdfParser\Font::MISSING);
     }
 
-    public function testLoadTranslateTable(): void
+    public function testLoadTranslateTable()
     {
         $document = new \Smalot\PdfParser\Document();
 
@@ -203,7 +203,7 @@ end';
         $this->assert->string($table[92])->isEqualTo('y');
     }
 
-    public function testDecodeHexadecimal(): void
+    public function testDecodeHexadecimal()
     {
         $hexa = '<322041>';
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo('2 A');
@@ -242,24 +242,24 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assert->string(\Smalot\PdfParser\Font::decodeHexadecimal($hexa))->isEqualTo($hexa);
     }
 
-    public function testDecodeOctal(): void
+    public function testDecodeOctal()
     {
         $this->assert->string(\Smalot\PdfParser\Font::decodeOctal('\\101\\102\\040\\103'))->isEqualTo('AB C');
         $this->assert->string(\Smalot\PdfParser\Font::decodeOctal('\\101\\102\\040\\103D'))->isEqualTo('AB CD');
     }
 
-    public function testDecodeEntities(): void
+    public function testDecodeEntities()
     {
         $this->assert->string(\Smalot\PdfParser\Font::decodeEntities('File#20Type'))->isEqualTo('File Type');
         $this->assert->string(\Smalot\PdfParser\Font::decodeEntities('File##20Ty#pe'))->isEqualTo('File# Ty#pe');
     }
 
-    public function testDecodeUnicode(): void
+    public function testDecodeUnicode()
     {
         $this->assert->string(\Smalot\PdfParser\Font::decodeUnicode("\xFE\xFF\x00A\x00B"))->isEqualTo('AB');
     }
 
-    public function testDecodeText(): void
+    public function testDecodeText()
     {
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
         $parser = new \Smalot\PdfParser\Parser();
@@ -320,7 +320,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assert->string($font->decodeText($commands))->isEqualTo('æöü');
     }
 
-    public function testXmlContent(): void
+    public function testXmlContent()
     {
         $filename = __DIR__.'/../../../../../samples/bugs/Issue18.pdf';
         $parser = new \Smalot\PdfParser\Parser();

@@ -62,7 +62,7 @@ class Element
         $this->document = $document;
     }
 
-    public function init(): void
+    public function init()
     {
     }
 

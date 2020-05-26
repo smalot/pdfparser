@@ -52,7 +52,7 @@ class Encoding extends PDFObject
      */
     protected $mapping;
 
-    public function init(): void
+    public function init()
     {
         $this->mapping = [];
         $this->differences = [];

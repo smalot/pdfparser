@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementNull extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;
@@ -88,13 +88,13 @@ class ElementNull extends atoum\test
         $this->assert->integer($offset)->isEqualTo(7);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementNull('null');
         $this->assert->boolean(is_null($element->getContent()))->isEqualTo(true);
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementNull('null');
         $this->assert->boolean($element->equals(null))->isEqualTo(true);
@@ -103,7 +103,7 @@ class ElementNull extends atoum\test
         $this->assert->boolean($element->equals(1))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementNull('null');
         $this->assert->boolean($element->contains(null))->isEqualTo(true);
@@ -111,7 +111,7 @@ class ElementNull extends atoum\test
         $this->assert->boolean($element->contains(0))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementNull('null');
         $this->assert->castToString($element)->isEqualTo('null');

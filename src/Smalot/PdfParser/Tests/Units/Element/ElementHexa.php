@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementHexa extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         // Skipped.
         $offset = 0;

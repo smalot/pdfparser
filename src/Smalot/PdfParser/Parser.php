@@ -143,7 +143,7 @@ class Parser
      * @param array    $structure
      * @param Document $document
      */
-    protected function parseObject($id, $structure, $document): void
+    protected function parseObject($id, $structure, $document)
     {
         $header = new Header([], $document);
         $content = '';

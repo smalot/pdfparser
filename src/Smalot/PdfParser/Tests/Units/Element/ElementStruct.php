@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementStruct extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         $document = new \Smalot\PdfParser\Document([]);
 

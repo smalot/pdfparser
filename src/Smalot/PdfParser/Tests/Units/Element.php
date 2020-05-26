@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class Element extends atoum\test
 {
-    public function testParse(): void
+    public function testParse()
     {
         $document = new \Smalot\PdfParser\Document([]);
 
@@ -115,7 +115,7 @@ class Element extends atoum\test
         $this->assert->string($elements['NameType']->getContent())->isEqualTo('FlateDecode');*/
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element(42);
         $content = $element->getContent();
@@ -126,7 +126,7 @@ class Element extends atoum\test
         $this->assert->array($content)->hasSize(2);
     }
 
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element(2);
 
@@ -134,7 +134,7 @@ class Element extends atoum\test
         $this->assert->boolean($element->equals(8))->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $val_4 = new \Smalot\PdfParser\Element(4);
         $val_2 = new \Smalot\PdfParser\Element(2);
@@ -144,7 +144,7 @@ class Element extends atoum\test
         $this->assert->boolean($element->contains(8))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element(2);
         $this->assert->castToString($element)->isEqualTo('2');

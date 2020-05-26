@@ -10,8 +10,6 @@ return PhpCsFixer\Config::create()
         'protected_to_private' => false,
         'php_unit_test_class_requires_covers' => false,
         'no_superfluous_phpdoc_tags' => true,
-        // adds : void to each function with no return value
-        'void_return' => true,
      ])
     ->setRiskyAllowed(true)
     ->setFinder(

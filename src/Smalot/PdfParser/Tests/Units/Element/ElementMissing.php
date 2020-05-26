@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class ElementMissing extends atoum\test
 {
-    public function testEquals(): void
+    public function testEquals()
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->equals(null))->isEqualTo(false);
@@ -46,13 +46,13 @@ class ElementMissing extends atoum\test
         $this->assert->boolean($element->equals(false))->isEqualTo(false);
     }
 
-    public function testGetContent(): void
+    public function testGetContent()
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->getContent())->isEqualTo(false);
     }
 
-    public function testContains(): void
+    public function testContains()
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->boolean($element->contains(null))->isEqualTo(false);
@@ -61,7 +61,7 @@ class ElementMissing extends atoum\test
         $this->assert->boolean($element->contains(false))->isEqualTo(false);
     }
 
-    public function test__toString(): void
+    public function test__toString()
     {
         $element = new \Smalot\PdfParser\Element\ElementMissing(null);
         $this->assert->castToString($element)->isEqualTo('');

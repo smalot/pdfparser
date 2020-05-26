@@ -47,7 +47,7 @@ class Font extends PDFObject
      */
     protected $tableSizes = null;
 
-    public function init(): void
+    public function init()
     {
         // Load translate table.
         $this->loadTranslateTable();
@@ -228,7 +228,7 @@ class Font extends PDFObject
     /**
      * @param array $table
      */
-    public function setTable($table): void
+    public function setTable($table)
     {
         $this->table = $table;
     }

@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class Page extends atoum\test
 {
-    public function testGetFonts(): void
+    public function testGetFonts()
     {
         // Document with text.
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
@@ -71,7 +71,7 @@ class Page extends atoum\test
         $this->assert->array($fonts)->isEmpty();
     }
 
-    public function testGetFont(): void
+    public function testGetFont()
     {
         // Document with text.
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
@@ -87,7 +87,7 @@ class Page extends atoum\test
         $this->assert->object($font)->isInstanceOf('\Smalot\PdfParser\Font');
     }
 
-    public function testGetText(): void
+    public function testGetText()
     {
         // Document with text.
         $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';

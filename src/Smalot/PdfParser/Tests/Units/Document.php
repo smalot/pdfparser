@@ -37,7 +37,7 @@ use mageekguy\atoum;
  */
 class Document extends atoum\test
 {
-    public function testSetObjects(): void
+    public function testSetObjects()
     {
         $document = new \Smalot\PdfParser\Document();
         $object = new \Smalot\PdfParser\PDFObject($document);
@@ -57,7 +57,7 @@ class Document extends atoum\test
         $this->assert->object($document->getObjectById(2))->isInstanceOf('\Smalot\PdfParser\PDFObject');
     }
 
-    public function testGetObjects(): void
+    public function testGetObjects()
     {
         $document = new \Smalot\PdfParser\Document();
         $object1 = new \Smalot\PdfParser\PDFObject($document);
@@ -73,7 +73,7 @@ class Document extends atoum\test
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
     }
 
-    public function testDictionary(): void
+    public function testDictionary()
     {
         $document = new \Smalot\PdfParser\Document();
         $this->assert->integer(count($objects = $document->getDictionary()))->isEqualTo(0);
@@ -87,7 +87,7 @@ class Document extends atoum\test
         $this->assert->integer($objects['Page'][2])->isEqualTo(2);
     }
 
-    public function testGetObjectsByType(): void
+    public function testGetObjectsByType()
     {
         $document = new \Smalot\PdfParser\Document();
         $object1 = new \Smalot\PdfParser\PDFObject($document);
@@ -100,7 +100,7 @@ class Document extends atoum\test
         $this->assert->object($objects[2])->isInstanceOf('\Smalot\PdfParser\Page');
     }
 
-    public function testGetPages(): void
+    public function testGetPages()
     {
         // Missing catalog
         $document = new \Smalot\PdfParser\Document();
