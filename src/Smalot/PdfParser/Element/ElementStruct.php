@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,19 +26,16 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Header;
 
 /**
  * Class ElementStruct
- *
- * @package Smalot\PdfParser\Element
  */
 class ElementStruct extends Element
 {
@@ -54,23 +52,23 @@ class ElementStruct extends Element
             preg_match_all('/(.*?)(<<|>>)/s', trim($content), $matches);
 
             $level = 0;
-            $sub   = '';
+            $sub = '';
             foreach ($matches[0] as $part) {
                 $sub .= $part;
-                $level += (strpos($part, '<<') !== false ? 1 : -1);
+                $level += (false !== strpos($part, '<<') ? 1 : -1);
                 if ($level <= 0) {
                     break;
                 }
             }
 
-            $offset += strpos($content, '<<') + strlen(rtrim($sub));
+            $offset += strpos($content, '<<') + \strlen(rtrim($sub));
 
             // Removes '<<' and '>>'.
             $sub = trim(preg_replace('/^\s*<<(.*)>>\s*$/s', '\\1', $sub));
 
             $position = 0;
             $elements = Element::parse($sub, $document, $position);
-            $header   = new Header($elements, $document);
+            $header = new Header($elements, $document);
 
             return $header;
         }

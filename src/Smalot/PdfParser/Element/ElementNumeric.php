@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,18 +26,15 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 
 /**
  * Class ElementNumeric
- *
- * @package Smalot\PdfParser\Element
  */
 class ElementNumeric extends Element
 {
@@ -46,7 +44,7 @@ class ElementNumeric extends Element
      */
     public function __construct($value, Document $document = null)
     {
-        parent::__construct(floatval($value), null);
+        parent::__construct((float) $value, null);
     }
 
     /**
@@ -59,8 +57,8 @@ class ElementNumeric extends Element
     public static function parse($content, Document $document = null, &$offset = 0)
     {
         if (preg_match('/^\s*(?P<value>\-?[0-9\.]+)/s', $content, $match)) {
-            $value  = $match['value'];
-            $offset += strpos($content, $value) + strlen($value);
+            $value = $match['value'];
+            $offset += strpos($content, $value) + \strlen($value);
 
             return new self($value, $document);
         }

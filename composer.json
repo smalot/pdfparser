@@ -21,7 +21,8 @@
         "tecnickcom/tcpdf": "^6.2.22"
     },
     "require-dev": {
-        "atoum/atoum": "^3.1"
+        "atoum/atoum": "^3.1",
+        "friendsofphp/php-cs-fixer": "^2.16.3"
     },
     "autoload": {
         "psr-0": {

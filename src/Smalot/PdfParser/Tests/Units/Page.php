@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units;
@@ -34,19 +34,17 @@ use mageekguy\atoum;
 
 /**
  * Class Page
- *
- * @package Smalot\PdfParser\Tests\Units
  */
 class Page extends atoum\test
 {
     public function testGetFonts()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
+        $pages = $document->getPages();
+        $page = $pages[0];
 
         // the first to load data.
         $fonts = $page->getFonts();
@@ -60,10 +58,10 @@ class Page extends atoum\test
 
         // ------------------------------------------------------
         // Document without text.
-        $filename = __DIR__ . '/../../../../../samples/Document3_pdfcreator_nocompressed.pdf';
+        $filename = __DIR__.'/../../../../../samples/Document3_pdfcreator_nocompressed.pdf';
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
+        $pages = $document->getPages();
+        $page = $pages[0];
 
         // the first to load data.
         $fonts = $page->getFonts();
@@ -76,11 +74,11 @@ class Page extends atoum\test
     public function testGetFont()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
+        $pages = $document->getPages();
+        $page = $pages[0];
 
         // the first to load data.
         $font = $page->getFont('R7');
@@ -92,12 +90,12 @@ class Page extends atoum\test
     public function testGetText()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $text     = $page->getText();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $text = $page->getText();
 
         $this->assert->string($text)->hasLengthGreaterThan(150);
         $this->assert->string($text)->contains('Document title');

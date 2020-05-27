@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,19 +26,16 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Font;
 
 /**
  * Class ElementString
- *
- * @package Smalot\PdfParser\Element
  */
 class ElementString extends Element
 {
@@ -51,8 +49,6 @@ class ElementString extends Element
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
@@ -74,21 +70,21 @@ class ElementString extends Element
 
             // Find next ')' not escaped.
             $cur_start_text = $start_search_end = 0;
-            while (($cur_start_pos = strpos($name, ')', $start_search_end)) !== false) {
+            while (false !== ($cur_start_pos = strpos($name, ')', $start_search_end))) {
                 $cur_extract = substr($name, $cur_start_text, $cur_start_pos - $cur_start_text);
                 preg_match('/(?P<escape>[\\\]*)$/s', $cur_extract, $match);
-                if (!(strlen($match['escape']) % 2)) {
+                if (!(\strlen($match['escape']) % 2)) {
                     break;
                 }
                 $start_search_end = $cur_start_pos + 1;
             }
 
             // Extract string.
-            $name   = substr($name, 0, $cur_start_pos);
+            $name = substr($name, 0, $cur_start_pos);
             $offset += strpos($content, '(') + $cur_start_pos + 2; // 2 for '(' and ')'
-            $name   = str_replace(
-                array('\\\\', '\\ ', '\\/', '\(', '\)', '\n', '\r', '\t'),
-                array('\\',   ' ',   '/',   '(',  ')',  "\n", "\r", "\t"),
+            $name = str_replace(
+                ['\\\\', '\\ ', '\\/', '\(', '\)', '\n', '\r', '\t'],
+                ['\\',   ' ',   '/',   '(',  ')',  "\n", "\r", "\t"],
                 $name
             );
 
