@@ -51,6 +51,10 @@ class Element
      */
     protected $document = null;
 
+
+    /**
+     * @var mixed
+     */
     protected $value = null;
 
     /**
