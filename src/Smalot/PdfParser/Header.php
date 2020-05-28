@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
@@ -37,8 +37,6 @@ use Smalot\PdfParser\Element\ElementXRef;
 
 /**
  * Class Header
- *
- * @package Smalot\PdfParser
  */
 class Header
 {
@@ -53,10 +51,10 @@ class Header
     protected $elements = null;
 
     /**
-     * @param Element[] $elements   List of elements.
-     * @param Document  $document   Document.
+     * @param Element[] $elements list of elements
+     * @param Document  $document document
      */
-    public function __construct($elements = array(), Document $document = null)
+    public function __construct($elements = [], Document $document = null)
     {
         $this->elements = $elements;
         $this->document = $document;
@@ -64,8 +62,6 @@ class Header
 
     /**
      * Returns all elements.
-     *
-     * @return mixed
      */
     public function getElements()
     {
@@ -83,10 +79,10 @@ class Header
      */
     public function getElementTypes()
     {
-        $types = array();
+        $types = [];
 
         foreach ($this->elements as $key => $element) {
-            $types[$key] = get_class($element);
+            $types[$key] = \get_class($element);
         }
 
         return $types;
@@ -99,11 +95,11 @@ class Header
      */
     public function getDetails($deep = true)
     {
-        $values   = array();
+        $values = [];
         $elements = $this->getElements();
 
         foreach ($elements as $key => $element) {
-            if ($element instanceof Header && $deep) {
+            if ($element instanceof self && $deep) {
                 $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
@@ -128,7 +124,7 @@ class Header
      */
     public function has($name)
     {
-        if (array_key_exists($name, $this->elements)) {
+        if (\array_key_exists($name, $this->elements)) {
             return true;
         } else {
             return false;
@@ -142,7 +138,7 @@ class Header
      */
     public function get($name)
     {
-        if (array_key_exists($name, $this->elements)) {
+        if (\array_key_exists($name, $this->elements)) {
             return $this->resolveXRef($name);
         }
 
@@ -155,15 +151,16 @@ class Header
      * @param string $name
      *
      * @return Element|PDFObject
+     *
      * @throws \Exception
      */
     protected function resolveXRef($name)
     {
-        if (($obj = $this->elements[$name]) instanceof ElementXRef && !is_null($this->document)) {
+        if (($obj = $this->elements[$name]) instanceof ElementXRef && null !== $this->document) {
             /** @var ElementXRef $obj */
             $object = $this->document->getObjectById($obj->getId());
 
-            if (is_null($object)) {
+            if (null === $object) {
                 return new ElementMissing(null, null);
             }
 
@@ -183,15 +180,15 @@ class Header
      */
     public static function parse($content, Document $document, &$position = 0)
     {
-        /** @var Header $header */
-        if (substr(trim($content), 0, 2) == '<<') {
+        /* @var Header $header */
+        if ('<<' == substr(trim($content), 0, 2)) {
             $header = ElementStruct::parse($content, $document, $position);
         } else {
             $elements = ElementArray::parse($content, $document, $position);
             if ($elements) {
-                $header = new self($elements->getRawContent(), null);//$document);
+                $header = new self($elements->getRawContent(), null); //$document);
             } else {
-                $header = new self(array(), $document);
+                $header = new self([], $document);
             }
         }
 
@@ -199,7 +196,7 @@ class Header
             return $header;
         } else {
             // Build an empty header.
-            return new self(array(), $document);
+            return new self([], $document);
         }
     }
 }

@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units;
@@ -34,8 +34,6 @@ use mageekguy\atoum;
 
 /**
  * Class Header
- *
- * @package Smalot\PdfParser\Tests\Units
  */
 class Header extends atoum\test
 {
@@ -43,9 +41,9 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text>>foo';
+        $content = '<</Type/Page/SubType/Text>>foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
 
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($position)->isEqualTo(27);
@@ -53,22 +51,22 @@ class Header extends atoum\test
 
         // No header to parse
         $this->assert->castToString($header->get('Type'))->isEqualTo('Page');
-        $content  = 'foo';
+        $content = 'foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
 
         $this->assert->object($header)->isInstanceOf('\Smalot\PdfParser\Header');
         $this->assert->integer($position)->isEqualTo(0);
         $this->assert->array($header->getElements())->hasSize(0);
 
         $position = 0;
-        $content  = "<</CreationDate(D:20100309184803+01'00')/Author(Utilisateur)/Creator(PScript5.dll Version 5.2.2)/Producer(Acrobat Distiller 7.0.5 \(Windows\))/ModDate(D:20100310104810+01'00')/Title(Microsoft Word - CLEMI.docx)>>";
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $content = "<</CreationDate(D:20100309184803+01'00')/Author(Utilisateur)/Creator(PScript5.dll Version 5.2.2)/Producer(Acrobat Distiller 7.0.5 \(Windows\))/ModDate(D:20100310104810+01'00')/Title(Microsoft Word - CLEMI.docx)>>";
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $this->assert->integer($position)->isEqualTo(212);
 
         $position = 0;
-        $content  = '[5 0 R ] foo';
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $content = '[5 0 R ] foo';
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
         $this->assert->integer($position)->isEqualTo(8);
         $this->assert->array($header->getElements())->hasSize(1);
     }
@@ -77,9 +75,9 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/Subtype/Text>>foo';
+        $content = '<</Type/Page/Subtype/Text>>foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
 
         $this->assert->array($elements = $header->getElements())->hasSize(2);
         $this->assert->object(current($elements))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
@@ -94,9 +92,9 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
+        $content = '<</Type/Page/SubType/Text/Font 5 0 R>>foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
 
         $this->assert->boolean($header->has('Type'))->isEqualTo(true);
         $this->assert->boolean($header->has('SubType'))->isEqualTo(true);
@@ -108,11 +106,11 @@ class Header extends atoum\test
     {
         $document = new \Smalot\PdfParser\Document();
 
-        $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
+        $content = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object   = new \Smalot\PdfParser\Page($document, $header);
-        $document->setObjects(array('5_0' => $object));
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $object = new \Smalot\PdfParser\Page($document, $header);
+        $document->setObjects(['5_0' => $object]);
 
         $this->assert->object($header->get('Type'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
         $this->assert->object($header->get('SubType'))->isInstanceOf('\Smalot\PdfParser\Element\ElementName');
@@ -124,11 +122,11 @@ class Header extends atoum\test
     public function testResolveXRef()
     {
         $document = new \Smalot\PdfParser\Document();
-        $content  = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
+        $content = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';
         $position = 0;
-        $header   = \Smalot\PdfParser\Header::parse($content, $document, $position);
-        $object   = new \Smalot\PdfParser\Page($document, $header);
-        $document->setObjects(array('5_0' => $object));
+        $header = \Smalot\PdfParser\Header::parse($content, $document, $position);
+        $object = new \Smalot\PdfParser\Page($document, $header);
+        $document->setObjects(['5_0' => $object]);
 
         $this->assert->object($header->get('Font'))->isInstanceOf('\Smalot\PdfParser\PDFObject');
 

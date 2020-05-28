@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,20 +26,17 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\PDFObject;
 
 /**
  * Class ElementArray
- *
- * @package Smalot\PdfParser\Element
  */
 class ElementArray extends Element
 {
@@ -51,9 +49,6 @@ class ElementArray extends Element
         parent::__construct($value, $document);
     }
 
-    /**
-     * @return mixed
-     */
     public function getContent()
     {
         foreach ($this->value as $name => $element) {
@@ -78,7 +73,7 @@ class ElementArray extends Element
      */
     public function getDetails($deep = true)
     {
-        $values   = array();
+        $values = [];
         $elements = $this->getContent();
 
         foreach ($elements as $key => $element) {
@@ -86,11 +81,11 @@ class ElementArray extends Element
                 $values[$key] = $element->getDetails($deep);
             } elseif ($element instanceof PDFObject && $deep) {
                 $values[$key] = $element->getDetails(false);
-            } elseif ($element instanceof ElementArray) {
+            } elseif ($element instanceof self) {
                 if ($deep) {
                     $values[$key] = $element->getDetails();
                 }
-            } elseif ($element instanceof Element && !($element instanceof ElementArray)) {
+            } elseif ($element instanceof Element && !($element instanceof self)) {
                 $values[$key] = $element->getContent();
             }
         }
@@ -115,7 +110,7 @@ class ElementArray extends Element
     {
         if (($obj = $this->value[$name]) instanceof ElementXRef) {
             /** @var PDFObject $obj */
-            $obj                = $this->document->getObjectById($obj->getId());
+            $obj = $this->document->getObjectById($obj->getId());
             $this->value[$name] = $obj;
         }
 
@@ -135,23 +130,23 @@ class ElementArray extends Element
             preg_match_all('/(.*?)(\[|\])/s', trim($content), $matches);
 
             $level = 0;
-            $sub   = '';
+            $sub = '';
             foreach ($matches[0] as $part) {
                 $sub .= $part;
-                $level += (strpos($part, '[') !== false ? 1 : -1);
+                $level += (false !== strpos($part, '[') ? 1 : -1);
                 if ($level <= 0) {
                     break;
                 }
             }
 
             // Removes 1 level [ and ].
-            $sub        = substr(trim($sub), 1, -1);
+            $sub = substr(trim($sub), 1, -1);
             $sub_offset = 0;
-            $values     = Element::parse($sub, $document, $sub_offset, true);
+            $values = Element::parse($sub, $document, $sub_offset, true);
 
             $offset += strpos($content, '[') + 1;
             // Find next ']' position
-            $offset += strlen($sub) + 1;
+            $offset += \strlen($sub) + 1;
 
             return new self($values, $document);
         }

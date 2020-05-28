@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
@@ -34,8 +34,6 @@ use Smalot\PdfParser\Element\ElementNumeric;
 
 /**
  * Class Encoding
- *
- * @package Smalot\PdfParser
  */
 class Encoding extends PDFObject
 {
@@ -54,32 +52,29 @@ class Encoding extends PDFObject
      */
     protected $mapping;
 
-    /**
-     *
-     */
     public function init()
     {
-        $this->mapping     = array();
-        $this->differences = array();
-        $this->encoding    = null;
+        $this->mapping = [];
+        $this->differences = [];
+        $this->encoding = null;
 
         if ($this->has('BaseEncoding')) {
             // Load reference table charset.
             $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-            $className    = '\\Smalot\\PdfParser\\Encoding\\' . $baseEncoding;
+            $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
 
             if (class_exists($className)) {
                 $class = new $className();
                 $this->encoding = $class->getTranslations();
             } else {
-                throw new \Exception('Missing encoding data for: "' . $baseEncoding . '".');
+                throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
             }
 
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();
-            $code        = 0;
+            $code = 0;
 
-            if (!is_array($differences)) {
+            if (!\is_array($differences)) {
                 return;
             }
 
@@ -91,21 +86,21 @@ class Encoding extends PDFObject
                 }
 
                 // ElementName
-                if (is_object($difference)) {
+                if (\is_object($difference)) {
                     $this->differences[$code] = $difference->getContent();
                 } else {
                     $this->differences[$code] = $difference;
                 }
 
                 // For the next char.
-                $code++;
+                ++$code;
             }
 
             // Build final mapping (custom => standard).
             $table = array_flip(array_reverse($this->encoding, true));
 
             foreach ($this->differences as $code => $difference) {
-                /** @var string $difference */
+                /* @var string $difference */
                 $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : Font::MISSING);
             }
         }
@@ -116,10 +111,10 @@ class Encoding extends PDFObject
      */
     public function getDetails($deep = true)
     {
-        $details = array();
+        $details = [];
 
-        $details['BaseEncoding'] = ($this->has('BaseEncoding') ? (string)$this->get('BaseEncoding') : 'Ansi');
-        $details['Differences']  = ($this->has('Differences') ? (string)$this->get('Differences') : '');
+        $details['BaseEncoding'] = ($this->has('BaseEncoding') ? (string) $this->get('BaseEncoding') : 'Ansi');
+        $details['Differences'] = ($this->has('Differences') ? (string) $this->get('Differences') : '');
 
         $details += parent::getDetails($deep);
 
@@ -127,8 +122,6 @@ class Encoding extends PDFObject
     }
 
     /**
-     * @param int $char
-     *
      * @return int
      */
     public function translateChar($dec)

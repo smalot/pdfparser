@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,12 +26,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser;
-
-use Smalot\PdfParser\Element\ElementDate;
 
 /**
  * Technical references :
@@ -43,20 +41,18 @@ use Smalot\PdfParser\Element\ElementDate;
  * - http://cpansearch.perl.org/src/JV/PostScript-Font-1.10.02/lib/PostScript/WinAnsiEncoding.pm
  *
  * Class Document
- *
- * @package Smalot\PdfParser
  */
 class Document
 {
     /**
      * @var PDFObject[]
      */
-    protected $objects = array();
+    protected $objects = [];
 
     /**
      * @var array
      */
-    protected $dictionary = array();
+    protected $dictionary = [];
 
     /**
      * @var Header
@@ -68,17 +64,11 @@ class Document
      */
     protected $details = null;
 
-    /**
-     *
-     */
     public function __construct()
     {
-        $this->trailer = new Header(array(), $this);
+        $this->trailer = new Header([], $this);
     }
 
-    /**
-     *
-     */
     public function init()
     {
         $this->buildDictionary();
@@ -97,7 +87,7 @@ class Document
     protected function buildDictionary()
     {
         // Build dictionary.
-        $this->dictionary = array();
+        $this->dictionary = [];
 
         foreach ($this->objects as $id => $object) {
             $type = $object->getHeader()->get('Type')->getContent();
@@ -114,7 +104,7 @@ class Document
     protected function buildDetails()
     {
         // Build details array.
-        $details = array();
+        $details = [];
 
         // Extract document info
         if ($this->trailer->has('Info')) {
@@ -122,7 +112,7 @@ class Document
             $info = $this->trailer->get('Info');
             // This could be an ElementMissing object, so we need to check for
             // the getHeader method first.
-            if ($info !== null && method_exists($info, 'getHeader')) {
+            if (null !== $info && method_exists($info, 'getHeader')) {
                 $details = $info->getHeader()->getDetails();
             }
         }
@@ -130,7 +120,7 @@ class Document
         // Retrieve the page count
         try {
             $pages = $this->getPages();
-            $details['Pages'] = count($pages);
+            $details['Pages'] = \count($pages);
         } catch (\Exception $e) {
             $details['Pages'] = 0;
         }
@@ -149,9 +139,9 @@ class Document
     /**
      * @param PDFObject[] $objects
      */
-    public function setObjects($objects = array())
+    public function setObjects($objects = [])
     {
-        $this->objects = (array)$objects;
+        $this->objects = (array) $objects;
 
         $this->init();
     }
@@ -186,11 +176,11 @@ class Document
      */
     public function getObjectsByType($type, $subtype = null)
     {
-        $objects = array();
+        $objects = [];
 
         foreach ($this->objects as $id => $object) {
             if ($object->getHeader()->get('Type') == $type &&
-                (is_null($subtype) || $object->getHeader()->get('Subtype') == $subtype)
+                (null === $subtype || $object->getHeader()->get('Subtype') == $subtype)
             ) {
                 $objects[$id] = $object;
             }
@@ -209,6 +199,7 @@ class Document
 
     /**
      * @return Page[]
+     *
      * @throws \Exception
      */
     public function getPages()
@@ -221,13 +212,14 @@ class Document
             $object = $this->objects[$id]->get('Pages');
             if (method_exists($object, 'getPages')) {
                 $pages = $object->getPages(true);
+
                 return $pages;
             }
         }
 
         if (isset($this->dictionary['Pages'])) {
             // Search for pages to list kids.
-            $pages = array();
+            $pages = [];
 
             /** @var Pages[] $objects */
             $objects = $this->getObjectsByType('Pages');
@@ -255,14 +247,14 @@ class Document
      */
     public function getText(Page $page = null)
     {
-        $texts = array();
+        $texts = [];
         $pages = $this->getPages();
 
         foreach ($pages as $index => $page) {
             /**
              * In some cases, the $page variable may be null.
              */
-            if (is_null($page)) {
+            if (null === $page) {
                 continue;
             }
             if ($text = trim($page->getText())) {
@@ -281,9 +273,6 @@ class Document
         return $this->trailer;
     }
 
-    /**
-     * @param Header $trailer
-     */
     public function setTrailer(Header $trailer)
     {
         $this->trailer = $trailer;

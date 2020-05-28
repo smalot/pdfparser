@@ -6,6 +6,7 @@
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -25,7 +26,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
- *
  */
 
 namespace Smalot\PdfParser\Tests\Units\Element;
@@ -34,84 +34,82 @@ use mageekguy\atoum;
 
 /**
  * Class ElementString
- *
- * @package Smalot\PdfParser\Tests\Units\Element
  */
 class ElementString extends atoum\test
 {
     public function testParse()
     {
         // Skipped.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse('ABC', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' [ (ABC) 5 6 ]', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' << (invalid) >>', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' / (FlateDecode) ', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' 0 (FlateDecode) ', null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(" 0 \n (FlateDecode) ", null, $offset);
         $this->assert->boolean($element)->isEqualTo(false);
         $this->assert->integer($offset)->isEqualTo(0);
 
         // Valid.
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' (Copyright) ', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
         $this->assert->integer($offset)->isEqualTo(12);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' (Copyright) ', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
         $this->assert->integer($offset)->isEqualTo(12);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(' (Copyright)', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
         $this->assert->integer($offset)->isEqualTo(12);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse('(Copyright)', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
         $this->assert->integer($offset)->isEqualTo(11);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse('(Copy-right2)', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copy-right2');
         $this->assert->integer($offset)->isEqualTo(13);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse(" \n (Copyright) ", null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Copyright');
         $this->assert->integer($offset)->isEqualTo(14);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse('()', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('');
         $this->assert->integer($offset)->isEqualTo(2);
 
         // Complex study case : Unicode + octal.
-        $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementString::parse("(ABC\\))", null, $offset);
+        $offset = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse('(ABC\\))', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('ABC)');
         $this->assert->integer($offset)->isEqualTo(7);
-        $offset  = 0;
+        $offset = 0;
         $element = \Smalot\PdfParser\Element\ElementString::parse("(\xFE\xFF\\000M)", null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('M');
         $this->assert->integer($offset)->isEqualTo(9);
-        $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementString::parse("(<20>)", null, $offset);
+        $offset = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse('(<20>)', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo(' ');
         $this->assert->integer($offset)->isEqualTo(6);
-        $offset  = 0;
-        $element = \Smalot\PdfParser\Element\ElementString::parse("(Gutter\\ console\\ assembly)", null, $offset);
+        $offset = 0;
+        $element = \Smalot\PdfParser\Element\ElementString::parse('(Gutter\\ console\\ assembly)', null, $offset);
         $this->assert->string($element->getContent())->isEqualTo('Gutter console assembly');
         $this->assert->integer($offset)->isEqualTo(27);
     }
