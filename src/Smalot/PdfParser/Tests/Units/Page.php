@@ -107,88 +107,88 @@ class Page extends atoum\test
         $this->assert->string($text)->contains('Courier New');
         $this->assert->string($text)->contains('Verdana');
     }
-    
+
     public function testExtractRawData()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $extractedRawData     = $page->extractRawData();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $extractedRawData = $page->extractRawData();
         $tmItem = $extractedRawData[1];
 
         $this->assert->array($extractedRawData)->hasSize(172);
         $this->assert->array($tmItem)->hasSize(3);
-        $this->assert->array($tmItem)->hasKeys(["t", "o", "c"]);
-        $this->assert->string($tmItem["o"])->contains('Tm');
-        $this->assert->string($tmItem["c"])->contains('0.999429 0 0 1 201.96 720.68');
+        $this->assert->array($tmItem)->hasKeys(['t', 'o', 'c']);
+        $this->assert->string($tmItem['o'])->contains('Tm');
+        $this->assert->string($tmItem['c'])->contains('0.999429 0 0 1 201.96 720.68');
     }
-    
+
     public function testExtractDecodedRawData()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $extractedDecodedRawData     = $page->extractDecodedRawData();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $extractedDecodedRawData = $page->extractDecodedRawData();
         $tmItem = $extractedDecodedRawData[1];
         $this->assert->array($extractedDecodedRawData)->hasSize(172);
         $this->assert->array($tmItem)->hasSize(3);
-        $this->assert->array($tmItem)->hasKeys(["t", "o", "c"]);
-        $this->assert->string($tmItem["o"])->contains('Tm');
-        $this->assert->string($tmItem["c"])->contains('0.999429 0 0 1 201.96 720.68');
+        $this->assert->array($tmItem)->hasKeys(['t', 'o', 'c']);
+        $this->assert->string($tmItem['o'])->contains('Tm');
+        $this->assert->string($tmItem['c'])->contains('0.999429 0 0 1 201.96 720.68');
         $tjItem = $extractedDecodedRawData[2];
         $this->assert->array($tmItem)->hasSize(3);
-        $this->assert->array($tmItem)->hasKeys(["t", "o", "c"]);
-        $this->assert->string($tjItem["o"])->contains('TJ');
-        $this->assert->string($tjItem["c"][0]["t"])->contains('(');
-        $this->assert->string($tjItem["c"][0]["c"])->contains('D');
-        $this->assert->string($tjItem["c"][1]["t"])->contains('n');
-        $this->assert->string($tjItem["c"][1]["c"])->contains('0.325008');
-        $this->assert->string($tjItem["c"][2]["t"])->contains('(');
-        $this->assert->string($tjItem["c"][2]["c"])->contains('o');
+        $this->assert->array($tmItem)->hasKeys(['t', 'o', 'c']);
+        $this->assert->string($tjItem['o'])->contains('TJ');
+        $this->assert->string($tjItem['c'][0]['t'])->contains('(');
+        $this->assert->string($tjItem['c'][0]['c'])->contains('D');
+        $this->assert->string($tjItem['c'][1]['t'])->contains('n');
+        $this->assert->string($tjItem['c'][1]['c'])->contains('0.325008');
+        $this->assert->string($tjItem['c'][2]['t'])->contains('(');
+        $this->assert->string($tjItem['c'][2]['c'])->contains('o');
     }
-    
+
     public function testGetDataCommands()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $dataCommands     = $page->getDataCommands();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataCommands = $page->getDataCommands();
         $tmItem = $dataCommands[0];
         $this->assert->array($dataCommands)->hasSize(166);
         $this->assert->array($tmItem)->hasSize(3);
-        $this->assert->array($tmItem)->hasKeys(["t", "o", "c"]);
-        $this->assert->string($tmItem["o"])->contains('Tm');
-        $this->assert->string($tmItem["c"])->contains('0.999429 0 0 1 201.96 720.68');
+        $this->assert->array($tmItem)->hasKeys(['t', 'o', 'c']);
+        $this->assert->string($tmItem['o'])->contains('Tm');
+        $this->assert->string($tmItem['c'])->contains('0.999429 0 0 1 201.96 720.68');
         $tjItem = $dataCommands[1];
         $this->assert->array($tjItem)->hasSize(3);
-        $this->assert->array($tjItem)->hasKeys(["t", "o", "c"]);
-        $this->assert->string($tjItem["o"])->contains('TJ');
-        $this->assert->string($tjItem["c"][0]["t"])->contains('(');
-        $this->assert->string($tjItem["c"][0]["c"])->contains('D');
-        $this->assert->string($tjItem["c"][1]["t"])->contains('n');
-        $this->assert->string($tjItem["c"][1]["c"])->contains('0.325008');
-        $this->assert->string($tjItem["c"][2]["t"])->contains('(');
-        $this->assert->string($tjItem["c"][2]["c"])->contains('o');
+        $this->assert->array($tjItem)->hasKeys(['t', 'o', 'c']);
+        $this->assert->string($tjItem['o'])->contains('TJ');
+        $this->assert->string($tjItem['c'][0]['t'])->contains('(');
+        $this->assert->string($tjItem['c'][0]['c'])->contains('D');
+        $this->assert->string($tjItem['c'][1]['t'])->contains('n');
+        $this->assert->string($tjItem['c'][1]['c'])->contains('0.325008');
+        $this->assert->string($tjItem['c'][2]['t'])->contains('(');
+        $this->assert->string($tjItem['c'][2]['c'])->contains('o');
     }
-    
+
     public function testGetDataTm()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $dataTm     = $page->getDataTm();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
         $item = $dataTm[0];
         $this->assert->array($dataTm)->hasSize(81);
         $this->assert->array($item)->hasSize(2);
@@ -199,7 +199,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '201.96',
-                                            '720.68'
+                                            '720.68',
         ]);
         $this->assert->string($item[1])->contains('Document title');
         $item = $dataTm[2];
@@ -209,7 +209,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '70.8',
-                                            '673.64'
+                                            '673.64',
         ]);
         $this->assert->string($item[1])->contains('Calibri : Lorem ipsum dolor sit amet, consectetur a');
         $item = $dataTm[80];
@@ -219,17 +219,17 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '343.003',
-                                            '81.44'
+                                            '81.44',
         ]);
         $this->assert->string($item[1])->contains('nenatis.');
-        
+
         // ------------------------------------------------------
         // Document is a form
-        $filename = __DIR__ . '/../../../../../samples/SimpleInvoiceFilledExample1.pdf';
+        $filename = __DIR__.'/../../../../../samples/SimpleInvoiceFilledExample1.pdf';
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $dataTm     = $page->getDataTm();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
         $item = $dataTm[2];
         $this->assert->array($dataTm)->hasSize(105);
         $this->assert->array($item)->hasSize(2);
@@ -240,7 +240,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '167.3',
-                                            '894.58'
+                                            '894.58',
         ]);
         $this->assert->string($item[1])->contains('MyName  MyLastName');
         $item = $dataTm[6];
@@ -250,7 +250,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '681.94',
-                                            '877.42'
+                                            '877.42',
         ]);
         $this->assert->string($item[1])->contains('1/1/2020');
         $item = $dataTm[8];
@@ -260,17 +260,17 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '174.86',
-                                            '827.14'
+                                            '827.14',
         ]);
         $this->assert->string($item[1])->contains('Purchase 1');
-        
+
         // ------------------------------------------------------
         // Document is another form of the same type
-        $filename = __DIR__ . '/../../../../../samples/SimpleInvoiceFilledExample2.pdf';
+        $filename = __DIR__.'/../../../../../samples/SimpleInvoiceFilledExample2.pdf';
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $dataTm     = $page->getDataTm();
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
         $item = $dataTm[2];
         $this->assert->array($dataTm)->hasSize(105);
         $this->assert->array($item)->hasSize(2);
@@ -281,7 +281,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '167.3',
-                                            '894.58'
+                                            '894.58',
         ]);
         $this->assert->string($item[1])->contains("Other'sName  Other'sLastName");
         $item = $dataTm[6];
@@ -291,7 +291,7 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '681.94',
-                                            '877.42'
+                                            '877.42',
         ]);
         $this->assert->string($item[1])->contains('2/2/2020');
         $item = $dataTm[8];
@@ -301,20 +301,19 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '174.86',
-                                            '827.14'
+                                            '827.14',
         ]);
         $this->assert->string($item[1])->contains('Purchase 2');
     }
-    
-    
+
     public function testGetTextXY()
     {
         // Document with text.
-        $filename = __DIR__ . '/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
-        $parser   = new \Smalot\PdfParser\Parser();
+        $filename = __DIR__.'/../../../../../samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = new \Smalot\PdfParser\Parser();
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
+        $pages = $document->getPages();
+        $page = $pages[0];
         $result = $page->getTextXY(201.96, 720.68);
         $this->assert->array($result)->hasSize(1);
         $this->assert->array($result[0])->hasSize(2);
@@ -324,9 +323,9 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '201.96',
-                                            '720.68'
+                                            '720.68',
         ]);
-        $this->assert->string($result[0][1])->contains("Document title");
+        $this->assert->string($result[0][1])->contains('Document title');
         $result = $page->getTextXY(201, 720);
         $this->assert->array($result)->hasSize(0);
         $result = $page->getTextXY(201, 720, 1, 1);
@@ -338,50 +337,50 @@ class Page extends atoum\test
                                             '0',
                                             '1',
                                             '201.96',
-                                            '720.68'
+                                            '720.68',
         ]);
-        $this->assert->string($result[0][1])->contains("Document title");
-        
+        $this->assert->string($result[0][1])->contains('Document title');
+
         // ------------------------------------------------------
         // Document is a form
-        $filename = __DIR__ . '/../../../../../samples/SimpleInvoiceFilledExample1.pdf';
+        $filename = __DIR__.'/../../../../../samples/SimpleInvoiceFilledExample1.pdf';
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $result     = $page->getTextXY(167, 894, 1 , 1);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $result = $page->getTextXY(167, 894, 1, 1);
         $this->assert->array($result[0][0])->containsValues([
                                             '1',
                                             '0',
                                             '0',
                                             '1',
                                             '167.3',
-                                            '894.58'
+                                            '894.58',
         ]);
         $this->assert->string($result[0][1])->contains('MyName  MyLastName');
-        $result     = $page->getTextXY(681, 877, 1 , 1);
+        $result = $page->getTextXY(681, 877, 1, 1);
         $this->assert->string($result[0][1])->contains('1/1/2020');
-        $result     = $page->getTextXY(174, 827, 1 , 1);
+        $result = $page->getTextXY(174, 827, 1, 1);
         $this->assert->string($result[0][1])->contains('Purchase 1');
-        
+
         // ------------------------------------------------------
         // Document is another form of the same type
-        $filename = __DIR__ . '/../../../../../samples/SimpleInvoiceFilledExample2.pdf';
+        $filename = __DIR__.'/../../../../../samples/SimpleInvoiceFilledExample2.pdf';
         $document = $parser->parseFile($filename);
-        $pages    = $document->getPages();
-        $page     = $pages[0];
-        $result     = $page->getTextXY(167, 894, 1 , 1);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $result = $page->getTextXY(167, 894, 1, 1);
         $this->assert->array($result[0][0])->containsValues([
                                             '1',
                                             '0',
                                             '0',
                                             '1',
                                             '167.3',
-                                            '894.58'
+                                            '894.58',
         ]);
         $this->assert->string($result[0][1])->contains("Other'sName  Other'sLastName");
-        $result     = $page->getTextXY(681, 877, 1 , 1);
+        $result = $page->getTextXY(681, 877, 1, 1);
         $this->assert->string($result[0][1])->contains('2/2/2020');
-        $result     = $page->getTextXY(174, 827, 1 , 1);
+        $result = $page->getTextXY(174, 827, 1, 1);
         $this->assert->string($result[0][1])->contains('Purchase 2');
     }
 }
