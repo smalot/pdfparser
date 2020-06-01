@@ -823,7 +823,7 @@ class RawDataParser
         foreach ($xref['xref'] as $obj => $offset) {
             if (!isset($objects[$obj]) and ($offset > 0)) {
                 // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+                $objects[$obj] = $this->getIndirectObject($pdfData, $obj, $offset, true);
             }
         }
 
