@@ -98,7 +98,7 @@ class FilterHelper
      *
      * @return string data string
      */
-    public function decodeFilterASCIIHexDecode($data)
+    protected function decodeFilterASCIIHexDecode($data)
     {
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
@@ -139,7 +139,7 @@ class FilterHelper
      *
      * @return string data string
      */
-    public function decodeFilterASCII85Decode($data)
+    protected function decodeFilterASCII85Decode($data)
     {
         // initialize string to return
         $decoded = '';
@@ -225,7 +225,7 @@ class FilterHelper
      *
      * @return string data string
      */
-    public function decodeFilterFlateDecode($data)
+    protected function decodeFilterFlateDecode($data)
     {
         // initialize string to return
         $decoded = @gzuncompress($data);
@@ -245,7 +245,7 @@ class FilterHelper
      *
      * @return string Data string
      */
-    public function decodeFilterLZWDecode($data)
+    protected function decodeFilterLZWDecode($data)
     {
         // initialize string to return
         $decoded = '';
@@ -329,7 +329,7 @@ class FilterHelper
      *
      * @return string
      */
-    public function decodeFilterRunLengthDecode($data)
+    protected function decodeFilterRunLengthDecode($data)
     {
         // initialize string to return
         $decoded = '';
