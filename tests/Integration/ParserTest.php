@@ -1,11 +1,10 @@
 <?php
 
 /**
- * @file
- *          This file is part of the PdfParser library.
+ * @file This file is part of the PdfParser library.
  *
- * @author  Sébastien MALOT <sebastien@malot.fr>
- * @date    2017-01-03
+ * @author  Konrad Abicht <k.abicht@gmail.com>
+ * @date    2020-06-01
  *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
@@ -28,40 +27,44 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Smalot\PdfParser\Tests\Units;
+namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
-use mageekguy\atoum;
+use Smalot\PdfParser\Parser;
+use Smalot\PdfParser\Test\TestCase;
 
-/**
- * Class Parser
- */
-class Parser extends atoum\test
+class ParserTest extends TestCase
 {
-    /**
-     * @throws \Exception
-     */
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->fixture = new Parser();
+    }
+
     public function testParseFile()
     {
-        $directory = getcwd().'/samples/bugs';
+        $directory = $this->rootDir.'/samples/bugs';
 
         if (is_dir($directory)) {
             $files = scandir($directory);
-            $parser = new \Smalot\PdfParser\Parser();
 
             foreach ($files as $file) {
                 if (preg_match('/^.*\.pdf$/i', $file)) {
                     try {
-                        $document = $parser->parseFile($directory.'/'.$file);
+                        $document = $this->fixture->parseFile($directory.'/'.$file);
                         $pages = $document->getPages();
-                        $this->assert->integer(\count($pages))->isGreaterThan(0);
+                        $this->assertTrue(0 < \count($pages));
 
                         foreach ($pages as $page) {
                             $content = $page->getText();
                             $this->assert->string($content);
                         }
                     } catch (Exception $e) {
-                        if ('Secured pdf file are currently not supported.' !== $e->getMessage() && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')) {
+                        if (
+                            'Secured pdf file are currently not supported.' !== $e->getMessage()
+                            && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')
+                        ) {
                             throw $e;
                         }
                     }

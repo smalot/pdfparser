@@ -1,11 +1,10 @@
 <?php
 
 /**
- * @file
- *          This file is part of the PdfParser library.
+ * @file This file is part of the PdfParser library.
  *
- * @author  Sébastien MALOT <sebastien@malot.fr>
- * @date    2017-01-03
+ * @author  Konrad Abicht <k.abicht@gmail.com>
+ * @date    2020-06-01
  *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
@@ -28,14 +27,13 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Smalot\PdfParser\Tests\Units;
+namespace Tests\Smalot\PdfParser\Integration;
 
-use mageekguy\atoum;
+use Smalot\PdfParser\Document;
+use Smalot\PdfParser\PDFObject;
+use Smalot\PdfParser\Test\TestCase;
 
-/**
- * Class PDFObject
- */
-class PDFObject extends atoum\test
+class PDFObjectTest extends TestCase
 {
     const TYPE = 't';
 
@@ -43,87 +41,10 @@ class PDFObject extends atoum\test
 
     const COMMAND = 'c';
 
-    public function testGetTextParts()
+    protected function getPdfObjectInstance($document)
     {
+        return new PDFObject($document);
     }
-
-//    public function testGetCommandsImage()
-//    {
-//        $content = "/CS/RGB
-    ///W 22
-    ///H 1
-    ///BPC 8
-    ///F/Fl
-    ///DP<</Predictor 15
-    ///Columns 22
-    ///Colors 3>>
-    //ID \x00\x50c\x63
-    //EI Q
-    //q -124.774 124.127 5.64213 5.67154 930.307 4436.95 cm
-    //BI
-    //";
-//
-//        $document  = new \Smalot\PdfParser\Document();
-//        $object    = new \Smalot\PdfParser\PDFObject($document);
-//        $offset    = 0;
-//        $parts     = $object->getCommandsImage($content, $offset);
-//        $reference = array(
-//            array(
-//                self::TYPE => '/',
-//                self::OPERATOR => 'CS',
-//                self::COMMAND => 'RGB',
-//            ),
-//            array(
-//                self::TYPE => '/',
-//                self::OPERATOR => 'W',
-//                self::COMMAND => '22',
-//            ),
-//            array(
-//                self::TYPE => '/',
-//                self::OPERATOR => 'H',
-//                self::COMMAND => '1',
-//            ),
-//            array(
-//                self::TYPE => '/',
-//                self::OPERATOR => 'BPC',
-//                self::COMMAND => '8',
-//            ),
-//            array(
-//                self::TYPE => '/',
-//                self::OPERATOR => 'F',
-//                self::COMMAND => 'Fl',
-//            ),
-//            array(
-//                self::TYPE => 'struct',
-//                self::OPERATOR => 'DP',
-//                self::COMMAND => array(
-//                    array(
-//                        self::TYPE => '/',
-//                        self::OPERATOR => 'Predictor',
-//                        self::COMMAND => '15',
-//                    ),
-//                    array(
-//                        self::TYPE => '/',
-//                        self::OPERATOR => 'Columns',
-//                        self::COMMAND => '22',
-//                    ),
-//                    array(
-//                        self::TYPE => '/',
-//                        self::OPERATOR => 'Colors',
-//                        self::COMMAND => '3',
-//                    ),
-//                ),
-//            ),
-//            array(
-//                self::TYPE => '',
-//                self::OPERATOR => 'ID',
-//                self::COMMAND => "\x00\x50c\x63",
-//            ),
-//        );
-//
-//        $this->assert->array($parts)->isEqualTo($reference);
-//        $this->assert->integer($offset)->isEqualTo(83);
-//    }
 
     public function testGetCommandsText()
     {
@@ -137,10 +58,8 @@ ET Q
 q -124.774 124.127 5.64213 5.67154 930.307 4436.95 cm
 BI";
 
-        $document = new \Smalot\PdfParser\Document();
-        $object = new \Smalot\PdfParser\PDFObject($document);
         $offset = 0;
-        $parts = $object->getCommandsText($content, $offset);
+        $parts = $this->getPdfObjectInstance(new Document())->getCommandsText($content, $offset);
         $reference = [
             [
                 self::TYPE => '/',
@@ -225,8 +144,8 @@ BI";
             ],
         ];
 
-        $this->assert->array($parts)->isEqualTo($reference);
-        $this->assert->integer($offset)->isEqualTo(172);
+        $this->assertEquals($parts, $reference);
+        $this->assertEquals(172, $offset);
     }
 
     public function testCleanContent()
@@ -269,12 +188,9 @@ ______________________
 q
 0.03 841';
 
-        $document = new \Smalot\PdfParser\Document();
-        $object = new \Smalot\PdfParser\PDFObject($document);
-        $cleaned = $object->cleanContent($content, '_');
+        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content, '_');
 
-        $this->assert->string($cleaned)->length->isEqualTo(\strlen($content));
-        $this->assert->string($cleaned)->isEqualTo($expected);
+        $this->assertEquals($cleaned, $expected);
     }
 
     public function testGetSectionText()
@@ -298,11 +214,17 @@ ET
 q
 0.03 841';
 
-        $document = new \Smalot\PdfParser\Document();
-        $object = new \Smalot\PdfParser\PDFObject($document);
-        $sections = $object->getSectionsText($content);
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
 
-//        $this->assert->string($cleaned)->length->isEqualTo(strlen($content));
-//        $this->assert->string($cleaned)->isEqualTo($expected);
+        $this->assertEquals(
+            ['/TT0 1 Tf
+0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
+(Mod BT atio[ns] au \(14\) septembre 2009 ET 2010)Tj
+EMC
+(ABC) Tj
+
+[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD ', '/TT1 1.5 Tf (BT )Tj '],
+            $sections
+        );
     }
 }
