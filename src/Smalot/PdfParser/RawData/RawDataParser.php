@@ -73,12 +73,13 @@ class RawDataParser
      * Decode the specified stream.
      *
      * @param string $pdfData PDF data
+     * @param array  $xref
      * @param array  $sdic    Stream's dictionary array
      * @param string $stream  Stream to decode
      *
      * @return array containing decoded stream data and remaining filters
      */
-    public function decodeStream($pdfData, $sdic, $stream)
+    protected function decodeStream($pdfData, $xref, $sdic, $stream)
     {
         // get stream length and filters
         $slength = \strlen($stream);
@@ -97,7 +98,7 @@ class RawDataParser
                     }
                 } elseif (('Filter' == $v[1]) and (isset($sdic[($k + 1)]))) {
                     // resolve indirect object
-                    $objval = $this->getObjectVal($pdfData, $sdic[($k + 1)]);
+                    $objval = $this->getObjectVal($pdfData, $xref, $sdic[($k + 1)]);
                     if ('/' == $objval[0]) {
                         // single filter
                         $filters[] = $objval[1];
@@ -145,7 +146,7 @@ class RawDataParser
      *
      * @return array containing xref and trailer data
      */
-    public function decodeXref($pdfData, $startxref, $xref = [])
+    protected function decodeXref($pdfData, $startxref, $xref = [])
     {
         $startxref += 4; // 4 is the length of the word 'xref'
         // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
@@ -222,11 +223,11 @@ class RawDataParser
      *
      * @throws Exception if unknown PNG predictor detected
      */
-    public function decodeXrefStream($pdfData, $startxref, $xref = [])
+    protected function decodeXrefStream($pdfData, $startxref, $xref = [])
     {
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
-        $xrefcrs = $this->getIndirectObject($pdfData, $xrefobj[1], $startxref, true);
+        $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefobj[1], $startxref, true);
         if (!isset($xref['trailer']) or empty($xref['trailer'])) {
             // get only the last updated version
             $xref['trailer'] = [];
@@ -454,6 +455,7 @@ class RawDataParser
      * Get content of indirect object.
      *
      * @param string $pdfData  PDF data
+     * @param array  $xref
      * @param string $obj_ref  Object number and generation number separated by underscore character
      * @param int    $offset   Object offset
      * @param bool   $decoding If true decode streams
@@ -462,7 +464,7 @@ class RawDataParser
      *
      * @throws Exception if invalid object reference found
      */
-    public function getIndirectObject($pdfData, $obj_ref, $offset = 0, $decoding = true)
+    protected function getIndirectObject($pdfData, $xref, $obj_ref, $offset = 0, $decoding = true)
     {
         $obj = explode('_', $obj_ref);
         if ((false === $obj) or (2 != \count($obj))) {
@@ -487,7 +489,7 @@ class RawDataParser
             $offset = $element[2];
             // decode stream using stream's dictionary information
             if ($decoding and ('stream' == $element[0]) and (isset($objdata[($i - 1)][0])) and ('<<' == $objdata[($i - 1)][0])) {
-                $element[3] = $this->decodeStream($pdfData, $objdata[($i - 1)][1], $element[1]);
+                $element[3] = $this->decodeStream($pdfData, $xref, $objdata[($i - 1)][1], $element[1]);
             }
             $objdata[$i] = $element;
             ++$i;
@@ -508,16 +510,16 @@ class RawDataParser
      *
      * @return array containing object data
      */
-    public function getObjectVal($pdfData, $obj)
+    protected function getObjectVal($pdfData, $xref, $obj)
     {
         if ('objref' == $obj[0]) {
             // reference to indirect object
             if (isset($this->objects[$obj[1]])) {
                 // this object has been already parsed
                 return $this->objects[$obj[1]];
-            } elseif (isset($this->xrefCache[$obj[1]])) {
+            } elseif (isset($xref[$obj[1]])) {
                 // parse new object
-                $this->objects[$obj[1]] = $this->getIndirectObject($pdfData, $obj[1], $this->xrefCache[$obj[1]], false);
+                $this->objects[$obj[1]] = $this->getIndirectObject($pdfData, $xref, $obj[1], $xref[$obj[1]], false);
 
                 return $this->objects[$obj[1]];
             }
@@ -533,7 +535,7 @@ class RawDataParser
      *
      * @return array containing object type, raw value and offset to next object
      */
-    public function getRawObject($pdfData, $offset = 0)
+    protected function getRawObject($pdfData, $offset = 0)
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -743,7 +745,7 @@ class RawDataParser
      * @throws Exception if it was unable to find startxref
      * @throws Exception if it was unable to find xref
      */
-    public function getXrefData($pdfData, $offset = 0, $xref = [])
+    protected function getXrefData($pdfData, $offset = 0, $xref = [])
     {
         $startxrefPreg = preg_match(
             '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
@@ -818,17 +820,17 @@ class RawDataParser
         $pdfData = substr($data, $trimpos);
 
         // get xref and trailer data
-        $this->xrefCache = $this->getXrefData($pdfData);
+        $xref = $this->getXrefData($pdfData);
 
         // parse all document objects
         $objects = [];
-        foreach ($this->xrefCache['xref'] as $obj => $offset) {
+        foreach ($xref['xref'] as $obj => $offset) {
             if (!isset($objects[$obj]) and ($offset > 0)) {
                 // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $obj, $offset, true);
+                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
             }
         }
 
-        return [$this->xrefCache, $objects];
+        return [$xref, $objects];
     }
 }
