@@ -51,6 +51,8 @@ class Parser
      */
     protected $objects = [];
 
+    protected $rawDataParser;
+
     public function __construct($cfg = [])
     {
         $this->rawDataParser = new RawDataParser($cfg);
@@ -90,7 +92,7 @@ class Parser
     public function parseContent($content)
     {
         // Create structure from raw data.
-        list($xref, $data) = $this->rawDataParser->getParsedData($content);
+        list($xref, $data) = $this->rawDataParser->parseData($content);
 
         if (isset($xref['trailer']['encrypt'])) {
             throw new \Exception('Secured pdf file are currently not supported.');

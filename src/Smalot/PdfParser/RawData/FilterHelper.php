@@ -52,32 +52,27 @@ class FilterHelper
      * @param string $filter Filter name
      * @param string $data   Data to decode
      *
-     * @return Decoded data string
+     * @return string Decoded data string
      *
-     * @throws Exception if a certain decode function is not implemented yet.
+     * @throws Exception if a certain decode function is not implemented yet
      */
     public function decodeFilter($filter, $data)
     {
         switch ($filter) {
             case 'ASCIIHexDecode':
                 return $this->decodeFilterASCIIHexDecode($data);
-                break;
 
             case 'ASCII85Decode':
                 return $this->decodeFilterASCII85Decode($data);
-                break;
 
             case 'LZWDecode':
                 return $this->decodeFilterLZWDecode($data);
-                break;
 
             case 'FlateDecode':
                 return $this->decodeFilterFlateDecode($data);
-                break;
 
             case 'RunLengthDecode':
                 return $this->decodeFilterRunLengthDecode($data);
-                break;
 
             case 'CCITTFaxDecode':
                 throw new Exception('Decode CCITTFaxDecode not implemented yet.');
@@ -105,8 +100,6 @@ class FilterHelper
      */
     public function decodeFilterASCIIHexDecode($data)
     {
-        // initialize string to return
-        $decoded = '';
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
         // check for EOD character: GREATER-THAN SIGN (3Eh)
@@ -175,7 +168,7 @@ class FilterHelper
         $group_pos = 0;
         $tuple = 0;
         $pow85 = [(85 * 85 * 85 * 85), (85 * 85 * 85), (85 * 85), 85, 1];
-        $last_pos = ($data_length - 1);
+
         // for each byte
         for ($i = 0; $i < $data_length; ++$i) {
             // get char value
@@ -204,20 +197,20 @@ class FilterHelper
         // last tuple (if any)
         switch ($group_pos) {
             case 4:
-                    $decoded .= \chr($tuple >> 24).\chr($tuple >> 16).\chr($tuple >> 8);
-                    break;
+                $decoded .= \chr($tuple >> 24).\chr($tuple >> 16).\chr($tuple >> 8);
+                break;
 
             case 3:
-                    $decoded .= \chr($tuple >> 24).\chr($tuple >> 16);
-                    break;
+                $decoded .= \chr($tuple >> 24).\chr($tuple >> 16);
+                break;
 
             case 2:
-                    $decoded .= \chr($tuple >> 24);
-                    break;
+                $decoded .= \chr($tuple >> 24);
+                break;
 
             case 1:
-                    throw new Exception('decodeFilterASCII85Decode: invalid code');
-                    break;
+                throw new Exception('decodeFilterASCII85Decode: invalid code');
+                break;
         }
 
         return $decoded;

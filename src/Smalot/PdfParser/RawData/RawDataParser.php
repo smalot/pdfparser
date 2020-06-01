@@ -54,6 +54,8 @@ class RawDataParser
         'ignore_missing_filter_decoders' => true,
     ];
 
+    protected $filterHelper;
+
     /**
      * @param array $cfg Configuration array, default is []
      */
@@ -239,29 +241,51 @@ class RawDataParser
         if (!\is_array($sarr)) {
             $sarr = [];
         }
+
+        $wb = [];
+
         foreach ($sarr as $k => $v) {
-            if (('/' == $v[0]) and ('Type' == $v[1]) and (isset($sarr[($k + 1)]) and ('/' == $sarr[($k + 1)][0]) and ('XRef' == $sarr[($k + 1)][1]))) {
+            if (
+                ('/' == $v[0])
+                && ('Type' == $v[1])
+                && (
+                    isset($sarr[($k + 1)])
+                    && '/' == $sarr[($k + 1)][0]
+                    && 'XRef' == $sarr[($k + 1)][1]
+                )
+            ) {
                 $valid_crs = true;
             } elseif (('/' == $v[0]) and ('Index' == $v[1]) and (isset($sarr[($k + 1)]))) {
                 // first object number in the subsection
                 $index_first = (int) ($sarr[($k + 1)][1][0][1]);
-                // number of entries in the subsection
-                $index_entries = (int) ($sarr[($k + 1)][1][1][1]);
             } elseif (('/' == $v[0]) and ('Prev' == $v[1]) and (isset($sarr[($k + 1)]) and ('numeric' == $sarr[($k + 1)][0]))) {
                 // get previous xref offset
                 $prevxref = (int) ($sarr[($k + 1)][1]);
             } elseif (('/' == $v[0]) and ('W' == $v[1]) and (isset($sarr[($k + 1)]))) {
                 // number of bytes (in the decoded stream) of the corresponding field
-                $wb = [];
                 $wb[0] = (int) ($sarr[($k + 1)][1][0][1]);
                 $wb[1] = (int) ($sarr[($k + 1)][1][1][1]);
                 $wb[2] = (int) ($sarr[($k + 1)][1][2][1]);
             } elseif (('/' == $v[0]) and ('DecodeParms' == $v[1]) and (isset($sarr[($k + 1)][1]))) {
                 $decpar = $sarr[($k + 1)][1];
                 foreach ($decpar as $kdc => $vdc) {
-                    if (('/' == $vdc[0]) and ('Columns' == $vdc[1]) and (isset($decpar[($kdc + 1)]) and ('numeric' == $decpar[($kdc + 1)][0]))) {
+                    if (
+                        '/' == $vdc[0]
+                        && 'Columns' == $vdc[1]
+                        && (
+                            isset($decpar[($kdc + 1)])
+                            && 'numeric' == $decpar[($kdc + 1)][0]
+                        )
+                    ) {
                         $columns = (int) ($decpar[($kdc + 1)][1]);
-                    } elseif (('/' == $vdc[0]) and ('Predictor' == $vdc[1]) and (isset($decpar[($kdc + 1)]) and ('numeric' == $decpar[($kdc + 1)][0]))) {
+                    } elseif (
+                        '/' == $vdc[0]
+                        && 'Predictor' == $vdc[1]
+                        && (
+                            isset($decpar[($kdc + 1)])
+                            && 'numeric' == $decpar[($kdc + 1)][0]
+                        )
+                    ) {
                         $predictor = (int) ($decpar[($kdc + 1)][1]);
                     }
                 }
@@ -281,6 +305,7 @@ class RawDataParser
                 }
             }
         }
+
         // decode data
         if ($valid_crs and isset($xrefcrs[1][3][0])) {
             // number of bytes in a row
@@ -313,48 +338,47 @@ class RawDataParser
                     }
                     switch ($predictor) {
                         case 10:  // PNG prediction (on encoding, PNG None on all rows)
-                                $ddata[$k][$j] = $row[$i];
-                                break;
+                            $ddata[$k][$j] = $row[$i];
+                            break;
 
                         case 11:  // PNG prediction (on encoding, PNG Sub on all rows)
-                                $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
-                                break;
+                            $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
+                            break;
 
                         case 12:  // PNG prediction (on encoding, PNG Up on all rows)
-                                $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
-                                break;
+                            $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
+                            break;
 
                         case 13:  // PNG prediction (on encoding, PNG Average on all rows)
-                                $ddata[$k][$j] = (($row[$i] + (($row_left + $row_up) / 2)) & 0xff);
-                                break;
+                            $ddata[$k][$j] = (($row[$i] + (($row_left + $row_up) / 2)) & 0xff);
+                            break;
 
                         case 14:  // PNG prediction (on encoding, PNG Paeth on all rows)
-                                // initial estimate
-                                $p = ($row_left + $row_up - $row_upleft);
-                                // distances
-                                $pa = abs($p - $row_left);
-                                $pb = abs($p - $row_up);
-                                $pc = abs($p - $row_upleft);
-                                $pmin = min($pa, $pb, $pc);
-                                // return minimum distance
-                                switch ($pmin) {
-                                    case $pa:
-                                            $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
-                                            break;
+                            // initial estimate
+                            $p = ($row_left + $row_up - $row_upleft);
+                            // distances
+                            $pa = abs($p - $row_left);
+                            $pb = abs($p - $row_up);
+                            $pc = abs($p - $row_upleft);
+                            $pmin = min($pa, $pb, $pc);
+                            // return minimum distance
+                            switch ($pmin) {
+                                case $pa:
+                                    $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
+                                    break;
 
-                                    case $pb:
-                                            $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
-                                            break;
+                                case $pb:
+                                    $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
+                                    break;
 
-                                    case $pc:
-                                            $ddata[$k][$j] = (($row[$i] + $row_upleft) & 0xff);
-                                            break;
-                                }
-                                break;
+                                case $pc:
+                                    $ddata[$k][$j] = (($row[$i] + $row_upleft) & 0xff);
+                                    break;
+                            }
+                            break;
 
                         default:  // PNG prediction (on encoding, PNG optimum)
-                                throw new Exception('Unknown PNG predictor');
-                                break;
+                            throw new Exception('Unknown PNG predictor');
                     }
                 }
                 $prev_row = $ddata[$k];
@@ -440,9 +464,7 @@ class RawDataParser
     {
         $obj = explode('_', $obj_ref);
         if ((false === $obj) or (2 != \count($obj))) {
-            throw new Exception('Invalid object reference: '.$obj);
-
-            return;
+            throw new Exception('Invalid object reference for $obj.');
         }
         $objref = $obj[0].' '.$obj[1].' obj';
         // ignore leading zeros
@@ -468,8 +490,10 @@ class RawDataParser
             $objdata[$i] = $element;
             ++$i;
         } while (('endobj' != $element[0]) and ($offset != $oldoffset));
+
         // remove closing delimiter
         array_pop($objdata);
+
         // return raw object content
         return $objdata;
     }
@@ -498,47 +522,6 @@ class RawDataParser
         }
 
         return $obj;
-    }
-
-    /**
-     * Parses a PDF and returns extracted data.
-     *
-     * @param string $data PDF data to parse
-     *
-     * @return array array of parsed PDF document objects
-     *
-     * @throws Exception if empty PDF data given
-     * @throws Exception if PDF data missing %PDF header
-     */
-    public function getParsedData($data)
-    {
-        if (empty($data)) {
-            throw new Exception('Empty PDF data given.');
-        }
-        // find the pdf header starting position
-        if (false === ($trimpos = strpos($data, '%PDF-'))) {
-            throw new Exception('Invalid PDF data: missing %PDF header.');
-        }
-
-        // get PDF content string
-        $pdfData = substr($data, $trimpos);
-
-        // get xref and trailer data
-        $xref = $this->getXrefData($pdfData);
-
-        // parse all document objects
-        $objects = [];
-        foreach ($xref['xref'] as $obj => $offset) {
-            if (!isset($objects[$obj]) and ($offset > 0)) {
-                // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $obj, $offset, true);
-            }
-        }
-        // release some memory
-        unset($pdfData);
-        $pdfData = '';
-
-        return [$xref, $objects];
     }
 
     /**
@@ -807,5 +790,43 @@ class RawDataParser
         }
 
         return $xref;
+    }
+
+    /**
+     * Parses PDF data and returns extracted data as array.
+     *
+     * @param string $data PDF data to parse
+     *
+     * @return array array of parsed PDF document objects
+     *
+     * @throws Exception if empty PDF data given
+     * @throws Exception if PDF data missing %PDF header
+     */
+    public function parseData($data)
+    {
+        if (empty($data)) {
+            throw new Exception('Empty PDF data given.');
+        }
+        // find the pdf header starting position
+        if (false === ($trimpos = strpos($data, '%PDF-'))) {
+            throw new Exception('Invalid PDF data: missing %PDF header.');
+        }
+
+        // get PDF content string
+        $pdfData = substr($data, $trimpos);
+
+        // get xref and trailer data
+        $xref = $this->getXrefData($pdfData);
+
+        // parse all document objects
+        $objects = [];
+        foreach ($xref['xref'] as $obj => $offset) {
+            if (!isset($objects[$obj]) and ($offset > 0)) {
+                // decode objects with positive offset
+                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+            }
+        }
+
+        return [$xref, $objects];
     }
 }
