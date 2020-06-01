@@ -2,14 +2,14 @@
 
 /**
  * This file is based on code of tecnickcom/TCPDF PDF library.
- * 
- * Original author Nicola Asuni (info@tecnick.com) and 
+ *
+ * Original author Nicola Asuni (info@tecnick.com) and
  * contributors (https://github.com/tecnickcom/TCPDF/graphs/contributors).
  *
  * @see https://github.com/tecnickcom/TCPDF
  *
  * Original code was licensed on the terms of the LGPL v3.
- * 
+ *
  * ------------------------------------------------------------------------------
  *
  * @file This file is part of the PdfParser library.
@@ -49,12 +49,12 @@ class FilterHelper
     /**
      * Decode data using the specified filter type.
      *
-     * @param $filter (string) Filter name
-     * @param $data (string) Data to decode
+     * @param string $filter Filter name
+     * @param string $data   Data to decode
      *
      * @return Decoded data string
      *
-     * @throws Exception if a certain decode function is not implemented yet
+     * @throws Exception if a certain decode function is not implemented yet.
      */
     public function decodeFilter($filter, $data)
     {
@@ -99,7 +99,7 @@ class FilterHelper
      *
      * Decodes data encoded in an ASCII hexadecimal representation, reproducing the original binary data.
      *
-     * @param $data (string) Data to decode
+     * @param string $data Data to decode
      *
      * @return string data string
      */
@@ -139,13 +139,12 @@ class FilterHelper
 
     /**
      * ASCII85Decode
+     *
      * Decodes data encoded in an ASCII base-85 representation, reproducing the original binary data.
      *
-     * @param $data (string) Data to decode
+     * @param string $data Data to decode
      *
-     * @return Decoded data string
-     *
-     * @since 1.0.000 (2011-05-23)
+     * @return string data string
      */
     public function decodeFilterASCII85Decode($data)
     {
@@ -229,7 +228,7 @@ class FilterHelper
      *
      * Decompresses data encoded using the zlib/deflate compression method, reproducing the original text or binary data.
      *
-     * @param $data (string) Data to decode
+     * @param string $data Data to decode
      *
      * @return string data string
      */
@@ -333,7 +332,7 @@ class FilterHelper
      *
      * Decompresses data encoded using a byte-oriented run-length encoding algorithm.
      *
-     * @param $data (string) Data to decode
+     * @param string $data Data to decode
      *
      * @return string
      */
@@ -366,5 +365,13 @@ class FilterHelper
         }
 
         return $decoded;
+    }
+
+    /**
+     * @return array list of available filters
+     */
+    public function getAvailableFilters()
+    {
+        return $this->availableFilters;
     }
 }

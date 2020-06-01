@@ -17,8 +17,7 @@
     "require": {
         "php": "^5.6|^7.0",
         "ext-mbstring": "*",
-        "ext-zlib": "*",
-        "tecnickcom/tcpdf": "^6.2.22"
+        "ext-zlib": "*"
     },
     "require-dev": {
         "atoum/atoum": "^3.1",

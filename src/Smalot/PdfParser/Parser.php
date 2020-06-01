@@ -39,6 +39,7 @@ use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementString;
 use Smalot\PdfParser\Element\ElementXRef;
+use Smalot\PdfParser\RawData\RawDataParser;
 
 /**
  * Class Parser
@@ -50,8 +51,9 @@ class Parser
      */
     protected $objects = [];
 
-    public function __construct()
+    public function __construct($cfg = [])
     {
+        $this->rawDataParser = new RawDataParser($cfg);
     }
 
     /**
@@ -78,20 +80,17 @@ class Parser
     }
 
     /**
-     * @param $content
+     * @param string $content PDF content to parse
      *
      * @return Document
      *
-     * @throws \Exception
+     * @throws Exception if secured PDF file was detected
+     * @throws Exception if no object list was found
      */
     public function parseContent($content)
     {
-        // Create structure using TCPDF Parser.
-        ob_start();
-        @$parser = new \TCPDF_PARSER(ltrim($content));
-        list($xref, $data) = $parser->getParsedData();
-        unset($parser);
-        ob_end_clean();
+        // Create structure from raw data.
+        list($xref, $data) = $this->rawDataParser->getParsedData($content);
 
         if (isset($xref['trailer']['encrypt'])) {
             throw new \Exception('Secured pdf file are currently not supported.');
