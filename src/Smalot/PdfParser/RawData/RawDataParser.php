@@ -56,6 +56,8 @@ class RawDataParser
 
     protected $filterHelper;
 
+    protected $xrefCache;
+
     /**
      * @param array $cfg Configuration array, default is []
      */
@@ -513,9 +515,9 @@ class RawDataParser
             if (isset($this->objects[$obj[1]])) {
                 // this object has been already parsed
                 return $this->objects[$obj[1]];
-            } elseif (isset($this->xref[$obj[1]])) {
+            } elseif (isset($this->xrefCache[$obj[1]])) {
                 // parse new object
-                $this->objects[$obj[1]] = $this->getIndirectObject($pdfData, $obj[1], $this->xref[$obj[1]], false);
+                $this->objects[$obj[1]] = $this->getIndirectObject($pdfData, $obj[1], $this->xrefCache[$obj[1]], false);
 
                 return $this->objects[$obj[1]];
             }
@@ -816,17 +818,17 @@ class RawDataParser
         $pdfData = substr($data, $trimpos);
 
         // get xref and trailer data
-        $xref = $this->getXrefData($pdfData);
+        $this->xrefCache = $this->getXrefData($pdfData);
 
         // parse all document objects
         $objects = [];
-        foreach ($xref['xref'] as $obj => $offset) {
+        foreach ($this->xrefCache['xref'] as $obj => $offset) {
             if (!isset($objects[$obj]) and ($offset > 0)) {
                 // decode objects with positive offset
                 $objects[$obj] = $this->getIndirectObject($pdfData, $obj, $offset, true);
             }
         }
 
-        return [$xref, $objects];
+        return [$this->xrefCache, $objects];
     }
 }
