@@ -227,10 +227,30 @@ class FilterHelper
      */
     protected function decodeFilterFlateDecode($data)
     {
+        /*
+         * gzuncompress may throw a not catchable E_WARNING in case of an error (like $data is empty)
+         * the following set_error_handler changes an E_WARNING to an E_ERROR, which is catchable.
+         */
+        set_error_handler(function ($errNo, $errStr, $errfile, $errline) {
+            if (E_WARNING === $errNo) {
+                throw new Exception($errStr);
+            } else {
+                // fallback to default php error handler
+                return false;
+            }
+        });
+
         // initialize string to return
-        $decoded = @gzuncompress($data);
-        if (false === $decoded) {
-            throw new Exception('decodeFilterFlateDecode: invalid code');
+        try {
+            $decoded = gzuncompress($data);
+            if (false === $decoded) {
+                throw new Exception('decodeFilterFlateDecode: invalid code');
+            }
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            // Restore old handler just in case it was customized outside of PDFParser.
+            restore_error_handler();
         }
 
         return $decoded;
