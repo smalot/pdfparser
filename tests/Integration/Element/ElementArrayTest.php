@@ -30,14 +30,14 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace TestsIntegration\Element;
+namespace Tests\Smalot\PDFParser\Integration\Element;
 
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
-use Smalot\PdfParser\Test\TestCase;
+use Test\Smalot\PdfParser\TestCase;
 
 class ElementArrayTest extends TestCase
 {

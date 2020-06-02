@@ -33,7 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration\Element;
 
 use Smalot\PdfParser\Element\ElementName;
-use Smalot\PdfParser\Test\TestCase;
+use Test\Smalot\PdfParser\TestCase;
 
 class ElementNameTest extends TestCase
 {

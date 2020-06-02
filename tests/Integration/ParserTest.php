@@ -34,7 +34,7 @@ namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
 use Smalot\PdfParser\Parser;
-use Smalot\PdfParser\Test\TestCase;
+use Test\Smalot\PdfParser\TestCase;
 
 class ParserTest extends TestCase
 {

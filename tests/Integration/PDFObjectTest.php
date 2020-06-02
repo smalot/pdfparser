@@ -34,7 +34,7 @@ namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\PDFObject;
-use Smalot\PdfParser\Test\TestCase;
+use Test\Smalot\PdfParser\TestCase;
 
 class PDFObjectTest extends TestCase
 {

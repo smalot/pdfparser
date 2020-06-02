@@ -33,7 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Font;
-use Smalot\PdfParser\Test\TestCase;
+use Test\Smalot\PdfParser\TestCase;
 
 class PageTest extends TestCase
 {
