@@ -147,16 +147,9 @@ class DocumentTest extends TestCase
         $this->assertTrue($objects[2] instanceof Page);
     }
 
-    public function testGetPageInstances()
+    public function testGetPages()
     {
-        // Missing catalog
         $document = $this->getDocumentInstance();
-        try {
-            $pages = $document->getPages();
-            $this->assertFalse($pages);
-        } catch (\Exception $e) {
-            $this->assertTrue($e instanceof Exception);
-        }
 
         // Listing pages from type Page
         $content = '<</Type/Page>>';
@@ -234,5 +227,15 @@ class DocumentTest extends TestCase
         $this->assertTrue($pages[0] instanceof Page);
         $this->assertTrue($pages[1] instanceof Page);
         $this->assertTrue($pages[2] instanceof Page);
+    }
+
+    public function testGetPagesMissingCatalog()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Missing catalog.');
+
+        // Missing catalog
+        $document = $this->getDocumentInstance();
+        $document->getPages();
     }
 }

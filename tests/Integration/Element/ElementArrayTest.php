@@ -50,14 +50,17 @@ class ElementArrayTest extends TestCase
         $element = ElementArray::parse('ABC', $document, $offset);
         $this->assertFalse($element);
         $this->assertEquals(0, $offset);
+
         $offset = 0;
         $element = ElementArray::parse(' / [ 4 2 ] ', $document, $offset);
         $this->assertFalse($element);
         $this->assertEquals(0, $offset);
+
         $offset = 0;
         $element = ElementArray::parse(' 0 [ 4 2 ] ', $document, $offset);
         $this->assertFalse($element);
         $this->assertEquals(0, $offset);
+
         $offset = 0;
         $element = ElementArray::parse(" 0 \n [ 4 2 ] ", $document, $offset);
         $this->assertFalse($element);
