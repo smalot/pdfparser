@@ -61,7 +61,7 @@ class ParserTest extends TestCase
 
                         foreach ($pages as $page) {
                             $content = $page->getText();
-                            $this->assert->string($content);
+                            $this->assertTrue(0 < \strlen($content));
                         }
                     } catch (Exception $e) {
                         if (

@@ -32,7 +32,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
-use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementBoolean;
@@ -49,7 +48,7 @@ class ElementTest extends TestCase
 {
     public function testParse()
     {
-        $document = new Document([]);
+        $document = $this->getDocumentInstance();
 
         // Only_values = false.
         $content = '/NameType /FlateDecode
