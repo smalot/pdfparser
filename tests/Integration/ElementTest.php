@@ -6,6 +6,9 @@
  * @author  Konrad Abicht <k.abicht@gmail.com>
  * @date    2020-06-01
  *
+ * @author  Sébastien MALOT <sebastien@malot.fr>
+ * @date    2017-01-03
+ *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
@@ -27,7 +30,7 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Tests\Smalot\PdfParser\Units;
+namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;

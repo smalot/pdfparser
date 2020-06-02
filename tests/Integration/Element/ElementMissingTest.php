@@ -29,4 +29,41 @@
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
-require_once __DIR__.'/../vendor/autoload.php';
+
+namespace Tests\Smalot\PdfParser\Integration\Element;
+
+use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Test\TestCase;
+
+class ElementMissingTest extends TestCase
+{
+    public function testEquals()
+    {
+        $element = new ElementMissing(null);
+        $this->assertFalse($element->equals(null));
+        $this->assertFalse($element->equals(true));
+        $this->assertFalse($element->equals('A'));
+        $this->assertFalse($element->equals(false));
+    }
+
+    public function testGetContent()
+    {
+        $element = new ElementMissing(null);
+        $this->assertFalse($element->getContent());
+    }
+
+    public function testContains()
+    {
+        $element = new ElementMissing(null);
+        $this->assertFalse($element->contains(null));
+        $this->assertFalse($element->contains(true));
+        $this->assertFalse($element->contains('A'));
+        $this->assertFalse($element->contains(false));
+    }
+
+    public function test__toString()
+    {
+        $element = new ElementMissing(null);
+        $this->assertEquals('', (string) $element);
+    }
+}
