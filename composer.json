@@ -21,7 +21,6 @@
         "tecnickcom/tcpdf": "^6.2.22"
     },
     "require-dev": {
-        "atoum/atoum": "^3.1",
         "phpunit/phpunit": "^5|^6",
         "friendsofphp/php-cs-fixer": "^2.16.3"
     },
