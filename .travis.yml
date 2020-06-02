@@ -23,4 +23,4 @@ install:
   - composer self-update
   - composer update --prefer-dist --no-progress --no-suggest --optimize-autoloader $COMPOSER_FLAGS
 
-script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc
+script: vendor/bin/phpunit --coverage-clover coverage/clover.xml

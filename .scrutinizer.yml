@@ -1,0 +1,11 @@
+# For more information about code coverage
+# See: https://scrutinizer-ci.com/docs/build/code_coverage
+build:
+  nodes:
+    coverage:
+      tests:
+        override:
+          - command: vendor/bin/phpunit --coverage-clover coverage/clover.xml
+            coverage:
+              file: coverage/clover.xml
+              format: clover
