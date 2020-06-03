@@ -381,7 +381,8 @@ class Page extends PDFObject
      * It extract just the PDF commands that are involved with text positions, and
      * the Text Matrix (Tm). These are: BT, ET, TL, Td, TD, Tm, T*, Tj, ', ", and TJ
      *
-     * @param array $extractedDecodedRawData The data extracted by extractDecodeRawData
+     * @param array $extractedDecodedRawData The data extracted by extractDecodeRawData.
+     *                                       If it is null, the method extractDecodeRawData is called.
      *
      * @return array An array with the text command of the page
      */
