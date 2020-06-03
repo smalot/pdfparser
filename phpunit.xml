@@ -27,10 +27,6 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <logging>
-        <log type="coverage-html" target="./coverage/html.html" showUncoveredFiles="false" />
-        <log type="coverage-clover" target="./coverage/clover.xml"/>
-    </logging>
     <filter>
         <whitelist>
             <directory>src</directory>
