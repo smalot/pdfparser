@@ -18,7 +18,6 @@ jobs:
   include:
     - php: 7.2
       env: COMPOSER_FLAGS="--prefer-lowest"
-  include:
     - php: 7.4
       env: COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
 
