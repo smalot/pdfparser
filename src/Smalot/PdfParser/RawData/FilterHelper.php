@@ -210,7 +210,6 @@ class FilterHelper
 
             case 1:
                 throw new Exception('decodeFilterASCII85Decode: invalid code');
-                break;
         }
 
         return $decoded;

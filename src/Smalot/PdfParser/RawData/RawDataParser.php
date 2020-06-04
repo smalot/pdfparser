@@ -55,8 +55,7 @@ class RawDataParser
     ];
 
     protected $filterHelper;
-
-    protected $xrefCache;
+    protected $objects;
 
     /**
      * @param array $cfg Configuration array, default is []
@@ -467,7 +466,7 @@ class RawDataParser
     protected function getIndirectObject($pdfData, $xref, $obj_ref, $offset = 0, $decoding = true)
     {
         $obj = explode('_', $obj_ref);
-        if ((false === $obj) or (2 != \count($obj))) {
+        if (2 != \count($obj)) {
             throw new Exception('Invalid object reference for $obj.');
         }
         $objref = $obj[0].' '.$obj[1].' obj';
@@ -506,7 +505,7 @@ class RawDataParser
      * Get the content of object, resolving indect object reference if necessary.
      *
      * @param string $pdfData PDF data
-     * @param string $obj     Object value
+     * @param array  $obj     Object value
      *
      * @return array containing object data
      */

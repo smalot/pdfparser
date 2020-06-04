@@ -60,15 +60,14 @@ class ElementDate extends ElementString
 
     /**
      * @param \DateTime $value
-     * @param Document  $document
      */
-    public function __construct($value, Document $document = null)
+    public function __construct($value)
     {
         if (!($value instanceof \DateTime)) {
             throw new \Exception('DateTime required.');
         }
 
-        parent::__construct($value, null);
+        parent::__construct($value);
     }
 
     /**
@@ -140,9 +139,8 @@ class ElementDate extends ElementString
             }
 
             $offset += strpos($content, '(D:') + \strlen($match['name']) + 4; // 1 for '(D:' and ')'
-            $element = new self($date, $document);
 
-            return $element;
+            return new self($date);
         }
 
         return false;

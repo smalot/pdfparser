@@ -88,9 +88,9 @@ class Element
             }
 
             return false;
-        } else {
-            return $this->equals($value);
         }
+
+        return $this->equals($value);
     }
 
     public function getContent()

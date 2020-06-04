@@ -99,13 +99,13 @@ class ElementNullTest extends TestCase
 
     public function testGetContent()
     {
-        $element = new ElementNull('null');
+        $element = new ElementNull();
         $this->assertTrue(null === $element->getContent());
     }
 
     public function testEquals()
     {
-        $element = new ElementNull('null');
+        $element = new ElementNull();
         $this->assertTrue($element->equals(null));
         $this->assertFalse($element->equals(false));
         $this->assertFalse($element->equals(0));
@@ -114,7 +114,7 @@ class ElementNullTest extends TestCase
 
     public function testContains()
     {
-        $element = new ElementNull('null');
+        $element = new ElementNull();
         $this->assertTrue($element->contains(null));
         $this->assertFalse($element->contains(false));
         $this->assertFalse($element->contains(0));
@@ -122,7 +122,7 @@ class ElementNullTest extends TestCase
 
     public function test__toString()
     {
-        $element = new ElementNull('null');
+        $element = new ElementNull();
         $this->assertEquals('null', (string) $element);
     }
 }

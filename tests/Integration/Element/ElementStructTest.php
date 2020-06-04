@@ -30,7 +30,7 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace TestsIntegration\Element;
+namespace Tests\Smalot\PdfParser\Integration\Element;
 
 use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Header;

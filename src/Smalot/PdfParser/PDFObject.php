@@ -100,7 +100,7 @@ class PDFObject
     }
 
     /**
-     * @param $name
+     * @param string $name
      *
      * @return bool
      */
@@ -128,7 +128,7 @@ class PDFObject
     }
 
     /**
-     * @param $content
+     * @param string $content
      */
     public function cleanContent($content, $char = 'X')
     {
@@ -190,7 +190,7 @@ class PDFObject
     }
 
     /**
-     * @param $content
+     * @param string $content
      *
      * @return array
      */
@@ -232,7 +232,7 @@ class PDFObject
     }
 
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return string
      *
@@ -430,7 +430,7 @@ class PDFObject
     }
 
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return array
      *
@@ -721,9 +721,7 @@ class PDFObject
     }
 
     /**
-     * @param $document Document
-     * @param $header   Header
-     * @param $content  string
+     * @param string $content
      *
      * @return PDFObject
      */
@@ -737,11 +735,9 @@ class PDFObject
 
                     case 'Form':
                         return new Form($document, $header, $content);
-
-                    default:
-                        return new self($document, $header, $content);
                 }
-                break;
+
+                return new self($document, $header, $content);
 
             case 'Pages':
                 return new Pages($document, $header, $content);
@@ -758,11 +754,10 @@ class PDFObject
 
                 if (class_exists($classname)) {
                     return new $classname($document, $header, $content);
-                } else {
-                    return new Font($document, $header, $content);
                 }
 
-                // no break
+                return new Font($document, $header, $content);
+
             default:
                 return new self($document, $header, $content);
         }

@@ -124,11 +124,7 @@ class Header
      */
     public function has($name)
     {
-        if (\array_key_exists($name, $this->elements)) {
-            return true;
-        } else {
-            return false;
-        }
+        return \array_key_exists($name, $this->elements);
     }
 
     /**
@@ -142,7 +138,7 @@ class Header
             return $this->resolveXRef($name);
         }
 
-        return new ElementMissing(null, null);
+        return new ElementMissing();
     }
 
     /**
@@ -161,7 +157,7 @@ class Header
             $object = $this->document->getObjectById($obj->getId());
 
             if (null === $object) {
-                return new ElementMissing(null, null);
+                return new ElementMissing();
             }
 
             // Update elements list for future calls.
@@ -185,18 +181,18 @@ class Header
             $header = ElementStruct::parse($content, $document, $position);
         } else {
             $elements = ElementArray::parse($content, $document, $position);
+            $header = new self([], $document);
+
             if ($elements) {
-                $header = new self($elements->getRawContent(), null); //$document);
-            } else {
-                $header = new self([], $document);
+                $header = new self($elements->getRawContent(), null);
             }
         }
 
         if ($header) {
             return $header;
-        } else {
-            // Build an empty header.
-            return new self([], $document);
         }
+
+        // Build an empty header.
+        return new self([], $document);
     }
 }

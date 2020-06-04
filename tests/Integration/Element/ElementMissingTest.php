@@ -39,7 +39,7 @@ class ElementMissingTest extends TestCase
 {
     public function testEquals()
     {
-        $element = new ElementMissing(null);
+        $element = new ElementMissing();
         $this->assertFalse($element->equals(null));
         $this->assertFalse($element->equals(true));
         $this->assertFalse($element->equals('A'));
@@ -48,13 +48,13 @@ class ElementMissingTest extends TestCase
 
     public function testGetContent()
     {
-        $element = new ElementMissing(null);
+        $element = new ElementMissing();
         $this->assertFalse($element->getContent());
     }
 
     public function testContains()
     {
-        $element = new ElementMissing(null);
+        $element = new ElementMissing();
         $this->assertFalse($element->contains(null));
         $this->assertFalse($element->contains(true));
         $this->assertFalse($element->contains('A'));
@@ -63,7 +63,7 @@ class ElementMissingTest extends TestCase
 
     public function test__toString()
     {
-        $element = new ElementMissing(null);
+        $element = new ElementMissing();
         $this->assertEquals('', (string) $element);
     }
 }

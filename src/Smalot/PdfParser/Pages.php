@@ -42,25 +42,25 @@ class Pages extends PDFObject
      */
     public function getPages($deep = false)
     {
-        if ($this->has('Kids')) {
-            if (!$deep) {
-                return $this->get('Kids')->getContent();
+        if (!$this->has('Kids')) {
+            return [];
+        }
+
+        if (!$deep) {
+            return $this->get('Kids')->getContent();
+        }
+
+        $kids = $this->get('Kids')->getContent();
+        $pages = [];
+
+        foreach ($kids as $kid) {
+            if ($kid instanceof self) {
+                $pages = array_merge($pages, $kid->getPages(true));
             } else {
-                $kids = $this->get('Kids')->getContent();
-                $pages = [];
-
-                foreach ($kids as $kid) {
-                    if ($kid instanceof self) {
-                        $pages = array_merge($pages, $kid->getPages(true));
-                    } else {
-                        $pages[] = $kid;
-                    }
-                }
-
-                return $pages;
+                $pages[] = $kid;
             }
         }
 
-        return [];
+        return $pages;
     }
 }

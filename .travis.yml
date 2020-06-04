@@ -7,8 +7,6 @@ php:
   - 7.0
   - 7.1
   - 7.2
-  - 7.3
-  - 7.4
   - nightly
 
 jobs:
@@ -18,11 +16,15 @@ jobs:
   include:
     - php: 7.2
       env: COMPOSER_FLAGS="--prefer-lowest"
+    - php: 7.3
+      env: LINTER_RUN=run
     - php: 7.4
       env: COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
 
 install:
-  - composer self-update
   - composer update --prefer-dist --no-progress --no-suggest --optimize-autoloader $COMPOSER_FLAGS
 
-script: vendor/bin/phpunit $COVERAGE_FLAGS
+script:
+  - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/php-cs-fixer fix --verbose --dry-run ; fi;
+  - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/phpstan analyse src test tests --no-progress --level 3 ; fi;
+  - php vendor/bin/phpunit $COVERAGE_FLAGS
