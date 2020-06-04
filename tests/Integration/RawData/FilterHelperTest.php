@@ -1,8 +1,10 @@
 <?php
 
 /**
- * @file
- *          This file is part of the PdfParser library.
+ * @file This file is part of the PdfParser library.
+ *
+ * @author  Konrad Abicht <k.abicht@gmail.com>
+ * @date    2020-06-01
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
@@ -28,22 +30,27 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Smalot\PdfParser\Tests\Units\RawData;
+namespace Tests\Smalot\PdfParser\Integration\RawData;
 
 use Exception;
-use mageekguy\atoum;
-use Smalot\PdfParser\RawData\FilterHelper as FilterHelperFixture;
+use Smalot\PdfParser\RawData\FilterHelper;
+use Test\Smalot\PdfParser\TestCase;
 
-class FilterHelper extends atoum\test
+class FilterHelperTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->fixture = new FilterHelper();
+    }
+
     public function testDecodeFilterFlateDecode()
     {
-        $fixture = new FilterHelperFixture();
-
         $compressed = gzcompress('Compress me', 9);
-        $result = $fixture->decodeFilter('FlateDecode', $compressed);
+        $result = $this->fixture->decodeFilter('FlateDecode', $compressed);
 
-        $this->string($result)->isEqualTo('Compress me');
+        $this->assertEquals('Compress me', $result);
     }
 
     /**
@@ -51,19 +58,20 @@ class FilterHelper extends atoum\test
      */
     public function testDecodeFilterFlateDecodeEmptyString()
     {
-        $fixture = new FilterHelperFixture();
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('gzuncompress(): data error');
 
-        try {
-            $fixture->decodeFilter('FlateDecode', '');
+        $this->fixture->decodeFilter('FlateDecode', '');
+    }
 
-            /*
-             * if we reach this, something went wrong.
-             * we expect an exception to be thrown
-             */
-            $this->boolean(true)->isFalse();
-        } catch (Exception $e) {
-            // expected, good.
-            $this->boolean(true)->isTrue();
-        }
+    /**
+     * How does function behave if an uncompressed string was given.
+     */
+    public function testDecodeFilterFlateDecodeUncompressedString()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('gzuncompress(): data error');
+
+        $this->fixture->decodeFilter('FlateDecode', 'something');
     }
 }
