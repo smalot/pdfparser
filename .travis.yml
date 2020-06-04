@@ -26,5 +26,6 @@ install:
 
 script:
   - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/php-cs-fixer fix --verbose --dry-run ; fi;
+  - if [ "$LINTER_RUN" = "run" ]; then composer require phpstan/phpstan --no-progress --no-suggest ; fi;
   - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/phpstan analyse src test tests --no-progress --level 3 ; fi;
   - php vendor/bin/phpunit $COVERAGE_FLAGS
