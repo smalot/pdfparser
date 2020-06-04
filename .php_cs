@@ -18,5 +18,7 @@ return PhpCsFixer\Config::create()
         ->files()
         ->in(__DIR__ . '/samples')
         ->in(__DIR__ . '/src')
+        ->in(__DIR__ . '/test')
+        ->in(__DIR__ . '/tests')
         ->name('*.php')
     );

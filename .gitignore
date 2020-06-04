@@ -2,7 +2,6 @@
 /coverage/*
 /samples/*
 /vendor/*
-/test*
 /xdebug/*
 /composer.phar
 /composer

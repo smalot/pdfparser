@@ -35,9 +35,6 @@ use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementXRef;
 
-/**
- * Class Page
- */
 class Page extends PDFObject
 {
     /**
@@ -272,16 +269,13 @@ class Page extends PDFObject
         return [];
     }
 
-    /*
+    /**
      * Gets all the text data with its internal representation of the page.
      *
      * @return array An array with the data and the internal representation
-     *
      */
-
     public function extractRawData()
     {
-        $text = $this->getText();
         /*
          * Now you can get the complete content of the object with the text on it
          */
@@ -313,14 +307,13 @@ class Page extends PDFObject
         return $extractedData;
     }
 
-    /*
+    /**
      * Gets all the decoded text data with it internal representation from a page.
      *
      * @param array $extractedRawData the extracted data return by extractRawData or
      *                                null if extractRawData should be called
      *
      * @return array An array with the data and the internal representation
-     *
      */
     public function extractDecodedRawData($extractedRawData = null)
     {
@@ -331,14 +324,13 @@ class Page extends PDFObject
         $currentFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] or 'TJ' == $command['o']) {
-                $text = [];
                 $data = $command['c'];
                 if (!\is_array($data)) {
                     if (isset($currentFont)) {
                         $tmpText = $currentFont->decodeOctal($data);
                         //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
                     }
-                    $tmpText = $tjText = str_replace(
+                    $tmpText = str_replace(
                             ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
                             ['\\', '(', ')', "\n", "\r", "\t", ' '],
                             $tmpText
@@ -360,7 +352,7 @@ class Page extends PDFObject
                         $decodedText = $currentFont->decodeOctal($tmpText);
                         //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
                     }
-                    $decodedText = $tjText = str_replace(
+                    $decodedText = str_replace(
                             ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
                             ['\\', '(', ')', "\n", "\r", "\t", ' '],
                             $decodedText
@@ -382,18 +374,17 @@ class Page extends PDFObject
         return $extractedRawData;
     }
 
-    /*
+    /**
      * Gets just the Text commands that are involved in text positions and
      * Text Matrix (Tm)
      *
      * It extract just the PDF commands that are involved with text positions, and
      * the Text Matrix (Tm). These are: BT, ET, TL, Td, TD, Tm, T*, Tj, ', ", and TJ
      *
-     * @param array $extractedDecodedRawData The data extracted by extractDecodeRawData
-                           if it is null, the method extractDecodeRawData is called.
+     * @param array $extractedDecodedRawData The data extracted by extractDecodeRawData.
+     *                                       If it is null, the method extractDecodeRawData is called.
      *
      * @return array An array with the text command of the page
-     *
      */
     public function getDataCommands($extractedDecodedRawData = null)
     {
@@ -527,7 +518,7 @@ class Page extends PDFObject
         return $extractedData;
     }
 
-    /*
+    /**
      * Gets the Text Matrix of the text in the page
      *
      * Return an array where every item is an array where the first item is the
@@ -536,12 +527,11 @@ class Page extends PDFObject
      * text. The first 4 numbers has to be with Scalation, Rotation and Skew of the text.
      *
      * @param array $dataCommands the data extracted by getDataCommands
-     *                     if null getDataCommands is called.
+     *                            if null getDataCommands is called
      *
-     * @return array An array with the data of the page including the Tm information
-     *         of any text in the page.
+     * @return array an array with the data of the page including the Tm information
+     *               of any text in the page
      */
-
     public function getDataTm($dataCommands = null)
     {
         if (!isset($dataCommands) or !$dataCommands) {
@@ -731,17 +721,17 @@ class Page extends PDFObject
         return $extractedData;
     }
 
-    /*
+    /**
      * Gets text data that are around the given coordinates (X,Y)
      *
      * If the text is in near the given coordinates (X,Y) (or the TM info),
      * the text is returned.  The extractedData return by getDataTm, could be use to see
      * where is the coordinates of a given text, using the TM info for it.
      *
-     * @param float $x The X value of the coordinate to search for. if null
-     *                 just the Y value is considered (same Row)
-     * @param float $y The Y value of the coordinate to search for
-     *                 just the X value is considered (same column)
+     * @param float $x      The X value of the coordinate to search for. if null
+     *                      just the Y value is considered (same Row)
+     * @param float $y      The Y value of the coordinate to search for
+     *                      just the X value is considered (same column)
      * @param float $xError The value less or more to consider an X to be "near"
      * @param float $yError The value less or more to consider an Y to be "near"
      *

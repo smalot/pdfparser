@@ -20,12 +20,18 @@
         "ext-zlib": "*"
     },
     "require-dev": {
-        "atoum/atoum": "^3.1",
+        "phpunit/phpunit": "^5.7.27|^6",
         "friendsofphp/php-cs-fixer": "^2.16.3"
     },
     "autoload": {
         "psr-0": {
             "Smalot\\PdfParser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\Smalot\\PdfParser\\": "test/",
+            "Tests\\Smalot\\PdfParser\\": "tests/"
         }
     },
     "config": {

@@ -18,9 +18,11 @@ jobs:
   include:
     - php: 7.2
       env: COMPOSER_FLAGS="--prefer-lowest"
+    - php: 7.4
+      env: COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
 
 install:
   - composer self-update
   - composer update --prefer-dist --no-progress --no-suggest --optimize-autoloader $COMPOSER_FLAGS
 
-script: ./vendor/bin/atoum -d src/Smalot/PdfParser/Tests/ -ncc
+script: vendor/bin/phpunit $COVERAGE_FLAGS
