@@ -15,10 +15,9 @@ return PhpCsFixer\Config::create()
     ->setRiskyAllowed(true)
     ->setFinder(
         PhpCsFixer\Finder::create()
-        ->files()
-        ->in(__DIR__ . '/samples')
-        ->in(__DIR__ . '/src')
-        ->in(__DIR__ . '/test')
-        ->in(__DIR__ . '/tests')
-        ->name('*.php')
+            ->exclude([
+                'vendor',
+            ])
+            ->in(__DIR__)
+            ->name('*.php')
     );

@@ -42,7 +42,7 @@ class ElementHexa extends ElementString
      * @param Document $document
      * @param int      $offset
      *
-     * @return bool|ElementHexa
+     * @return bool|ElementHexa|ElementDate
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {

@@ -89,19 +89,17 @@ class Font extends PDFObject
      * @param string $char
      * @param bool   $use_default
      *
-     * @return string
+     * @return string|bool
      */
     public function translateChar($char, $use_default = true)
     {
         $dec = hexdec(bin2hex($char));
 
         if (\array_key_exists($dec, $this->table)) {
-            $char = $this->table[$dec];
-        } else {
-            $char = ($use_default ? self::MISSING : $char);
+            return $this->table[$dec];
         }
 
-        return $char;
+        return $use_default ? self::MISSING : $char;
     }
 
     /**
@@ -292,7 +290,7 @@ class Font extends PDFObject
     }
 
     /**
-     * @param $text
+     * @param string $text
      *
      * @return string
      */
@@ -348,6 +346,7 @@ class Font extends PDFObject
      */
     public function decodeText($commands)
     {
+        $text = '';
         $word_position = 0;
         $words = [];
         $unicode = false;
@@ -456,7 +455,7 @@ class Font extends PDFObject
             if ($encoding instanceof Encoding) {
                 if ($unicode) {
                     $chars = preg_split(
-                        '//s'.($unicode ? 'u' : ''),
+                        '//su',
                         $text,
                         -1,
                         PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY

@@ -38,11 +38,7 @@ use Smalot\PdfParser\Element;
  */
 class ElementNull extends Element
 {
-    /**
-     * @param string   $value
-     * @param Document $document
-     */
-    public function __construct($value, Document $document = null)
+    public function __construct()
     {
         parent::__construct(null, null);
     }
@@ -75,7 +71,7 @@ class ElementNull extends Element
         if (preg_match('/^\s*(null)/s', $content, $match)) {
             $offset += strpos($content, 'null') + \strlen('null');
 
-            return new self(null, $document);
+            return new self();
         }
 
         return false;

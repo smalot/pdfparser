@@ -59,7 +59,7 @@ class Parser
     }
 
     /**
-     * @param $filename
+     * @param string $filename
      *
      * @return Document
      *
@@ -86,8 +86,8 @@ class Parser
      *
      * @return Document
      *
-     * @throws Exception if secured PDF file was detected
-     * @throws Exception if no object list was found
+     * @throws \Exception if secured PDF file was detected
+     * @throws \Exception if no object list was found
      */
     public function parseContent($content)
     {
@@ -125,7 +125,7 @@ class Parser
             $name = ucfirst($name);
 
             if (is_numeric($values)) {
-                $trailer[$name] = new ElementNumeric($values, $document);
+                $trailer[$name] = new ElementNumeric($values);
             } elseif (\is_array($values)) {
                 $value = $this->parseTrailer($values, null);
                 $trailer[$name] = new ElementArray($value, null);
@@ -199,7 +199,7 @@ class Parser
                         foreach ($positions as $index => $position) {
                             $id = $ids[$index].'_0';
                             $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
-                            $sub_content = substr($content, $position, $next_position - $position);
+                            $sub_content = substr($content, $position, (int) $next_position - (int) $position);
 
                             $sub_header = Header::parse($sub_content, $document);
                             $object = PDFObject::factory($document, $sub_header, '');
@@ -255,11 +255,11 @@ class Parser
     }
 
     /**
-     * @param $type
-     * @param $value
-     * @param $document
+     * @param string       $type
+     * @param string|array $value
+     * @param Document     $document
      *
-     * @return Element|Header
+     * @return Element|Header|null
      *
      * @throws \Exception
      */
@@ -271,22 +271,21 @@ class Parser
                 return $this->parseHeader($value, $document);
 
             case 'numeric':
-                return new ElementNumeric($value, $document);
+                return new ElementNumeric($value);
 
             case 'boolean':
-                return new ElementBoolean($value, $document);
+                return new ElementBoolean($value);
 
             case 'null':
-                return new ElementNull($value, $document);
+                return new ElementNull();
 
             case '(':
                 if ($date = ElementDate::parse('('.$value.')', $document)) {
                     return $date;
-                } else {
-                    return ElementString::parse('('.$value.')', $document);
                 }
 
-                // no break
+                return ElementString::parse('('.$value.')', $document);
+
             case '<':
                 return $this->parseHeaderElement('(', ElementHexa::decode($value, $document), $document);
 
@@ -300,10 +299,12 @@ class Parser
             case '[':
                 $values = [];
 
-                foreach ($value as $sub_element) {
-                    $sub_type = $sub_element[0];
-                    $sub_value = $sub_element[1];
-                    $values[] = $this->parseHeaderElement($sub_type, $sub_value, $document);
+                if (\is_array($value)) {
+                    foreach ($value as $sub_element) {
+                        $sub_type = $sub_element[0];
+                        $sub_value = $sub_element[1];
+                        $values[] = $this->parseHeaderElement($sub_type, $sub_value, $document);
+                    }
                 }
 
                 return new ElementArray($values, $document);
@@ -312,7 +313,7 @@ class Parser
             case 'obj': //I don't know what it means but got my project fixed.
             case '':
                 // Nothing to do with.
-                break;
+                return null;
 
             default:
                 throw new \Exception('Invalid type: "'.$type.'".');

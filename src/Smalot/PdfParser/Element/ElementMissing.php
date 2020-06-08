@@ -30,7 +30,6 @@
 
 namespace Smalot\PdfParser\Element;
 
-use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 
 /**
@@ -38,11 +37,7 @@ use Smalot\PdfParser\Element;
  */
 class ElementMissing extends Element
 {
-    /**
-     * @param string   $value
-     * @param Document $document
-     */
-    public function __construct($value, Document $document = null)
+    public function __construct()
     {
         parent::__construct(null, null);
     }

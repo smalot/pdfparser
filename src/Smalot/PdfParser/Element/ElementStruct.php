@@ -44,7 +44,7 @@ class ElementStruct extends Element
      * @param Document $document
      * @param int      $offset
      *
-     * @return bool|ElementStruct
+     * @return false|Header
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
@@ -64,13 +64,12 @@ class ElementStruct extends Element
             $offset += strpos($content, '<<') + \strlen(rtrim($sub));
 
             // Removes '<<' and '>>'.
-            $sub = trim(preg_replace('/^\s*<<(.*)>>\s*$/s', '\\1', $sub));
+            $sub = trim((string) preg_replace('/^\s*<<(.*)>>\s*$/s', '\\1', $sub));
 
             $position = 0;
             $elements = Element::parse($sub, $document, $position);
-            $header = new Header($elements, $document);
 
-            return $header;
+            return new Header($elements, $document);
         }
 
         return false;

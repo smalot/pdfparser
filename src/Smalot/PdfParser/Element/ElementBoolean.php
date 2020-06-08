@@ -39,10 +39,9 @@ use Smalot\PdfParser\Element;
 class ElementBoolean extends Element
 {
     /**
-     * @param string   $value
-     * @param Document $document
+     * @param string|bool $value
      */
-    public function __construct($value, Document $document = null)
+    public function __construct($value)
     {
         parent::__construct(('true' == strtolower($value) || true === $value), null);
     }
@@ -76,7 +75,7 @@ class ElementBoolean extends Element
             $value = $match['value'];
             $offset += strpos($content, $value) + \strlen($value);
 
-            return new self($value, $document);
+            return new self($value);
         }
 
         return false;

@@ -56,19 +56,19 @@ class Encoding extends PDFObject
     {
         $this->mapping = [];
         $this->differences = [];
-        $this->encoding = null;
+        $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
             // Load reference table charset.
             $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
             $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
 
-            if (class_exists($className)) {
-                $class = new $className();
-                $this->encoding = $class->getTranslations();
-            } else {
+            if (!class_exists($className)) {
                 throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
             }
+
+            $class = new $className();
+            $this->encoding = $class->getTranslations();
 
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();
@@ -86,10 +86,9 @@ class Encoding extends PDFObject
                 }
 
                 // ElementName
+                $this->differences[$code] = $difference;
                 if (\is_object($difference)) {
                     $this->differences[$code] = $difference->getContent();
-                } else {
-                    $this->differences[$code] = $difference;
                 }
 
                 // For the next char.

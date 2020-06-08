@@ -414,6 +414,8 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $result = $page->getTextXY(167, 894, 1, 1);
+        $this->assertCount(1, $result);
+        $this->assertCount(2, $result[0]);
         $this->assertEquals(
             [
                 '1',

@@ -48,7 +48,7 @@ class Page extends PDFObject
     protected $xobjects = null;
 
     /**
-     * @var[]
+     * @var array
      */
     protected $dataTm = null;
 
@@ -85,15 +85,15 @@ class Page extends PDFObject
             }
 
             return $this->fonts = $table;
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
      * @param string $id
      *
-     * @return Font
+     * @return Font|null
      */
     public function getFont($id)
     {
@@ -101,15 +101,15 @@ class Page extends PDFObject
 
         if (isset($fonts[$id])) {
             return $fonts[$id];
-        } else {
-            $id = preg_replace('/[^0-9\.\-_]/', '', $id);
-
-            if (isset($fonts[$id])) {
-                return $fonts[$id];
-            } else {
-                return null;
-            }
         }
+
+        $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+
+        if (isset($fonts[$id])) {
+            return $fonts[$id];
+        }
+
+        return null;
     }
 
     /**
@@ -145,15 +145,15 @@ class Page extends PDFObject
             }
 
             return $this->xobjects = $table;
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
      * @param string $id
      *
-     * @return PDFObject
+     * @return PDFObject|null
      */
     public function getXObject($id)
     {
@@ -161,20 +161,20 @@ class Page extends PDFObject
 
         if (isset($xobjects[$id])) {
             return $xobjects[$id];
+        }
+
+        return null;
+        /*$id = preg_replace('/[^0-9\.\-_]/', '', $id);
+
+        if (isset($xobjects[$id])) {
+            return $xobjects[$id];
         } else {
             return null;
-            /*$id = preg_replace('/[^0-9\.\-_]/', '', $id);
-
-            if (isset($xobjects[$id])) {
-                return $xobjects[$id];
-            } else {
-                return null;
-            }*/
-        }
+        }*/
     }
 
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return string
      */
@@ -221,7 +221,7 @@ class Page extends PDFObject
     }
 
     /**
-     * @param Page
+     * @param Page $page
      *
      * @return array
      */
@@ -326,6 +326,7 @@ class Page extends PDFObject
             if ('Tj' == $command['o'] or 'TJ' == $command['o']) {
                 $data = $command['c'];
                 if (!\is_array($data)) {
+                    $tmpText = '';
                     if (isset($currentFont)) {
                         $tmpText = $currentFont->decodeOctal($data);
                         //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
@@ -348,6 +349,7 @@ class Page extends PDFObject
                         continue;
                     }
                     $tmpText = $data[$i]['c'];
+                    $decodedText = '';
                     if (isset($currentFont)) {
                         $decodedText = $currentFont->decodeOctal($tmpText);
                         //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
@@ -664,7 +666,7 @@ class Page extends PDFObject
                  * string Tj
                  */
                 case "'":
-                    $Ty -= Tl;
+                    $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $command['c']];
                     break;
@@ -682,7 +684,7 @@ class Page extends PDFObject
                  */
                 case '"':
                     $data = explode(' ', $command['c']);
-                    $Ty -= Tl;
+                    $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $data[2]]; //Verify
                     break;
@@ -739,45 +741,41 @@ class Page extends PDFObject
      *               "near" the x,y coordinate, an empty array is returned. If Both, x
      *               and y coordinates are null, null is returned.
      */
-    public function getTextXY($x, $y, $xError = 0, $yError = 0)
+    public function getTextXY($x = null, $y = null, $xError = 0, $yError = 0)
     {
         if (!isset($this->dataTm) or !$this->dataTm) {
             $this->getDataTm();
         }
-        if (isset($x)) {
+
+        if (null !== $x) {
             $x = (float) $x;
         }
-        if (isset($y)) {
+
+        if (null !== $y) {
             $y = (float) $y;
         }
-        if (!isset($x) and !isset($y)) {
-            return null;
+
+        if (null === $x and null === $y) {
+            return [];
         }
 
-        if (!isset($xError)) {
-            $xError = 0;
-        } else {
-            $xError = (float) $xError;
-        }
-        if (!isset($yError)) {
-            $yError = 0;
-        } else {
-            $yError = (float) $yError;
-        }
+        $xError = (float) $xError;
+        $yError = (float) $yError;
+
         $extractedData = [];
         foreach ($this->dataTm as $item) {
             $tm = $item[0];
             $xTm = (float) $tm[4];
             $yTm = (float) $tm[5];
             $text = $item[1];
-            if (!isset($y)) {
+            if (null === $y) {
                 if (($xTm >= ($x - $xError)) and
                     ($xTm <= ($x + $xError))) {
                     $extractedData[] = [$tm, $text];
                     continue;
                 }
             }
-            if (!isset($x)) {
+            if (null === $x) {
                 if (($yTm >= ($y - $yError)) and
                     ($yTm <= ($y + $yError))) {
                     $extractedData[] = [$tm, $text];

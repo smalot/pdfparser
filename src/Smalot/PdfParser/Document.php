@@ -157,22 +157,22 @@ class Document
     /**
      * @param string $id
      *
-     * @return PDFObject
+     * @return PDFObject|Font|Page|Element|null
      */
     public function getObjectById($id)
     {
         if (isset($this->objects[$id])) {
             return $this->objects[$id];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
      * @param string $type
      * @param string $subtype
      *
-     * @return PDFObject[]
+     * @return array
      */
     public function getObjectsByType($type, $subtype = null)
     {
@@ -211,9 +211,7 @@ class Document
             /** @var Pages $object */
             $object = $this->objects[$id]->get('Pages');
             if (method_exists($object, 'getPages')) {
-                $pages = $object->getPages(true);
-
-                return $pages;
+                return $object->getPages(true);
             }
         }
 

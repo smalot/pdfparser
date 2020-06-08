@@ -39,10 +39,9 @@ use Smalot\PdfParser\Element;
 class ElementNumeric extends Element
 {
     /**
-     * @param string   $value
-     * @param Document $document
+     * @param string $value
      */
-    public function __construct($value, Document $document = null)
+    public function __construct($value)
     {
         parent::__construct((float) $value, null);
     }
@@ -60,7 +59,7 @@ class ElementNumeric extends Element
             $value = $match['value'];
             $offset += strpos($content, $value) + \strlen($value);
 
-            return new self($value, $document);
+            return new self($value);
         }
 
         return false;
