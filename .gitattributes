@@ -9,3 +9,4 @@
 /.travis.yml export-ignore
 /samples export-ignore
 /src/Smalot/PdfParser/Tests export-ignore
+/phpstan.neon export-ignore

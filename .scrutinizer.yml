@@ -1,11 +1,14 @@
-# For more information about code coverage
-# See: https://scrutinizer-ci.com/docs/build/code_coverage
 build:
-  nodes:
-    coverage:
-      tests:
-        override:
-          - command: vendor/bin/phpunit --coverage-clover coverage/clover.xml
-            coverage:
-              file: coverage/clover.xml
-              format: clover
+    nodes:
+        analysis:
+            tests:
+                override:
+                    - php-scrutinizer-run
+                    -
+                        command: SYMFONY_PHPUNIT_VERSION=7.5 php vendor/bin/simple-phpunit --coverage-clover coverage/clover.xml
+                        coverage:
+                            file: coverage/clover.xml
+                            format: clover
+            environment:
+                php:
+                    version: 7.4
