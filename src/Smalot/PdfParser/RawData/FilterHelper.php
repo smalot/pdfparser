@@ -146,8 +146,8 @@ class FilterHelper
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
         // remove start sequence 2-character sequence <~ (3Ch)(7Eh)
-        if (false !== strpos($data, '<~')) {
-            // remove EOD and extra data (if any)
+        if (0 !== strpos($data, '<~')) {
+            // remove start sequence
             $data = substr($data, 2);
         }
         // check for EOD: 2-character sequence ~> (7Eh)(3Eh)
@@ -159,7 +159,7 @@ class FilterHelper
         // data length
         $data_length = \strlen($data);
         // check for invalid characters
-        if (preg_match('/[^\x21-\x75,\x74]/', $data) > 0) {
+        if (preg_match('/[^\x21-\x75,\x7A]/', $data) > 0) {
             throw new Exception('decodeFilterASCII85Decode: invalid code');
         }
         // z sequence
