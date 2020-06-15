@@ -655,9 +655,11 @@ class RawDataParser
                         $objtype = $char;
                         ++$offset;
                         $pregResult = preg_match(
-                            '/^([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
-                            substr($pdfData, $offset),
-                            $matches
+                            '/\G([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
+                            $pdfData,
+                            $matches,
+                            0,
+                            $offset
                         );
                         if (('<' == $char) && 1 == $pregResult) {
                             // remove white space characters
@@ -693,17 +695,18 @@ class RawDataParser
                         // start stream object
                         $objtype = 'stream';
                         $offset += 6;
-                        if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset), $matches)) {
+                        if (1 == preg_match('/\G([\r]?[\n])/isU', $pdfData, $matches, 0, $offset)) {
                             $offset += \strlen($matches[0]);
                             $pregResult = preg_match(
                                 '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
-                                substr($pdfData, $offset),
+                                $pdfData,
                                 $matches,
-                                PREG_OFFSET_CAPTURE
+                                PREG_OFFSET_CAPTURE,
+                                $offset
                             );
                             if (1 == $pregResult) {
-                                $objval = substr($pdfData, $offset, $matches[0][1]);
-                                $offset += $matches[1][1];
+                                $objval = substr($pdfData, $offset, $matches[0][1] - $offset);
+                                $offset = $matches[1][1];
                             }
                         }
                     } elseif ('endstream' == substr($pdfData, $offset, 9)) {
