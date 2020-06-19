@@ -150,6 +150,9 @@ class Parser
         $content = '';
 
         foreach ($structure as $position => $part) {
+            if (\is_int($part)) {
+                $part = array(null, null);
+            }
             switch ($part[0]) {
                 case '[':
                     $elements = [];
