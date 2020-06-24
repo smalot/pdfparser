@@ -470,8 +470,8 @@ class RawDataParser
             throw new Exception('Invalid object reference for $obj.');
         }
         $objref = $obj[0].' '.$obj[1].' obj';
-        // ignore leading zeros
-        $offset += strspn($pdfData, "0\n", $offset);
+        // ignore newlines & leading zeros
+        $offset += strspn($pdfData, "0\r\n", $offset);
         if (strpos($pdfData, $objref, $offset) != $offset) {
             // an indirect reference to an undefined object shall be considered a reference to the null object
             return ['null', 'null', $offset];
