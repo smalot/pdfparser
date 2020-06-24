@@ -77,23 +77,6 @@ class ParserTest extends TestCase
     }
 
     /**
-     * Parsing certain PDFs may lead to following error:
-     *
-     *      mb_convert_encoding(): Illegal character encoding specified
-     *
-     * @see https://github.com/smalot/pdfparser/issues/229
-     */
-    public function testIssue229()
-    {
-        $filename = $this->rootDir.'/samples/bugs/Issue229_mac_roman_encoding.pdf';
-
-        $document = $this->fixture->parseFile($filename);
-
-        // calls Font::decodeContent and uses function mb_convert_encoding
-        $document->getPages()[0]->extractDecodedRawData();
-    }
-
-    /**
      * Parsing certain PDFs may lead to following notices:
      *
      *      Notice: Trying to access array offset on value of type int
