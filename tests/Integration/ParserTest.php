@@ -88,7 +88,7 @@ class ParserTest extends TestCase
 
         $document = $this->fixture->parseFile($filename);
 
-        self::assertEquals(Image::class, \get_class($document->getObjectById('128_0')));
-        self::assertStringContainsString('4 von 4', $document->getText());
+        $this->assertEquals(Image::class, \get_class($document->getObjectById('128_0')));
+        $this->assertStringContainsString('4 von 4', $document->getText());
     }
 }
