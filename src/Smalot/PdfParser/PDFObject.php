@@ -243,6 +243,7 @@ class PDFObject
         $text = '';
         $sections = $this->getSectionsText($this->content);
         $current_font = null;
+        $current_font_size = 1;
 
         foreach ($this->document->getObjects() as $obj) {
             if ($obj instanceof Font) {
@@ -274,14 +275,43 @@ class PDFObject
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y = array_pop($args);
                         $x = array_pop($args);
+                        // get max char size and use as minimum for horizontal offset
+                        $fontMaxWidth = 0;
+                        if (null !== $current_font) {
+                            $fontDictonary = $current_font->getDetails();
+                            // type 0
+                            if (isset($fontDictonary['DescendantFonts'])) {
+                                $fontDictonary = $fontDictonary['DescendantFonts'][0];
+                            }
+                            // type 1
+                            if (isset($fontDictonary['Widths'])) {
+                                foreach ($fontDictonary['Widths'] as $width) {
+                                    if ((float) $width > $fontMaxWidth) {
+                                        $fontMaxWidth = (float) $width;
+                                    }
+                                }
+
+                                $fontMaxWidth = ($fontMaxWidth / 1000) * $current_font_size;
+                            }
+                            // CIDFontType2
+                            if ('cidfonttype2' === strtolower($fontDictonary['Type'])) {
+                                if (isset($fontDictonary['DW']) && $fontDictonary['DW']) {
+                                    $fontMaxWidth = ((float) $fontDictonary['DW'] / 1000) * $current_font_size;
+                                } else {
+                                    // default
+                                    $fontMaxWidth = $current_font_size;
+                                }
+                            }
+                        }
+
                         if (((float) $x <= 0) ||
                             (false !== $current_position_td['y'] && (float) $y < (float) ($current_position_td['y']))
                         ) {
                             // vertical offset
                             $text .= "\n";
-                        } elseif (false !== $current_position_td['x'] && (float) $x > (float) (
+                        } elseif (false !== $current_position_td['x'] && ((float) $x - (float) (
                                 $current_position_td['x']
-                            )
+                            )) > $fontMaxWidth
                         ) {
                             // horizontal offset
                             $text .= ' ';
@@ -302,7 +332,8 @@ class PDFObject
                         break;
 
                     case 'Tf':
-                        list($id) = preg_split('/\s/s', $command[self::COMMAND]);
+                        list($id, $size) = preg_split('/\s/s', $command[self::COMMAND]);
+                        $current_font_size = (float) $size;
                         $id = trim($id, '/');
                         if (null !== $page) {
                             $current_font = $page->getFont($id);
