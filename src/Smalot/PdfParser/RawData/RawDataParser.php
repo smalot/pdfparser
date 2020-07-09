@@ -465,7 +465,9 @@ class RawDataParser
      */
     protected function getIndirectObject($pdfData, $xref, $objRef, $offset = 0, $decoding = true)
     {
-        // --- build indirect object header
+        /*
+         * build indirect object header
+         */
         // $objHeader = "[object number] [generation number] obj"
         $objRefArr = explode('_', $objRef);
         if (2 !== \count($objRefArr)) {
@@ -473,8 +475,10 @@ class RawDataParser
         }
         $objHeader = $objRefArr[0].' '.$objRefArr[1].' obj';
 
-        // --- check if we are in position
-        // ignore whitespace characters at offset
+        /*
+         * check if we are in position
+         */
+        // ignore whitespace characters at offset (NUL, HT, LF, FF, CR, SP)
         $offset += strspn($pdfData, "\0\t\n\f\r ", $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
@@ -483,7 +487,9 @@ class RawDataParser
             return ['null', 'null', $offset];
         }
 
-        // --- get content
+        /*
+         * get content
+         */
         // starting position of object content
         $offset += \strlen($objHeader);
         $objContentArr = [];
@@ -503,7 +509,9 @@ class RawDataParser
         // remove closing delimiter
         array_pop($objContentArr);
 
-        // --- return raw object content
+        /*
+         * return raw object content
+         */
         return $objContentArr;
     }
 
