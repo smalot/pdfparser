@@ -64,6 +64,10 @@ class Page extends PDFObject
         $resources = $this->get('Resources');
 
         if (method_exists($resources, 'has') && $resources->has('Font')) {
+            if ($resources->get('Font') instanceof ElementMissing) {
+                return [];
+            }
+
             if ($resources->get('Font') instanceof Header) {
                 $fonts = $resources->get('Font')->getElements();
             } else {

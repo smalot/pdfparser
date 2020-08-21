@@ -32,7 +32,10 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
+use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
+use Smalot\PdfParser\Page;
 use Tests\Smalot\PdfParser\TestCase;
 
 class PageTest extends TestCase
@@ -69,6 +72,35 @@ class PageTest extends TestCase
         // the second to use cache.
         $fonts = $page->getFonts();
         $this->assertEquals(0, \count($fonts));
+    }
+
+    public function testGetFontsElementMissing()
+    {
+        $headerResources = $this->getMockBuilder('Smalot\PdfParser\Header')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $headerResources->expects($this->once())
+            ->method('has')
+            ->willReturn(true);
+
+        $headerResources->expects($this->once())
+            ->method('get')
+            ->willReturn(new ElementMissing());
+
+        $header = $this->getMockBuilder('Smalot\PdfParser\Header')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $header->expects($this->once())
+            ->method('get')
+            ->willReturn($headerResources);
+
+        $page = new Page(new Document(), $header);
+        $fonts = $page->getFonts();
+
+        $this->assertEmpty($fonts);
+        $this->assertEquals([], $fonts);
     }
 
     public function testGetFont()
