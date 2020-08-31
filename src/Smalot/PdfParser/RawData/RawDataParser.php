@@ -796,6 +796,10 @@ class RawDataParser
             throw new Exception('Unable to find startxref');
         }
 
+        if ($startxref > \strlen($pdfData)) {
+            throw new Exception('Unable to find xref (PDF corrupted?)');
+        }
+
         // check xref position
         if (strpos($pdfData, 'xref', $startxref) == $startxref) {
             // Cross-Reference

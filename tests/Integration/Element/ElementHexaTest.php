@@ -35,7 +35,7 @@ namespace Tests\Smalot\PdfParser\Integration\Element;
 use Smalot\PdfParser\Element\ElementDate;
 use Smalot\PdfParser\Element\ElementHexa;
 use Smalot\PdfParser\Element\ElementString;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ElementHexaTest extends TestCase
 {

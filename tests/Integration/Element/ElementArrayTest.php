@@ -37,7 +37,7 @@ use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ElementArrayTest extends TestCase
 {

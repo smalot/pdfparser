@@ -35,7 +35,7 @@ namespace Tests\Smalot\PdfParser\Integration\Element;
 use DateTime;
 use Exception;
 use Smalot\PdfParser\Element\ElementDate;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ElementDateTest extends TestCase
 {
