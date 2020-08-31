@@ -34,7 +34,7 @@ namespace Tests\Smalot\PdfParser\Integration\RawData;
 
 use Exception;
 use Smalot\PdfParser\RawData\FilterHelper;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class FilterHelperTest extends TestCase
 {

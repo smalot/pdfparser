@@ -33,7 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Font;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class PageTest extends TestCase
 {
@@ -164,6 +164,17 @@ class PageTest extends TestCase
         $this->assertContains('0.325008', $tjItem['c'][1]['c']);
         $this->assertContains('(', $tjItem['c'][2]['t']);
         $this->assertContains('o', $tjItem['c'][2]['c']);
+    }
+
+    public function testExtractRawDataWithCorruptedPdf()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unable to find xref (PDF corrupted?)');
+
+        $this
+            ->getParserInstance()
+            ->parseFile($this->rootDir.'/samples/corrupted.pdf')
+            ->getPages();
     }
 
     public function testGetDataCommands()

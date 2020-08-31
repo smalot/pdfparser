@@ -30,7 +30,7 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Test\Smalot\PdfParser;
+namespace Tests\Smalot\PdfParser;
 
 use PHPUnit\Framework\TestCase as PHPTestCase;
 use Smalot\PdfParser\Document;

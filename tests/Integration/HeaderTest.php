@@ -37,7 +37,7 @@ use Smalot\PdfParser\Element\ElementName;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\PDFObject;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 /**
  * Class Header

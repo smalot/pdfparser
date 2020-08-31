@@ -31,5 +31,5 @@ install:
 
 script:
   - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/php-cs-fixer fix --verbose --dry-run ; fi;
-  - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/phpstan analyse src test tests --level 3 ; fi;
+  - if [ "$LINTER_RUN" = "run" ]; then php vendor/bin/phpstan analyse ; fi;
   - php vendor/bin/simple-phpunit -v $COVERAGE_FLAGS

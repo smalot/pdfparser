@@ -38,7 +38,7 @@ use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
 use Smalot\PdfParser\PDFObject;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class DocumentTest extends TestCase
 {

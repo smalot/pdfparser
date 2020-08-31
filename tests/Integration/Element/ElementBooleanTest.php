@@ -33,7 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration\Element;
 
 use Smalot\PdfParser\Element\ElementBoolean;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ElementBooleanTest extends TestCase
 {
