@@ -6,7 +6,6 @@ php:
   - 5.6
   - 7.0
   - 7.1
-  - 8.0
 
 jobs:
   include:
@@ -16,13 +15,11 @@ jobs:
       env: SYMFONY_PHPUNIT_VERSION=7.5 COMPOSER_FLAGS="--prefer-lowest"
     - php: 7.4
       env: SYMFONY_PHPUNIT_VERSION=7.5 LINTER_RUN=run COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
-    - php: 8.0
+    - php: nightly
       env: SYMFONY_PHPUNIT_VERSION=9.3
-    - php: nightly
-      env: SYMFONY_PHPUNIT_VERSION=7.5
   fast_finish: true
-  allow_failures:
-    - php: nightly
+#   allow_failures:
+#     - php: nightly
 
 before_install:
   - if [ "$LINTER_RUN" = "run" ]; then composer require phpstan/phpstan phpstan/phpstan-phpunit --dev --no-progress --no-suggest ; fi;
