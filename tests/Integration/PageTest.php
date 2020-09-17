@@ -405,6 +405,33 @@ class PageTest extends TestCase
             $item[0]
         );
         $this->assertContains('Purchase 2', $item[1]);
+
+        // ------------------------------------------------------
+        // Document text is hexadecimal encoded, see
+        // https://github.com/smalot/pdfparser/issues/336
+
+        $filename = $this->rootDir.'/samples/bugs/Issue336_decode_hexadecimal.pdf';
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+
+        $item = $dataTm[2];
+        $this->assertCount(13, $dataTm);
+        $this->assertCount(2, $item);
+        $this->assertCount(6, $item[0]);
+        $this->assertEquals(
+            [
+                '1',
+                '0',
+                '0',
+                '1',
+                '531.358',
+                '1330.765',
+            ],
+            $item[0]
+        );
+        $this->assertEquals('Lorem', $item[1]);
     }
 
     public function testGetTextXY()
