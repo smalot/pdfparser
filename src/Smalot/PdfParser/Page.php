@@ -301,6 +301,8 @@ class Page extends PDFObject
         } else {
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
+                $extractedData[] = ['t' => '', 'o' => 'BT', 'c' => ''];
+
                 $commandsText = $content->getCommandsText($sectionText);
                 foreach ($commandsText as $command) {
                     $extractedData[] = $command;
@@ -573,7 +575,7 @@ class Page extends PDFObject
                  * Begin a text object, inicializind the Tm and Tlm to identity matrix
                  */
                 case 'BT':
-                    $Tm = $defaultTl;
+                    $Tm = $defaultTm;
                     $Tl = $defaultTl; //review this.
                     $Tx = 0;
                     $Ty = 0;
@@ -584,7 +586,7 @@ class Page extends PDFObject
                  * End a text object, discarding the text matrix
                  */
                 case 'ET':
-                    $Tm = $defaultTl;
+                    $Tm = $defaultTm;
                     $Tl = $defaultTl;  //review this
                     $Tx = 0;
                     $Ty = 0;
