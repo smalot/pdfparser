@@ -34,7 +34,7 @@ namespace Tests\Smalot\PdfParser\Integration\Element;
 
 use Smalot\PdfParser\Element\ElementStruct;
 use Smalot\PdfParser\Header;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ElementStructTest extends TestCase
 {

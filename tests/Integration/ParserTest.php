@@ -36,7 +36,7 @@ use Exception;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\XObject\Image;
-use Test\Smalot\PdfParser\TestCase;
+use Tests\Smalot\PdfParser\TestCase;
 
 class ParserTest extends TestCase
 {
@@ -79,27 +79,18 @@ class ParserTest extends TestCase
     }
 
     /**
-     * Parsing certain PDFs may lead to following notices:
-     *
-     *      Notice: Trying to access array offset on value of type int
-     *
-     * and to an exception:
-     *
-     *      Missing catalog.
+     * Test that issue related pdf can now be parsed
      *
      * @see https://github.com/smalot/pdfparser/issues/267
      */
     public function testIssue267()
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Missing catalog.');
-
         $filename = $this->rootDir.'/samples/bugs/Issue267_array_access_on_int.pdf';
 
         $document = $this->fixture->parseFile($filename);
 
-        // triggers the exception
-        $document->getPages();
+        $this->assertEquals(Image::class, \get_class($document->getObjectById('128_0')));
+        $this->assertStringContainsString('4 von 4', $document->getText());
     }
 
     public function docProvider()

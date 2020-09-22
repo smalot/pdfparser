@@ -455,7 +455,7 @@ class RawDataParser
      *
      * @param string $pdfData  PDF data
      * @param array  $xref
-     * @param string $obj_ref  Object number and generation number separated by underscore character
+     * @param string $objRef   Object number and generation number separated by underscore character
      * @param int    $offset   Object offset
      * @param bool   $decoding If true decode streams
      *
@@ -463,51 +463,67 @@ class RawDataParser
      *
      * @throws Exception if invalid object reference found
      */
-    protected function getIndirectObject($pdfData, $xref, $obj_ref, $offset = 0, $decoding = true)
+    protected function getIndirectObject($pdfData, $xref, $objRef, $offset = 0, $decoding = true)
     {
-        $obj = explode('_', $obj_ref);
-        if (2 != \count($obj)) {
+        /*
+         * build indirect object header
+         */
+        // $objHeader = "[object number] [generation number] obj"
+        $objRefArr = explode('_', $objRef);
+        if (2 !== \count($objRefArr)) {
             throw new Exception('Invalid object reference for $obj.');
         }
-        $objref = $obj[0].' '.$obj[1].' obj';
-        // ignore leading zeros
+        $objHeader = $objRefArr[0].' '.$objRefArr[1].' obj';
+
+        /*
+         * check if we are in position
+         */
+        // ignore whitespace characters at offset (NUL, HT, LF, FF, CR, SP)
+        $offset += strspn($pdfData, "\0\t\n\f\r ", $offset);
+        // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
-        if (strpos($pdfData, $objref, $offset) != $offset) {
+        if (substr($pdfData, $offset, \strlen($objHeader)) !== $objHeader) {
             // an indirect reference to an undefined object shall be considered a reference to the null object
             return ['null', 'null', $offset];
         }
+
+        /*
+         * get content
+         */
         // starting position of object content
-        $offset += \strlen($objref);
-        // get array of object content
-        $objdata = [];
+        $offset += \strlen($objHeader);
+        $objContentArr = [];
         $i = 0; // object main index
         do {
-            $oldoffset = $offset;
+            $oldOffset = $offset;
             // get element
             $element = $this->getRawObject($pdfData, $offset);
             $offset = $element[2];
             // decode stream using stream's dictionary information
-            if ($decoding and ('stream' == $element[0]) and (isset($objdata[($i - 1)][0])) and ('<<' == $objdata[($i - 1)][0])) {
-                $element[3] = $this->decodeStream($pdfData, $xref, $objdata[($i - 1)][1], $element[1]);
+            if ($decoding && ('stream' === $element[0]) && (isset($objContentArr[($i - 1)][0])) && ('<<' === $objContentArr[($i - 1)][0])) {
+                $element[3] = $this->decodeStream($pdfData, $xref, $objContentArr[($i - 1)][1], $element[1]);
             }
-            $objdata[$i] = $element;
+            $objContentArr[$i] = $element;
             ++$i;
-        } while (('endobj' != $element[0]) and ($offset != $oldoffset));
-
+        } while (('endobj' !== $element[0]) && ($offset !== $oldOffset));
         // remove closing delimiter
-        array_pop($objdata);
+        array_pop($objContentArr);
 
-        // return raw object content
-        return $objdata;
+        /*
+         * return raw object content
+         */
+        return $objContentArr;
     }
 
     /**
-     * Get the content of object, resolving indect object reference if necessary.
+     * Get the content of object, resolving indirect object reference if necessary.
      *
      * @param string $pdfData PDF data
      * @param array  $obj     Object value
      *
      * @return array containing object data
+     *
+     * @throws Exception
      */
     protected function getObjectVal($pdfData, $xref, $obj)
     {
@@ -778,6 +794,10 @@ class RawDataParser
             $startxref = $matches[1][0];
         } else {
             throw new Exception('Unable to find startxref');
+        }
+
+        if ($startxref > \strlen($pdfData)) {
+            throw new Exception('Unable to find xref (PDF corrupted?)');
         }
 
         // check xref position

@@ -32,8 +32,11 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
+use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
-use Test\Smalot\PdfParser\TestCase;
+use Smalot\PdfParser\Page;
+use Tests\Smalot\PdfParser\TestCase;
 
 class PageTest extends TestCase
 {
@@ -69,6 +72,35 @@ class PageTest extends TestCase
         // the second to use cache.
         $fonts = $page->getFonts();
         $this->assertEquals(0, \count($fonts));
+    }
+
+    public function testGetFontsElementMissing()
+    {
+        $headerResources = $this->getMockBuilder('Smalot\PdfParser\Header')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $headerResources->expects($this->once())
+            ->method('has')
+            ->willReturn(true);
+
+        $headerResources->expects($this->once())
+            ->method('get')
+            ->willReturn(new ElementMissing());
+
+        $header = $this->getMockBuilder('Smalot\PdfParser\Header')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $header->expects($this->once())
+            ->method('get')
+            ->willReturn($headerResources);
+
+        $page = new Page(new Document(), $header);
+        $fonts = $page->getFonts();
+
+        $this->assertEmpty($fonts);
+        $this->assertEquals([], $fonts);
     }
 
     public function testGetFont()
@@ -164,6 +196,17 @@ class PageTest extends TestCase
         $this->assertContains('0.325008', $tjItem['c'][1]['c']);
         $this->assertContains('(', $tjItem['c'][2]['t']);
         $this->assertContains('o', $tjItem['c'][2]['c']);
+    }
+
+    public function testExtractRawDataWithCorruptedPdf()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unable to find xref (PDF corrupted?)');
+
+        $this
+            ->getParserInstance()
+            ->parseFile($this->rootDir.'/samples/corrupted.pdf')
+            ->getPages();
     }
 
     public function testGetDataCommands()
