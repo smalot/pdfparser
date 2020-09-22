@@ -377,8 +377,8 @@ class Font extends PDFObject
 
             // replace escaped chars
             $text = str_replace(
-                array('\\\\', '\(', '\)', '\n', '\r', '\t', '\ '),
-                array('\\', '(', ')', "\n", "\r", "\t", ' '),
+                ['\\\\', '\(', '\)', '\n', '\r', '\t', '\f', '\ '],
+                ['\\', '(', ')', "\n", "\r", "\t", "\f", ' '],
                 $text
             );
 
