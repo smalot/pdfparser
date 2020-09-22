@@ -124,6 +124,9 @@ class ParserTest extends TestCase
         $this->assertEquals(1, $i, 'Asserting has exactly one image');
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/issues/201
+     */
     public function testIssue201()
     {
         $filename = $this->rootDir.'/samples/bugs/issue201.pdf';

@@ -275,47 +275,31 @@ class PDFObject
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y = array_pop($args);
                         $x = array_pop($args);
-                        // get max char size and use as minimum for horizontal offset
-                        $fontMaxWidth = 0;
-                        if (null !== $current_font) {
-                            $fontDictonary = $current_font->getDetails();
-                            // type 0
-                            if (isset($fontDictonary['DescendantFonts'])) {
-                                $fontDictonary = $fontDictonary['DescendantFonts'][0];
-                            }
-                            // type 1
-                            if (isset($fontDictonary['Widths'])) {
-                                foreach ($fontDictonary['Widths'] as $width) {
-                                    if ((float) $width > $fontMaxWidth) {
-                                        $fontMaxWidth = (float) $width;
-                                    }
-                                }
 
-                                $fontMaxWidth = ($fontMaxWidth / 1000) * $current_font_size;
-                            }
-                            // CIDFontType2
-                            if ('cidfonttype2' === strtolower($fontDictonary['Type'])) {
-                                if (isset($fontDictonary['DW']) && $fontDictonary['DW']) {
-                                    $fontMaxWidth = ((float) $fontDictonary['DW'] / 1000) * $current_font_size;
-                                } else {
-                                    // default
-                                    $fontMaxWidth = $current_font_size;
-                                }
-                            }
-                        }
+                        /*
+                         * When converting pdf into text some offsets between text should at least outputted as spaces.
+                         * But small move-text operations may be normal, see https://github.com/smalot/pdfparser/issues/201
+                         *
+                         * To find out what we are dealing with, get the max char width for current font and check if offset is bigger than that
+                         */
 
-                        if (((float) $x <= 0) ||
-                            (false !== $current_position_td['y'] && (float) $y < (float) ($current_position_td['y']))
-                        ) {
+                        $fontMaxWidth = static::getMaxCharWidthFromFont($current_font, $current_font_size);
+
+                        $looksLikeCarriageReturn = (float) ($x) <= 0;
+
+                        $movingVertically = false !== $current_position_td['y']
+                            && (float) ($y) < (float) ($current_position_td['y']);
+
+                        $lookLikeSpaceChar = ((float) ($x) - (float) ($current_position_td['x'])) > $fontMaxWidth;
+
+                        if ($looksLikeCarriageReturn || $movingVertically) {
                             // vertical offset
                             $text .= "\n";
-                        } elseif (false !== $current_position_td['x'] && ((float) $x - (float) (
-                                $current_position_td['x']
-                            )) > $fontMaxWidth
-                        ) {
+                        } elseif (false !== $current_position_td['x'] && $lookLikeSpaceChar) {
                             // horizontal offset
                             $text .= ' ';
                         }
+
                         $current_position_td = ['x' => $x, 'y' => $y];
                         break;
 
@@ -802,5 +786,47 @@ class PDFObject
     protected function getUniqueId()
     {
         return spl_object_hash($this);
+    }
+
+    /**
+     * This function returns an unscaled text space units for the widest char in current font
+     *
+     * @param Font  $currentFont
+     * @param float $currentFontSize
+     *
+     * @return int
+     */
+    protected static function getMaxCharWidthFromFont($currentFont, $currentFontSize)
+    {
+        $fontMaxWidth = 0;
+        if (null !== $currentFont) {
+            $fontDictonary = $currentFont->getDetails();
+            // type 0
+            if (isset($fontDictonary['DescendantFonts'])) {
+                $fontDictonary = $fontDictonary['DescendantFonts'][0];
+            }
+            // type 1
+            if (isset($fontDictonary['Widths'])) {
+                foreach ($fontDictonary['Widths'] as $width) {
+                    if (($floatWidth = (float) $width) > $fontMaxWidth) {
+                        $fontMaxWidth = $floatWidth;
+                    }
+                }
+
+                $fontMaxWidth = ($fontMaxWidth / 1000) * $currentFontSize;
+            }
+            // CIDFontType2
+            if ('cidfonttype2' === strtolower($fontDictonary['Type'])) {
+                if (isset($fontDictonary['DW']) && $fontDictonary['DW']) {
+                    // defaultWidth / maxWidth for CIDFonts
+                    $fontMaxWidth = ((float) $fontDictonary['DW'] / 1000) * $currentFontSize;
+                } else {
+                    // default
+                    $fontMaxWidth = $currentFontSize;
+                }
+            }
+        }
+
+        return $fontMaxWidth;
     }
 }

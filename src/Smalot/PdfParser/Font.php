@@ -80,7 +80,7 @@ class Font extends PDFObject
         $details['Type'] = $this->getType();
         if ($this->has('Encoding')) {
             if ($this->get('Encoding') instanceof Encoding) {
-                $details['Encoding'] = $this->get('Encoding')->getDetails()['BaseEncoding'];
+                $details['Encoding'] = @($this->get('Encoding')->getDetails()['BaseEncoding']) ?: 'Ansi';
             } else {
                 $details['Encoding'] = (string) $this->get('Encoding');
             }
