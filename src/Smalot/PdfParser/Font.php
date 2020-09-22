@@ -376,7 +376,11 @@ class Font extends PDFObject
             }
 
             // replace escaped chars
-            $text = stripcslashes($text);
+            $text = str_replace(
+                array('\\\\', '\(', '\)', '\n', '\r', '\t', '\ '),
+                array('\\', '(', ')', "\n", "\r", "\t", ' '),
+                $text
+            );
 
             // add content to result string
             if (isset($words[$word_position])) {
