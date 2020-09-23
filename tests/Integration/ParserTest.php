@@ -93,7 +93,9 @@ class ParserTest extends TestCase
     }
 
     /**
-     * Test that issue related pdf can now be parsed
+     * Test that issue related pdf can now be parsed:
+     * Too many slashes were being stripped and resulted
+     * in malformed encoding of parts of the text content.
      *
      * @see https://github.com/smalot/pdfparser/issues/322
      */
@@ -107,7 +109,10 @@ class ParserTest extends TestCase
     }
 
     /**
-     * Test that issue related pdf can now be parsed
+     * Test that issue related pdf can now be parsed:
+     * Too many slashes were being stripped and resulted
+     * in malformed encoding of parts of the text content.
+     *
      * License of the content taken from https://stackoverflow.com in the sample PDF:
      * CC BY-SA 2.5 https://creativecommons.org/licenses/by-sa/2.5/
      *
