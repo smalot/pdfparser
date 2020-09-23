@@ -794,39 +794,39 @@ class PDFObject
      * @param Font  $currentFont
      * @param float $currentFontSize
      *
-     * @return int
+     * @return float
      */
     protected static function getMaxCharWidthFromFont($currentFont, $currentFontSize)
     {
-        $fontMaxWidth = 0;
-        if (null !== $currentFont) {
-            $fontDictonary = $currentFont->getDetails();
-            // type 0
-            if (isset($fontDictonary['DescendantFonts'])) {
-                $fontDictonary = $fontDictonary['DescendantFonts'][0];
-            }
-            // type 1
-            if (isset($fontDictonary['Widths'])) {
-                foreach ($fontDictonary['Widths'] as $width) {
-                    if (($floatWidth = (float) $width) > $fontMaxWidth) {
-                        $fontMaxWidth = $floatWidth;
-                    }
+        if (null === $currentFont) {
+            return 0;
+        }
+        $fontDictonary = $currentFont->getDetails();
+        // type 0
+        if (isset($fontDictonary['DescendantFonts'])) {
+            $fontDictonary = $fontDictonary['DescendantFonts'][0];
+        }
+        // type 1
+        if (isset($fontDictonary['Widths'])) {
+            $fontMaxWidth = 0;
+            foreach ($fontDictonary['Widths'] as $width) {
+                if (($floatWidth = (float) $width) > $fontMaxWidth) {
+                    $fontMaxWidth = $floatWidth;
                 }
+            }
 
-                $fontMaxWidth = ($fontMaxWidth / 1000) * $currentFontSize;
+            return ($fontMaxWidth / 1000) * $currentFontSize;
+        }
+        // CIDFontType2
+        if ('cidfonttype2' === strtolower($fontDictonary['Type'])) {
+            if (isset($fontDictonary['DW']) && $fontDictonary['DW']) {
+                // defaultWidth / maxWidth for CIDFonts
+                return ((float) $fontDictonary['DW'] / 1000) * $currentFontSize;
             }
-            // CIDFontType2
-            if ('cidfonttype2' === strtolower($fontDictonary['Type'])) {
-                if (isset($fontDictonary['DW']) && $fontDictonary['DW']) {
-                    // defaultWidth / maxWidth for CIDFonts
-                    $fontMaxWidth = ((float) $fontDictonary['DW'] / 1000) * $currentFontSize;
-                } else {
-                    // default
-                    $fontMaxWidth = $currentFontSize;
-                }
-            }
+
+            return $currentFontSize;
         }
 
-        return $fontMaxWidth;
+        return 0;
     }
 }
