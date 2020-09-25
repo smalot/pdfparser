@@ -405,13 +405,17 @@ class PageTest extends TestCase
             $item[0]
         );
         $this->assertContains('Purchase 2', $item[1]);
+    }
 
-        // ------------------------------------------------------
-        // Document text is hexadecimal encoded, see
-        // https://github.com/smalot/pdfparser/issues/336
-
+    /**
+     * Tests getDataTm with hexadecimal encoded document text.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/336
+     */
+    public function testGetDataTmIssue336()
+    {
         $filename = $this->rootDir.'/samples/bugs/Issue336_decode_hexadecimal.pdf';
-        $document = $parser->parseFile($filename);
+        $document = $this->getParserInstance()->parseFile($filename);
         $pages = $document->getPages();
         $page = $pages[0];
         $dataTm = $page->getDataTm();
