@@ -565,8 +565,10 @@ class Page extends PDFObject
         $Tm = $defaultTm;
         $Tl = $defaultTl;
 
+        $extractedTexts = $this->getTextArray();
         $extractedData = [];
         foreach ($dataCommands as $command) {
+            $currentText = $extractedTexts[\count($extractedData)];
             switch ($command['o']) {
                 /*
                  * BT
@@ -659,7 +661,7 @@ class Page extends PDFObject
                  * Show a Text String
                  */
                 case 'Tj':
-                    $extractedData[] = [$Tm, $command['c']];
+                    $extractedData[] = [$Tm, $currentText];
                     break;
 
                 /*
@@ -672,7 +674,7 @@ class Page extends PDFObject
                 case "'":
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
-                    $extractedData[] = [$Tm, $command['c']];
+                    $extractedData[] = [$Tm, $currentText];
                     break;
 
                 /*
@@ -687,7 +689,7 @@ class Page extends PDFObject
                  * Tc Set the character spacing, Tc, to charsSpace.
                  */
                 case '"':
-                    $data = explode(' ', $command['c']);
+                    $data = explode(' ', $currentText);
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $data[2]]; //Verify
@@ -706,18 +708,7 @@ class Page extends PDFObject
                  * amount.
                  */
                 case 'TJ':
-                    $text = [];
-                    $data = $command['c'];
-                    $numText = \count($data);
-                    for ($i = 0; $i < $numText; ++$i) {
-                        if ('n' == $data[$i]['t']) {
-                            continue;
-                        }
-                        $tmpText = $data[$i]['c'];
-                        $text[] = $tmpText;
-                    }
-                    $tjText = ''.implode('', $text);
-                    $extractedData[] = [$Tm, $tjText];
+                    $extractedData[] = [$Tm, $currentText];
                     break;
                 default:
             }
