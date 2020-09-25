@@ -248,7 +248,9 @@ class Font extends PDFObject
         $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
-            if (preg_match('/^<.*>$/', $part) && false === stripos($part, '<?xml')) {
+            if (preg_match('/^<.*>$/s', $part) && false === stripos($part, '<?xml')) {
+                // strip line breaks
+                $part = preg_replace("/[\r\n]/", "", $part);
                 $part = trim($part, '<>');
                 if ($add_braces) {
                     $text .= '(';
