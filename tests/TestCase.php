@@ -74,6 +74,10 @@ abstract class TestCase extends PHPTestCase
 
     public function tearDown() {
         // if we changed the error handler using catchAllErrors(), reset it now
+        // this is a workaround for PHP providing a way to directly get the current error handler,
+        // by temporarily setting it to var_dump and immediately resetting it.
+        // This is also used in PHPUnit's phpunit-bridge, see
+        // https://github.com/symfony/phpunit-bridge/blob/b6c713f26fd7ec6d0c77934e812f8c3d181e2fd2/DeprecationErrorHandler.php#L183-L184
         $currentErrorHandler = set_error_handler('var_dump');
         restore_error_handler();
         if($currentErrorHandler === [$this, 'catchAllErrorHandler']) {
