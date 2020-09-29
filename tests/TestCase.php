@@ -46,57 +46,11 @@ abstract class TestCase extends PHPTestCase
 
     protected $rootDir;
 
-    private $catchAllErrorHandler;
-
-    function __construct() {
-        parent::__construct();
-
-        // PHP does not implement setting a class property to an anonymous function,
-        // so we have to do it in the constructor.
-        $this->catchAllErrorHandler = function ($typeNumber, $message, $file, $lineNumber) {
-            restore_error_handler();
-            $this->fail(
-                sprintf('"%s" in %s:%d',
-                    $message,
-                    $file,
-                    $lineNumber
-                )
-            );
-        };
-    }
-
     public function setUp()
     {
         parent::setUp();
 
         $this->rootDir = __DIR__.'/..';
-    }
-
-    public function tearDown() {
-        // if we changed the error handler using catchAllErrors(), reset it now
-        // this is a workaround for PHP providing a way to directly get the current error handler,
-        // by temporarily setting it to var_dump and immediately resetting it.
-        // This is also used in PHPUnit's phpunit-bridge, see
-        // https://github.com/symfony/phpunit-bridge/blob/b6c713f26fd7ec6d0c77934e812f8c3d181e2fd2/DeprecationErrorHandler.php#L183-L184
-        $currentErrorHandler = set_error_handler('var_dump');
-        restore_error_handler();
-        if($currentErrorHandler === [$this, 'catchAllErrorHandler']) {
-            restore_error_handler();
-        }
-    }
-
-    /**
-     * This temporarily changes the PHP-internal error handler
-     * in order to allow catching errors of type E_WARNING, E_NOTICE etc.,
-     * which are not catchable via a try/catch statement.
-     * It will fail the current test from which it is run,
-     * giving a descriptive message.
-     *
-     * This can come in handy to make tests for making sure that such
-     * errors are not triggered by the code.
-     */
-    protected function catchAllErrors() {
-        set_error_handler($this->catchAllErrorHandler);
     }
 
     protected function getDocumentInstance()
