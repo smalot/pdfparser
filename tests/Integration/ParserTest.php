@@ -34,6 +34,7 @@ namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
 use Smalot\PdfParser\Parser;
+use Smalot\PdfParser\Document;
 use Smalot\PdfParser\XObject\Image;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -77,6 +78,43 @@ class ParserTest extends TestCase
         }
     }
 
+    public function testIssue19()
+    {
+        ini_set('display_errors', 1);
+        $fixture = new ParserSub();
+        $structure = [
+            [
+                '<<',
+                [
+                    [
+                        '/',
+                        'Type',
+                        7735,
+                    ],
+                    [
+                        '/',
+                        'ObjStm',
+                        7742,
+                    ]
+                ]
+            ],
+            [
+                'stream',
+                '',
+                7804,
+                [
+                    "17\n0",
+                    []
+                ]
+            ]
+        ];
+        $document = new Document();
+        $this->catchAllErrors();
+        $fixture->exposedParseObject('19_0', $structure, $document);
+
+        $this->expectNotToPerformAssertions();
+    }
+
     /**
      * Test that issue related pdf can now be parsed
      *
@@ -90,5 +128,11 @@ class ParserTest extends TestCase
 
         $this->assertEquals(Image::class, \get_class($document->getObjectById('128_0')));
         $this->assertStringContainsString('4 von 4', $document->getText());
+    }
+}
+
+class ParserSub extends Parser {
+    public function exposedParseObject($id, $structure, $document) {
+        return $this->parseObject($id, $structure, $document);
     }
 }
