@@ -363,11 +363,6 @@ class Font extends PDFObject
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<'.$command[PDFObject::COMMAND].'>');
-
-                    if (mb_check_encoding($text, 'UTF-8')) {
-                        $unicode = true;
-                    }
-
                     break;
 
                 default:
@@ -387,8 +382,7 @@ class Font extends PDFObject
         }
 
         foreach ($words as &$word) {
-            $loop_unicode = $unicode;
-            $word = $this->decodeContent($word, $loop_unicode);
+            $word = $this->decodeContent($word);
         }
 
         return implode(' ', $words);
@@ -396,11 +390,10 @@ class Font extends PDFObject
 
     /**
      * @param string $text
-     * @param bool   $unicode
      *
      * @return string
      */
-    public function decodeContent($text, &$unicode)
+    public function decodeContent($text)
     {
         if ($this->has('ToUnicode')) {
             $bytes = $this->tableSizes['from'];
@@ -444,61 +437,40 @@ class Font extends PDFObject
                 }
 
                 $text = $result;
-
-                // By definition, this code generates unicode chars.
-                $unicode = true;
             }
-        } elseif ($this->has('Encoding')) {
+        } elseif ($this->has('Encoding') && $this->get('Encoding') instanceof Encoding) {
             /** @var Encoding $encoding */
             $encoding = $this->get('Encoding');
-
-            if ($encoding instanceof Encoding) {
-                if ($unicode) {
-                    $chars = preg_split(
-                        '//su',
+            $unicode = mb_check_encoding($text, 'UTF-8');
+            $result = '';
+            if ($unicode) {
+                $chars = preg_split(
+                        '//s'.($unicode ? 'u' : ''),
                         $text,
                         -1,
                         PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-                    );
-                    $result = '';
+                );
 
-                    foreach ($chars as $char) {
-                        $dec_av = hexdec(bin2hex($char));
-                        $dec_ap = $encoding->translateChar($dec_av);
-                        $result .= self::uchr($dec_ap);
-                    }
+                foreach ($chars as $char) {
+                    $dec_av = hexdec(bin2hex($char));
+                    $dec_ap = $encoding->translateChar($dec_av);
+                    $result .= self::uchr($dec_ap);
+                }
+            } else {
+                $length = \strlen($text);
 
-                    $text = $result;
-                } else {
-                    $result = '';
-                    $length = \strlen($text);
-
-                    for ($i = 0; $i < $length; ++$i) {
-                        $dec_av = hexdec(bin2hex($text[$i]));
-                        $dec_ap = $encoding->translateChar($dec_av);
-                        $result .= \chr($dec_ap);
-                    }
-
-                    $text = $result;
-
-                    if ($encoding->get('BaseEncoding')->equals('MacRomanEncoding')) {
-                        $text = mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
-
-                        return $text;
-                    }
+                for ($i = 0; $i < $length; ++$i) {
+                    $dec_av = hexdec(bin2hex($text[$i]));
+                    $dec_ap = $encoding->translateChar($dec_av);
+                    $result .= self::uchr($dec_ap);
                 }
             }
-        }
-
-        // Convert to unicode if not already done.
-        if (!$unicode) {
-            if ($this->get('Encoding') instanceof Element &&
-                $this->get('Encoding')->equals('MacRomanEncoding')
-            ) {
-                $text = mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
-            } else {
-                $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
-            }
+            $text = $result;
+        } elseif ($this->get('Encoding') instanceof Element &&
+                  $this->get('Encoding')->equals('MacRomanEncoding')) {
+            $text = mb_convert_encoding($text, 'UTF-8', 'Mac');
+        } else {
+            $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
         }
 
         return $text;

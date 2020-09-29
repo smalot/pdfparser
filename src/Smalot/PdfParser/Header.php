@@ -60,6 +60,13 @@ class Header
         $this->document = $document;
     }
 
+    public function init()
+    {
+        foreach ($this->elements as $name => $element) {
+            $element->init();
+        }
+    }
+
     /**
      * Returns all elements.
      */
