@@ -46,8 +46,6 @@ abstract class TestCase extends PHPTestCase
 
     protected $rootDir;
 
-    private $errorHandlerChanged = false;
-
     private $catchAllErrorHandler;
 
     function __construct() {
@@ -76,7 +74,9 @@ abstract class TestCase extends PHPTestCase
 
     public function tearDown() {
         // if we changed the error handler using catchAllErrors(), reset it now
-        if($this->errorHandlerChanged) {
+        $currentErrorHandler = set_error_handler('var_dump');
+        restore_error_handler();
+        if($currentErrorHandler === [$this, 'catchAllErrorHandler']) {
             restore_error_handler();
         }
     }
@@ -92,7 +92,6 @@ abstract class TestCase extends PHPTestCase
      * errors are not triggered by the code.
      */
     protected function catchAllErrors() {
-        $this->errorHandlerChanged = true;
         set_error_handler($this->catchAllErrorHandler);
     }
 
