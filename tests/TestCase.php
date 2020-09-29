@@ -55,8 +55,7 @@ abstract class TestCase extends PHPTestCase
         // so we have to do it in the constructor.
         $this->catchAllErrorHandler = function ($typeNumber, $message, $file, $lineNumber) {
             $this->fail(
-                sprintf('%s: "%s" in %s:%d',
-                    $this->getErrorType($typeNumber),
+                sprintf('"%s" in %s:%d',
                     $message,
                     $file,
                     $lineNumber
@@ -97,28 +96,6 @@ abstract class TestCase extends PHPTestCase
      */
     protected function catchAllErrors() {
         set_error_handler($this->catchAllErrorHandler);
-    }
-
-    protected function getErrorType($typeNumber) {
-        $errorConstants = [
-            1 => 'E_ERROR',
-            2 => 'E_WARNING',
-            4 => 'E_PARSE',
-            8 => 'E_NOTICE',
-            16 => 'E_CORE_ERROR',
-            32 => 'E_CORE_WARNING',
-            64 => 'E_COMPILE_ERROR',
-            128 => 'E_COMPILE_WARNING',
-            256 => 'E_USER_ERROR',
-            512 => 'E_USER_WARNING',
-            1024 => 'E_USER_NOTICE',
-            2048 => 'E_STRICT',
-            4096 => 'E_RECOVERABLE_ERROR',
-            8192 => 'E_DEPRECATED',
-            16384 => 'E_USER_DEPRECATED',
-            32767 => 'E_ALL'
-        ];
-        return $errorConstants[$typeNumber];
     }
 
     protected function getDocumentInstance()
