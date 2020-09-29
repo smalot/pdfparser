@@ -80,7 +80,6 @@ class ParserTest extends TestCase
 
     public function testIssue19()
     {
-        ini_set('display_errors', 1);
         $fixture = new ParserSub();
         $structure = [
             [
