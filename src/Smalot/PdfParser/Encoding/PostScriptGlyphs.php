@@ -10,8 +10,8 @@ class PostScriptGlyphs
 
     public static function getGlyphs()
     {
-        if (self::$glyphs === null) {
-            self::$glyphs = json_decode(file_get_contents(dirname(__FILE__) . '/PostScriptGlyphs.json'), true);
+        if (null === self::$glyphs) {
+            self::$glyphs = json_decode(file_get_contents(__DIR__.'/PostScriptGlyphs.json'), true);
         }
 
         return self::$glyphs;

@@ -234,14 +234,13 @@ class PDFObject
     private function getDefaultFont(Page $page = null)
     {
         $fonts = [];
-        if (!is_null($page)) {
+        if (null !== $page) {
             $fonts = $page->getFonts();
         }
 
         $fonts = array_merge($fonts, array_values($this->document->getFonts()));
 
-        if (count($fonts) > 0)
-        {
+        if (\count($fonts) > 0) {
             return reset($fonts);
         }
 

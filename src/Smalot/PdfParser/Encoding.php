@@ -98,7 +98,7 @@ class Encoding extends PDFObject
 
             $this->mapping = $this->encoding;
             foreach ($this->differences as $code => $difference) {
-                /** @var string $difference */
+                /* @var string $difference */
                 $this->mapping[$code] = $difference;
             }
         }

@@ -362,7 +362,7 @@ class Font extends PDFObject
 
                 case '<':
                     // Decode hexadecimal.
-                    $text = self::decodeHexadecimal('<' . $command[PDFObject::COMMAND] . '>');
+                    $text = self::decodeHexadecimal('<'.$command[PDFObject::COMMAND].'>');
                     break;
 
                 default:
@@ -390,7 +390,6 @@ class Font extends PDFObject
 
     /**
      * @param string $text
-     * @param bool   $unicode
      *
      * @return string
      */
@@ -442,30 +441,29 @@ class Font extends PDFObject
         } elseif ($this->has('Encoding') && $this->get('Encoding') instanceof Encoding) {
             /** @var Encoding $encoding */
             $encoding = $this->get('Encoding');
-            $unicode = mb_check_encoding($text, "UTF-8");
+            $unicode = mb_check_encoding($text, 'UTF-8');
             $result = '';
             if ($unicode) {
-                $chars  = preg_split(
-                        '//s' . ($unicode ? 'u' : ''),
+                $chars = preg_split(
+                        '//s'.($unicode ? 'u' : ''),
                         $text,
                         -1,
                         PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
                 );
 
                 foreach ($chars as $char) {
-                        $dec_av = hexdec(bin2hex($char));
-                        $dec_ap = $encoding->translateChar($dec_av);
-                        $result .= self::uchr($dec_ap);
+                    $dec_av = hexdec(bin2hex($char));
+                    $dec_ap = $encoding->translateChar($dec_av);
+                    $result .= self::uchr($dec_ap);
                 }
             } else {
-                $length = strlen($text);
+                $length = \strlen($text);
 
-                for ($i = 0; $i < $length; $i++) {
-                        $dec_av = hexdec(bin2hex($text[$i]));
-                        $dec_ap = $encoding->translateChar($dec_av);
-                        $result .= self::uchr($dec_ap);
+                for ($i = 0; $i < $length; ++$i) {
+                    $dec_av = hexdec(bin2hex($text[$i]));
+                    $dec_ap = $encoding->translateChar($dec_av);
+                    $result .= self::uchr($dec_ap);
                 }
-
             }
             $text = $result;
         } elseif ($this->get('Encoding') instanceof Element &&
