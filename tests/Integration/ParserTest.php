@@ -78,6 +78,11 @@ class ParserTest extends TestCase
         }
     }
 
+    /**
+     * Tests that xrefs with line breaks between id and position are parsed correctly
+     *
+     * @see https://github.com/smalot/pdfparser/issues/336
+     */
     public function testIssue19()
     {
         $fixture = new ParserSub();
@@ -109,6 +114,10 @@ class ParserTest extends TestCase
         ];
         $document = new Document();
 
+        $fixture->exposedParseObject('19_0', $structure, $document);
+        $objects = $fixture->getObjects();
+
+        $this->assertArrayHasKey('17_0', $objects);
     }
 
     /**
@@ -130,5 +139,9 @@ class ParserTest extends TestCase
 class ParserSub extends Parser {
     public function exposedParseObject($id, $structure, $document) {
         return $this->parseObject($id, $structure, $document);
+    }
+
+    public function getObjects() {
+        return $this->objects;
     }
 }
