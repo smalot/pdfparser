@@ -310,7 +310,15 @@ class PDFObject
                         list($id) = preg_split('/\s/s', $command[self::COMMAND]);
                         $id = trim($id, '/');
                         if (null !== $page) {
-                            $current_font = $page->getFont($id);
+                            $new_font = $page->getFont($id);
+                            // If an invalid font ID is given, do not update the font.
+                            // This should theoretically never happen, as the PDF spec states for the Tf operator:
+                            // "The specified font value shall match a resource name in the Font entry of the default resource dictionary"
+                            // (https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf, page 435)
+                            // But we want to make sure that malformed PDFs do not simply crash.
+                            if (null !== $new_font) {
+                                $current_font = $new_font;
+                            }
                         }
                         break;
 
