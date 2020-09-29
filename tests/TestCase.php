@@ -54,6 +54,7 @@ abstract class TestCase extends PHPTestCase
         // PHP does not implement setting a class property to an anonymous function,
         // so we have to do it in the constructor.
         $this->catchAllErrorHandler = function ($typeNumber, $message, $file, $lineNumber) {
+            restore_error_handler();
             $this->fail(
                 sprintf('"%s" in %s:%d',
                     $message,
