@@ -111,8 +111,19 @@ class ParserTest extends TestCase
         $document = new Document();
         $this->catchAllErrors();
         $fixture->exposedParseObject('19_0', $structure, $document);
+        // reset the error handler here, so we can catch the exception following
+        restore_error_handler();
 
-        $this->expectNotToPerformAssertions();
+        // we could use
+        // $this->expectNotToPerformAssertions();
+        // here, but it's not supported by the PHPUnit version used by PHP 5.6
+        // and will cause the CI builds to fail in that environment.
+        // Therefore, we try to get the document text, which will fail expectedly,
+        // as the test data does not represent a complete PDF file.
+        //
+        // TODO: Once PHP 5 support is dropped from the library, remove this workaround
+        $this->expectExceptionMessage('Missing catalog.');
+        $document->getText();
     }
 
     /**
