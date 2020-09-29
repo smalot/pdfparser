@@ -33,8 +33,8 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
-use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\XObject\Image;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -99,8 +99,8 @@ class ParserTest extends TestCase
                         '/',
                         'ObjStm',
                         7742,
-                    ]
-                ]
+                    ],
+                ],
             ],
             [
                 'stream',
@@ -108,9 +108,9 @@ class ParserTest extends TestCase
                 7804,
                 [
                     "17\n0",
-                    []
-                ]
-            ]
+                    [],
+                ],
+            ],
         ];
         $document = new Document();
 
@@ -136,12 +136,15 @@ class ParserTest extends TestCase
     }
 }
 
-class ParserSub extends Parser {
-    public function exposedParseObject($id, $structure, $document) {
+class ParserSub extends Parser
+{
+    public function exposedParseObject($id, $structure, $document)
+    {
         return $this->parseObject($id, $structure, $document);
     }
 
-    public function getObjects() {
+    public function getObjects()
+    {
         return $this->objects;
     }
 }
