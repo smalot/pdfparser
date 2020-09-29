@@ -231,6 +231,23 @@ class PDFObject
         return $sections;
     }
 
+    private function getDefaultFont(Page $page = null)
+    {
+        $fonts = [];
+        if (!is_null($page)) {
+            $fonts = $page->getFonts();
+        }
+
+        $fonts = array_merge($fonts, array_values($this->document->getFonts()));
+
+        if (count($fonts) > 0)
+        {
+            return reset($fonts);
+        }
+
+        return new Font($this->document);
+    }
+
     /**
      * @param Page $page
      *
@@ -242,18 +259,7 @@ class PDFObject
     {
         $text = '';
         $sections = $this->getSectionsText($this->content);
-        $current_font = null;
-
-        foreach ($this->document->getObjects() as $obj) {
-            if ($obj instanceof Font) {
-                $current_font = $obj;
-                break;
-            }
-        }
-
-        if (null === $current_font) {
-            $current_font = new Font($this->document);
-        }
+        $current_font = $this->getDefaultFont($page);
 
         $current_position_td = ['x' => false, 'y' => false];
         $current_position_tm = ['x' => false, 'y' => false];
@@ -314,14 +320,6 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        // Skip if not previously defined, should never happened.
-                        if (null === $current_font) {
-                            // Fallback
-                            // TODO : Improve
-                            $text .= $command[self::COMMAND][0][self::COMMAND];
-                            break;
-                        }
-
                         $sub_text = $current_font->decodeText($command[self::COMMAND]);
                         $text .= $sub_text;
                         break;
@@ -460,9 +458,11 @@ class PDFObject
                         break;
 
                     case 'Tf':
-                        list($id) = preg_split('/\s/s', $command[self::COMMAND]);
-                        $id = trim($id, '/');
-                        $current_font = $page->getFont($id);
+                        if (null !== $page) {
+                            list($id) = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id = trim($id, '/');
+                            $current_font = $page->getFont($id);
+                        }
                         break;
 
                     case "'":
@@ -470,14 +470,6 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        // Skip if not previously defined, should never happened.
-                        if (null === $current_font) {
-                            // Fallback
-                            // TODO : Improve
-                            $text[] = $command[self::COMMAND][0][self::COMMAND];
-                            break;
-                        }
-
                         $sub_text = $current_font->decodeText($command[self::COMMAND]);
                         $text[] = $sub_text;
                         break;
