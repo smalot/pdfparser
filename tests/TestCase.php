@@ -46,11 +46,76 @@ abstract class TestCase extends PHPTestCase
 
     protected $rootDir;
 
+    private $errorHandlerChanged = false;
+
+    private $catchAllErrorHandler;
+
+    function __construct() {
+        parent::__construct();
+
+        // PHP does not implement setting a class property to an anonymous function,
+        // so we have to do it in the constructor.
+        $this->catchAllErrorHandler = function ($typeNumber, $message, $file, $lineNumber) {
+            $this->fail(
+                sprintf('%s: "%s" in %s:%d',
+                    $this->getErrorType($typeNumber),
+                    $message,
+                    $file,
+                    $lineNumber
+                )
+            );
+        };
+    }
+
     public function setUp()
     {
         parent::setUp();
 
         $this->rootDir = __DIR__.'/..';
+    }
+
+    public function tearDown() {
+        // if we changed the error handler using catchAllErrors(), reset it now
+        if($this->errorHandlerChanged) {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * This temporarily changes the PHP-internal error handler
+     * in order to allow catching errors of type E_WARNING, E_NOTICE etc.,
+     * which are not catchable via a try/catch statement.
+     * It will fail the current test from which it is run,
+     * giving a descriptive message.
+     *
+     * This can come in handy to make tests for making sure that such
+     * errors are not triggered by the code.
+     */
+    protected function catchAllErrors() {
+        $this->errorHandlerChanged = true;
+        set_error_handler($this->catchAllErrorHandler);
+    }
+
+    protected function getErrorType($typeNumber) {
+        $errorConstants = [
+            1 => 'E_ERROR',
+            2 => 'E_WARNING',
+            4 => 'E_PARSE',
+            8 => 'E_NOTICE',
+            16 => 'E_CORE_ERROR',
+            32 => 'E_CORE_WARNING',
+            64 => 'E_COMPILE_ERROR',
+            128 => 'E_COMPILE_WARNING',
+            256 => 'E_USER_ERROR',
+            512 => 'E_USER_WARNING',
+            1024 => 'E_USER_NOTICE',
+            2048 => 'E_STRICT',
+            4096 => 'E_RECOVERABLE_ERROR',
+            8192 => 'E_DEPRECATED',
+            16384 => 'E_USER_DEPRECATED',
+            32767 => 'E_ALL'
+        ];
+        return $errorConstants[$typeNumber];
     }
 
     protected function getDocumentInstance()
