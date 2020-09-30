@@ -335,7 +335,6 @@ class Page extends PDFObject
         if (!isset($extractedRawData) or !$extractedRawData) {
             $extractedRawData = $this->extractRawData();
         }
-        $unicode = true;
         $currentFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] or 'TJ' == $command['o']) {
@@ -353,7 +352,7 @@ class Page extends PDFObject
                     );
                     $tmpText = utf8_encode($tmpText);
                     if (isset($currentFont)) {
-                        $tmpText = $currentFont->decodeContent($tmpText, $unicode);
+                        $tmpText = $currentFont->decodeContent($tmpText);
                     }
                     $command['c'] = $tmpText;
                     continue;
@@ -376,7 +375,7 @@ class Page extends PDFObject
                     );
                     $decodedText = utf8_encode($decodedText);
                     if (isset($currentFont)) {
-                        $decodedText = $currentFont->decodeContent($decodedText, $unicode);
+                        $decodedText = $currentFont->decodeContent($decodedText);
                     }
                     $command['c'][$i]['c'] = $decodedText;
                     continue;
