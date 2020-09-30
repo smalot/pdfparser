@@ -483,7 +483,7 @@ class Font extends PDFObject
             // mb_convert_encoding does not support MacRoman/macintosh,
             // so we use iconv() here
             $text = iconv('macintosh', 'UTF-8', $text);
-        } else {
+        } elseif (!mb_check_encoding($text, 'UTF-8')) { // don't double-encode strings already in UTF-8
             $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
         }
 
