@@ -91,4 +91,39 @@ class ParserTest extends TestCase
         $this->assertEquals(Image::class, \get_class($document->getObjectById('128_0')));
         $this->assertStringContainsString('4 von 4', $document->getText());
     }
+
+    /**
+     * Test that issue related pdf can now be parsed:
+     * Too many slashes were being stripped and resulted
+     * in malformed encoding of parts of the text content.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/322
+     */
+    public function testIssue322()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue322.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString('this text isn’t working properly, I’ve edited it in Google Documents', $document->getText());
+    }
+
+    /**
+     * Test that issue related pdf can now be parsed:
+     * Too many slashes were being stripped and resulted
+     * in malformed encoding of parts of the text content.
+     *
+     * License of the content taken from https://stackoverflow.com in the sample PDF:
+     * CC BY-SA 2.5 https://creativecommons.org/licenses/by-sa/2.5/
+     *
+     * @see https://github.com/smalot/pdfparser/issues/334
+     */
+    public function testIssue334()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue334.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString('This question already has an answer here', $document->getText());
+    }
 }
