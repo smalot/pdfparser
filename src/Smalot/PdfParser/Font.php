@@ -99,7 +99,13 @@ class Font extends PDFObject
             return $this->table[$dec];
         }
 
-        return $use_default ? self::MISSING : $char;
+        // fallback for decoding single-byte ANSI characters that are not in the lookup table
+        $fallbackDecoded = $char;
+        if (\strlen($char) < 2 && $this->has('Encoding') && $this->get('Encoding')->__toString() === 'WinAnsiEncoding') {
+            $fallbackDecoded = self::uchr($dec);
+        }
+
+        return $use_default ? self::MISSING : $fallbackDecoded;
     }
 
     /**
@@ -109,7 +115,9 @@ class Font extends PDFObject
      */
     public static function uchr($code)
     {
-        return html_entity_decode('&#'.((int) $code).';', ENT_NOQUOTES, 'UTF-8');
+        // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
+        // therefore, we use mb_convert_encoding() instead
+        return  mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
     }
 
     /**
