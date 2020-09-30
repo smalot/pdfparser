@@ -250,7 +250,7 @@ class Font extends PDFObject
         foreach ($parts as $part) {
             if (preg_match('/^<.*>$/s', $part) && false === stripos($part, '<?xml')) {
                 // strip line breaks
-                $part = preg_replace("/[\r\n]/", "", $part);
+                $part = preg_replace("/[\r\n]/", '', $part);
                 $part = trim($part, '<>');
                 if ($add_braces) {
                     $text .= '(';
