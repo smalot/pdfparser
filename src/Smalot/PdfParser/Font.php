@@ -101,7 +101,7 @@ class Font extends PDFObject
 
         // fallback for decoding single-byte ANSI characters that are not in the lookup table
         $fallbackDecoded = $char;
-        if (\strlen($char) < 2 && $this->has('Encoding') && $this->get('Encoding')->__toString() === 'WinAnsiEncoding') {
+        if (\strlen($char) < 2 && $this->has('Encoding') && 'WinAnsiEncoding' === $this->get('Encoding')->__toString()) {
             $fallbackDecoded = self::uchr($dec);
         }
 
