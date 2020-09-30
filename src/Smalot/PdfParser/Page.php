@@ -115,7 +115,7 @@ class Page extends PDFObject
 
         if (isset($fonts[$id])) {
             return $fonts[$id];
-        } else  {
+        } else {
             $id = preg_replace('/[^0-9\.\-_]/', '', $id);
             if (isset($fonts[$id])) {
                 return $fonts[$id];

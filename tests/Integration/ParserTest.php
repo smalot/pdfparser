@@ -78,6 +78,21 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Properly decode ANSI encodings without producing scrambled UTF-8 characters
+     *
+     * @see https://github.com/smalot/pdfparser/issues/202
+     * @see https://github.com/smalot/pdfparser/pull/257
+     */
+    public function testIssue202()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue202.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertEquals('„fööbär“', $document->getText());
+    }
+
+    /**
      * Test that issue related pdf can now be parsed
      *
      * @see https://github.com/smalot/pdfparser/issues/267
