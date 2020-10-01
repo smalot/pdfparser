@@ -79,6 +79,8 @@ class ParserTest extends TestCase
 
     /**
      * Properly decode international unicode characters
+     *
+     * @todo the other languages in the test document need work because of issues with UTF-16 decoding (Chinese, Japanese) and missing right-to-left language support
      */
     public function testUnicodeDecoding()
     {
@@ -92,7 +94,6 @@ class ParserTest extends TestCase
         $testString_georgean = "ლორემ იფსუმ დოლორ სით ამეთ ესთ ეთ სონეთ ზრილ მელიუს ელიგენდი თორყუათოს \nელოყუენთიამ ესთ ეხ უსუ ფალლი ალთერა ცეთეროს ინ ეთ ომითთამ თრაცთათოს ჰის ეუ ველ \nალთერუმ ვოლუფთათუმ მაზიმ ფერთინახ ჰენდრერით ინ ფრი ნეც ინ თემფორ ფეთენთიუმ ვერო \nფოსთულანთ ელოყუენთიამ უსუ ნე ან ყუი ლიბერ ეფიცური ასსუევერით იდ ნიბჰ ყუას ჰაბემუს სეა";
         $testString_korean = "그 임기는 4년으로 하며. 이 경우 그 명령에 의하여 개정 또는 폐지되었던 법률은 그 명령이 승인을 얻지 못한 때부터 당연히 효력을 \n회복한다. 가부동수인 때에는 부결된 것으로 본다. 법률과 적법한 절차에 의하지 아니하고는 처벌·보안처분 또는 강제노역을 받지 \n아니한다.";
         $testString_western = 'ÄÖÜöäüßẞ Ññ¡¿ øÅå';
-        // @todo the other languages in the test document need work because of issues with UTF-16 decoding (Chinese, Japanese) and missing right-to-left language support
 
         $this->assertStringContainsString($testString_cyrillic, $document->getText());
         $this->assertStringContainsString($testString_greek, $document->getText());

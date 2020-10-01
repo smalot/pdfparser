@@ -117,7 +117,7 @@ class Font extends PDFObject
     {
         // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
         // therefore, we use mb_convert_encoding() instead
-        return  mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
+        return mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
     }
 
     /**
@@ -483,7 +483,8 @@ class Font extends PDFObject
             // mb_convert_encoding does not support MacRoman/macintosh,
             // so we use iconv() here
             $text = iconv('macintosh', 'UTF-8', $text);
-        } elseif (!mb_check_encoding($text, 'UTF-8')) { // don't double-encode strings already in UTF-8
+        } elseif (!mb_check_encoding($text, 'UTF-8')) {
+            // don't double-encode strings already in UTF-8
             $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
         }
 

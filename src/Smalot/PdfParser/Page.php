@@ -107,8 +107,6 @@ class Page extends PDFObject
             return $fonts[$id];
         }
 
-        // $id = preg_replace('/[^0-9\.\-_]/', '', $id);
-        //
         // According to the PDF specs (https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf, page 238)
         // "The font resource name presented to the Tf operator is arbitrary, as are the names for all kinds of resources"
         // Instead, we search for the unfiltered name first and then do this cleaning as a fallback, so all tests still pass.
