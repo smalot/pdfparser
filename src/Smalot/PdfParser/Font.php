@@ -407,7 +407,7 @@ class Font extends PDFObject
      *
      * @return string
      */
-    public function decodeContent($text, &$unicode)
+    public function decodeContent($text, &$unicode = null)
     {
         if ($this->has('ToUnicode')) {
             $bytes = $this->tableSizes['from'];
