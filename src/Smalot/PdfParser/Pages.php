@@ -38,6 +38,9 @@ class Pages extends PDFObject
     /**
      * @param bool $deep
      *
+     * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
+     * see https://github.com/smalot/pdfparser/issues/331
+     *
      * @return array
      */
     public function getPages($deep = false)
