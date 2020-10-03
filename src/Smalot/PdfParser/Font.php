@@ -402,8 +402,7 @@ class Font extends PDFObject
 
     /**
      * @param string $text
-     *
-     * @deprecated Usage of second parameter $unicode is deprecated. It might be removed in a future release.
+     * @param bool   $unicode This parameter is deprecated and might be removed in a future release
      *
      * @return string
      */
