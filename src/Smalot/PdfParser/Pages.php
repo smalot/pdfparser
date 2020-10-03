@@ -56,7 +56,7 @@ class Pages extends PDFObject
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
                 $pages = array_merge($pages, $kid->getPages(true));
-            } else {
+            } elseif ($kid instanceof Page) {
                 $pages[] = $kid;
             }
         }
