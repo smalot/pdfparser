@@ -403,9 +403,11 @@ class Font extends PDFObject
     /**
      * @param string $text
      *
+     * @deprecated Usage of second parameter $unicode is deprecated. It might be removed in a future release.
+     *
      * @return string
      */
-    public function decodeContent($text)
+    public function decodeContent($text, &$unicode)
     {
         if ($this->has('ToUnicode')) {
             $bytes = $this->tableSizes['from'];
