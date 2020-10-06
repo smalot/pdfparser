@@ -190,7 +190,7 @@ class Parser
                         $table = [];
 
                         foreach ($xrefs as $xref) {
-                            list($id, $position) = explode(' ', trim($xref));
+                            list($id, $position) = preg_split("/\s+/", trim($xref));
                             $table[$position] = $id;
                         }
 
