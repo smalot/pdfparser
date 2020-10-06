@@ -33,6 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
+use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\XObject\Image;
 use Tests\Smalot\PdfParser\TestCase;
@@ -75,6 +76,48 @@ class ParserTest extends TestCase
                 }
             }
         }
+    }
+
+    /**
+     * Tests that xrefs with line breaks between id and position are parsed correctly
+     *
+     * @see https://github.com/smalot/pdfparser/issues/336
+     */
+    public function testIssue19()
+    {
+        $fixture = new ParserSub();
+        $structure = [
+            [
+                '<<',
+                [
+                    [
+                        '/',
+                        'Type',
+                        7735,
+                    ],
+                    [
+                        '/',
+                        'ObjStm',
+                        7742,
+                    ],
+                ],
+            ],
+            [
+                'stream',
+                '',
+                7804,
+                [
+                    "17\n0",
+                    [],
+                ],
+            ],
+        ];
+        $document = new Document();
+
+        $fixture->exposedParseObject('19_0', $structure, $document);
+        $objects = $fixture->getObjects();
+
+        $this->assertArrayHasKey('17_0', $objects);
     }
 
     /**
@@ -125,5 +168,18 @@ class ParserTest extends TestCase
         $document = $this->fixture->parseFile($filename);
 
         $this->assertStringContainsString('This question already has an answer here', $document->getText());
+    }
+}
+
+class ParserSub extends Parser
+{
+    public function exposedParseObject($id, $structure, $document)
+    {
+        return $this->parseObject($id, $structure, $document);
+    }
+
+    public function getObjects()
+    {
+        return $this->objects;
     }
 }
