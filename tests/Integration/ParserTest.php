@@ -79,6 +79,32 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Properly decode international unicode characters
+     *
+     * @todo the other languages in the test document need work because of issues with UTF-16 decoding (Chinese, Japanese) and missing right-to-left language support
+     */
+    public function testUnicodeDecoding()
+    {
+        $filename = $this->rootDir.'/samples/InternationalChars.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $testString_cyrillic = "Лорем ипсум долор сит амет, еу сед либрис долорем инцоррупте. Ут лорем долоре граеце хис, модо \nаппареат сапиентем ут мел. Хис ат лаборе омнесяуе сигниферумяуе, тале анциллае ан еум, ех сед синт \nнобис. Сед модус вивендо цопиосае еа, сапиентем цонцептам хис не, яуандо сплендиде еум те.";
+        $testString_greek = "Λορεμ ιπσθμ δολορ σιτ αμετ, τατιον cονστιτθαμ ομιτταντθρ εα σεα, αθδιαμ μανδαμθσ μελ τε. Διcο μθτατ \nινδοcτθμ εοσ ει, ει vιξ σονετ παρτιενδο ινcορρθπτε. Επιcθρι αντιοπαμ εθ νεc, ναμ λεγιμθσ γθβεργρεν ιν. \nVιξ σολετ ρεcτεqθε εα, ηασ νο αλιqθαμ μινιμθμ. Ιδ προ περcιπιτ περιcθλισ δετερρθισσετ, ιν νεc αππετερε \nομιτταντθρ ελοqθεντιαμ, ορατιο δοcτθσ ναμ αδ. Ετ σιτ σολθμ ρεcθσαβο, vιξ θτ λοβορτισ σπλενδιδε \nρεπθδιανδαε.";
+        $testString_armenian = "լոռեմ իպսում դոլոռ սիթ ամեթ վիս ին իմպեդիթ ադմոդում ծու ապպառեաթ սծռիպսեռիթ մել մել եթ \nդոմինգ ծոնսեքուունթուռ ծիվիբուս վիվենդում պռոդեսսեթ ադ մեի թիբիքուե ապպառեաթ սիմիլիքուե թե \nվիմ վիխ ծասե սեմպեռ դոլոռեմ եխ եամ եա սթեթ մեդիոծռեմ ծոնսեթեթուռ ռաթիոնիբուս ինթելլեգամ \nմել թե";
+        $testString_georgean = "ლორემ იფსუმ დოლორ სით ამეთ ესთ ეთ სონეთ ზრილ მელიუს ელიგენდი თორყუათოს \nელოყუენთიამ ესთ ეხ უსუ ფალლი ალთერა ცეთეროს ინ ეთ ომითთამ თრაცთათოს ჰის ეუ ველ \nალთერუმ ვოლუფთათუმ მაზიმ ფერთინახ ჰენდრერით ინ ფრი ნეც ინ თემფორ ფეთენთიუმ ვერო \nფოსთულანთ ელოყუენთიამ უსუ ნე ან ყუი ლიბერ ეფიცური ასსუევერით იდ ნიბჰ ყუას ჰაბემუს სეა";
+        $testString_korean = "그 임기는 4년으로 하며. 이 경우 그 명령에 의하여 개정 또는 폐지되었던 법률은 그 명령이 승인을 얻지 못한 때부터 당연히 효력을 \n회복한다. 가부동수인 때에는 부결된 것으로 본다. 법률과 적법한 절차에 의하지 아니하고는 처벌·보안처분 또는 강제노역을 받지 \n아니한다.";
+        $testString_western = 'ÄÖÜöäüßẞ Ññ¡¿ øÅå';
+
+        $this->assertStringContainsString($testString_cyrillic, $document->getText());
+        $this->assertStringContainsString($testString_greek, $document->getText());
+        $this->assertStringContainsString($testString_armenian, $document->getText());
+        $this->assertStringContainsString($testString_georgean, $document->getText());
+        $this->assertStringContainsString($testString_korean, $document->getText());
+        $this->assertStringContainsString($testString_western, $document->getText());
+    }
+
+    /**
      * Tests that xrefs with line breaks between id and position are parsed correctly
      *
      * @see https://github.com/smalot/pdfparser/issues/336
@@ -118,6 +144,21 @@ class ParserTest extends TestCase
         $objects = $fixture->getObjects();
 
         $this->assertArrayHasKey('17_0', $objects);
+    }
+
+    /**
+     * Properly decode ANSI encodings without producing scrambled UTF-8 characters
+     *
+     * @see https://github.com/smalot/pdfparser/issues/202
+     * @see https://github.com/smalot/pdfparser/pull/257
+     */
+    public function testIssue202()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue202.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertEquals('„fööbär“', $document->getText());
     }
 
     /**

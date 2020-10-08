@@ -107,10 +107,17 @@ class Page extends PDFObject
             return $fonts[$id];
         }
 
-        $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+        // According to the PDF specs (https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf, page 238)
+        // "The font resource name presented to the Tf operator is arbitrary, as are the names for all kinds of resources"
+        // Instead, we search for the unfiltered name first and then do this cleaning as a fallback, so all tests still pass.
 
         if (isset($fonts[$id])) {
             return $fonts[$id];
+        } else {
+            $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+            if (isset($fonts[$id])) {
+                return $fonts[$id];
+            }
         }
 
         return null;
@@ -326,7 +333,6 @@ class Page extends PDFObject
         if (!isset($extractedRawData) or !$extractedRawData) {
             $extractedRawData = $this->extractRawData();
         }
-        $unicode = true;
         $currentFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] or 'TJ' == $command['o']) {
@@ -344,7 +350,7 @@ class Page extends PDFObject
                     );
                     $tmpText = utf8_encode($tmpText);
                     if (isset($currentFont)) {
-                        $tmpText = $currentFont->decodeContent($tmpText, $unicode);
+                        $tmpText = $currentFont->decodeContent($tmpText);
                     }
                     $command['c'] = $tmpText;
                     continue;
@@ -367,7 +373,7 @@ class Page extends PDFObject
                     );
                     $decodedText = utf8_encode($decodedText);
                     if (isset($currentFont)) {
-                        $decodedText = $currentFont->decodeContent($decodedText, $unicode);
+                        $decodedText = $currentFont->decodeContent($decodedText);
                     }
                     $command['c'][$i]['c'] = $decodedText;
                     continue;

@@ -31,6 +31,7 @@
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Element\ElementNumeric;
+use Smalot\PdfParser\Encoding\PostScriptGlyphs;
 
 /**
  * Class Encoding
@@ -95,12 +96,10 @@ class Encoding extends PDFObject
                 ++$code;
             }
 
-            // Build final mapping (custom => standard).
-            $table = array_flip(array_reverse($this->encoding, true));
-
+            $this->mapping = $this->encoding;
             foreach ($this->differences as $code => $difference) {
                 /* @var string $difference */
-                $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : Font::MISSING);
+                $this->mapping[$code] = $difference;
             }
         }
     }
@@ -129,6 +128,6 @@ class Encoding extends PDFObject
             $dec = $this->mapping[$dec];
         }
 
-        return $dec;
+        return PostScriptGlyphs::getCodePoint($dec);
     }
 }

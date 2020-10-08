@@ -77,6 +77,7 @@ class Document
 
         // Propagate init to objects.
         foreach ($this->objects as $object) {
+            $object->getHeader()->init();
             $object->init();
         }
     }
