@@ -45,6 +45,34 @@ class FilterHelperTest extends TestCase
         $this->fixture = new FilterHelper();
     }
 
+    /*
+     * Tests for filter ASCII85Decode
+     */
+
+    public function testDecodeFilterASCII85Decode()
+    {
+        $compressed = '6Z6g\Eb0<5ARlp)FE2)5B)'; // = Compressed string
+        $result = $this->fixture->decodeFilter('ASCII85Decode', $compressed);
+
+        $this->assertEquals('Compressed string', $result);
+    }
+
+    /*
+     * Tests for filter ASCIIHexDecode
+     */
+
+    public function testDecodeFilterASCIIHexDecode()
+    {
+        $compressed = '43 6f 6d 70 72 65 73 73 65 64 20 73 74 72 69 6e 67'; // = Compressed string
+        $result = $this->fixture->decodeFilter('ASCIIHexDecode', $compressed);
+
+        $this->assertEquals('Compressed string', $result);
+    }
+
+    /*
+     * Tests for filter FlateDecode
+     */
+
     public function testDecodeFilterFlateDecode()
     {
         $compressed = gzcompress('Compress me', 9);
@@ -73,5 +101,73 @@ class FilterHelperTest extends TestCase
         $this->expectExceptionMessage('gzuncompress(): data error');
 
         $this->fixture->decodeFilter('FlateDecode', 'something');
+    }
+
+    /**
+     * How does function behave if an uncompressed string was given.
+     */
+    public function testDecodeFilterUnknownFilter()
+    {
+        $result = $this->fixture->decodeFilter('a string '.rand(), 'something');
+        $this->assertEquals('something', $result);
+    }
+
+    /*
+     * Test for filters not being implemented yet.
+     */
+
+    /**
+     * CCITTFaxDecode
+     */
+    public function testDecodeFilterCCITTFaxDecode()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Decode CCITTFaxDecode not implemented yet.');
+
+        $this->fixture->decodeFilter('CCITTFaxDecode', '');
+    }
+
+    /**
+     * Crypt
+     */
+    public function testDecodeFilterCrypt()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Decode Crypt not implemented yet.');
+
+        $this->fixture->decodeFilter('Crypt', '');
+    }
+
+    /**
+     * DCTDecode
+     */
+    public function testDecodeFilterDCTDecode()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Decode DCTDecode not implemented yet.');
+
+        $this->fixture->decodeFilter('DCTDecode', '');
+    }
+
+    /**
+     * JBIG2Decode
+     */
+    public function testDecodeFilterJBIG2Decode()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Decode JBIG2Decode not implemented yet.');
+
+        $this->fixture->decodeFilter('JBIG2Decode', '');
+    }
+
+    /**
+     * JPXDecode
+     */
+    public function testDecodeFilterJPXDecode()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Decode JPXDecode not implemented yet.');
+
+        $this->fixture->decodeFilter('JPXDecode', '');
     }
 }
