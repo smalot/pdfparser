@@ -447,6 +447,32 @@ class PageTest extends TestCase
         $this->assertEquals('Lorem', $item[1]);
     }
 
+    /**
+     * Tests that getPages() only returns Page objects
+     *
+     * @see https://github.com/smalot/pdfparser/issues/331
+     *
+     * Sample pdf file provided by @Reqrefusion, see
+     * https://github.com/smalot/pdfparser/pull/350#issuecomment-703195220
+     */
+    public function testGetPages()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue331.pdf';
+        $document = $this->getParserInstance()->parseFile($filename);
+        $pages = $document->getPages();
+
+        // This should actually be 3 pages, but as long as the cause for issue #331
+        // has not been found and the issue is not fixed, we'll settle for 2 here.
+        // We still test for the count, so in case the bug should be fixed
+        // unknowingly, we don't forget to resolve the issue as well and make sure
+        // this assertion is present.
+        $this->assertCount(2, $pages);
+
+        foreach ($pages as $page) {
+            $this->assertTrue($page instanceof Page);
+        }
+    }
+
     public function testGetTextXY()
     {
         // Document with text.
