@@ -45,6 +45,8 @@ class FontTest extends TestCase
         $this->assertEquals(-50, Font::getFontSpaceLimit());
         Font::setFontSpaceLimit(-100);
         $this->assertEquals(-100, Font::getFontSpaceLimit());
+
+        Font::setFontSpaceLimit(-50);
     }
 
     public function testGetName()
