@@ -40,6 +40,13 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class FontTest extends TestCase
 {
+    function testSetFontSpaceLimit()
+    {
+        $this->assertEquals(-50, Font::getFontSpaceLimit());
+        Font::setFontSpaceLimit(-100);
+        $this->assertEquals(-100, Font::getFontSpaceLimit());
+    }
+
     public function testGetName()
     {
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';

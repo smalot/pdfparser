@@ -38,6 +38,11 @@ class Font extends PDFObject
     const MISSING = '?';
 
     /**
+     * @var int
+     */
+    public static $font_space = -50;
+
+    /**
      * @var array
      */
     protected $table = null;
@@ -344,9 +349,18 @@ class Font extends PDFObject
     /**
      * @return int
      */
-    protected function getFontSpaceLimit()
+    public static function getFontSpaceLimit()
     {
-        return -50;
+        return Font::$font_space;
+    }
+
+    /**
+     * @param int $font_space
+     * @return void
+     */
+    public static function setFontSpaceLimit($font_space)
+    {
+        Font::$font_space = $font_space;
     }
 
     /**
@@ -360,7 +374,7 @@ class Font extends PDFObject
         $word_position = 0;
         $words = [];
         $unicode = false;
-        $font_space = $this->getFontSpaceLimit();
+        $font_space = Font::getFontSpaceLimit();
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
