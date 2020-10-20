@@ -351,16 +351,17 @@ class Font extends PDFObject
      */
     public static function getFontSpaceLimit()
     {
-        return Font::$font_space;
+        return self::$font_space;
     }
 
     /**
      * @param int $font_space
+     *
      * @return void
      */
     public static function setFontSpaceLimit($font_space)
     {
-        Font::$font_space = $font_space;
+        self::$font_space = $font_space;
     }
 
     /**
@@ -374,7 +375,7 @@ class Font extends PDFObject
         $word_position = 0;
         $words = [];
         $unicode = false;
-        $font_space = Font::getFontSpaceLimit();
+        $font_space = self::getFontSpaceLimit();
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {

@@ -40,7 +40,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class FontTest extends TestCase
 {
-    function testSetFontSpaceLimit()
+    public function testSetFontSpaceLimit()
     {
         $this->assertEquals(-50, Font::getFontSpaceLimit());
         Font::setFontSpaceLimit(-100);
