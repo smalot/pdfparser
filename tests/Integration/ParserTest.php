@@ -210,6 +210,29 @@ class ParserTest extends TestCase
 
         $this->assertStringContainsString('This question already has an answer here', $document->getText());
     }
+
+    /**
+     * Test that issue related pdf can now be parsed:
+     * Glyphs not in the Postscript lookup table would cause "Notice: Undefined offset"
+     *
+     * Note that some characters are missing from the parsed text or wrongly decoded,
+     * like the "ł" in przepływu or "ó" in osób. This was already the case before the
+     * PR that caused this issue and is not currently covered by this test case.
+     * However, these issues should be addressed in the future and their fixes can
+     * then be incorporated into this test by uncommenting the two assertions below.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/359
+     */
+    public function testIssue359()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue359.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString('dnia 10 maja 2018 roku o ochronie danych osobowych', $document->getText());
+        // $this->assertStringContainsString('sprawie ochrony osób fizycznych w związku', $document->getText());
+        // $this->assertStringContainsString('sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy', $document->getText());
+    }
 }
 
 class ParserSub extends Parser
