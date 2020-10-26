@@ -215,7 +215,7 @@ class ParserTest extends TestCase
      * Test that issue related pdf can now be parsed:
      * Glyphs not in the Postscript lookup table would cause "Notice: Undefined offset"
      *
-     * Note that the "ł" in przepływu is decoded as a space character. This was already
+     * @todo Note that the "ł" in przepływu is decoded as a space character. This was already
      * the case before the PR that caused this issue and is not currently covered by this
      * test case. However, this issue should be addressed in the future and its fix
      * can then be incorporated into this test by uncommenting the third assertion below.
