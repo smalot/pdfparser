@@ -215,11 +215,6 @@ class ParserTest extends TestCase
      * Test that issue related pdf can now be parsed:
      * Glyphs not in the Postscript lookup table would cause "Notice: Undefined offset"
      *
-     * @todo Note that the "ł" in przepływu is decoded as a space character. This was already
-     * the case before the PR that caused this issue and is not currently covered by this
-     * test case. However, this issue should be addressed in the future and its fix
-     * can then be incorporated into this test by uncommenting the third assertion below.
-     *
      * @see https://github.com/smalot/pdfparser/issues/359
      */
     public function testIssue359()
@@ -230,6 +225,12 @@ class ParserTest extends TestCase
 
         $this->assertStringContainsString('dnia 10 maja 2018 roku o ochronie danych osobowych', $document->getText());
         $this->assertStringContainsString('sprawie ochrony osób fizycznych w związku', $document->getText());
+        /**
+         * @todo Note that the "ł" in przepływu is decoded as a space character. This was already
+         * the case before the PR that caused this issue and is not currently covered by this
+         * test case. However, this issue should be addressed in the future and its fix can then
+         * be incorporated into this test by uncommenting the following assertion.
+         */
         // $this->assertStringContainsString('sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy', $document->getText());
     }
 }
