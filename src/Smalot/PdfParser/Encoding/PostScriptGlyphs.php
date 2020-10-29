@@ -1088,6 +1088,12 @@ class PostScriptGlyphs
 
     public static function getCodePoint($glyph)
     {
-        return hexdec(static::getGlyphs()[$glyph]);
+        $glyphsMap = static::getGlyphs();
+
+        if (isset($glyphsMap[$glyph])) {
+            return hexdec($glyphsMap[$glyph]);
+        }
+
+        return $glyph;
     }
 }
