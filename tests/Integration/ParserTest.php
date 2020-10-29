@@ -225,7 +225,7 @@ class ParserTest extends TestCase
 
         $this->assertStringContainsString('dnia 10 maja 2018 roku o ochronie danych osobowych', $document->getText());
         $this->assertStringContainsString('sprawie ochrony osób fizycznych w związku', $document->getText());
-        /**
+        /*
          * @todo Note that the "ł" in przepływu is decoded as a space character. This was already
          * the case before the PR that caused this issue and is not currently covered by this
          * test case. However, this issue should be addressed in the future and its fix can then
