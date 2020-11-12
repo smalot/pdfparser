@@ -260,7 +260,6 @@ class PDFObject
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
 
-        $current_position_td = ['x' => false, 'y' => false];
         $current_position_tm = ['x' => false, 'y' => false];
 
         array_push(self::$recursionStack, $this->getUniqueId());
@@ -276,34 +275,18 @@ class PDFObject
 
                     // move text current point
                     case 'Td':
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $y = array_pop($args);
-                        $x = array_pop($args);
-                        if (((float) $x <= 0) ||
-                            (false !== $current_position_td['y'] && (float) $y < (float) ($current_position_td['y']))
-                        ) {
-                            // vertical offset
-                            $text .= "\n";
-                        } elseif (false !== $current_position_td['x'] && (float) $x > (float) (
-                                $current_position_td['x']
-                            )
-                        ) {
-                            // horizontal offset
-                            $text .= ' ';
-                        }
-                        $current_position_td = ['x' => $x, 'y' => $y];
-                        break;
-
-                    // move text current point and set leading
                     case 'TD':
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y = array_pop($args);
                         $x = array_pop($args);
-                        if ((float) $y < 0) {
+                        if ($y != 0) {
+                            // vertical offset
                             $text .= "\n";
-                        } elseif ((float) $x <= 0) {
+                        } elseif ((float) $x > 0) {
+                            // horizontal offset
                             $text .= ' ';
                         }
+
                         break;
 
                     case 'Tf':
@@ -323,6 +306,8 @@ class PDFObject
                         break;
 
                     case "'":
+                        $text .= "\n";
+                        // no break
                     case 'Tj':
                         $command[self::COMMAND] = [$command];
                         // no break
