@@ -16,12 +16,12 @@
     "homepage": "https://www.pdfparser.org",
     "require": {
         "php": ">=5.6",
-        "symfony/polyfill-mbstring": "^1.18.1",
+        "symfony/polyfill-mbstring": "^1.18",
         "ext-zlib": "*"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.16.3",
-        "symfony/phpunit-bridge": "^4.2.3"
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "symfony/phpunit-bridge": "^5.2"
     },
     "autoload": {
         "psr-0": {

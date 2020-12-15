@@ -1,0 +1,43 @@
+name: "CS"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  coding-standards:
+    name: "CS Fixer & PHPStan"
+    runs-on: "ubuntu-20.04"
+
+    env:
+      SYMFONY_PHPUNIT_VERSION: 7.5
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "7.4"
+          tools: cs2pr, composer:v1
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+
+      - name: "Install PHPStan"
+        run: "composer require phpstan/phpstan phpstan/phpstan-phpunit --dev --no-progress --no-suggest"
+
+      - name: "Run PHP CS Fixer"
+        run: "php vendor/bin/php-cs-fixer fix --verbose --dry-run --format=checkstyle | cs2pr"
+
+      - name: "Install PHPUnit for PHPStan"
+        run: "php vendor/bin/simple-phpunit install"
+
+      - name: "Run PHPStan"
+        run: "php vendor/bin/phpstan analyse --no-progress --error-format=checkstyle | cs2pr"
