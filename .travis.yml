@@ -14,7 +14,7 @@ jobs:
     - php: 7.3
       env: SYMFONY_PHPUNIT_VERSION=7.5 COMPOSER_FLAGS="--prefer-lowest"
     - php: 7.4
-      env: SYMFONY_PHPUNIT_VERSION=7.5 LINTER_RUN=run COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
+      env: SYMFONY_PHPUNIT_VERSION=7.5 LINTER_RUN=run XDEBUG_MODE=coverage COVERAGE_FLAGS="--coverage-clover coverage/clover.xml"
     - php: nightly
       env: SYMFONY_PHPUNIT_VERSION=7.5
   fast_finish: true
