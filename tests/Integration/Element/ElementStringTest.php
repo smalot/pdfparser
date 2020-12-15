@@ -162,7 +162,7 @@ class ElementStringTest extends TestCase
         $this->assertFalse($element->contains('CopyRight3'));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementString('CopyRight');
         $this->assertEquals('CopyRight', (string) $element);

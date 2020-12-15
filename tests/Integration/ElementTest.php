@@ -145,7 +145,7 @@ class ElementTest extends TestCase
         $this->assertFalse($element->contains(8));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $this->assertEquals((string) $this->getElementInstance('2'), '2');
     }

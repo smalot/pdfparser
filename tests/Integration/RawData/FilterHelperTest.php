@@ -38,7 +38,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class FilterHelperTest extends TestCase
 {
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
 

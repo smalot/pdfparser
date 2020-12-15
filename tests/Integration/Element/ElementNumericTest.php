@@ -174,7 +174,7 @@ class ElementNumericTest extends TestCase
         $this->assertFalse($element->contains('-3.5'));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementNumeric('B');
         $this->assertEquals('0', (string) $element);

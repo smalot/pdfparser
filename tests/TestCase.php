@@ -46,7 +46,7 @@ abstract class TestCase extends PHPTestCase
 
     protected $rootDir;
 
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
 
