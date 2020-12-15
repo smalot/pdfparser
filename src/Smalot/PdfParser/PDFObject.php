@@ -67,6 +67,11 @@ class PDFObject
     protected $content = null;
 
     /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
      * @param Header $header
      * @param string $content
      * @param Config $config
