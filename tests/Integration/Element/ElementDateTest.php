@@ -172,7 +172,7 @@ class ElementDateTest extends TestCase
         $this->assertFalse($element->contains('2013-06-15'));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
 

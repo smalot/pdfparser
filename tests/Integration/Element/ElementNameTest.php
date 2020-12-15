@@ -153,7 +153,7 @@ class ElementNameTest extends TestCase
         $this->assertFalse($element->contains('Flate-Decode3'));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementName('FlateDecode');
         $this->assertEquals('FlateDecode', (string) $element);

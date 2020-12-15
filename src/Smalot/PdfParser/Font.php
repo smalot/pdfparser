@@ -369,7 +369,6 @@ class Font extends PDFObject
                         $word_position = \count($words);
                     }
                     continue 2;
-
                 case '<':
                     // Decode hexadecimal.
                     $text = self::decodeHexadecimal('<'.$command[PDFObject::COMMAND].'>');

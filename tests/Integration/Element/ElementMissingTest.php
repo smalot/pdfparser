@@ -61,7 +61,7 @@ class ElementMissingTest extends TestCase
         $this->assertFalse($element->contains(false));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementMissing();
         $this->assertEquals('', (string) $element);

@@ -263,7 +263,7 @@ class PDFObject
         $current_position_td = ['x' => false, 'y' => false];
         $current_position_tm = ['x' => false, 'y' => false];
 
-        array_push(self::$recursionStack, $this->getUniqueId());
+        self::$recursionStack[] = $this->getUniqueId();
 
         foreach ($sections as $section) {
             $commands = $this->getCommandsText($section);
@@ -681,7 +681,6 @@ class PDFObject
                     break;
 
                 default:
-
                     if ('ET' == substr($text_part, $offset, 2)) {
                         break;
                     } elseif (preg_match(

@@ -293,7 +293,7 @@ class Page extends PDFObject
         $extractedData = [];
         $content = $this->get('Contents');
         $values = $content->getContent();
-        if (isset($values) and \is_array($values)) {
+        if (isset($values) && \is_array($values)) {
             $text = '';
             foreach ($values as $section) {
                 $text .= $section->getContent();
@@ -330,12 +330,12 @@ class Page extends PDFObject
      */
     public function extractDecodedRawData($extractedRawData = null)
     {
-        if (!isset($extractedRawData) or !$extractedRawData) {
+        if (!isset($extractedRawData) || !$extractedRawData) {
             $extractedRawData = $this->extractRawData();
         }
         $currentFont = null;
         foreach ($extractedRawData as &$command) {
-            if ('Tj' == $command['o'] or 'TJ' == $command['o']) {
+            if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
                 $data = $command['c'];
                 if (!\is_array($data)) {
                     $tmpText = '';
@@ -378,7 +378,7 @@ class Page extends PDFObject
                     $command['c'][$i]['c'] = $decodedText;
                     continue;
                 }
-            } elseif ('Tf' == $command['o'] or 'TF' == $command['o']) {
+            } elseif ('Tf' == $command['o'] || 'TF' == $command['o']) {
                 $fontId = explode(' ', $command['c'])[0];
                 $currentFont = $this->getFont($fontId);
                 continue;
@@ -402,7 +402,7 @@ class Page extends PDFObject
      */
     public function getDataCommands($extractedDecodedRawData = null)
     {
-        if (!isset($extractedDecodedRawData) or !$extractedDecodedRawData) {
+        if (!isset($extractedDecodedRawData) || !$extractedDecodedRawData) {
             $extractedDecodedRawData = $this->extractDecodedRawData();
         }
         $extractedData = [];
@@ -548,7 +548,7 @@ class Page extends PDFObject
      */
     public function getDataTm($dataCommands = null)
     {
-        if (!isset($dataCommands) or !$dataCommands) {
+        if (!isset($dataCommands) || !$dataCommands) {
             $dataCommands = $this->getDataCommands();
         }
 
@@ -746,7 +746,7 @@ class Page extends PDFObject
      */
     public function getTextXY($x = null, $y = null, $xError = 0, $yError = 0)
     {
-        if (!isset($this->dataTm) or !$this->dataTm) {
+        if (!isset($this->dataTm) || !$this->dataTm) {
             $this->getDataTm();
         }
 
@@ -758,7 +758,7 @@ class Page extends PDFObject
             $y = (float) $y;
         }
 
-        if (null === $x and null === $y) {
+        if (null === $x && null === $y) {
             return [];
         }
 
@@ -772,22 +772,22 @@ class Page extends PDFObject
             $yTm = (float) $tm[5];
             $text = $item[1];
             if (null === $y) {
-                if (($xTm >= ($x - $xError)) and
+                if (($xTm >= ($x - $xError)) &&
                     ($xTm <= ($x + $xError))) {
                     $extractedData[] = [$tm, $text];
                     continue;
                 }
             }
             if (null === $x) {
-                if (($yTm >= ($y - $yError)) and
+                if (($yTm >= ($y - $yError)) &&
                     ($yTm <= ($y + $yError))) {
                     $extractedData[] = [$tm, $text];
                     continue;
                 }
             }
-            if (($xTm >= ($x - $xError)) and
-                ($xTm <= ($x + $xError)) and
-                ($yTm >= ($y - $yError)) and
+            if (($xTm >= ($x - $xError)) &&
+                ($xTm <= ($x + $xError)) &&
+                ($yTm >= ($y - $yError)) &&
                 ($yTm <= ($y + $yError))) {
                 $extractedData[] = [$tm, $text];
                 continue;

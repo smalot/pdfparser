@@ -88,14 +88,14 @@ class RawDataParser
         $filters = [];
         foreach ($sdic as $k => $v) {
             if ('/' == $v[0]) {
-                if (('Length' == $v[1]) and (isset($sdic[($k + 1)])) and ('numeric' == $sdic[($k + 1)][0])) {
+                if (('Length' == $v[1]) && (isset($sdic[($k + 1)])) && ('numeric' == $sdic[($k + 1)][0])) {
                     // get declared stream length
                     $declength = (int) ($sdic[($k + 1)][1]);
                     if ($declength < $slength) {
                         $stream = substr($stream, 0, $declength);
                         $slength = $declength;
                     }
-                } elseif (('Filter' == $v[1]) and (isset($sdic[($k + 1)]))) {
+                } elseif (('Filter' == $v[1]) && (isset($sdic[($k + 1)]))) {
                     // resolve indirect object
                     $objval = $this->getObjectVal($pdfData, $xref, $sdic[($k + 1)]);
                     if ('/' == $objval[0]) {
@@ -178,7 +178,7 @@ class RawDataParser
         // get trailer data
         if (preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, PREG_OFFSET_CAPTURE, $offset) > 0) {
             $trailer_data = $matches[1][0];
-            if (!isset($xref['trailer']) or empty($xref['trailer'])) {
+            if (!isset($xref['trailer']) || empty($xref['trailer'])) {
                 // get only the last updated version
                 $xref['trailer'] = [];
                 // parse trailer_data
@@ -227,7 +227,7 @@ class RawDataParser
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
         $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefobj[1], $startxref, true);
-        if (!isset($xref['trailer']) or empty($xref['trailer'])) {
+        if (!isset($xref['trailer']) || empty($xref['trailer'])) {
             // get only the last updated version
             $xref['trailer'] = [];
             $filltrailer = true;
@@ -257,18 +257,18 @@ class RawDataParser
                 )
             ) {
                 $valid_crs = true;
-            } elseif (('/' == $v[0]) and ('Index' == $v[1]) and (isset($sarr[($k + 1)]))) {
+            } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
                 // first object number in the subsection
                 $index_first = (int) ($sarr[($k + 1)][1][0][1]);
-            } elseif (('/' == $v[0]) and ('Prev' == $v[1]) and (isset($sarr[($k + 1)]) and ('numeric' == $sarr[($k + 1)][0]))) {
+            } elseif (('/' == $v[0]) && ('Prev' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
                 // get previous xref offset
                 $prevxref = (int) ($sarr[($k + 1)][1]);
-            } elseif (('/' == $v[0]) and ('W' == $v[1]) and (isset($sarr[($k + 1)]))) {
+            } elseif (('/' == $v[0]) && ('W' == $v[1]) && (isset($sarr[($k + 1)]))) {
                 // number of bytes (in the decoded stream) of the corresponding field
                 $wb[0] = (int) ($sarr[($k + 1)][1][0][1]);
                 $wb[1] = (int) ($sarr[($k + 1)][1][1][1]);
                 $wb[2] = (int) ($sarr[($k + 1)][1][2][1]);
-            } elseif (('/' == $v[0]) and ('DecodeParms' == $v[1]) and (isset($sarr[($k + 1)][1]))) {
+            } elseif (('/' == $v[0]) && ('DecodeParms' == $v[1]) && (isset($sarr[($k + 1)][1]))) {
                 $decpar = $sarr[($k + 1)][1];
                 foreach ($decpar as $kdc => $vdc) {
                     if (
@@ -292,15 +292,15 @@ class RawDataParser
                     }
                 }
             } elseif ($filltrailer) {
-                if (('/' == $v[0]) and ('Size' == $v[1]) and (isset($sarr[($k + 1)]) and ('numeric' == $sarr[($k + 1)][0]))) {
+                if (('/' == $v[0]) && ('Size' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
                     $xref['trailer']['size'] = $sarr[($k + 1)][1];
-                } elseif (('/' == $v[0]) and ('Root' == $v[1]) and (isset($sarr[($k + 1)]) and ('objref' == $sarr[($k + 1)][0]))) {
+                } elseif (('/' == $v[0]) && ('Root' == $v[1]) && (isset($sarr[($k + 1)]) && ('objref' == $sarr[($k + 1)][0]))) {
                     $xref['trailer']['root'] = $sarr[($k + 1)][1];
-                } elseif (('/' == $v[0]) and ('Info' == $v[1]) and (isset($sarr[($k + 1)]) and ('objref' == $sarr[($k + 1)][0]))) {
+                } elseif (('/' == $v[0]) && ('Info' == $v[1]) && (isset($sarr[($k + 1)]) && ('objref' == $sarr[($k + 1)][0]))) {
                     $xref['trailer']['info'] = $sarr[($k + 1)][1];
-                } elseif (('/' == $v[0]) and ('Encrypt' == $v[1]) and (isset($sarr[($k + 1)]) and ('objref' == $sarr[($k + 1)][0]))) {
+                } elseif (('/' == $v[0]) && ('Encrypt' == $v[1]) && (isset($sarr[($k + 1)]) && ('objref' == $sarr[($k + 1)][0]))) {
                     $xref['trailer']['encrypt'] = $sarr[($k + 1)][1];
-                } elseif (('/' == $v[0]) and ('ID' == $v[1]) and (isset($sarr[($k + 1)]))) {
+                } elseif (('/' == $v[0]) && ('ID' == $v[1]) && (isset($sarr[($k + 1)]))) {
                     $xref['trailer']['id'] = [];
                     $xref['trailer']['id'][0] = $sarr[($k + 1)][1][0][1];
                     $xref['trailer']['id'][1] = $sarr[($k + 1)][1][1][1];
@@ -309,7 +309,7 @@ class RawDataParser
         }
 
         // decode data
-        if ($valid_crs and isset($xrefcrs[1][3][0])) {
+        if ($valid_crs && isset($xrefcrs[1][3][0])) {
             // number of bytes in a row
             $rowlen = ($columns + 1);
             // convert the stream into an array of integers
@@ -650,7 +650,7 @@ class RawDataParser
 
             case '<':  // \x3C LESS-THAN SIGN
             case '>':  // \x3E GREATER-THAN SIGN
-                    if (isset($pdfData[($offset + 1)]) and ($pdfData[($offset + 1)] == $char)) {
+                    if (isset($pdfData[($offset + 1)]) && ($pdfData[($offset + 1)] == $char)) {
                         // dictionary object
                         $objtype = $char.$char;
                         $offset += 2;
@@ -844,7 +844,7 @@ class RawDataParser
         // parse all document objects
         $objects = [];
         foreach ($xref['xref'] as $obj => $offset) {
-            if (!isset($objects[$obj]) and ($offset > 0)) {
+            if (!isset($objects[$obj]) && ($offset > 0)) {
                 // decode objects with positive offset
                 $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
             }

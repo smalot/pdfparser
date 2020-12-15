@@ -134,7 +134,7 @@ class ElementBooleanTest extends TestCase
         $this->assertFalse($element->contains(1));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementBoolean('true');
         $this->assertEquals('true', (string) $element);
