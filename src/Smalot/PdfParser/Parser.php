@@ -47,15 +47,29 @@ use Smalot\PdfParser\RawData\RawDataParser;
 class Parser
 {
     /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
      * @var PDFObject[]
      */
     protected $objects = [];
 
     protected $rawDataParser;
 
-    public function __construct($cfg = [])
+    public function __construct($cfg = [], ?Config $config = null)
     {
         $this->rawDataParser = new RawDataParser($cfg);
+        $this->config = $config ?? new Config();
+    }
+
+    /**
+     * @return Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
     }
 
     /**
@@ -205,7 +219,7 @@ class Parser
                             $sub_content = substr($content, $position, (int) $next_position - (int) $position);
 
                             $sub_header = Header::parse($sub_content, $document);
-                            $object = PDFObject::factory($document, $sub_header, '');
+                            $object = PDFObject::factory($document, $sub_header, '', $this->config);
                             $this->objects[$id] = $object;
                         }
 
@@ -229,7 +243,7 @@ class Parser
         }
 
         if (!isset($this->objects[$id])) {
-            $this->objects[$id] = PDFObject::factory($document, $header, $content);
+            $this->objects[$id] = PDFObject::factory($document, $header, $content, $this->config);
         }
     }
 
@@ -272,7 +286,7 @@ class Parser
             case '<<':
             case '>>':
                 $header = $this->parseHeader($value, $document);
-                PDFObject::factory($document, $header, null);
+                PDFObject::factory($document, $header, null, $this->config);
 
                 return $header;
 

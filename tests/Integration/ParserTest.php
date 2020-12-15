@@ -33,6 +33,7 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Exception;
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\XObject\Image;
@@ -223,7 +224,10 @@ class ParserTest extends TestCase
 
         $document = $this->fixture->parseFile($filename);
 
-        $this->assertStringContainsString('dnia 10 maja 2018 roku o ochronie danych osobowych', $document->getText());
+        $this->assertStringContainsString(
+            'dnia 10 maja 2018 roku o ochronie danych osobowych',
+            $document->getText()
+        );
         $this->assertStringContainsString('sprawie ochrony osób fizycznych w związku', $document->getText());
         /*
          * @todo Note that the "ł" in przepływu is decoded as a space character. This was already
@@ -232,6 +236,45 @@ class ParserTest extends TestCase
          * be incorporated into this test by uncommenting the following assertion.
          */
         // $this->assertStringContainsString('sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy', $document->getText());
+    }
+
+    /**
+     * Tests behavior when changing default font space limit (-50).
+     *
+     * Test is based on testIssue359 (above).
+     */
+    public function testChangedFontSpaceLimit()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue359.pdf';
+
+        $config = new Config();
+        $config->setFontSpaceLimit(1); // change default value
+
+        $this->fixture = new Parser([], $config);
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString('dni a  10  maj a  2018', $document->getText());
+    }
+
+    /**
+     * Tests if a given Config object is really used.
+     * Or if a default one is generated, if null was given.
+     */
+    public function testUsageOfConfigObject()
+    {
+        // check default
+        $this->fixture = new Parser([]);
+        $this->assertEquals(new Config(), $this->fixture->getConfig());
+
+        // check default 2
+        $this->fixture = new Parser([], null);
+        $this->assertEquals(new Config(), $this->fixture->getConfig());
+
+        // check given
+        $config = new Config();
+        $config->setFontSpaceLimit(1000);
+        $this->fixture = new Parser([], $config);
+        $this->assertEquals($config, $this->fixture->getConfig());
     }
 }
 
