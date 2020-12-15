@@ -49,7 +49,7 @@ class Parser
     /**
      * @var Config
      */
-    protected $config;
+    private $config;
 
     /**
      * @var PDFObject[]
