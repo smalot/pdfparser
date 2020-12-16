@@ -1,0 +1,176 @@
+name: "CI"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  fail-fast: true
+
+jobs:
+  phpunit:
+    name: "PHPUnit (PHP ${{ matrix.php }})"
+    runs-on: "ubuntu-20.04"
+
+    env:
+      SYMFONY_PHPUNIT_VERSION: 7.5
+
+    strategy:
+      matrix:
+        php:
+          - "7.2"
+          - "7.3"
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "none"
+          tools: composer:v1
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+
+      - name: "Remove PHP-CS-Fixer"
+        run: "composer remove friendsofphp/php-cs-fixer --dev --no-progress --no-update"
+
+      - name: "Run PHPUnit"
+        run: "php vendor/bin/simple-phpunit -v"
+
+  phpunit-lower-php:
+    name: "PHPUnit (PHP ${{ matrix.php }})"
+    runs-on: "ubuntu-20.04"
+
+    strategy:
+      matrix:
+        php:
+          - "5.6"
+          - "7.0"
+          - "7.1"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "none"
+          tools: composer:v1
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+
+      - name: "Remove PHP-CS-Fixer"
+        run: "composer remove friendsofphp/php-cs-fixer --dev --no-progress --no-update"
+
+      - name: "Run PHPUnit"
+        run: "php vendor/bin/simple-phpunit -v"
+
+  phpunit-coverage:
+    name: "PHPUnit coverage (PHP ${{ matrix.php }})"
+    runs-on: "ubuntu-20.04"
+
+    env:
+      SYMFONY_PHPUNIT_VERSION: 7.5
+
+    strategy:
+      matrix:
+        php:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP with PCOV"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "xdebug"
+          tools: composer:v1
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+
+      - name: "Run PHPUnit (with coverage)"
+        run: "php vendor/bin/simple-phpunit -v --coverage-clover coverage/clover.xml"
+
+  phpunit-composerv2:
+    name: "PHPUnit Composer v2 (PHP ${{ matrix.php }})"
+    runs-on: "ubuntu-20.04"
+
+    env:
+      SYMFONY_PHPUNIT_VERSION: 7.5
+
+    strategy:
+      matrix:
+        php:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "none"
+          tools: composer:v2
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+
+      - name: "Run PHPUnit"
+        run: "php vendor/bin/simple-phpunit -v"
+
+  phpunit-lowest:
+    name: "PHPUnit lowest deps (PHP ${{ matrix.php }})"
+    runs-on: "ubuntu-20.04"
+
+    env:
+      SYMFONY_PHPUNIT_VERSION: 7.5
+      SYMFONY_DEPRECATIONS_HELPER: disabled=1
+
+    strategy:
+      matrix:
+        php:
+          - "7.3"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "none"
+          tools: composer:v1
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+        with:
+          dependency-versions: "lowest"
+
+      - name: "Run PHPUnit"
+        run: "php vendor/bin/simple-phpunit -v"

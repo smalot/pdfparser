@@ -289,7 +289,7 @@ class FilterHelper
         // previous val
         $prev_index = 0;
         // while we encounter EOD marker (257), read code_length bits
-        while (($data_length > 0) and (257 != ($index = bindec(substr($bitstring, 0, $bitlen))))) {
+        while (($data_length > 0) && (257 != ($index = bindec(substr($bitstring, 0, $bitlen))))) {
             // remove read bits from string
             $bitstring = substr($bitstring, $bitlen);
             // update number of bits

@@ -170,7 +170,7 @@ class ElementArrayTest extends TestCase
         $this->assertEquals($details_reference, $details);
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $val_4 = new ElementNumeric('4');
         $val_2 = new ElementNumeric('2');

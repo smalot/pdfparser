@@ -120,7 +120,7 @@ class ElementNullTest extends TestCase
         $this->assertFalse($element->contains(0));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementNull();
         $this->assertEquals('null', (string) $element);

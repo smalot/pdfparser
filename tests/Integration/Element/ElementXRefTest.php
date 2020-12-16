@@ -125,7 +125,7 @@ class ElementXRefTest extends TestCase
         $this->assertTrue($element->contains($element));
     }
 
-    public function test__toString()
+    public function testToString()
     {
         $element = new ElementXRef('5_0');
         $this->assertEquals('#Obj#5_0', (string) $element);
