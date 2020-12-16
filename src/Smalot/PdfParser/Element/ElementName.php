@@ -64,8 +64,8 @@ class ElementName extends Element
      */
     public static function parse($content, Document $document = null, &$offset = 0)
     {
-        if (preg_match('/^\s*\/(?P<name>[A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
-            $name = $match['name'];
+        if (preg_match('/^\s*\/([A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
+            $name = $match[1];
             $offset += strpos($content, $name) + \strlen($name);
             $name = Font::decodeEntities($name);
 

@@ -2,7 +2,7 @@
 
 Pdf Parser, a standalone PHP library, provides various tools to extract data from a PDF file.
 
-[![Build Status](https://travis-ci.org/smalot/pdfparser.svg?branch=master)](https://travis-ci.org/smalot/pdfparser)
+![CI](https://github.com/smalot/pdfparser/workflows/CI/badge.svg)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/smalot/pdfparser/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smalot/pdfparser/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/smalot/pdfparser/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smalot/pdfparser/?branch=master)
 [![License](https://poser.pugx.org/smalot/pdfparser/license)](//packagist.org/packages/smalot/pdfparser)
@@ -12,9 +12,9 @@ Pdf Parser, a standalone PHP library, provides various tools to extract data fro
 [![Monthly Downloads](https://poser.pugx.org/smalot/pdfparser/d/monthly)](//packagist.org/packages/smalot/pdfparser)
 [![Daily Downloads](https://poser.pugx.org/smalot/pdfparser/d/daily)](//packagist.org/packages/smalot/pdfparser)
 
-Website : [http://www.pdfparser.org](http://www.pdfparser.org/?utm_source=GitHub&utm_medium=website&utm_campaign=GitHub)
+Website : [https://www.pdfparser.org](https://www.pdfparser.org/?utm_source=GitHub&utm_medium=website&utm_campaign=GitHub)
 
-Test the API on our [demo page](http://www.pdfparser.org/demo).
+Test the API on our [demo page](https://www.pdfparser.org/demo).
 
 This project is supported by [Actualys](http://www.actualys.com).
 
