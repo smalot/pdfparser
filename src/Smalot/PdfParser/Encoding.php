@@ -60,15 +60,7 @@ class Encoding extends PDFObject
         $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
-            // Load reference table charset.
-            $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-            $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
-
-            if (!class_exists($className)) {
-                throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
-            }
-
-            $class = new $className();
+            $class = $this->getEncodingClass();
             $this->encoding = $class->getTranslations();
 
             // Build table including differences.
@@ -129,5 +121,24 @@ class Encoding extends PDFObject
         }
 
         return PostScriptGlyphs::getCodePoint($dec);
+    }
+
+    public function __toString()
+    {
+        return $this->getEncodingClass();
+    }
+
+
+    protected function getEncodingClass()
+    {
+        // Load reference table charset.
+        $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
+        $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
+
+        if (!class_exists($className)) {
+            throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
+        }
+
+        return new $className();
     }
 }
