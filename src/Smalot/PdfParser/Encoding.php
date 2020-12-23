@@ -60,7 +60,8 @@ class Encoding extends PDFObject
         $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
-            $class = $this->getEncodingClass();
+            $className = $this->getEncodingClass();
+            $class = new $className();
             $this->encoding = $class->getTranslations();
 
             // Build table including differences.
@@ -123,12 +124,19 @@ class Encoding extends PDFObject
         return PostScriptGlyphs::getCodePoint($dec);
     }
 
+    /**
+     * @return string
+     * @throws \Exception
+     */
     public function __toString()
     {
         return $this->getEncodingClass();
     }
 
-
+    /**
+     * @return string
+     * @throws \Exception
+     */
     protected function getEncodingClass()
     {
         // Load reference table charset.
@@ -139,6 +147,6 @@ class Encoding extends PDFObject
             throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
         }
 
-        return new $className();
+        return $className;
     }
 }
