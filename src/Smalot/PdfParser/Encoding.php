@@ -126,6 +126,7 @@ class Encoding extends PDFObject
 
     /**
      * @return string
+     *
      * @throws \Exception
      */
     public function __toString()
@@ -135,6 +136,7 @@ class Encoding extends PDFObject
 
     /**
      * @return string
+     *
      * @throws \Exception
      */
     protected function getEncodingClass()
