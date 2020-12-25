@@ -67,14 +67,25 @@ class PDFObject
     protected $content = null;
 
     /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
      * @param Header $header
      * @param string $content
+     * @param Config $config
      */
-    public function __construct(Document $document, Header $header = null, $content = null)
-    {
+    public function __construct(
+        Document $document,
+        Header $header = null,
+        $content = null,
+        Config $config = null
+    ) {
         $this->document = $document;
         $this->header = null !== $header ? $header : new Header();
         $this->content = $content;
+        $this->config = $config;
     }
 
     public function init()
@@ -723,41 +734,45 @@ class PDFObject
      *
      * @return PDFObject
      */
-    public static function factory(Document $document, Header $header, $content)
-    {
+    public static function factory(
+        Document $document,
+        Header $header,
+        $content,
+        Config $config = null
+    ) {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
                 switch ($header->get('Subtype')->getContent()) {
                     case 'Image':
-                        return new Image($document, $header, $content);
+                        return new Image($document, $header, $content, $config);
 
                     case 'Form':
-                        return new Form($document, $header, $content);
+                        return new Form($document, $header, $content, $config);
                 }
 
-                return new self($document, $header, $content);
+                return new self($document, $header, $content, $config);
 
             case 'Pages':
-                return new Pages($document, $header, $content);
+                return new Pages($document, $header, $content, $config);
 
             case 'Page':
-                return new Page($document, $header, $content);
+                return new Page($document, $header, $content, $config);
 
             case 'Encoding':
-                return new Encoding($document, $header, $content);
+                return new Encoding($document, $header, $content, $config);
 
             case 'Font':
                 $subtype = $header->get('Subtype')->getContent();
                 $classname = '\Smalot\PdfParser\Font\Font'.$subtype;
 
                 if (class_exists($classname)) {
-                    return new $classname($document, $header, $content);
+                    return new $classname($document, $header, $content, $config);
                 }
 
-                return new Font($document, $header, $content);
+                return new Font($document, $header, $content, $config);
 
             default:
-                return new self($document, $header, $content);
+                return new self($document, $header, $content, $config);
         }
     }
 

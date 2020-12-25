@@ -343,10 +343,12 @@ class Font extends PDFObject
 
     /**
      * @return int
+     *
+     * @todo Deprecated, use $this->config->getFontSpaceLimit() instead.
      */
     protected function getFontSpaceLimit()
     {
-        return -50;
+        return $this->config->getFontSpaceLimit();
     }
 
     /**
