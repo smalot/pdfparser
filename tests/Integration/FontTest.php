@@ -33,6 +33,8 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\PDFObject;
@@ -122,6 +124,34 @@ class FontTest extends TestCase
         $this->assertEquals('c', $font->translateChar("\x03"));
         $this->assertEquals('u', $font->translateChar("\x04"));
         $this->assertEquals(Font::MISSING, $font->translateChar("\x99"));
+    }
+
+    /**
+     * Tests buggy behavior of #364.
+     *
+     * In some cases Front::translateChar calls Encoding::__toString, which doesn't exist.
+     *
+     * Resulting error: Call to undefined method Smalot\PdfParser\Encoding::__toString()
+     *
+     * @see https://github.com/smalot/pdfparser/issues/364
+     */
+    public function testTranslateCharIssue364()
+    {
+        /*
+         * Approach: we provoke the __toString call with a minimal set of input data.
+         */
+        $doc = new Document();
+
+        $header = new Header(['BaseEncoding' => new Element('StandardEncoding')]);
+
+        $encoding = new Encoding($doc, $header);
+        $encoding->init();
+
+        $font = new Font($doc, new Header(['Encoding' => $encoding]));
+        $font->init();
+
+        // without the fix from #378, calling translateChar would raise "undefined method" error
+        $this->assertEquals('?', $font->translateChar('t'));
     }
 
     public function testLoadTranslateTable()
