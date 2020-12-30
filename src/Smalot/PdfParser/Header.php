@@ -63,7 +63,7 @@ class Header
     public function init()
     {
         foreach ($this->elements as $element) {
-            if($element instanceof Element) {
+            if ($element instanceof Element) {
                 $element->init();
             }
         }
