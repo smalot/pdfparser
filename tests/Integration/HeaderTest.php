@@ -32,6 +32,7 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
+use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementName;
 use Smalot\PdfParser\Header;
@@ -44,6 +45,35 @@ use Tests\Smalot\PdfParser\TestCase;
  */
 class HeaderTest extends TestCase
 {
+    /**
+     * Checks that init function is called for each element.
+     */
+    public function testInitHappyPath()
+    {
+        $element = $this->createMock(Element::class);
+        $element->expects($this->exactly(1))->method('init');
+
+        $fixture = new Header([$element]);
+        $fixture->init();
+    }
+
+    /**
+     * Checks buggy behavior if an element was given which is not of type Element.
+     *
+     * Problem was, it always called $element::init(), even if its not an object at all.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/367
+     *
+     * @doesNotPerformAssertions
+     */
+    public function testInitInvalidElement()
+    {
+        $element = false;
+
+        $fixture = new Header([$element]);
+        $fixture->init();
+    }
+
     public function testParse()
     {
         $document = $this->getDocumentInstance();
