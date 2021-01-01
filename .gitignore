@@ -7,3 +7,4 @@
 debug*
 composer.lock
 /.php_cs.cache
+/.phpunit.result.cache

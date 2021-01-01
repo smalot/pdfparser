@@ -131,14 +131,14 @@ class PageTest extends TestCase
         $text = $page->getText();
 
         $this->assertTrue(150 < \strlen($text));
-        $this->assertContains('Document title', $text);
-        $this->assertContains('Lorem ipsum', $text);
+        $this->assertStringContainsString('Document title', $text);
+        $this->assertStringContainsString('Lorem ipsum', $text);
 
-        $this->assertContains('Calibri', $text);
-        $this->assertContains('Arial', $text);
-        $this->assertContains('Times', $text);
-        $this->assertContains('Courier New', $text);
-        $this->assertContains('Verdana', $text);
+        $this->assertStringContainsString('Calibri', $text);
+        $this->assertStringContainsString('Arial', $text);
+        $this->assertStringContainsString('Times', $text);
+        $this->assertStringContainsString('Courier New', $text);
+        $this->assertStringContainsString('Verdana', $text);
     }
 
     public function testExtractRawData()
@@ -168,8 +168,8 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('o', $tmItem);
         $this->assertArrayHasKey('c', $tmItem);
 
-        $this->assertContains('Tm', $tmItem['o']);
-        $this->assertContains('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
+        $this->assertStringContainsString('Tm', $tmItem['o']);
+        $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
     }
 
     public function testExtractDecodedRawData()
@@ -189,8 +189,8 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('o', $tmItem);
         $this->assertArrayHasKey('c', $tmItem);
 
-        $this->assertContains('Tm', $tmItem['o']);
-        $this->assertContains('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
+        $this->assertStringContainsString('Tm', $tmItem['o']);
+        $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
 
         $this->assertCount(3, $tmItem);
         $this->assertArrayHasKey('t', $tmItem);
@@ -198,13 +198,13 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('c', $tmItem);
 
         $tjItem = $extractedDecodedRawData[3];
-        $this->assertContains('TJ', $tjItem['o']);
-        $this->assertContains('(', $tjItem['c'][0]['t']);
-        $this->assertContains('D', $tjItem['c'][0]['c']);
-        $this->assertContains('n', $tjItem['c'][1]['t']);
-        $this->assertContains('0.325008', $tjItem['c'][1]['c']);
-        $this->assertContains('(', $tjItem['c'][2]['t']);
-        $this->assertContains('o', $tjItem['c'][2]['c']);
+        $this->assertStringContainsString('TJ', $tjItem['o']);
+        $this->assertStringContainsString('(', $tjItem['c'][0]['t']);
+        $this->assertStringContainsString('D', $tjItem['c'][0]['c']);
+        $this->assertStringContainsString('n', $tjItem['c'][1]['t']);
+        $this->assertStringContainsString('0.325008', $tjItem['c'][1]['c']);
+        $this->assertStringContainsString('(', $tjItem['c'][2]['t']);
+        $this->assertStringContainsString('o', $tjItem['c'][2]['c']);
     }
 
     public function testExtractRawDataWithCorruptedPdf()
@@ -235,8 +235,8 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('o', $tmItem);
         $this->assertArrayHasKey('c', $tmItem);
 
-        $this->assertContains('Tm', $tmItem['o']);
-        $this->assertContains('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
+        $this->assertStringContainsString('Tm', $tmItem['o']);
+        $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
 
         $tjItem = $dataCommands[2];
         $this->assertCount(3, $tjItem);
@@ -244,13 +244,13 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('o', $tjItem);
         $this->assertArrayHasKey('c', $tjItem);
 
-        $this->assertContains('TJ', $tjItem['o']);
-        $this->assertContains('(', $tjItem['c'][0]['t']);
-        $this->assertContains('D', $tjItem['c'][0]['c']);
-        $this->assertContains('n', $tjItem['c'][1]['t']);
-        $this->assertContains('0.325008', $tjItem['c'][1]['c']);
-        $this->assertContains('(', $tjItem['c'][2]['t']);
-        $this->assertContains('o', $tjItem['c'][2]['c']);
+        $this->assertStringContainsString('TJ', $tjItem['o']);
+        $this->assertStringContainsString('(', $tjItem['c'][0]['t']);
+        $this->assertStringContainsString('D', $tjItem['c'][0]['c']);
+        $this->assertStringContainsString('n', $tjItem['c'][1]['t']);
+        $this->assertStringContainsString('0.325008', $tjItem['c'][1]['c']);
+        $this->assertStringContainsString('(', $tjItem['c'][2]['t']);
+        $this->assertStringContainsString('o', $tjItem['c'][2]['c']);
     }
 
     public function testGetDataTm()
@@ -280,7 +280,7 @@ class PageTest extends TestCase
             $item[0]
         );
 
-        $this->assertContains('Document title', $item[1]);
+        $this->assertStringContainsString('Document title', $item[1]);
         $item = $dataTm[2];
         $this->assertEquals(
             [
@@ -294,7 +294,7 @@ class PageTest extends TestCase
             $item[0]
         );
 
-        $this->assertContains('Calibri : Lorem ipsum dolor sit amet, consectetur a', $item[1]);
+        $this->assertStringContainsString('Calibri : Lorem ipsum dolor sit amet, consectetur a', $item[1]);
 
         $item = $dataTm[80];
         $this->assertEquals(
@@ -308,7 +308,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('nenatis.', $item[1]);
+        $this->assertStringContainsString('nenatis.', $item[1]);
 
         // ------------------------------------------------------
         // Document is a form
@@ -332,7 +332,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('MyName  MyLastName', $item[1]);
+        $this->assertStringContainsString('MyName  MyLastName', $item[1]);
 
         $item = $dataTm[6];
         $this->assertEquals(
@@ -346,7 +346,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('1/1/2020', $item[1]);
+        $this->assertStringContainsString('1/1/2020', $item[1]);
 
         $item = $dataTm[8];
         $this->assertEquals(
@@ -360,7 +360,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('Purchase 1', $item[1]);
+        $this->assertStringContainsString('Purchase 1', $item[1]);
 
         // ------------------------------------------------------
         // Document is another form of the same type
@@ -385,7 +385,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains("Other'sName  Other'sLastName", $item[1]);
+        $this->assertStringContainsString("Other'sName  Other'sLastName", $item[1]);
 
         $item = $dataTm[6];
         $this->assertEquals(
@@ -399,7 +399,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('2/2/2020', $item[1]);
+        $this->assertStringContainsString('2/2/2020', $item[1]);
 
         $item = $dataTm[8];
         $this->assertEquals(
@@ -413,7 +413,7 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-        $this->assertContains('Purchase 2', $item[1]);
+        $this->assertStringContainsString('Purchase 2', $item[1]);
     }
 
     /**
@@ -495,7 +495,7 @@ class PageTest extends TestCase
             ],
             $result[0][0]
         );
-        $this->assertContains('Document title', $result[0][1]);
+        $this->assertStringContainsString('Document title', $result[0][1]);
 
         $result = $page->getTextXY(201, 720);
         $this->assertCount(0, $result);
@@ -514,7 +514,7 @@ class PageTest extends TestCase
             ],
             $result[0][0]
         );
-        $this->assertContains('Document title', $result[0][1]);
+        $this->assertStringContainsString('Document title', $result[0][1]);
 
         // ------------------------------------------------------
         // Document is a form
@@ -536,13 +536,13 @@ class PageTest extends TestCase
             ],
             $result[0][0]
         );
-        $this->assertContains('MyName  MyLastName', $result[0][1]);
+        $this->assertStringContainsString('MyName  MyLastName', $result[0][1]);
 
         $result = $page->getTextXY(681, 877, 1, 1);
-        $this->assertContains('1/1/2020', $result[0][1]);
+        $this->assertStringContainsString('1/1/2020', $result[0][1]);
 
         $result = $page->getTextXY(174, 827, 1, 1);
-        $this->assertContains('Purchase 1', $result[0][1]);
+        $this->assertStringContainsString('Purchase 1', $result[0][1]);
 
         // ------------------------------------------------------
         // Document is another form of the same type
@@ -562,12 +562,12 @@ class PageTest extends TestCase
             ],
             $result[0][0]
         );
-        $this->assertContains("Other'sName  Other'sLastName", $result[0][1]);
+        $this->assertStringContainsString("Other'sName  Other'sLastName", $result[0][1]);
 
         $result = $page->getTextXY(681, 877, 1, 1);
-        $this->assertContains('2/2/2020', $result[0][1]);
+        $this->assertStringContainsString('2/2/2020', $result[0][1]);
 
         $result = $page->getTextXY(174, 827, 1, 1);
-        $this->assertContains('Purchase 2', $result[0][1]);
+        $this->assertStringContainsString('Purchase 2', $result[0][1]);
     }
 }

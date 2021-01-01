@@ -52,10 +52,30 @@ class ElementXRef extends Element
     }
 
     /**
+     * @param mixed $value
+     *
      * @return bool
      */
     public function equals($value)
     {
+        /**
+         * In case $value is a number and $this->value is a string like 5_0
+         *
+         * Without this if-clause code like:
+         *
+         *      $element = new ElementXRef('5_0');
+         *      $this->assertTrue($element->equals(5));
+         *
+         * would fail (= 5_0 and 5 are not equal in PHP 8.0+).
+         */
+        if (
+            true === is_numeric($value)
+            && true === is_string($this->getContent())
+            && 1 === preg_match('/[0-9]+\_[0-9]+/', $this->getContent(), $matches)
+        ) {
+            return floatval($this->getContent()) == $value;
+        }
+
         $id = ($value instanceof self) ? $value->getId() : $value;
 
         return $this->getId() == $id;
