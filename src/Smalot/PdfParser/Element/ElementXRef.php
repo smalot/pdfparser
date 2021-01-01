@@ -52,8 +52,6 @@ class ElementXRef extends Element
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
     public function equals($value)
@@ -70,10 +68,10 @@ class ElementXRef extends Element
          */
         if (
             true === is_numeric($value)
-            && true === is_string($this->getContent())
+            && true === \is_string($this->getContent())
             && 1 === preg_match('/[0-9]+\_[0-9]+/', $this->getContent(), $matches)
         ) {
-            return floatval($this->getContent()) == $value;
+            return (float) ($this->getContent()) == $value;
         }
 
         $id = ($value instanceof self) ? $value->getId() : $value;
