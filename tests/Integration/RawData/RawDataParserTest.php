@@ -40,7 +40,8 @@ class RawDataParserHelper extends RawDataParser
     /**
      * Expose protected function "getRawObject".
      */
-    public function exposeGetRawObject($pdfData, $offset = 0) {
+    public function exposeGetRawObject($pdfData, $offset = 0)
+    {
         return $this->getRawObject($pdfData, $offset);
     }
 }
@@ -78,7 +79,7 @@ class RawDataParserTest extends TestCase
                     ['/', 'Producer', 11],
                     ['(', 'eDkºãa˜þõ‚LÅòÕ�PïÙ��', 52],
                 ],
-                52
+                52,
             ],
             $result
         );
