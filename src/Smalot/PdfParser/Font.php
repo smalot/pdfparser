@@ -30,6 +30,8 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Encoding\WinAnsiEncoding;
+
 /**
  * Class Font
  */
@@ -101,7 +103,11 @@ class Font extends PDFObject
 
         // fallback for decoding single-byte ANSI characters that are not in the lookup table
         $fallbackDecoded = $char;
-        if (\strlen($char) < 2 && $this->has('Encoding') && 'WinAnsiEncoding' === $this->get('Encoding')->__toString()) {
+        if (
+            \strlen($char) < 2
+            && $this->has('Encoding')
+            && WinAnsiEncoding::class === $this->get('Encoding')->__toString()
+        ) {
             $fallbackDecoded = self::uchr($dec);
         }
 
@@ -343,10 +349,12 @@ class Font extends PDFObject
 
     /**
      * @return int
+     *
+     * @todo Deprecated, use $this->config->getFontSpaceLimit() instead.
      */
     protected function getFontSpaceLimit()
     {
-        return -50;
+        return $this->config->getFontSpaceLimit();
     }
 
     /**

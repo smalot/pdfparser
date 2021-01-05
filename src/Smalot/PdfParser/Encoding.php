@@ -30,6 +30,7 @@
 
 namespace Smalot\PdfParser;
 
+use Exception;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Encoding\PostScriptGlyphs;
 
@@ -60,14 +61,7 @@ class Encoding extends PDFObject
         $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
-            // Load reference table charset.
-            $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-            $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
-
-            if (!class_exists($className)) {
-                throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
-            }
-
+            $className = $this->getEncodingClass();
             $class = new $className();
             $this->encoding = $class->getTranslations();
 
@@ -129,5 +123,33 @@ class Encoding extends PDFObject
         }
 
         return PostScriptGlyphs::getCodePoint($dec);
+    }
+
+    /**
+     * @return string
+     *
+     * @throws \Exception
+     */
+    public function __toString()
+    {
+        return $this->getEncodingClass();
+    }
+
+    /**
+     * @return string
+     *
+     * @throws \Exception
+     */
+    protected function getEncodingClass()
+    {
+        // Load reference table charset.
+        $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
+        $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
+
+        if (!class_exists($className)) {
+            throw new Exception('Missing encoding data for: "'.$baseEncoding.'".');
+        }
+
+        return $className;
     }
 }
