@@ -46,6 +46,9 @@ jobs:
       - name: "Run PHPUnit"
         run: "php vendor/bin/simple-phpunit -v"
 
+      - name: "Test alt-autoload"
+        run: "php tests/AltAutoloadTest.php"
+
   phpunit-lower-php:
     name: "PHPUnit (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
@@ -78,6 +81,9 @@ jobs:
 
       - name: "Run PHPUnit"
         run: "php vendor/bin/simple-phpunit -v"
+
+      - name: "Test alt-autoload"
+        run: "php tests/AltAutoloadTest.php"
 
   phpunit-coverage:
     name: "PHPUnit coverage (PHP ${{ matrix.php }})"
@@ -174,3 +180,6 @@ jobs:
 
       - name: "Run PHPUnit"
         run: "php vendor/bin/simple-phpunit -v"
+
+      - name: "Test alt-autoload"
+        run: "php tests/AltAutoloadTest.php"
