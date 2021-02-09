@@ -46,7 +46,7 @@ Original PDF References files can be downloaded from this url: http://www.adobe.
 
 ### Using Composer
 
-* Obtain the [Composer](https://getcomposer.org)
+* Obtain [Composer](https://getcomposer.org)
 * Run `composer require smalot/pdfparser`
 
 ### Use alternate file loader
