@@ -37,9 +37,9 @@
  * Please use it only, if Composer is not available.
  *
  * How to use:
- * - rename this file by removing -dist at the end
- * - include this file in your PHP project before you use PDFParser
- * - you are ready to go
+ * 1. include this file as it is OR copy and rename it as you like (and then include it)
+ * 2. afterwards you can use PDFParser classes
+ * Done.
  */
 
 /**
