@@ -6,9 +6,6 @@
  * @author  Konrad Abicht <k.abicht@gmail.com>
  * @date    2021-02-09
  *
- * @author  Sébastien MALOT <sebastien@malot.fr>
- * @date    2017-01-03
- *
  * @license LGPLv3
  * @url     <https://github.com/smalot/pdfparser>
  *
