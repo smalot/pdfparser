@@ -175,7 +175,7 @@ class Font extends PDFObject
                             '/([0-9A-F]{4})/i',
                             $matches['to'][$key],
                             0,
-                            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                            \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                         );
                         $text = '';
                         foreach ($parts as $part) {
@@ -221,7 +221,7 @@ class Font extends PDFObject
                                 '/([0-9A-F]{4})/i',
                                 $string,
                                 0,
-                                PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                                \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                             );
                             $text = '';
                             foreach ($parts as $part) {
@@ -259,7 +259,7 @@ class Font extends PDFObject
         }
 
         $text = '';
-        $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
             if (preg_match('/^<.*>$/s', $part) && false === stripos($part, '<?xml')) {
@@ -291,7 +291,7 @@ class Font extends PDFObject
      */
     public static function decodeOctal($text)
     {
-        $parts = preg_split('/(\\\\\d{3})/s', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(\\\\\d{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
 
         foreach ($parts as $part) {
@@ -312,7 +312,7 @@ class Font extends PDFObject
      */
     public static function decodeEntities($text)
     {
-        $parts = preg_split('/(#\d{2})/s', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(#\d{2})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
 
         foreach ($parts as $part) {
@@ -470,7 +470,7 @@ class Font extends PDFObject
                         '//s'.($unicode ? 'u' : ''),
                         $text,
                         -1,
-                        PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+                        \PREG_SPLIT_DELIM_CAPTURE | \PREG_SPLIT_NO_EMPTY
                 );
 
                 foreach ($chars as $char) {

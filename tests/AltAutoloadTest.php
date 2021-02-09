@@ -29,7 +29,6 @@
  *  along with this program.
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
-
 require __DIR__.'/../alt_autoload.php-dist';
 
 $parser = new Smalot\PdfParser\Parser();

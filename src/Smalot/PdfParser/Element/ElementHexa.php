@@ -75,7 +75,7 @@ class ElementHexa extends ElementString
         if ('00' === substr($value, 0, 2)) {
             for ($i = 0; $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
-                $text .= '&#'.str_pad(hexdec($hex), 4, '0', STR_PAD_LEFT).';';
+                $text .= '&#'.str_pad(hexdec($hex), 4, '0', \STR_PAD_LEFT).';';
             }
         } else {
             for ($i = 0; $i < $length; $i += 2) {
@@ -84,7 +84,7 @@ class ElementHexa extends ElementString
             }
         }
 
-        $text = html_entity_decode($text, ENT_NOQUOTES, 'UTF-8');
+        $text = html_entity_decode($text, \ENT_NOQUOTES, 'UTF-8');
 
         return $text;
     }
