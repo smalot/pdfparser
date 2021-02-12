@@ -42,6 +42,19 @@ As a result, users must expect BC breaks when using the master version.
 
 Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 
+## Installation
+
+### Using Composer
+
+* Obtain [Composer](https://getcomposer.org)
+* Run `composer require smalot/pdfparser`
+
+### Use alternate file loader
+
+In case you can't use Composer, you can include `alt_autoload.php-dist` into your project.
+It will load all required files at once.
+Afterwards you can use `PDFParser` class and others.
+
 ## License ##
 
 This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).

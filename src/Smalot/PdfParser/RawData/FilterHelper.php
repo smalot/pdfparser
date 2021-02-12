@@ -231,7 +231,7 @@ class FilterHelper
          * the following set_error_handler changes an E_WARNING to an E_ERROR, which is catchable.
          */
         set_error_handler(function ($errNo, $errStr) {
-            if (E_WARNING === $errNo) {
+            if (\E_WARNING === $errNo) {
                 throw new Exception($errStr);
             } else {
                 // fallback to default php error handler

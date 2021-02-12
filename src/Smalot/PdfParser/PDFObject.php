@@ -147,25 +147,25 @@ class PDFObject
         $content = str_replace(['\\\\', '\\)', '\\('], $char.$char, $content);
 
         // Remove image bloc with binary content
-        preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
         foreach ($matches[0] as $part) {
             $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
         }
 
         // Clean content in square brackets [.....]
-        preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, \PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
             $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
         }
 
         // Clean content in round brackets (.....)
-        preg_match_all('/\((.*?)\)/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/\((.*?)\)/s', $content, $matches, \PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
             $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
         }
 
         // Clean structure
-        if ($parts = preg_split('/(<|>)/s', $content, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)) {
+        if ($parts = preg_split('/(<|>)/s', $content, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE)) {
             $content = '';
             $level = 0;
             foreach ($parts as $part) {
@@ -186,13 +186,13 @@ class PDFObject
             '/(\/[A-Za-z0-9\_]*\s*'.preg_quote($char).'*BDC)/s',
             $content,
             $matches,
-            PREG_OFFSET_CAPTURE
+            \PREG_OFFSET_CAPTURE
         );
         foreach ($matches[1] as $part) {
             $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
         }
 
-        preg_match_all('/\s(EMC)\s/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/\s(EMC)\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
         foreach ($matches[1] as $part) {
             $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
         }
@@ -212,7 +212,7 @@ class PDFObject
         $textCleaned = $this->cleanContent($content, '_');
 
         // Extract text blocks.
-        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s*ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s*ET/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
                 $text = $part[0];
                 if ('' === $text) {
@@ -229,7 +229,7 @@ class PDFObject
         }
 
         // Extract 'do' commands.
-        if (preg_match_all('/(\/[A-Za-z0-9\.\-_]+\s+Do)\s/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all('/(\/[A-Za-z0-9\.\-_]+\s+Do)\s/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
                 $text = $part[0];
                 $offset = $part[1];
