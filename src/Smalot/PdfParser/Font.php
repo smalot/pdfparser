@@ -106,6 +106,7 @@ class Font extends PDFObject
         if (
             \strlen($char) < 2
             && $this->has('Encoding')
+            && $this->get('Encoding') instanceof Encoding
             && WinAnsiEncoding::class === $this->get('Encoding')->__toString()
         ) {
             $fallbackDecoded = self::uchr($dec);
