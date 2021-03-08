@@ -84,4 +84,27 @@ class RawDataParserTest extends TestCase
             $result
         );
     }
+
+    /**
+     * Tests buggy behavior of decodeXrefStream.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/30
+     * @see https://github.com/smalot/pdfparser/issues/192
+     * @see https://github.com/smalot/pdfparser/issues/209
+     * @see https://github.com/smalot/pdfparser/issues/330
+     * @see https://github.com/smalot/pdfparser/issues/356
+     * @see https://github.com/smalot/pdfparser/issues/373
+     * @see https://github.com/smalot/pdfparser/issues/392
+     * @see https://github.com/smalot/pdfparser/issues/397
+     */
+    public function testDecodeXrefStreamIssue356()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue356.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString('Ημερήσια έκθεση επιδημιολογικής', $pages[0]->getText());
+    }
 }

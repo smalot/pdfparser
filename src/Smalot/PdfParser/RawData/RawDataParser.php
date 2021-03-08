@@ -310,83 +310,95 @@ class RawDataParser
 
         // decode data
         if ($valid_crs && isset($xrefcrs[1][3][0])) {
-            // number of bytes in a row
-            $rowlen = ($columns + 1);
-            // convert the stream into an array of integers
-            $sdata = unpack('C*', $xrefcrs[1][3][0]);
-            // split the rows
-            $sdata = array_chunk($sdata, $rowlen);
-            // initialize decoded array
-            $ddata = [];
-            // initialize first row with zeros
-            $prev_row = array_fill(0, $rowlen, 0);
-            // for each row apply PNG unpredictor
-            foreach ($sdata as $k => $row) {
-                // initialize new row
-                $ddata[$k] = [];
-                // get PNG predictor value
-                $predictor = (10 + $row[0]);
-                // for each byte on the row
-                for ($i = 1; $i <= $columns; ++$i) {
-                    // new index
-                    $j = ($i - 1);
-                    $row_up = $prev_row[$j];
-                    if (1 == $i) {
-                        $row_left = 0;
-                        $row_upleft = 0;
-                    } else {
-                        $row_left = $row[($i - 1)];
-                        $row_upleft = $prev_row[($j - 1)];
+            if (isset($predictor)) {
+                // number of bytes in a row
+                $rowlen = ($columns + 1);
+                // convert the stream into an array of integers
+                $sdata = unpack('C*', $xrefcrs[1][3][0]);
+                // split the rows
+                $sdata = array_chunk($sdata, $rowlen);
+
+                // initialize decoded array
+                $ddata = [];
+                // initialize first row with zeros
+                $prev_row = array_fill(0, $rowlen, 0);
+                // for each row apply PNG unpredictor
+                foreach ($sdata as $k => $row) {
+                    // initialize new row
+                    $ddata[$k] = [];
+                    // get PNG predictor value
+                    $predictor = (10 + $row[0]);
+                    // for each byte on the row
+                    for ($i = 1; $i <= $columns; ++$i) {
+                        // new index
+                        $j = ($i - 1);
+                        $row_up = $prev_row[$j];
+                        if (1 == $i) {
+                            $row_left = 0;
+                            $row_upleft = 0;
+                        } else {
+                            $row_left = $row[($i - 1)];
+                            $row_upleft = $prev_row[($j - 1)];
+                        }
+                        switch ($predictor) {
+                            case 10:  // PNG prediction (on encoding, PNG None on all rows)
+                                $ddata[$k][$j] = $row[$i];
+                                break;
+
+                            case 11:  // PNG prediction (on encoding, PNG Sub on all rows)
+                                $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
+                                break;
+
+                            case 12:  // PNG prediction (on encoding, PNG Up on all rows)
+                                $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
+                                break;
+
+                            case 13:  // PNG prediction (on encoding, PNG Average on all rows)
+                                $ddata[$k][$j] = (($row[$i] + (($row_left + $row_up) / 2)) & 0xff);
+                                break;
+
+                            case 14:  // PNG prediction (on encoding, PNG Paeth on all rows)
+                                // initial estimate
+                                $p = ($row_left + $row_up - $row_upleft);
+                                // distances
+                                $pa = abs($p - $row_left);
+                                $pb = abs($p - $row_up);
+                                $pc = abs($p - $row_upleft);
+                                $pmin = min($pa, $pb, $pc);
+                                // return minimum distance
+                                switch ($pmin) {
+                                    case $pa:
+                                        $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
+                                        break;
+
+                                    case $pb:
+                                        $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
+                                        break;
+
+                                    case $pc:
+                                        $ddata[$k][$j] = (($row[$i] + $row_upleft) & 0xff);
+                                        break;
+                                }
+                                break;
+
+                            default:  // PNG prediction (on encoding, PNG optimum)
+                                throw new Exception('Unknown PNG predictor: ' . $predictor);
+                        }
                     }
-                    switch ($predictor) {
-                        case 10:  // PNG prediction (on encoding, PNG None on all rows)
-                            $ddata[$k][$j] = $row[$i];
-                            break;
+                    $prev_row = $ddata[$k];
+                } // end for each row
+                // complete decoding
+            } else {
+                // number of bytes in a row
+                $rowlen = array_sum($wb);
+                // convert the stream into an array of integers
+                $sdata = unpack('C*', $xrefcrs[1][3][0]);
+                // split the rows
+                $ddata = array_chunk($sdata, $rowlen);
+            }
 
-                        case 11:  // PNG prediction (on encoding, PNG Sub on all rows)
-                            $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
-                            break;
-
-                        case 12:  // PNG prediction (on encoding, PNG Up on all rows)
-                            $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
-                            break;
-
-                        case 13:  // PNG prediction (on encoding, PNG Average on all rows)
-                            $ddata[$k][$j] = (($row[$i] + (($row_left + $row_up) / 2)) & 0xff);
-                            break;
-
-                        case 14:  // PNG prediction (on encoding, PNG Paeth on all rows)
-                            // initial estimate
-                            $p = ($row_left + $row_up - $row_upleft);
-                            // distances
-                            $pa = abs($p - $row_left);
-                            $pb = abs($p - $row_up);
-                            $pc = abs($p - $row_upleft);
-                            $pmin = min($pa, $pb, $pc);
-                            // return minimum distance
-                            switch ($pmin) {
-                                case $pa:
-                                    $ddata[$k][$j] = (($row[$i] + $row_left) & 0xff);
-                                    break;
-
-                                case $pb:
-                                    $ddata[$k][$j] = (($row[$i] + $row_up) & 0xff);
-                                    break;
-
-                                case $pc:
-                                    $ddata[$k][$j] = (($row[$i] + $row_upleft) & 0xff);
-                                    break;
-                            }
-                            break;
-
-                        default:  // PNG prediction (on encoding, PNG optimum)
-                            throw new Exception('Unknown PNG predictor');
-                    }
-                }
-                $prev_row = $ddata[$k];
-            } // end for each row
-            // complete decoding
             $sdata = [];
+
             // for every row
             foreach ($ddata as $k => $row) {
                 // initialize new row
