@@ -382,7 +382,7 @@ class RawDataParser
                                 break;
 
                             default:  // PNG prediction (on encoding, PNG optimum)
-                                throw new Exception('Unknown PNG predictor: ' . $predictor);
+                                throw new Exception('Unknown PNG predictor: '.$predictor);
                         }
                     }
                     $prev_row = $ddata[$k];
