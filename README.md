@@ -33,7 +33,7 @@ Features included :
 
 Currently, secured documents are not supported.
 
-This Library is under active maintenance.
+**This Library is under active maintenance.**
 There is no active development by the author of this library (at the moment), but we welcome any pull request adding/extending functionality!
 
 ## Documentation ##
