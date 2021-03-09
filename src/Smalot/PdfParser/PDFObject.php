@@ -212,8 +212,8 @@ class PDFObject
         $textCleaned = $this->cleanContent($content, '_');
 
         // Extract text blocks.
-        if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s*ET/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
-            foreach ($matches[1] as $part) {
+        if (preg_match_all('/(\sQ)?\s+BT[\s|\(|\[]+(.*?)\s*ET(\sq)?/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[2] as $pos => $part) {
                 $text = $part[0];
                 if ('' === $text) {
                     continue;
@@ -223,6 +223,10 @@ class PDFObject
 
                 // Removes BDC and EMC markup.
                 $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section.' ');
+
+                // Add Q and q flags if detected around BT/ET.
+                // @see: https://github.com/smalot/pdfparser/issues/387
+                $section = trim((!empty($matches[1][$pos][0]) ? "Q\n" : '') . $section) . (!empty($matches[3][$pos][0]) ? "\nq" : '');
 
                 $sections[] = $section;
             }
@@ -270,6 +274,7 @@ class PDFObject
         $text = '';
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
+        $clipped_font = $current_font;
 
         $current_position_td = ['x' => false, 'y' => false];
         $current_position_tm = ['x' => false, 'y' => false];
@@ -331,6 +336,16 @@ class PDFObject
                                 $current_font = $new_font;
                             }
                         }
+                        break;
+
+                    case 'Q':
+                        // Use clip: restore font.
+                        $current_font = $clipped_font;
+                        break;
+
+                    case 'q':
+                        // Use clip: save font.
+                        $clipped_font = $current_font;
                         break;
 
                     case "'":

@@ -334,6 +334,7 @@ class Page extends PDFObject
             $extractedRawData = $this->extractRawData();
         }
         $currentFont = null;
+        $clippedFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
                 $data = $command['c'];
@@ -382,6 +383,10 @@ class Page extends PDFObject
                 $fontId = explode(' ', $command['c'])[0];
                 $currentFont = $this->getFont($fontId);
                 continue;
+            } elseif ('Q' == $command['o']) {
+                $currentFont = $clippedFont;
+            } elseif ('q' == $command['o']) {
+                $clippedFont = $currentFont;
             }
         }
 
