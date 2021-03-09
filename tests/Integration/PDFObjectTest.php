@@ -230,4 +230,20 @@ EMC
             $sections
         );
     }
+
+    /**
+     * Tests behavior with reversed chars instruction.
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/398
+     */
+    public function testReversedChars()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue398.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString('שלומי טסט', $pages[0]->getText());
+    }
 }

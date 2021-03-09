@@ -267,7 +267,7 @@ class PDFObject
      */
     public function getText(Page $page = null)
     {
-        $text = '';
+        $result = '';
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
 
@@ -278,9 +278,17 @@ class PDFObject
 
         foreach ($sections as $section) {
             $commands = $this->getCommandsText($section);
+            $reverse_text = false;
+            $text = '';
 
             foreach ($commands as $command) {
                 switch ($command[self::OPERATOR]) {
+                    case 'BMC':
+                        if ('ReversedChars' == $command[self::COMMAND]) {
+                            $reverse_text = true;
+                        }
+                        break;
+
                     // set character spacing
                     case 'Tc':
                         break;
@@ -438,11 +446,20 @@ class PDFObject
                     default:
                 }
             }
+
+            // Fix Hebrew and other reverse text oriented languages.
+            // @see: https://github.com/smalot/pdfparser/issues/398
+            if ($reverse_text) {
+                $chars = mb_str_split($text, 1, mb_internal_encoding());
+                $text = implode('', array_reverse($chars));
+            }
+
+            $result .= $text;
         }
 
         array_pop(self::$recursionStack);
 
-        return $text.' ';
+        return $result.' ';
     }
 
     /**
