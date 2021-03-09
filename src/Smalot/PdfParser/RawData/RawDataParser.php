@@ -239,6 +239,7 @@ class RawDataParser
         }
         $valid_crs = false;
         $columns = 0;
+        $predictor = null;
         $sarr = $xrefcrs[0][1];
         if (!\is_array($sarr)) {
             $sarr = [];
@@ -310,7 +311,7 @@ class RawDataParser
 
         // decode data
         if ($valid_crs && isset($xrefcrs[1][3][0])) {
-            if (isset($predictor)) {
+            if (!is_null($predictor)) {
                 // number of bytes in a row
                 $rowlen = ($columns + 1);
                 // convert the stream into an array of integers
