@@ -226,7 +226,7 @@ class PDFObject
 
                 // Add Q and q flags if detected around BT/ET.
                 // @see: https://github.com/smalot/pdfparser/issues/387
-                $section = trim((!empty($matches[1][$pos][0]) ? "Q\n" : '') . $section) . (!empty($matches[3][$pos][0]) ? "\nq" : '');
+                $section = trim((!empty($matches[1][$pos][0]) ? "Q\n" : '').$section).(!empty($matches[3][$pos][0]) ? "\nq" : '');
 
                 $sections[] = $section;
             }
