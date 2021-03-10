@@ -19,10 +19,6 @@
         "symfony/polyfill-mbstring": "^1.18",
         "ext-zlib": "*"
     },
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.16",
-        "symfony/phpunit-bridge": "^5.2"
-    },
     "autoload": {
         "psr-0": {
             "Smalot\\PdfParser\\": "src/"

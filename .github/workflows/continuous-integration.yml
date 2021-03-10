@@ -14,9 +14,6 @@ jobs:
     name: "PHPUnit (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
 
-    env:
-      SYMFONY_PHPUNIT_VERSION: 8.5
-
     strategy:
       matrix:
         php:
@@ -41,11 +38,11 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
-      - name: "Remove PHP-CS-Fixer"
-        run: "composer remove friendsofphp/php-cs-fixer --dev --no-progress --no-update"
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
 
       - name: "Run PHPUnit"
-        run: "php vendor/bin/simple-phpunit -v"
+        run: "make run-phpunit"
 
   phpunit-lower-php:
     name: "PHPUnit (PHP ${{ matrix.php }})"
@@ -72,18 +69,15 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
-      - name: "Remove PHP-CS-Fixer"
-        run: "composer remove friendsofphp/php-cs-fixer --dev --no-progress --no-update"
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
 
       - name: "Run PHPUnit"
-        run: "php vendor/bin/simple-phpunit -v"
+        run: "make run-phpunit"
 
   phpunit-coverage:
     name: "PHPUnit coverage (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
-
-    env:
-      SYMFONY_PHPUNIT_VERSION: 8.5
 
     strategy:
       matrix:
@@ -106,15 +100,15 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
-      - name: "Run PHPUnit (with coverage)"
-        run: "php vendor/bin/simple-phpunit -v --coverage-clover coverage/clover.xml"
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
+
+      - name: "Run PHPUnit"
+        run: "php dev-tools/vendor/bin/phpunit -v --coverage-clover coverage/clover.xml"
 
   phpunit-composerv2:
     name: "PHPUnit Composer v2 (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
-
-    env:
-      SYMFONY_PHPUNIT_VERSION: 8.5
 
     strategy:
       matrix:
@@ -137,16 +131,15 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
+
       - name: "Run PHPUnit"
-        run: "php vendor/bin/simple-phpunit -v"
+        run: "make run-phpunit"
 
   phpunit-lowest:
     name: "PHPUnit lowest deps (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
-
-    env:
-      SYMFONY_PHPUNIT_VERSION: 8.5
-      SYMFONY_DEPRECATIONS_HELPER: disabled=1
 
     strategy:
       matrix:
@@ -171,5 +164,8 @@ jobs:
         with:
           dependency-versions: "lowest"
 
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
+
       - name: "Run PHPUnit"
-        run: "php vendor/bin/simple-phpunit -v"
+        run: "make run-phpunit"

@@ -3,6 +3,7 @@
 /vendor/*
 /xdebug/*
 /composer.phar
+/dev-tools/vendor
 /composer
 debug*
 composer.lock

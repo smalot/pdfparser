@@ -1,6 +1,6 @@
 includes:
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
+    - dev-tools/vendor/phpstan/phpstan-phpunit/extension.neon
+    - dev-tools/vendor/phpstan/phpstan-phpunit/rules.neon
 
 parameters:
     level: 3
@@ -9,4 +9,4 @@ parameters:
         - tests
 
     bootstrapFiles:
-        - vendor/bin/.phpunit/phpunit-7.5-0/vendor/autoload.php
+        - vendor/autoload.php

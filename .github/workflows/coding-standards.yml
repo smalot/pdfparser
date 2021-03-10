@@ -30,14 +30,11 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
-      - name: "Install PHPStan"
-        run: "composer require phpstan/phpstan phpstan/phpstan-phpunit --dev --no-progress --no-suggest"
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
 
       - name: "Run PHP CS Fixer"
-        run: "php vendor/bin/php-cs-fixer fix --verbose --dry-run --format=checkstyle | cs2pr"
-
-      - name: "Install PHPUnit for PHPStan"
-        run: "php vendor/bin/simple-phpunit install"
+        run: "php dev-tools/vendor/bin/php-cs-fixer fix --verbose --dry-run --format=checkstyle | cs2pr"
 
       - name: "Run PHPStan"
-        run: "php vendor/bin/phpstan analyse --no-progress --error-format=checkstyle | cs2pr"
+        run: "php dev-tools/vendor/bin/phpstan analyse --no-progress --error-format=checkstyle | cs2pr"
