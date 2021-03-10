@@ -199,7 +199,7 @@ class Parser
                             '/(\d+\s+\d+\s*)/s',
                             $match[1],
                             -1,
-                          PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+                          \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                         );
                         $table = [];
 

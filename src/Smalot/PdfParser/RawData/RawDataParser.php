@@ -153,7 +153,7 @@ class RawDataParser
         // initialize object number
         $obj_num = 0;
         // search for cross-reference entries or subsection
-        while (preg_match('/([0-9]+)[\x20]([0-9]+)[\x20]?([nf]?)(\r\n|[\x20]?[\r\n])/', $pdfData, $matches, PREG_OFFSET_CAPTURE, $offset) > 0) {
+        while (preg_match('/([0-9]+)[\x20]([0-9]+)[\x20]?([nf]?)(\r\n|[\x20]?[\r\n])/', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
             if ($matches[0][1] != $offset) {
                 // we are on another section
                 break;
@@ -176,7 +176,7 @@ class RawDataParser
             }
         }
         // get trailer data
-        if (preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, PREG_OFFSET_CAPTURE, $offset) > 0) {
+        if (preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
             $trailer_data = $matches[1][0];
             if (!isset($xref['trailer']) || empty($xref['trailer'])) {
                 // get only the last updated version
@@ -715,7 +715,7 @@ class RawDataParser
                                 '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
                                 substr($pdfData, $offset),
                                 $matches,
-                                PREG_OFFSET_CAPTURE
+                                \PREG_OFFSET_CAPTURE
                             );
                             if (1 == $pregResult) {
                                 $objval = substr($pdfData, $offset, $matches[0][1]);
@@ -766,7 +766,7 @@ class RawDataParser
             '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
             $pdfData,
             $matches,
-            PREG_OFFSET_CAPTURE,
+            \PREG_OFFSET_CAPTURE,
             $offset
         );
 
@@ -775,7 +775,7 @@ class RawDataParser
             $pregResult = preg_match_all(
                 '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
                 $pdfData, $matches,
-                PREG_SET_ORDER,
+                \PREG_SET_ORDER,
                 $offset
             );
             if (0 == $pregResult) {
@@ -786,7 +786,7 @@ class RawDataParser
         } elseif (strpos($pdfData, 'xref', $offset) == $offset) {
             // Already pointing at the xref table
             $startxref = $offset;
-        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset)) {
             // Cross-Reference Stream object
             $startxref = $offset;
         } elseif ($startxrefPreg) {
