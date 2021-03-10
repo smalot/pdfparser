@@ -48,7 +48,7 @@ class RawDataParserHelper extends RawDataParser
 
 class RawDataParserTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
