@@ -13,7 +13,7 @@ To install (and update) development tools like PHPUnit or PHP-CS-Fixer run:
 
 > make install-dev-tools
 
-Development toosl are getting installed in `dev-tools/vendor`.
+Development tools are getting installed in `dev-tools/vendor`.
 Please check `dev-tools/composer.json` for more information about versions etc.
 To run a tool manually you use `dev-tools/vendor/bin`, for instance:
 
