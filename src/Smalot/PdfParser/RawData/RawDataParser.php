@@ -631,58 +631,60 @@ class RawDataParser
 
             case '[':   // \x5B LEFT SQUARE BRACKET
             case ']':  // \x5D RIGHT SQUARE BRACKET
-                    // array object
-                    $objtype = $char;
-                    ++$offset;
-                    if ('[' == $char) {
+                // array object
+                $objtype = $char;
+                ++$offset;
+                if ('[' == $char) {
+                    // get array content
+                    $objval = [];
+                    do {
+                        $oldOffset = $offset;
+                        // get element
+                        $element = $this->getRawObject($pdfData, $offset);
+                        $offset = $element[2];
+                        $objval[] = $element;
+                    } while ((']' != $element[0]) && ($offset != $oldOffset));
+                    // remove closing delimiter
+                    array_pop($objval);
+                }
+                break;
+
+            case '<':  // \x3C LESS-THAN SIGN
+            case '>':  // \x3E GREATER-THAN SIGN
+                if (isset($pdfData[($offset + 1)]) && ($pdfData[($offset + 1)] == $char)) {
+                    // dictionary object
+                    $objtype = $char.$char;
+                    $offset += 2;
+                    if ('<' == $char) {
                         // get array content
                         $objval = [];
                         do {
+                            $oldOffset = $offset;
                             // get element
                             $element = $this->getRawObject($pdfData, $offset);
                             $offset = $element[2];
                             $objval[] = $element;
-                        } while (']' != $element[0]);
+                        } while (('>>' != $element[0]) && ($offset != $oldOffset));
                         // remove closing delimiter
                         array_pop($objval);
                     }
-                    break;
-
-            case '<':  // \x3C LESS-THAN SIGN
-            case '>':  // \x3E GREATER-THAN SIGN
-                    if (isset($pdfData[($offset + 1)]) && ($pdfData[($offset + 1)] == $char)) {
-                        // dictionary object
-                        $objtype = $char.$char;
-                        $offset += 2;
-                        if ('<' == $char) {
-                            // get array content
-                            $objval = [];
-                            do {
-                                // get element
-                                $element = $this->getRawObject($pdfData, $offset);
-                                $offset = $element[2];
-                                $objval[] = $element;
-                            } while ('>>' != $element[0]);
-                            // remove closing delimiter
-                            array_pop($objval);
-                        }
-                    } else {
-                        // hexadecimal string object
-                        $objtype = $char;
-                        ++$offset;
-                        $pregResult = preg_match(
+                } else {
+                    // hexadecimal string object
+                    $objtype = $char;
+                    ++$offset;
+                    $pregResult = preg_match(
                             '/^([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
                             substr($pdfData, $offset),
                             $matches
                         );
-                        if (('<' == $char) && 1 == $pregResult) {
-                            // remove white space characters
-                            $objval = strtr($matches[1], "\x09\x0a\x0c\x0d\x20", '');
-                            $offset += \strlen($matches[0]);
-                        } elseif (false !== ($endpos = strpos($pdfData, '>', $offset))) {
-                            $offset = $endpos + 1;
-                        }
+                    if (('<' == $char) && 1 == $pregResult) {
+                        // remove white space characters
+                        $objval = strtr($matches[1], "\x09\x0a\x0c\x0d\x20", '');
+                        $offset += \strlen($matches[0]);
+                    } elseif (false !== ($endpos = strpos($pdfData, '>', $offset))) {
+                        $offset = $endpos + 1;
                     }
+                }
                     break;
 
             default:

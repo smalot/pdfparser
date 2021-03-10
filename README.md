@@ -44,6 +44,19 @@ Original PDF References files can be downloaded from this url: http://www.adobe.
 
 **For developers**: Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library.
 
+## Installation
+
+### Using Composer
+
+* Obtain [Composer](https://getcomposer.org)
+* Run `composer require smalot/pdfparser`
+
+### Use alternate file loader
+
+In case you can't use Composer, you can include `alt_autoload.php-dist` into your project.
+It will load all required files at once.
+Afterwards you can use `PDFParser` class and others.
+
 ## License ##
 
 This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).

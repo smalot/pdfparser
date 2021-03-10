@@ -239,6 +239,31 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Tests if PDF triggers "Call to undefined method Smalot\PdfParser\Header::__toString()".
+     *
+     * It happened because there was a check missing in Font.php (~ line 109).
+     *
+     * @see https://github.com/smalot/pdfparser/issues/391
+     */
+    public function testIssue391()
+    {
+        /**
+         * PDF provided by @dhildreth for usage in our test environment.
+         *
+         * @see https://github.com/smalot/pdfparser/issues/391#issuecomment-783504599
+         */
+        $filename = $this->rootDir.'/samples/bugs/Issue391.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        // check for an example string (PDF consists of many pages)
+        $this->assertStringContainsString(
+            '(This Code will be changed while mass production)',
+            $document->getText()
+        );
+    }
+
+    /**
      * Tests behavior when changing default font space limit (-50).
      *
      * Test is based on testIssue359 (above).
