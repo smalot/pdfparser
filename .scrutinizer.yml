@@ -5,7 +5,7 @@ build:
                 override:
                     - php-scrutinizer-run
                     -
-                        command: make install-dev-tools && php dev-tools/vendor/bin/phpunit --coverage-clover coverage/clover.xml
+                        command: make install-dev-tools && make run-phpunit ARGS="--coverage-clover coverage/clover.xml"
                         coverage:
                             file: coverage/clover.xml
                             format: clover

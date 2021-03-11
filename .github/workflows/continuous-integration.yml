@@ -104,7 +104,7 @@ jobs:
         run: "make install-dev-tools"
 
       - name: "Run PHPUnit"
-        run: "php dev-tools/vendor/bin/phpunit -v --coverage-clover coverage/clover.xml"
+        run: make run-phpunit ARGS="-v --coverage-clover coverage/clover.xml"
 
   phpunit-composerv2:
     name: "PHPUnit Composer v2 (PHP ${{ matrix.php }})"
