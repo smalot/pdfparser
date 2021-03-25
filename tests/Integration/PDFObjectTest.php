@@ -226,7 +226,8 @@ q
 EMC
 (ABC) Tj
 
-[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD ', '/TT1 1.5 Tf (BT )Tj '],
+[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD', '/TT1 1.5 Tf (BT )Tj
+q'],
             $sections
         );
     }
