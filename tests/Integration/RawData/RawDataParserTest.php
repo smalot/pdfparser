@@ -107,4 +107,15 @@ class RawDataParserTest extends TestCase
 
         $this->assertStringContainsString('Ημερήσια έκθεση επιδημιολογικής', $pages[0]->getText());
     }
+
+    public function testDecodeObjectHeaderIssue405()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issues405.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        echo $pages[0]->getText();
+    }
 }
