@@ -110,7 +110,7 @@ class RawDataParserTest extends TestCase
 
     public function testDecodeObjectHeaderIssue405()
     {
-        $filename = $this->rootDir.'/samples/bugs/Issues405.pdf';
+        $filename = $this->rootDir.'/samples/bugs/Issue405.pdf';
 
         $parser = $this->getParserInstance();
         $document = $parser->parseFile($filename);
