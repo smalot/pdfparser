@@ -116,6 +116,6 @@ class RawDataParserTest extends TestCase
         $document = $parser->parseFile($filename);
         $pages = $document->getPages();
 
-        echo $pages[0]->getText();
+        $this->assertStringContainsString('Bug fix: PR #405', $pages[0]->getText());
     }
 }
