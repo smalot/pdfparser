@@ -495,8 +495,8 @@ class RawDataParser
         $offset += strspn($pdfData, "\0\t\n\f\r ", $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
-        // Newer pdf may use \n instead of whitespace
-        $objHeaderPattern = '/'.$objRefArr[0].'[ \n]'.$objRefArr[1].'[ \n]obj'.'/';
+        // consider all whitespace character (PDF specifications)
+        $objHeaderPattern = '/'.$objRefArr[0].'[\0\t\n\f\r ]'.$objRefArr[1].'[\0\t\n\f\r ]obj'.'/';
         if (0 == preg_match($objHeaderPattern, substr($pdfData, $offset, \strlen($objHeader)))) {
             // an indirect reference to an undefined object shall be considered a reference to the null object
             return ['null', 'null', $offset];
