@@ -356,7 +356,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      *
      * @see https://github.com/smalot/pdfparser/pull/403
      */
-    public function testDecodeTextGetFontSpaceLimitOnNull()
+    public function testTriggerGetFontSpaceLimitOnNull()
     {
         // error is triggered, if we set the fourth parameter to null
         $font = new Font(new Document(), null, null, new Config());
