@@ -355,6 +355,8 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      *      Call to a member function getFontSpaceLimit() on null
      *
      * @see https://github.com/smalot/pdfparser/pull/403
+     *
+     * @doesNotPerformAssertions
      */
     public function testTriggerGetFontSpaceLimitOnNull()
     {
@@ -364,8 +366,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         // both functions can trigger the error
         $font->decodeText([]);
         $font->getTextArray();
-
-        $this->expectNotToPerformAssertions();
     }
 
     public function testXmlContent()
