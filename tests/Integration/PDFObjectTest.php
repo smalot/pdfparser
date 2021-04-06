@@ -232,18 +232,4 @@ q'],
             $sections
         );
     }
-
-    public function testGetFontSpaceLimitOnNull()
-    {
-        $parser = new Parser();
-
-        $filename = __DIR__.'/../../samples/bugs/pr_403.pdf';
-        $pdf = $parser->parseFile($filename);
-        $pages = $pdf->getPages();
-
-        foreach ($pages as $index => $page)
-        {
-            $text = $page->getTextXY(181.56, 816.95, 5); //<- throw Call to a member function getFontSpaceLimit() on null
-        }
-    }
 }
