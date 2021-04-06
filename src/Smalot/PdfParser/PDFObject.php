@@ -259,7 +259,7 @@ class PDFObject
             return reset($fonts);
         }
 
-        return new Font($this->document);
+        return new Font($this->document, null, null, $this->config);
     }
 
     /**
@@ -471,7 +471,7 @@ class PDFObject
     {
         $text = [];
         $sections = $this->getSectionsText($this->content);
-        $current_font = new Font($this->document);
+        $current_font = new Font($this->document, null, null, $this->config);
 
         foreach ($sections as $section) {
             $commands = $this->getCommandsText($section);

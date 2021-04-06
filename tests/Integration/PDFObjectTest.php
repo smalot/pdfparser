@@ -33,7 +33,6 @@
 namespace Tests\Smalot\PdfParser\Integration;
 
 use Smalot\PdfParser\Document;
-use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\PDFObject;
 use Tests\Smalot\PdfParser\TestCase;
 
