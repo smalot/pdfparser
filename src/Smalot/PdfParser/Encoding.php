@@ -126,13 +126,24 @@ class Encoding extends PDFObject
     }
 
     /**
+     * Returns the name of the encoding class, if available.
+     *
      * @return string
      *
-     * @throws \Exception
+     * @throws \Exception On PHP 7.4 an exception is thrown if encoding class doesn't exist.
      */
     public function __toString()
     {
-        return $this->getEncodingClass();
+        try {
+            return $this->getEncodingClass();
+        } catch (Exception $e) {
+            // prior to PHP 7.4 toString has to return an empty string.
+            if (version_compare(PHP_VERSION, '7.4.0', '<')) {
+                return '';
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**

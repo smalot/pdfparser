@@ -54,8 +54,13 @@ class EncodingTest extends TestCase
 
     /**
      * This tests checks behavior if given Encoding class doesn't exist.
+     *
+     * Protected method getEncodingClass is called in init and __toString.
+     * It throws an exception if class is not available.
+     * Calling init is enough to trigger the exception, but __toString call afterwards
+     * makes sure that we don't missing it.
      */
-    public function testGetEncodingClassMissingClassException()
+    public function testInitGetEncodingClassMissingClassException()
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Missing encoding data for: "invalid"');
@@ -66,5 +71,33 @@ class EncodingTest extends TestCase
         $encoding->init();
 
         $encoding->__toString();
+    }
+
+    /**
+     * This tests focuses on behavior of Encoding::__toString when running PHP 7.4+ and prior.
+     *
+     * Prior PHP 7.4 we expect an empty string to be returned (based on PHP specification).
+     * PHP 7.4+ we expect an exception to be thrown when class is invalid.
+     */
+    public function testToStringGetEncodingClassMissingClassException()
+    {
+        // prior to PHP 7.4 toString has to return an empty string.
+        if (version_compare(\PHP_VERSION, '7.4.0', '<')) {
+            $header = new Header(['BaseEncoding' => new Element('invalid')]);
+
+            $encoding = new Encoding(new Document(), $header);
+
+            $this->assertEquals('', $encoding->__toString());
+        } else {
+            // PHP 7.4+
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Missing encoding data for: "invalid"');
+
+            $header = new Header(['BaseEncoding' => new Element('invalid')]);
+
+            $encoding = new Encoding(new Document(), $header);
+
+            $encoding->__toString();
+        }
     }
 }
