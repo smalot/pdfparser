@@ -32,6 +32,7 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
@@ -346,6 +347,25 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));
+    }
+
+    /**
+     * Tests buggy behavior which lead to:
+     *
+     *      Call to a member function getFontSpaceLimit() on null
+     *
+     * @see https://github.com/smalot/pdfparser/pull/403
+     *
+     * @doesNotPerformAssertions
+     */
+    public function testTriggerGetFontSpaceLimitOnNull()
+    {
+        // error is triggered, if we set the fourth parameter to null
+        $font = new Font(new Document(), null, null, new Config());
+
+        // both functions can trigger the error
+        $font->decodeText([]);
+        $font->getTextArray();
     }
 
     public function testXmlContent()
