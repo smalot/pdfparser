@@ -42,6 +42,8 @@ There is no active development by the author of this library (at the moment), bu
 
 Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 
+**For developers**: Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library.
+
 ## Installation
 
 ### Using Composer

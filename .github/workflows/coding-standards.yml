@@ -11,9 +11,6 @@ jobs:
     name: "CS Fixer & PHPStan"
     runs-on: "ubuntu-20.04"
 
-    env:
-      SYMFONY_PHPUNIT_VERSION: 7.5
-
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2"
@@ -30,14 +27,11 @@ jobs:
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v1"
 
-      - name: "Install PHPStan"
-        run: "composer require phpstan/phpstan phpstan/phpstan-phpunit --dev --no-progress --no-suggest"
+      - name: "Install dev tools"
+        run: "make install-dev-tools"
 
       - name: "Run PHP CS Fixer"
-        run: "php vendor/bin/php-cs-fixer fix --verbose --dry-run --format=checkstyle | cs2pr"
-
-      - name: "Install PHPUnit for PHPStan"
-        run: "php vendor/bin/simple-phpunit install"
+        run: "make run-php-cs-fixer ARGS="--verbose --dry-run --format=checkstyle" | cs2pr"
 
       - name: "Run PHPStan"
-        run: "php vendor/bin/phpstan analyse --no-progress --error-format=checkstyle | cs2pr"
+        run: "make run-phpstan ARGS="--no-progress --error-format=checkstyle" | cs2pr"
