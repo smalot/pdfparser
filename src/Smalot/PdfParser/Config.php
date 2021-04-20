@@ -56,22 +56,22 @@ class Config
         $this->fontSpaceLimit = $value;
     }
 
-    public function getPdfWhitespaces(): string
+    public function getPdfWhitespaces()
     {
         return $this->pdfWhitespaces;
     }
 
-    public function setPdfWhitespaces(string $pdfWhitespaces): void
+    public function setPdfWhitespaces(string $pdfWhitespaces)
     {
         $this->pdfWhitespaces = $pdfWhitespaces;
     }
 
-    public function getPdfWhitespacesRegex(): string
+    public function getPdfWhitespacesRegex()
     {
         return $this->pdfWhitespacesRegex;
     }
 
-    public function setPdfWhitespacesRegex(string $pdfWhitespacesRegex): void
+    public function setPdfWhitespacesRegex(string $pdfWhitespacesRegex)
     {
         $this->pdfWhitespacesRegex = $pdfWhitespacesRegex;
     }
