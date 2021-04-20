@@ -57,6 +57,10 @@ class RawDataParser
     protected $filterHelper;
     protected $objects;
 
+    // (NUL, HT, LF, FF, CR, SP)
+    protected $pdfWhitespaces = "\0\t\n\f\r ";
+    protected $pdfWhitespacesRegex = '[\0\t\n\f\r ]';
+
     /**
      * @param array $cfg Configuration array, default is []
      */
@@ -148,8 +152,8 @@ class RawDataParser
     protected function decodeXref($pdfData, $startxref, $xref = [])
     {
         $startxref += 4; // 4 is the length of the word 'xref'
-        // skip initial white space chars: \x00 null (NUL), \x09 horizontal tab (HT), \x0A line feed (LF), \x0C form feed (FF), \x0D carriage return (CR), \x20 space (SP)
-        $offset = $startxref + strspn($pdfData, "\x00\x09\x0a\x0c\x0d\x20", $startxref);
+        // skip initial white space chars
+        $offset = $startxref + strspn($pdfData, $this->pdfWhitespaces, $startxref);
         // initialize object number
         $obj_num = 0;
         // search for cross-reference entries or subsection
@@ -463,6 +467,19 @@ class RawDataParser
         return $xref;
     }
 
+    protected function getObjectHeaderPattern($objRefArr)
+    {
+        // consider all whitespace character (PDF specifications)
+        return '/'.$objRefArr[0].$this->pdfWhitespacesRegex.$objRefArr[1].$this->pdfWhitespacesRegex.'obj'.'/';
+    }
+
+    protected function getObjectHeaderLen($objRefArr)
+    {
+        // "4 0 obj"
+        // 2 whitespaces + strlen("obj") = 5
+        return 5 + \strlen($objRefArr[0]) + \strlen($objRefArr[1]);
+    }
+
     /**
      * Get content of indirect object.
      *
@@ -486,18 +503,16 @@ class RawDataParser
         if (2 !== \count($objRefArr)) {
             throw new Exception('Invalid object reference for $obj.');
         }
-        $objHeader = $objRefArr[0].' '.$objRefArr[1].' obj';
 
+        $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
         /*
          * check if we are in position
          */
-        // ignore whitespace characters at offset (NUL, HT, LF, FF, CR, SP)
-        $offset += strspn($pdfData, "\0\t\n\f\r ", $offset);
+        // ignore whitespace characters at offset
+        $offset += strspn($pdfData, $this->pdfWhitespaces, $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
-        // consider all whitespace character (PDF specifications)
-        $objHeaderPattern = '/'.$objRefArr[0].'[\0\t\n\f\r ]'.$objRefArr[1].'[\0\t\n\f\r ]obj'.'/';
-        if (0 == preg_match($objHeaderPattern, substr($pdfData, $offset, \strlen($objHeader)))) {
+        if (0 == preg_match($this->getObjectHeaderPattern($objRefArr), substr($pdfData, $offset, $objHeaderLen))) {
             // an indirect reference to an undefined object shall be considered a reference to the null object
             return ['null', 'null', $offset];
         }
@@ -506,7 +521,7 @@ class RawDataParser
          * get content
          */
         // starting position of object content
-        $offset += \strlen($objHeader);
+        $offset += $objHeaderLen;
         $objContentArr = [];
         $i = 0; // object main index
         do {
@@ -570,16 +585,8 @@ class RawDataParser
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
 
-        /*
-         * skip initial white space chars:
-         *      \x00 null (NUL)
-         *      \x09 horizontal tab (HT)
-         *      \x0A line feed (LF)
-         *      \x0C form feed (FF)
-         *      \x0D carriage return (CR)
-         *      \x20 space (SP)
-         */
-        $offset += strspn($pdfData, "\x00\x09\x0a\x0c\x0d\x20", $offset);
+        //skip initial white space chars
+        $offset += strspn($pdfData, $this->pdfWhitespaces, $offset);
 
         // get first char
         $char = $pdfData[$offset];
@@ -694,7 +701,7 @@ class RawDataParser
                         );
                     if (('<' == $char) && 1 == $pregResult) {
                         // remove white space characters
-                        $objval = strtr($matches[1], "\x09\x0a\x0c\x0d\x20", '');
+                        $objval = strtr($matches[1], $this->pdfWhitespaces, '');
                         $offset += \strlen($matches[0]);
                     } elseif (false !== ($endpos = strpos($pdfData, '>', $offset))) {
                         $offset = $endpos + 1;
