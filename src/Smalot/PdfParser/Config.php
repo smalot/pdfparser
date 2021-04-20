@@ -40,6 +40,12 @@ class Config
 {
     private $fontSpaceLimit = -50;
 
+    /**
+     * Represents: (NUL, HT, LF, FF, CR, SP)
+     */
+    private $pdfWhitespaces = "\0\t\n\f\r ";
+    private $pdfWhitespacesRegex = '[\0\t\n\f\r ]';
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -48,5 +54,25 @@ class Config
     public function setFontSpaceLimit($value)
     {
         $this->fontSpaceLimit = $value;
+    }
+
+    public function getPdfWhitespaces(): string
+    {
+        return $this->pdfWhitespaces;
+    }
+
+    public function setPdfWhitespaces(string $pdfWhitespaces): void
+    {
+        $this->pdfWhitespaces = $pdfWhitespaces;
+    }
+
+    public function getPdfWhitespacesRegex(): string
+    {
+        return $this->pdfWhitespacesRegex;
+    }
+
+    public function setPdfWhitespacesRegex(string $pdfWhitespacesRegex): void
+    {
+        $this->pdfWhitespacesRegex = $pdfWhitespacesRegex;
     }
 }

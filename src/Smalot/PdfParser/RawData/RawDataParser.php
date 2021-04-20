@@ -41,9 +41,15 @@
 namespace Smalot\PdfParser\RawData;
 
 use Exception;
+use Smalot\PdfParser\Config;
 
 class RawDataParser
 {
+    /**
+     * @var \Smalot\PdfParser\Config
+     */
+    private $config;
+
     /**
      * Configuration array.
      */
@@ -57,19 +63,16 @@ class RawDataParser
     protected $filterHelper;
     protected $objects;
 
-    // (NUL, HT, LF, FF, CR, SP)
-    protected $pdfWhitespaces = "\0\t\n\f\r ";
-    protected $pdfWhitespacesRegex = '[\0\t\n\f\r ]';
-
     /**
      * @param array $cfg Configuration array, default is []
      */
-    public function __construct($cfg = [])
+    public function __construct($cfg = [], Config $config = null)
     {
         // merge given array with default values
         $this->cfg = array_merge($this->cfg, $cfg);
 
         $this->filterHelper = new FilterHelper();
+        $this->config = $config ?: new Config();
     }
 
     /**
@@ -153,7 +156,7 @@ class RawDataParser
     {
         $startxref += 4; // 4 is the length of the word 'xref'
         // skip initial white space chars
-        $offset = $startxref + strspn($pdfData, $this->pdfWhitespaces, $startxref);
+        $offset = $startxref + strspn($pdfData, $this->config->getPdfWhitespaces(), $startxref);
         // initialize object number
         $obj_num = 0;
         // search for cross-reference entries or subsection
@@ -470,7 +473,7 @@ class RawDataParser
     protected function getObjectHeaderPattern($objRefArr)
     {
         // consider all whitespace character (PDF specifications)
-        return '/'.$objRefArr[0].$this->pdfWhitespacesRegex.$objRefArr[1].$this->pdfWhitespacesRegex.'obj'.'/';
+        return '/'.$objRefArr[0].$this->config->getPdfWhitespacesRegex().$objRefArr[1].$this->config->getPdfWhitespacesRegex().'obj'.'/';
     }
 
     protected function getObjectHeaderLen($objRefArr)
@@ -505,11 +508,12 @@ class RawDataParser
         }
 
         $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
+
         /*
          * check if we are in position
          */
         // ignore whitespace characters at offset
-        $offset += strspn($pdfData, $this->pdfWhitespaces, $offset);
+        $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
         if (0 == preg_match($this->getObjectHeaderPattern($objRefArr), substr($pdfData, $offset, $objHeaderLen))) {
@@ -585,8 +589,8 @@ class RawDataParser
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
 
-        //skip initial white space chars
-        $offset += strspn($pdfData, $this->pdfWhitespaces, $offset);
+        // skip initial white space chars
+        $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
 
         // get first char
         $char = $pdfData[$offset];
@@ -701,7 +705,7 @@ class RawDataParser
                         );
                     if (('<' == $char) && 1 == $pregResult) {
                         // remove white space characters
-                        $objval = strtr($matches[1], $this->pdfWhitespaces, '');
+                        $objval = strtr($matches[1], $this->config->getPdfWhitespaces(), '');
                         $offset += \strlen($matches[0]);
                     } elseif (false !== ($endpos = strpos($pdfData, '>', $offset))) {
                         $offset = $endpos + 1;
