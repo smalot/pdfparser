@@ -470,13 +470,13 @@ class RawDataParser
         return $xref;
     }
 
-    protected function getObjectHeaderPattern($objRefArr)
+    protected function getObjectHeaderPattern($objRefArr): string
     {
         // consider all whitespace character (PDF specifications)
         return '/'.$objRefArr[0].$this->config->getPdfWhitespacesRegex().$objRefArr[1].$this->config->getPdfWhitespacesRegex().'obj'.'/';
     }
 
-    protected function getObjectHeaderLen($objRefArr)
+    protected function getObjectHeaderLen($objRefArr): int
     {
         // "4 0 obj"
         // 2 whitespaces + strlen("obj") = 5
