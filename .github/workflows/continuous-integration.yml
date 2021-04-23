@@ -141,18 +141,14 @@ jobs:
     name: "Tests alternative autoloader (PHP ${{ matrix.php }})"
     runs-on: "ubuntu-20.04"
 
-    env:
-      SYMFONY_PHPUNIT_VERSION: 7.5
-
     strategy:
       matrix:
         php:
-          - "5.6"
-          - "7.0"
           - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
