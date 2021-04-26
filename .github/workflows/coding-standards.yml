@@ -31,7 +31,7 @@ jobs:
         run: make install-dev-tools
       -
         name: Run PHP CS Fixer
-        run: make run-php-cs-fixer ARGS="--verbose --dry-run --format=checkstyle" | cs2pr
+        run: 'make run-php-cs-fixer ARGS="--verbose --dry-run --format=checkstyle" | cs2pr'
       -
         name: Run PHPStan
-        run: make run-phpstan ARGS="--no-progress --error-format=checkstyle" | cs2pr
+        run: 'make run-phpstan ARGS="--no-progress --error-format=checkstyle" | cs2pr'
