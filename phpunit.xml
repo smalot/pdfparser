@@ -27,9 +27,9 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <coverage>
-        <include>
+    <filter>
+        <whitelist>
             <directory>src</directory>
-        </include>
-    </coverage>
+        </whitelist>
+    </filter>
 </phpunit>
