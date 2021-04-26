@@ -1,6 +1,6 @@
 build:
     nodes:
-        coverage:
+        analysis:
             tests:
                 override:
                     - php-scrutinizer-run
@@ -12,3 +12,7 @@ build:
             environment:
                 php:
                     version: 7.4
+
+filter:
+    excluded_paths:
+        - "dev-tools/"
