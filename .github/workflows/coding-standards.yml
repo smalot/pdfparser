@@ -9,29 +9,29 @@ on:
 jobs:
   coding-standards:
     name: "CS Fixer & PHPStan"
-    runs-on: "ubuntu-20.04"
-
+    runs-on: ubuntu-20.04
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v2"
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "7.4"
-          tools: cs2pr, composer:v1
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
         env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
-
-      - name: "Install dev tools"
-        run: "make install-dev-tools"
-
-      - name: "Run PHP CS Fixer"
-        run: "make run-php-cs-fixer ARGS="--verbose --dry-run --format=checkstyle" | cs2pr"
-
-      - name: "Run PHPStan"
-        run: "make run-phpstan ARGS="--no-progress --error-format=checkstyle" | cs2pr"
+          COMPOSER_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
+          php-version: "7.4"
+          tools: "composer:v1"
+      -
+        name: Install dependencies with Composer
+        uses: ramsey/composer-install@v1
+      -
+        name: Install dev tools
+        run: make install-dev-tools
+      -
+        name: Run PHP CS Fixer
+        run: 'make run-php-cs-fixer ARGS="--verbose --dry-run"'
+      -
+        name: Run PHPStan
+        run: 'make run-phpstan ARGS="--no-progress"'
