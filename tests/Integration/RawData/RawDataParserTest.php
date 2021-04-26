@@ -32,6 +32,7 @@
 
 namespace Tests\Smalot\PdfParser\Integration\RawData;
 
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\RawData\RawDataParser;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -52,7 +53,7 @@ class RawDataParserTest extends TestCase
     {
         parent::setUp();
 
-        $this->fixture = new RawDataParserHelper();
+        $this->fixture = new RawDataParserHelper([], new Config());
     }
 
     /**

@@ -60,8 +60,8 @@ class Parser
 
     public function __construct($cfg = [], Config $config = null)
     {
-        $this->rawDataParser = new RawDataParser($cfg);
         $this->config = $config ?: new Config();
+        $this->rawDataParser = new RawDataParser($cfg, $this->config);
     }
 
     /**
