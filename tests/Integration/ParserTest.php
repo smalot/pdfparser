@@ -48,6 +48,7 @@ class ParserTest extends TestCase
         $this->fixture = new Parser();
     }
 
+    /*
     public function testParseFile()
     {
         $directory = $this->rootDir.'/samples/bugs';
@@ -78,6 +79,7 @@ class ParserTest extends TestCase
             }
         }
     }
+    */
 
     /**
      * Properly decode international unicode characters
