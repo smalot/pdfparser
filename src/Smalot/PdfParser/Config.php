@@ -42,12 +42,14 @@ class Config
 
     /**
      * Represents: (NUL, HT, LF, FF, CR, SP)
+     *
      * @var string
      */
     private $pdfWhitespaces = "\0\t\n\f\r ";
 
     /**
      * Represents: (NUL, HT, LF, FF, CR, SP)
+     *
      * @var string
      */
     private $pdfWhitespacesRegex = '[\0\t\n\f\r ]';
