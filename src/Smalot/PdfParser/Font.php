@@ -292,11 +292,11 @@ class Font extends PDFObject
      */
     public static function decodeOctal($text)
     {
-        $parts = preg_split('/(\\\\\d{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(\\\\[0-7]{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
 
         foreach ($parts as $part) {
-            if (preg_match('/^\\\\\d{3}$/', $part)) {
+            if (preg_match('/^\\\\[0-7]{3}$/', $part)) {
                 $text .= \chr(octdec(trim($part, '\\')));
             } else {
                 $text .= $part;
