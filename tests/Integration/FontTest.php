@@ -277,6 +277,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
     {
         $this->assertEquals('AB C', Font::decodeOctal('\\101\\102\\040\\103'));
         $this->assertEquals('AB CD', Font::decodeOctal('\\101\\102\\040\\103D'));
+        $this->assertEquals('AB \199', Font::decodeOctal('\\101\\102\\040\\199'));
     }
 
     public function testDecodeEntities()
