@@ -47,7 +47,7 @@ class Form extends Page
     public function getText(Page $page = null)
     {
         $header = new Header([], $this->document);
-        $contents = new PDFObject($this->document, $header, $this->content);
+        $contents = new PDFObject($this->document, $header, $this->content, $this->config);
 
         return $contents->getText($this);
     }
