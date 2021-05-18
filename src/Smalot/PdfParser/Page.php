@@ -211,7 +211,7 @@ class Page extends PDFObject
                     }
 
                     $header = new Header([], $this->document);
-                    $contents = new PDFObject($this->document, $header, $new_content);
+                    $contents = new PDFObject($this->document, $header, $new_content, $this->config);
                 }
             } elseif ($contents instanceof ElementArray) {
                 // Create a virtual global content.
@@ -222,7 +222,7 @@ class Page extends PDFObject
                 }
 
                 $header = new Header([], $this->document);
-                $contents = new PDFObject($this->document, $header, $new_content);
+                $contents = new PDFObject($this->document, $header, $new_content, $this->config);
             }
 
             return $contents->getText($this);
@@ -259,7 +259,7 @@ class Page extends PDFObject
                     }
 
                     $header = new Header([], $this->document);
-                    $contents = new PDFObject($this->document, $header, $new_content);
+                    $contents = new PDFObject($this->document, $header, $new_content, $this->config);
                 }
             } elseif ($contents instanceof ElementArray) {
                 // Create a virtual global content.
@@ -271,7 +271,7 @@ class Page extends PDFObject
                 }
 
                 $header = new Header([], $this->document);
-                $contents = new PDFObject($this->document, $header, $new_content);
+                $contents = new PDFObject($this->document, $header, $new_content, $this->config);
             }
 
             return $contents->getTextArray($this);
