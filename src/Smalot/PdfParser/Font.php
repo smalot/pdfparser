@@ -107,9 +107,15 @@ class Font extends PDFObject
             \strlen($char) < 2
             && $this->has('Encoding')
             && $this->get('Encoding') instanceof Encoding
-            && WinAnsiEncoding::class === $this->get('Encoding')->__toString()
         ) {
-            $fallbackDecoded = self::uchr($dec);
+            try {
+                if (WinAnsiEncoding::class === $this->get('Encoding')->__toString()) {
+                    $fallbackDecoded = self::uchr($dec);
+                }
+            } catch (\Exception $e) {
+                // Encoding->getEncodingClass() throws an exception when BaseEncoding doesn't exists
+                // See table 5.11 on PDF 1.5 specs for more info
+            }
         }
 
         return $use_default ? self::MISSING : $fallbackDecoded;
