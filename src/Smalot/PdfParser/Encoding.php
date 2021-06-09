@@ -157,7 +157,7 @@ class Encoding extends PDFObject
         $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
 
         if (!class_exists($className)) {
-            throw new Exception('Missing encoding data for: "'.$baseEncoding.'".');
+            throw new EncodingNotFoundException('Missing encoding data for: "'.$baseEncoding.'".');
         }
 
         return $className;
