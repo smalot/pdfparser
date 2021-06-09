@@ -148,7 +148,7 @@ class Encoding extends PDFObject
     /**
      * @return string
      *
-     * @throws \Exception
+     * @throws EncodingNotFoundException
      */
     protected function getEncodingClass()
     {
