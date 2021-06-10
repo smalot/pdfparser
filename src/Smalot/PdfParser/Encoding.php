@@ -33,6 +33,7 @@ namespace Smalot\PdfParser;
 use Exception;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Encoding\PostScriptGlyphs;
+use Smalot\PdfParser\Exception\EncodingNotFoundException;
 
 /**
  * Class Encoding

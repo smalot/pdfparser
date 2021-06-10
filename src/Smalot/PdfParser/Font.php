@@ -31,6 +31,7 @@
 namespace Smalot\PdfParser;
 
 use Smalot\PdfParser\Encoding\WinAnsiEncoding;
+use Smalot\PdfParser\Exception\EncodingNotFoundException;
 
 /**
  * Class Font

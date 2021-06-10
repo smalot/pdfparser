@@ -1,6 +1,6 @@
 <?php
 
-namespace Smalot\PdfParser;
+namespace Smalot\PdfParser\Exception;
 
 class EncodingNotFoundException extends \Exception
 {

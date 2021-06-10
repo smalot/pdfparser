@@ -37,7 +37,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Encoding\StandardEncoding;
-use Smalot\PdfParser\EncodingNotFoundException;
+use Smalot\PdfParser\Exception\EncodingNotFoundException;
 use Smalot\PdfParser\Header;
 use Tests\Smalot\PdfParser\TestCase;
 
