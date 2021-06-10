@@ -113,7 +113,7 @@ class Font extends PDFObject
                     $fallbackDecoded = self::uchr($dec);
                 }
             } catch (EncodingNotFoundException $e) {
-                // Encoding->getEncodingClass() throws an exception when BaseEncoding doesn't exists
+                // Encoding->getEncodingClass() throws EncodingNotFoundException when BaseEncoding doesn't exists
                 // See table 5.11 on PDF 1.5 specs for more info
             }
         }
