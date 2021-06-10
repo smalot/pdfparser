@@ -381,8 +381,8 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
     }
 
     /**
-     * Create a header containing a Encoding that doesn't have a BaseEncoding
-     * so I test if the Font won't raise a exception because Encoding don't have BaseEncoding
+     * Create an instance of Header containing an instance of Encoding that doesn't have a BaseEncoding.
+     * Test if the Font won't raise a exception because Encoding don't have BaseEncoding.
      */
     public function testEncodingWithoutBaseEncoding()
     {
