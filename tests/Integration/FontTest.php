@@ -379,4 +379,17 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
 
         $this->assertEquals('Example PDF', $text);
     }
+
+    /**
+     * Create a header containing a Encoding that doesn't have a BaseEncoding
+     * so I test if the Font won't raise a exception because Encoding don't have BaseEncoding
+     */
+    public function testEncodingWithoutBaseEncoding()
+    {
+        $document = new Document();
+        $header = new Header(['Encoding' => new Encoding($document)]);
+        $font = new Font(new Document(), $header);
+        $font->setTable([]);
+        $this->assertEquals('?', $font->translateChar('a'));
+    }
 }
