@@ -91,10 +91,26 @@ class Document
         $this->dictionary = [];
 
         foreach ($this->objects as $id => $object) {
+            // Cache objects by type and subtype
             $type = $object->getHeader()->get('Type')->getContent();
 
-            if (!empty($type)) {
-                $this->dictionary[$type][$id] = $id;
+            if (null != $type) {
+                if (!isset($this->dictionary[$type])) {
+                    $this->dictionary[$type] = [
+                        'all' => [],
+                        'subtype' => [],
+                    ];
+                }
+
+                $this->dictionary[$type]['all'][$id] = $object;
+
+                $subtype = $object->getHeader()->get('Subtype')->getContent();
+                if (null != $subtype) {
+                    if (!isset($this->dictionary[$type]['subtype'][$subtype])) {
+                        $this->dictionary[$type]['subtype'][$subtype] = [];
+                    }
+                    $this->dictionary[$type]['subtype'][$subtype][$id] = $object;
+                }
             }
         }
     }
@@ -169,6 +185,11 @@ class Document
         return null;
     }
 
+    public function hasObjectsByType($type, $subtype = null)
+    {
+        return 0 < \count($this->getObjectsByType($type, $subtype));
+    }
+
     /**
      * @param string $type
      * @param string $subtype
@@ -177,17 +198,19 @@ class Document
      */
     public function getObjectsByType($type, $subtype = null)
     {
-        $objects = [];
-
-        foreach ($this->objects as $id => $object) {
-            if ($object->getHeader()->get('Type') == $type &&
-                (null === $subtype || $object->getHeader()->get('Subtype') == $subtype)
-            ) {
-                $objects[$id] = $object;
-            }
+        if (!isset($this->dictionary[$type])) {
+            return [];
         }
 
-        return $objects;
+        if (null != $subtype) {
+            if (!isset($this->dictionary[$type]['subtype'][$subtype])) {
+                return [];
+            }
+
+            return $this->dictionary[$type]['subtype'][$subtype];
+        }
+
+        return $this->dictionary[$type]['all'];
     }
 
     /**
@@ -199,24 +222,35 @@ class Document
     }
 
     /**
+     * @return PDFObject
+     */
+    public function getFirstFont()
+    {
+        $fonts = $this->getFonts();
+
+        return reset($fonts);
+    }
+
+    /**
      * @return Page[]
      *
      * @throws \Exception
      */
     public function getPages()
     {
-        if (isset($this->dictionary['Catalog'])) {
+        if ($this->hasObjectsByType('Catalog')) {
             // Search for catalog to list pages.
-            $id = reset($this->dictionary['Catalog']);
+            $catalogues = $this->getObjectsByType('Catalog');
+            $catalogue = reset($catalogues);
 
             /** @var Pages $object */
-            $object = $this->objects[$id]->get('Pages');
+            $object = $catalogue->get('Pages');
             if (method_exists($object, 'getPages')) {
                 return $object->getPages(true);
             }
         }
 
-        if (isset($this->dictionary['Pages'])) {
+        if ($this->hasObjectsByType('Pages')) {
             // Search for pages to list kids.
             $pages = [];
 
@@ -229,7 +263,7 @@ class Document
             return $pages;
         }
 
-        if (isset($this->dictionary['Page'])) {
+        if ($this->hasObjectsByType('Page')) {
             // Search for 'page' (unordered pages).
             $pages = $this->getObjectsByType('Page');
 
