@@ -37,6 +37,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Encoding\StandardEncoding;
+use Smalot\PdfParser\Exception\EncodingNotFoundException;
 use Smalot\PdfParser\Header;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -62,7 +63,7 @@ class EncodingTest extends TestCase
      */
     public function testInitGetEncodingClassMissingClassException()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(EncodingNotFoundException::class);
         $this->expectExceptionMessage('Missing encoding data for: "invalid"');
 
         $header = new Header(['BaseEncoding' => new Element('invalid')]);
