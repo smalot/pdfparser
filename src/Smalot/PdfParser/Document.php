@@ -185,7 +185,13 @@ class Document
         return null;
     }
 
-    public function hasObjectsByType($type, $subtype = null)
+    /**
+     * @param string $type
+     * @param ?string $subtype
+     *
+     * @return bool
+     */
+    public function hasObjectsByType(string $type, ?string $subtype = null): bool
     {
         return 0 < \count($this->getObjectsByType($type, $subtype));
     }
@@ -222,9 +228,9 @@ class Document
     }
 
     /**
-     * @return PDFObject
+     * @return ?PDFObject
      */
-    public function getFirstFont()
+    public function getFirstFont(): ?PDFObject
     {
         $fonts = $this->getFonts();
 
