@@ -1,0 +1,31 @@
+name: "P"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  fail-fast: true
+
+jobs:
+  performance-tests:
+    name: "Tests for the performance testing the PDF parsing"
+    runs-on: "ubuntu-20.04"
+
+    strategy:
+      matrix:
+        php:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Test dictionary cache"
+        run: "php tests/Performance/AltAutoloadTest.php"
