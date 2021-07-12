@@ -3,9 +3,9 @@
 require __DIR__.'/../../alt_autoload.php-dist';
 
 // FIXME: Autoload these.
-require_once(__DIR__.'/Exception/PerformanceFailException.php');
-require_once(__DIR__.'/Test/AbstractPerformanceTest.php');
-require_once(__DIR__.'/Test/DocumentDictionaryCacheTest.php');
+require_once __DIR__.'/Exception/PerformanceFailException.php';
+require_once __DIR__.'/Test/AbstractPerformanceTest.php';
+require_once __DIR__.'/Test/DocumentDictionaryCacheTest.php';
 
 $tests = [
     new \Tests\Smalot\PdfParser\Performance\Test\DocumentDictionaryCacheTest(),
