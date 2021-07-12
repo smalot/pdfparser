@@ -1,4 +1,4 @@
-name: "P"
+name: "Performance"
 
 on:
   pull_request:

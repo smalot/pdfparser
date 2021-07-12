@@ -77,6 +77,6 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 
     public function getMaxEstimatedTime()
     {
-        return 10;
+        return 20;
     }
 }
