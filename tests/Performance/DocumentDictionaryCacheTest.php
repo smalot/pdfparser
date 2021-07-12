@@ -35,17 +35,17 @@ namespace Tests\Smalot\PdfParser\Performance;
 use Exception;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
-use Tests\Smalot\PdfParser\TestCase;
 
-class DocumentDictionaryCacheTest extends TestCase
+/**
+ * This test checks does a performance test with certain PDF files that extensively use
+ * the getFirstFont() method of Document.php. If Document.php correctly uses a dictionary
+ * to cache the objects inside the PDF file, then the parsing should be quick.
+ * If it does not, the parsing can be extensively slow or even crash.
+ */
+class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 {
-	/**
-	 * This test checks does a performance test with certain PDF files that extensively use 
-	 * the getFirstFont() method of Document.php. If Document.php correctly uses a dictionary
-	 * to cache the objects inside the PDF file, then the parsing should be quick. 
-	 * If it does not, the parsing can be extensively slow or even crash.
-	 */
-    public function testDocumentDictionaryCacheTest()
+
+    public function run()
     {
         $parser = new \Smalot\PdfParser\Parser();
 
