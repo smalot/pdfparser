@@ -186,10 +186,7 @@ class Document
     }
 
     /**
-     * @param string $type
      * @param ?string $subtype
-     *
-     * @return bool
      */
     public function hasObjectsByType(string $type, ?string $subtype = null): bool
     {

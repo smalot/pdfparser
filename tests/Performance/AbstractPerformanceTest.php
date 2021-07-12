@@ -2,8 +2,8 @@
 
 namespace Tests\Smalot\PdfParser\Performance;
 
-abstract class AbstractPerformanceTest {
-
+abstract class AbstractPerformanceTest
+{
     /**
      * Initializes the test (eg, fetches the files etc).
      *
@@ -24,7 +24,4 @@ abstract class AbstractPerformanceTest {
      * @return int
      */
     abstract public function getMaxEstimatedTime();
-
 }
-
-?>

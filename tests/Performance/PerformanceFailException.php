@@ -2,6 +2,6 @@
 
 namespace Tests\Smalot\PdfParser\Performance;
 
-class PerformanceFailException extends \Exception {
-
+class PerformanceFailException extends \Exception
+{
 }

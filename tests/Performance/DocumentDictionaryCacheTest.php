@@ -32,8 +32,6 @@
 
 namespace Tests\Smalot\PdfParser\Performance;
 
-use Smalot\PdfParser\Element;
-use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -45,12 +43,13 @@ use Smalot\PdfParser\Parser;
 class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 {
     /**
-     * @var $parser Parser
+     * @var Parser
      */
     protected $parser;
     protected $data;
 
-    public function init() {
+    public function init()
+    {
         $this->parser = new \Smalot\PdfParser\Parser();
 
         // load PDF file content
@@ -59,22 +58,25 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 
     public function run()
     {
-		// give PDF content to function and parse it
-		$pdf = $this->parser->parseContent($this->data);
+        // give PDF content to function and parse it
+        $pdf = $this->parser->parseContent($this->data);
 
-		$pages = $pdf->getPages();
+        $pages = $pdf->getPages();
 
-		foreach ($pages as $i => $page) { /** @var $page Page */
-			if ($i < 77) continue;
-			if ($i > 78) continue;
+        foreach ($pages as $i => $page) { /* @var $page Page */
+            if ($i < 77) {
+                continue;
+            }
+            if ($i > 78) {
+                continue;
+            }
 
-			$pageText = $page->getText();
-		}
+            $pageText = $page->getText();
+        }
     }
 
-    public function getMaxEstimatedTime() {
-
+    public function getMaxEstimatedTime()
+    {
         return 10;
     }
-
 }
