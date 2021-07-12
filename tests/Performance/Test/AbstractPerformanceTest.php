@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Smalot\PdfParser\Performance;
+namespace Tests\Smalot\PdfParser\Performance\Test;
 
 abstract class AbstractPerformanceTest
 {
