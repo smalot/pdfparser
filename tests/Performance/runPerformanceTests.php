@@ -1,13 +1,11 @@
 <?php
 
-require_once __DIR__.'/../../alt_autoload.php-dist';
+require __DIR__.'/../../alt_autoload.php-dist';
 
-/*
- * Load classes from Exeception and Test folders.
- */
-requireFilesOfFolder(__DIR__.'/Exception');
-requireFilesOfFolder(__DIR__.'/Test');
-
+// FIXME: Autoload these.
+require_once(__DIR__.'/Exception/PerformanceFailException.php');
+require_once(__DIR__.'/Test/AbstractPerformanceTest.php');
+require_once(__DIR__.'/Test/DocumentDictionaryCacheTest.php');
 
 $tests = [
     new \Tests\Smalot\PdfParser\Performance\Test\DocumentDictionaryCacheTest(),
