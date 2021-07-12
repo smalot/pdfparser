@@ -32,9 +32,9 @@
 
 namespace Tests\Smalot\PdfParser\Performance;
 
-use Exception;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
+use Smalot\PdfParser\Parser;
 
 /**
  * This test checks does a performance test with certain PDF files that extensively use
@@ -44,16 +44,23 @@ use Smalot\PdfParser\Encoding;
  */
 class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 {
+    /**
+     * @var $parser Parser
+     */
+    protected $parser;
+    protected $data;
+
+    public function init() {
+        $this->parser = new \Smalot\PdfParser\Parser();
+
+        // load PDF file content
+        $this->data = file_get_contents('https://comserv.cs.ut.ee/home/files/Shoush_ComputerScience_2020.pdf?study=ATILoputoo&reference=76F6FAFD4C9E6981D9A434D32D2E7EE2AE9C49E7');
+    }
 
     public function run()
     {
-        $parser = new \Smalot\PdfParser\Parser();
-
-		// load PDF file content
-		$data = file_get_contents('https://comserv.cs.ut.ee/home/files/Shoush_ComputerScience_2020.pdf?study=ATILoputoo&reference=76F6FAFD4C9E6981D9A434D32D2E7EE2AE9C49E7');
-
 		// give PDF content to function and parse it
-		$pdf = $parser->parseContent($data); 
+		$pdf = $this->parser->parseContent($this->data);
 
 		$pages = $pdf->getPages();
 
@@ -61,14 +68,13 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 			if ($i < 77) continue;
 			if ($i > 78) continue;
 
-			$startTime = microtime(true);
 			$pageText = $page->getText();
-			$endTime = microtime(true);
-			
-			echo '<b>Page ' . $i . ' (took ' . ($endTime - $startTime) . ' seconds, ' . round(memory_get_usage() / (1000 * 1000), 2) . ' MB RAM)</b><br>';
-			var_dump($pageText);
-			echo '<br><br>';
 		}
+    }
+
+    public function getMaxEstimatedTime() {
+
+        return 10;
     }
 
 }
