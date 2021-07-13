@@ -1,4 +1,4 @@
-name: "Performance"
+name: "Performance Tests"
 
 on:
   pull_request:
