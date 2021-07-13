@@ -32,6 +32,7 @@
 
 namespace Tests\Smalot\PdfParser\Performance\Test;
 
+use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -50,7 +51,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 
     public function init(): void
     {
-        $this->parser = new \Smalot\PdfParser\Parser();
+        $this->parser = new Parser();
 
         // load PDF file content
         $this->data = file_get_contents('https://comserv.cs.ut.ee/home/files/Shoush_ComputerScience_2020.pdf?study=ATILoputoo&reference=76F6FAFD4C9E6981D9A434D32D2E7EE2AE9C49E7');
@@ -71,7 +72,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
                 continue;
             }
 
-            $pageText = $page->getText();
+            $page->getText(); // Test this method
         }
     }
 
