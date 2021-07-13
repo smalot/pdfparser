@@ -98,10 +98,8 @@ class Encoding extends PDFObject
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getDetails($deep = true)
+
+    public function getDetails(bool $deep = true): array
     {
         $details = [];
 
@@ -113,10 +111,8 @@ class Encoding extends PDFObject
         return $details;
     }
 
-    /**
-     * @return int
-     */
-    public function translateChar($dec)
+
+    public function translateChar($dec): int
     {
         if (isset($this->mapping[$dec])) {
             $dec = $this->mapping[$dec];
@@ -126,13 +122,11 @@ class Encoding extends PDFObject
     }
 
     /**
-     * Returns the name of the encoding class, if available.
-     *
-     * @return string Returns encoding class name if available or empty string (only prior PHP 7.4).
+     * Returns encoding class name if available or empty string (only prior PHP 7.4).
      *
      * @throws \Exception On PHP 7.4+ an exception is thrown if encoding class doesn't exist.
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return $this->getEncodingClass();
@@ -146,11 +140,9 @@ class Encoding extends PDFObject
     }
 
     /**
-     * @return string
-     *
      * @throws \Exception
      */
-    protected function getEncodingClass()
+    protected function getEncodingClass(): string
     {
         // Load reference table charset.
         $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());

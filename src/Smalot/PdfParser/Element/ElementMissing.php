@@ -42,34 +42,22 @@ class ElementMissing extends Element
         parent::__construct(null, null);
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function contains($value)
+    public function contains($value): bool
     {
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function getContent()
+    public function getContent(): bool
     {
         return false;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return '';
     }

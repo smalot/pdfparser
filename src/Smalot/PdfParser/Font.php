@@ -55,26 +55,17 @@ class Font extends PDFObject
         $this->loadTranslateTable();
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->has('BaseFont') ? (string) $this->get('BaseFont') : '[Unknown]';
     }
 
-    /**
-     * @return string
-     */
-    public function getType()
+    public function getType(): string
     {
         return (string) $this->header->get('Subtype');
     }
 
-    /**
-     * @return array
-     */
-    public function getDetails($deep = true)
+    public function getDetails(bool $deep = true): array
     {
         $details = [];
 
@@ -88,12 +79,9 @@ class Font extends PDFObject
     }
 
     /**
-     * @param string $char
-     * @param bool   $use_default
-     *
      * @return string|bool
      */
-    public function translateChar($char, $use_default = true)
+    public function translateChar(string $char, bool $use_default = true)
     {
         $dec = hexdec(bin2hex($char));
 
@@ -115,22 +103,16 @@ class Font extends PDFObject
         return $use_default ? self::MISSING : $fallbackDecoded;
     }
 
-    /**
-     * @param int $code
-     *
-     * @return string
-     */
-    public static function uchr($code)
+
+    public static function uchr(int $code): string
     {
         // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
         // therefore, we use mb_convert_encoding() instead
         return mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
     }
 
-    /**
-     * @return array
-     */
-    public function loadTranslateTable()
+
+    public function loadTranslateTable(): array
     {
         if (null !== $this->table) {
             return $this->table;
@@ -238,21 +220,14 @@ class Font extends PDFObject
         return $this->table;
     }
 
-    /**
-     * @param array $table
-     */
-    public function setTable($table)
+
+    public function setTable(array $table)
     {
         $this->table = $table;
     }
 
-    /**
-     * @param string $hexa
-     * @param bool   $add_braces
-     *
-     * @return string
-     */
-    public static function decodeHexadecimal($hexa, $add_braces = false)
+
+    public static function decodeHexadecimal(string $hexa, bool $add_braces = false): string
     {
         // Special shortcut for XML content.
         if (false !== stripos($hexa, '<?xml')) {
@@ -285,12 +260,8 @@ class Font extends PDFObject
         return $text;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
-    public static function decodeOctal($text)
+
+    public static function decodeOctal(string $text): string
     {
         $parts = preg_split('/(\\\\[0-7]{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
@@ -306,12 +277,8 @@ class Font extends PDFObject
         return $text;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
-    public static function decodeEntities($text)
+
+    public static function decodeEntities(string $text): string
     {
         $parts = preg_split('/(#\d{2})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
@@ -327,12 +294,8 @@ class Font extends PDFObject
         return $text;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
-    public static function decodeUnicode($text)
+
+    public static function decodeUnicode(string $text): string
     {
         if (preg_match('/^\xFE\xFF/i', $text)) {
             // Strip U+FEFF byte order marker.
@@ -349,21 +312,15 @@ class Font extends PDFObject
     }
 
     /**
-     * @return int
-     *
      * @todo Deprecated, use $this->config->getFontSpaceLimit() instead.
      */
-    protected function getFontSpaceLimit()
+    protected function getFontSpaceLimit(): int
     {
         return $this->config->getFontSpaceLimit();
     }
 
-    /**
-     * @param array $commands
-     *
-     * @return string
-     */
-    public function decodeText($commands)
+
+    public function decodeText(array $commands): string
     {
         $text = '';
         $word_position = 0;
@@ -411,12 +368,9 @@ class Font extends PDFObject
     }
 
     /**
-     * @param string $text
-     * @param bool   $unicode This parameter is deprecated and might be removed in a future release
-     *
-     * @return string
+     * @param bool $unicode This parameter is deprecated and might be removed in a future release
      */
-    public function decodeContent($text, &$unicode = null)
+    public function decodeContent(string $text, bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
             $bytes = $this->tableSizes['from'];

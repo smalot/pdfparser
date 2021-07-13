@@ -37,7 +37,7 @@ namespace Smalot\PdfParser\Encoding;
  */
 class StandardEncoding
 {
-    public function getTranslations()
+    public function getTranslations(): array
     {
         $encoding =
           '.notdef .notdef .notdef .notdef .notdef .notdef .notdef .notdef '.

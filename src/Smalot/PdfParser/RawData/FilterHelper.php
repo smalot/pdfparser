@@ -56,7 +56,7 @@ class FilterHelper
      *
      * @throws Exception if a certain decode function is not implemented yet
      */
-    public function decodeFilter($filter, $data)
+    public function decodeFilter(string $filter, string $data): string
     {
         switch ($filter) {
             case 'ASCIIHexDecode':
@@ -97,8 +97,10 @@ class FilterHelper
      * @param string $data Data to decode
      *
      * @return string data string
+     *
+     * @throws Exception
      */
-    protected function decodeFilterASCIIHexDecode($data)
+    protected function decodeFilterASCIIHexDecode(string $data): string
     {
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
@@ -138,8 +140,10 @@ class FilterHelper
      * @param string $data Data to decode
      *
      * @return string data string
+     *
+     * @throws Exception
      */
-    protected function decodeFilterASCII85Decode($data)
+    protected function decodeFilterASCII85Decode(string $data): string
     {
         // initialize string to return
         $decoded = '';
@@ -223,8 +227,10 @@ class FilterHelper
      * @param string $data Data to decode
      *
      * @return string data string
+     *
+     * @throws Exception
      */
-    protected function decodeFilterFlateDecode($data)
+    protected function decodeFilterFlateDecode(string $data): ?string
     {
         /*
          * gzuncompress may throw a not catchable E_WARNING in case of an error (like $data is empty)
@@ -238,6 +244,8 @@ class FilterHelper
                 return false;
             }
         });
+
+        $decoded = null;
 
         // initialize string to return
         try {
@@ -264,7 +272,7 @@ class FilterHelper
      *
      * @return string Data string
      */
-    protected function decodeFilterLZWDecode($data)
+    protected function decodeFilterLZWDecode(string $data): string
     {
         // initialize string to return
         $decoded = '';
@@ -348,7 +356,7 @@ class FilterHelper
      *
      * @return string
      */
-    protected function decodeFilterRunLengthDecode($data)
+    protected function decodeFilterRunLengthDecode(string $data): string
     {
         // initialize string to return
         $decoded = '';
@@ -382,7 +390,7 @@ class FilterHelper
     /**
      * @return array list of available filters
      */
-    public function getAvailableFilters()
+    public function getAvailableFilters(): array
     {
         return $this->availableFilters;
     }

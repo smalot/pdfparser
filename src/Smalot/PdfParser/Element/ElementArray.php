@@ -40,14 +40,12 @@ use Smalot\PdfParser\PDFObject;
  */
 class ElementArray extends Element
 {
-    /**
-     * @param string   $value
-     * @param Document $document
-     */
-    public function __construct($value, Document $document = null)
+
+    public function __construct($value, ?Document $document = null)
     {
         parent::__construct($value, $document);
     }
+
 
     public function getContent()
     {
@@ -58,20 +56,14 @@ class ElementArray extends Element
         return parent::getContent();
     }
 
-    /**
-     * @return array
-     */
+
     public function getRawContent()
     {
         return $this->value;
     }
 
-    /**
-     * @param bool $deep
-     *
-     * @return array
-     */
-    public function getDetails($deep = true)
+
+    public function getDetails(bool $deep = true): array
     {
         $values = [];
         $elements = $this->getContent();
@@ -93,20 +85,15 @@ class ElementArray extends Element
         return $values;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return implode(',', $this->value);
     }
 
     /**
-     * @param string $name
-     *
      * @return Element|PDFObject
      */
-    protected function resolveXRef($name)
+    protected function resolveXRef(string $name)
     {
         if (($obj = $this->value[$name]) instanceof ElementXRef) {
             /** @var PDFObject $obj */
@@ -118,13 +105,10 @@ class ElementArray extends Element
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
+     * FIXME: These methods return mixed and mismatched types throughout the hierarchy
      * @return bool|ElementArray
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\[(?P<array>.*)/is', $content, $match)) {
             preg_match_all('/(.*?)(\[|\])/s', trim($content), $matches);
