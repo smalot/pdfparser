@@ -6,22 +6,16 @@ abstract class AbstractPerformanceTest
 {
     /**
      * Initializes the test (eg, fetches the files etc).
-     *
-     * @return void
      */
-    abstract public function init();
+    abstract public function init(): void;
 
     /**
      * Executes the test.
-     *
-     * @return void
      */
-    abstract public function run();
+    abstract public function run(): void;
 
     /**
      * Returns the time over which the test is considered a fail.
-     *
-     * @return int
      */
-    abstract public function getMaxEstimatedTime();
+    abstract public function getMaxEstimatedTime(): int;
 }

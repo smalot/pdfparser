@@ -48,7 +48,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
     protected $parser;
     protected $data;
 
-    public function init()
+    public function init(): void
     {
         $this->parser = new \Smalot\PdfParser\Parser();
 
@@ -56,7 +56,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
         $this->data = file_get_contents('https://comserv.cs.ut.ee/home/files/Shoush_ComputerScience_2020.pdf?study=ATILoputoo&reference=76F6FAFD4C9E6981D9A434D32D2E7EE2AE9C49E7');
     }
 
-    public function run()
+    public function run(): void
     {
         // give PDF content to function and parse it
         $pdf = $this->parser->parseContent($this->data);
@@ -75,7 +75,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
         }
     }
 
-    public function getMaxEstimatedTime()
+    public function getMaxEstimatedTime(): int
     {
         return 20;
     }
