@@ -58,10 +58,15 @@ class ElementDate extends ElementString
      */
     protected $format = 'c';
 
-    public function __construct(\DateTime $value)
+    /**
+     * @var \DateTime
+     */
+    protected $value;
+
+    public function __construct($value)
     {
         if (!($value instanceof \DateTime)) {
-            throw new \Exception('DateTime required.');
+            throw new \Exception('DateTime required.'); // FIXME: Sometimes strings are passed to this function
         }
 
         parent::__construct($value);

@@ -203,14 +203,14 @@ class Document
     }
 
     /**
-     * @return PDFObject[]
+     * @return Font[]
      */
     public function getFonts()
     {
         return $this->getObjectsByType('Font');
     }
 
-    public function getFirstFont(): ?PDFObject
+    public function getFirstFont(): ?Font
     {
         $fonts = $this->getFonts();
 
@@ -259,7 +259,7 @@ class Document
         throw new \Exception('Missing catalog.');
     }
 
-    public function getText(Page $page = null): string
+    public function getText(): string
     {
         $texts = [];
         $pages = $this->getPages();
@@ -289,7 +289,7 @@ class Document
         $this->trailer = $trailer;
     }
 
-    public function getDetails(bool $deep = true): array
+    public function getDetails(): array
     {
         return $this->details;
     }
