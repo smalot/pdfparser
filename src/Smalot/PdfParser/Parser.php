@@ -254,7 +254,7 @@ class Parser
      *
      * @throws \Exception
      */
-    protected function parseHeaderElement(string $type, $value, ?Document $document)
+    protected function parseHeaderElement(?string $type, $value, ?Document $document)
     {
         switch ($type) {
             case '<<':
