@@ -174,7 +174,7 @@ class PDFObject
         return $content;
     }
 
-    public function getSectionsText(string $content): array
+    public function getSectionsText(?string $content): array
     {
         $sections = [];
         $content = ' '.$content.' ';
