@@ -23,5 +23,5 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
-      - name: "Test dictionary cache"
+      - name: "Run performance tests"
         run: "php tests/Performance/runPerformanceTests.php"
