@@ -53,7 +53,6 @@ class Element
 
     protected $value = null;
 
-
     public function __construct($value, ?Document $document = null)
     {
         $this->value = $value;
@@ -64,12 +63,10 @@ class Element
     {
     }
 
-
     public function equals($value): bool
     {
         return $value == $this->value;
     }
-
 
     public function contains($value): bool
     {
@@ -91,7 +88,6 @@ class Element
     {
         return $this->value;
     }
-
 
     public function __toString(): string
     {

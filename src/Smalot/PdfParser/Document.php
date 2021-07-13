@@ -150,7 +150,6 @@ class Document
         return $this->dictionary;
     }
 
-
     /**
      * @param PDFObject[] $objects
      */
@@ -161,7 +160,6 @@ class Document
         $this->init();
     }
 
-
     /**
      * @return PDFObject[]
      */
@@ -169,7 +167,6 @@ class Document
     {
         return $this->objects;
     }
-
 
     /**
      * @return PDFObject|Font|Page|Element|null
@@ -183,12 +180,10 @@ class Document
         return null;
     }
 
-
     public function hasObjectsByType(string $type, ?string $subtype = null): bool
     {
         return 0 < \count($this->getObjectsByType($type, $subtype));
     }
-
 
     public function getObjectsByType(string $type, ?string $subtype = null): array
     {
@@ -207,7 +202,6 @@ class Document
         return $this->dictionary[$type]['all'];
     }
 
-
     /**
      * @return PDFObject[]
      */
@@ -222,7 +216,6 @@ class Document
 
         return reset($fonts);
     }
-
 
     /**
      * @return Page[]
@@ -266,7 +259,6 @@ class Document
         throw new \Exception('Missing catalog.');
     }
 
-
     public function getText(Page $page = null): string
     {
         $texts = [];
@@ -287,18 +279,15 @@ class Document
         return implode("\n\n", $texts);
     }
 
-
     public function getTrailer(): Header
     {
         return $this->trailer;
     }
 
-
     public function setTrailer(Header $trailer)
     {
         $this->trailer = $trailer;
     }
-
 
     public function getDetails(bool $deep = true): array
     {

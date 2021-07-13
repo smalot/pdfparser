@@ -39,7 +39,6 @@ use Smalot\PdfParser\Font;
  */
 class ElementString extends Element
 {
-
     public function __construct($value)
     {
         parent::__construct($value, null);

@@ -87,7 +87,6 @@ class PDFObject
     {
     }
 
-
     public function getHeader(): ?Header
     {
         return $this->header;
@@ -101,24 +100,20 @@ class PDFObject
         return $this->header->get($name);
     }
 
-
     public function has(string $name): bool
     {
         return $this->header->has($name);
     }
-
 
     public function getDetails(bool $deep = true): array
     {
         return $this->header->getDetails($deep);
     }
 
-
     public function getContent(): ?string
     {
         return $this->content;
     }
-
 
     public function cleanContent(string $content, string $char = 'X')
     {
@@ -178,7 +173,6 @@ class PDFObject
 
         return $content;
     }
-
 
     public function getSectionsText(string $content): array
     {
@@ -571,7 +565,6 @@ class PDFObject
         return $text;
     }
 
-
     public function getCommandsText(string $text_part, int &$offset = 0): array
     {
         $commands = $matches = [];
@@ -723,13 +716,12 @@ class PDFObject
         return $commands;
     }
 
-
     public static function factory(
         Document $document,
         Header $header,
         ?string $content,
         ?Config $config = null
-    ): PDFObject {
+    ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
                 switch ($header->get('Subtype')->getContent()) {

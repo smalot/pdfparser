@@ -103,14 +103,12 @@ class Font extends PDFObject
         return $use_default ? self::MISSING : $fallbackDecoded;
     }
 
-
     public static function uchr(int $code): string
     {
         // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
         // therefore, we use mb_convert_encoding() instead
         return mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
     }
-
 
     public function loadTranslateTable(): array
     {
@@ -220,12 +218,10 @@ class Font extends PDFObject
         return $this->table;
     }
 
-
     public function setTable(array $table)
     {
         $this->table = $table;
     }
-
 
     public static function decodeHexadecimal(string $hexa, bool $add_braces = false): string
     {
@@ -260,7 +256,6 @@ class Font extends PDFObject
         return $text;
     }
 
-
     public static function decodeOctal(string $text): string
     {
         $parts = preg_split('/(\\\\[0-7]{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
@@ -277,7 +272,6 @@ class Font extends PDFObject
         return $text;
     }
 
-
     public static function decodeEntities(string $text): string
     {
         $parts = preg_split('/(#\d{2})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
@@ -293,7 +287,6 @@ class Font extends PDFObject
 
         return $text;
     }
-
 
     public static function decodeUnicode(string $text): string
     {
@@ -318,7 +311,6 @@ class Font extends PDFObject
     {
         return $this->config->getFontSpaceLimit();
     }
-
 
     public function decodeText(array $commands): string
     {

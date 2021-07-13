@@ -64,12 +64,10 @@ class Parser
         $this->rawDataParser = new RawDataParser($cfg, $this->config);
     }
 
-
     public function getConfig(): Config
     {
         return $this->config;
     }
-
 
     public function parseFile(string $filename): Document
     {
@@ -140,7 +138,6 @@ class Parser
 
         return new Header($trailer, $document);
     }
-
 
     protected function parseObject(string $id, array $structure, ?Document $document)
     {

@@ -353,8 +353,6 @@ class FilterHelper
      * Decompresses data encoded using a byte-oriented run-length encoding algorithm.
      *
      * @param string $data Data to decode
-     *
-     * @return string
      */
     protected function decodeFilterRunLengthDecode(string $data): string
     {

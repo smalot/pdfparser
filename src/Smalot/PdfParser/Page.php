@@ -94,7 +94,6 @@ class Page extends PDFObject
         return [];
     }
 
-
     public function getFont(string $id): ?Font
     {
         $fonts = $this->getFonts();
@@ -157,7 +156,6 @@ class Page extends PDFObject
         return [];
     }
 
-
     public function getXObject(string $id): ?PDFObject
     {
         $xobjects = $this->getXObjects();
@@ -175,7 +173,6 @@ class Page extends PDFObject
             return null;
         }*/
     }
-
 
     public function getText(self $page = null): string
     {
@@ -218,7 +215,6 @@ class Page extends PDFObject
 
         return '';
     }
-
 
     public function getTextArray(self $page = null): array
     {

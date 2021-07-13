@@ -38,7 +38,6 @@ use Smalot\PdfParser\Element;
  */
 class ElementXRef extends Element
 {
-
     public function getId(): string
     {
         return $this->getContent();

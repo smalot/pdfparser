@@ -46,12 +46,10 @@ class ElementBoolean extends Element
         parent::__construct(('true' == strtolower($value) || true === $value), null);
     }
 
-
     public function __toString(): string
     {
         return $this->value ? 'true' : 'false';
     }
-
 
     public function equals($value): bool
     {

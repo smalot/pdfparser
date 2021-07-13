@@ -40,12 +40,10 @@ use Smalot\PdfParser\PDFObject;
  */
 class ElementArray extends Element
 {
-
     public function __construct($value, ?Document $document = null)
     {
         parent::__construct($value, $document);
     }
-
 
     public function getContent()
     {
@@ -56,12 +54,10 @@ class ElementArray extends Element
         return parent::getContent();
     }
 
-
     public function getRawContent()
     {
         return $this->value;
     }
-
 
     public function getDetails(bool $deep = true): array
     {
@@ -106,6 +102,7 @@ class ElementArray extends Element
 
     /**
      * FIXME: These methods return mixed and mismatched types throughout the hierarchy
+     *
      * @return bool|ElementArray
      */
     public static function parse(string $content, ?Document $document = null, int &$offset = 0)

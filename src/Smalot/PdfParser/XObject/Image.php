@@ -38,7 +38,6 @@ use Smalot\PdfParser\PDFObject;
  */
 class Image extends PDFObject
 {
-
     public function getText(Page $page = null): string
     {
         return '';

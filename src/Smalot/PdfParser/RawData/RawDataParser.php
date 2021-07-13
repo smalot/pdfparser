@@ -79,7 +79,6 @@ class RawDataParser
      * Decode the specified stream.
      *
      * @param string $pdfData PDF data
-     * @param array  $xref
      * @param array  $sdic    Stream's dictionary array
      * @param string $stream  Stream to decode
      *
@@ -491,7 +490,6 @@ class RawDataParser
      * Get content of indirect object.
      *
      * @param string $pdfData  PDF data
-     * @param array  $xref
      * @param string $objRef   Object number and generation number separated by underscore character
      * @param int    $offset   Object offset
      * @param bool   $decoding If true decode streams
@@ -783,9 +781,8 @@ class RawDataParser
     /**
      * Get Cross-Reference (xref) table and trailer data from PDF document data.
      *
-     * @param string $pdfData
-     * @param int    $offset  xref offset (if know)
-     * @param array  $xref    previous xref array (if any)
+     * @param int   $offset xref offset (if know)
+     * @param array $xref   previous xref array (if any)
      *
      * @return array containing xref and trailer data
      *

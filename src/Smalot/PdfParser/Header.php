@@ -95,7 +95,6 @@ class Header
         return $types;
     }
 
-
     public function getDetails(bool $deep = true): array
     {
         $values = [];
@@ -132,7 +131,6 @@ class Header
     public function get(string $name)
     {
         if (\array_key_exists($name, $this->elements)) {
-
             return $this->resolveXRef($name);
         }
 
@@ -163,8 +161,7 @@ class Header
         return $this->elements[$name];
     }
 
-
-    public static function parse(string $content, Document $document, int &$position = 0): Header
+    public static function parse(string $content, Document $document, int &$position = 0): self
     {
         /* @var Header $header */
         if ('<<' == substr(trim($content), 0, 2)) {

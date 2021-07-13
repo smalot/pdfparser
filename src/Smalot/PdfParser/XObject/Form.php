@@ -39,7 +39,6 @@ use Smalot\PdfParser\PDFObject;
  */
 class Form extends Page
 {
-
     public function getText(Page $page = null): string
     {
         $header = new Header([], $this->document);

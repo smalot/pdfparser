@@ -98,7 +98,6 @@ class Encoding extends PDFObject
         }
     }
 
-
     public function getDetails(bool $deep = true): array
     {
         $details = [];
@@ -110,7 +109,6 @@ class Encoding extends PDFObject
 
         return $details;
     }
-
 
     public function translateChar($dec): int
     {
