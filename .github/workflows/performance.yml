@@ -25,6 +25,6 @@ jobs:
 
       - name: "Run composer for further autoloading"
         run: "composer update"
-		
+
       - name: "Run performance tests"
         run: "php tests/Performance/runPerformanceTests.php"
