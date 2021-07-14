@@ -46,7 +46,7 @@ class ElementHexa extends ElementString
             $name = $match['name'];
             $offset += strpos($content, '<'.$name) + \strlen($name) + 2; // 1 for '>'
             // repackage string as standard
-            $name = '('.self::decode($name, $document).')';
+            $name = '('.self::decode($name).')';
             $element = ElementDate::parse($name, $document);
 
             if (!$element) {

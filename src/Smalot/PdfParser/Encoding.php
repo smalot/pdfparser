@@ -63,7 +63,7 @@ class Encoding extends PDFObject
         $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
-            $this->encoding = EncodingLocator::getEncoding($this->getEncodingClass());
+            $this->encoding = EncodingLocator::getEncoding($this->getEncodingClass())->getTranslations();
 
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();

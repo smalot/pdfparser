@@ -180,7 +180,7 @@ class Document
     }
 
     /**
-     * @return PDFObject[]
+     * @return Font[]
      */
     public function getFonts()
     {

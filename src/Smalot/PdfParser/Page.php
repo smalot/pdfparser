@@ -313,7 +313,7 @@ class Page extends PDFObject
         if (!isset($extractedRawData) || !$extractedRawData) {
             $extractedRawData = $this->extractRawData();
         }
-        $currentFont = null; /** @var $currentFont Font */
+        $currentFont = null; /** @var Font $currentFont */
         $clippedFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
