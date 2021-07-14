@@ -33,6 +33,7 @@ namespace Smalot\PdfParser;
 use Exception;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Encoding\PostScriptGlyphs;
+use Smalot\PdfParser\Exception\EncodingNotFoundException;
 
 /**
  * Class Encoding
@@ -138,7 +139,7 @@ class Encoding extends PDFObject
     }
 
     /**
-     * @throws \Exception
+     * @throws EncodingNotFoundException
      */
     protected function getEncodingClass(): string
     {
@@ -147,7 +148,7 @@ class Encoding extends PDFObject
         $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
 
         if (!class_exists($className)) {
-            throw new Exception('Missing encoding data for: "'.$baseEncoding.'".');
+            throw new EncodingNotFoundException('Missing encoding data for: "'.$baseEncoding.'".');
         }
 
         return $className;
