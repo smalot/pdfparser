@@ -54,7 +54,7 @@ class DocumentDictionaryCacheTest extends AbstractPerformanceTest
         $this->parser = new Parser();
 
         // load PDF file content
-        $this->data = file_get_contents('https://comserv.cs.ut.ee/home/files/Shoush_ComputerScience_2020.pdf?study=ATILoputoo&reference=76F6FAFD4C9E6981D9A434D32D2E7EE2AE9C49E7');
+        $this->data = file_get_contents(__DIR__.'/../../../samples/DocumentWithLotsOfObjects.pdf');
     }
 
     public function run(): void
