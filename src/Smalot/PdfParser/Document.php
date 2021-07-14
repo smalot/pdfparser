@@ -164,7 +164,6 @@ class Document
         return null;
     }
 
-
     public function getObjectsByType(string $type, ?string $subtype = null): array
     {
         $objects = [];
