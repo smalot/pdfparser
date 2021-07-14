@@ -47,28 +47,17 @@ class DocumentTest extends TestCase
         return new Document();
     }
 
-    /**
-     * @param Document $document
-     */
-    protected function getPDFObjectInstance($document, $header = null)
+    protected function getPDFObjectInstance(Document $document, ?Header $header = null)
     {
         return new PDFObject($document, $header);
     }
 
-    /**
-     * @param Document $document
-     * @param Header   $header
-     */
-    protected function getPageInstance($document, $header)
+    protected function getPageInstance(Document $document, Header $header)
     {
         return new Page($document, $header);
     }
 
-    /**
-     * @param Document $document
-     * @param Header   $header
-     */
-    protected function getPagesInstance($document, $header)
+    protected function getPagesInstance(Document $document, Header $header)
     {
         return new Pages($document, $header);
     }

@@ -53,10 +53,7 @@ class Element
 
     protected $value = null;
 
-    /**
-     * @param Document $document
-     */
-    public function __construct($value, Document $document = null)
+    public function __construct($value, ?Document $document = null)
     {
         $this->value = $value;
         $this->document = $document;
@@ -66,18 +63,12 @@ class Element
     {
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         return $value == $this->value;
     }
 
-    /**
-     * @return bool
-     */
-    public function contains($value)
+    public function contains($value): bool
     {
         if (\is_array($this->value)) {
             /** @var Element $val */
@@ -98,24 +89,12 @@ class Element
         return $this->value;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) ($this->value);
     }
 
-    /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $position
-     *
-     * @return array
-     *
-     * @throws \Exception
-     */
-    public static function parse($content, Document $document = null, &$position = 0)
+    public static function parse(string $content, ?Document $document = null, int &$position = 0)
     {
         $args = \func_get_args();
         $only_values = isset($args[3]) ? $args[3] : false;

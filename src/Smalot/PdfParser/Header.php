@@ -54,7 +54,7 @@ class Header
      * @param Element[] $elements list of elements
      * @param Document  $document document
      */
-    public function __construct($elements = [], Document $document = null)
+    public function __construct(array $elements = [], ?Document $document = null)
     {
         $this->elements = $elements;
         $this->document = $document;
@@ -83,10 +83,8 @@ class Header
 
     /**
      * Used only for debug.
-     *
-     * @return array
      */
-    public function getElementTypes()
+    public function getElementTypes(): array
     {
         $types = [];
 
@@ -97,12 +95,7 @@ class Header
         return $types;
     }
 
-    /**
-     * @param bool $deep
-     *
-     * @return array
-     */
-    public function getDetails($deep = true)
+    public function getDetails(bool $deep = true): array
     {
         $values = [];
         $elements = $this->getElements();
@@ -126,22 +119,16 @@ class Header
 
     /**
      * Indicate if an element name is available in header.
-     *
-     * @param string $name The name of the element
-     *
-     * @return bool
      */
-    public function has($name)
+    public function has(string $name): bool
     {
         return \array_key_exists($name, $this->elements);
     }
 
     /**
-     * @param string $name
-     *
      * @return Element|PDFObject
      */
-    public function get($name)
+    public function get(string $name)
     {
         if (\array_key_exists($name, $this->elements)) {
             return $this->resolveXRef($name);
@@ -153,13 +140,11 @@ class Header
     /**
      * Resolve XRef to object.
      *
-     * @param string $name
-     *
      * @return Element|PDFObject
      *
      * @throws \Exception
      */
-    protected function resolveXRef($name)
+    protected function resolveXRef(string $name)
     {
         if (($obj = $this->elements[$name]) instanceof ElementXRef && null !== $this->document) {
             /** @var ElementXRef $obj */
@@ -176,14 +161,7 @@ class Header
         return $this->elements[$name];
     }
 
-    /**
-     * @param string   $content  The content to parse
-     * @param Document $document The document
-     * @param int      $position The new position of the cursor after parsing
-     *
-     * @return Header
-     */
-    public static function parse($content, Document $document, &$position = 0)
+    public static function parse(string $content, Document $document, int &$position = 0): self
     {
         /* @var Header $header */
         if ('<<' == substr(trim($content), 0, 2)) {
