@@ -23,5 +23,8 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
+      - name: "Run composer for further autoloading"
+        run: "composer update"
+		
       - name: "Run performance tests"
         run: "php tests/Performance/runPerformanceTests.php"
