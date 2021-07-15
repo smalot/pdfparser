@@ -101,7 +101,7 @@ class ElementArray extends Element
     }
 
     /**
-     * FIXME: These methods return mixed and mismatched types throughout the hierarchy
+     * @todo: These methods return mixed and mismatched types throughout the hierarchy
      *
      * @return bool|ElementArray
      */
