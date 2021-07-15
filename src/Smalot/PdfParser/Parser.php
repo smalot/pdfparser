@@ -69,6 +69,9 @@ class Parser
         return $this->config;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function parseFile(string $filename): Document
     {
         $content = file_get_contents($filename);
