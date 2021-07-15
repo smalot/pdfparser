@@ -364,6 +364,9 @@ class Font extends PDFObject
         return implode(' ', $words);
     }
 
+    /**
+     * @param bool $unicode This parameter is deprecated and might be removed in a future release
+     */
     public function decodeContent(string $text, ?bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
