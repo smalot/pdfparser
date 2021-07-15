@@ -71,16 +71,11 @@ class PDFObject
      */
     protected $config;
 
-    /**
-     * @param Header $header
-     * @param string $content
-     * @param Config $config
-     */
     public function __construct(
         Document $document,
-        Header $header = null,
-        $content = null,
-        Config $config = null
+        ?Header $header = null,
+        ?string $content = null,
+        ?Config $config = null
     ) {
         $this->document = $document;
         $this->header = null !== $header ? $header : new Header();
@@ -92,56 +87,35 @@ class PDFObject
     {
     }
 
-    /**
-     * @return Header|null
-     */
-    public function getHeader()
+    public function getHeader(): ?Header
     {
         return $this->header;
     }
 
     /**
-     * @param string $name
-     *
-     * @return Element|PDFObject
+     * @return Element|PDFObject|Header
      */
-    public function get($name)
+    public function get(string $name)
     {
         return $this->header->get($name);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function has($name)
+    public function has(string $name): bool
     {
         return $this->header->has($name);
     }
 
-    /**
-     * @param bool $deep
-     *
-     * @return array
-     */
-    public function getDetails($deep = true)
+    public function getDetails(bool $deep = true): array
     {
         return $this->header->getDetails($deep);
     }
 
-    /**
-     * @return string|null
-     */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    /**
-     * @param string $content
-     */
-    public function cleanContent($content, $char = 'X')
+    public function cleanContent(string $content, string $char = 'X')
     {
         $char = $char[0];
         $content = str_replace(['\\\\', '\\)', '\\('], $char.$char, $content);
@@ -200,12 +174,7 @@ class PDFObject
         return $content;
     }
 
-    /**
-     * @param string $content
-     *
-     * @return array
-     */
-    public function getSectionsText($content)
+    public function getSectionsText(?string $content): array
     {
         $sections = [];
         $content = ' '.$content.' ';
@@ -246,7 +215,7 @@ class PDFObject
         return $sections;
     }
 
-    private function getDefaultFont(Page $page = null)
+    private function getDefaultFont(Page $page = null): Font
     {
         $fonts = [];
         if (null !== $page) {
@@ -263,13 +232,9 @@ class PDFObject
     }
 
     /**
-     * @param Page $page
-     *
-     * @return string
-     *
      * @throws \Exception
      */
-    public function getText(Page $page = null)
+    public function getText(?Page $page = null): string
     {
         $result = '';
         $sections = $this->getSectionsText($this->content);
@@ -478,13 +443,9 @@ class PDFObject
     }
 
     /**
-     * @param Page $page
-     *
-     * @return array
-     *
      * @throws \Exception
      */
-    public function getTextArray(Page $page = null)
+    public function getTextArray(?Page $page = null): array
     {
         $text = [];
         $sections = $this->getSectionsText($this->content);
@@ -604,13 +565,7 @@ class PDFObject
         return $text;
     }
 
-    /**
-     * @param string $text_part
-     * @param int    $offset
-     *
-     * @return array
-     */
-    public function getCommandsText($text_part, &$offset = 0)
+    public function getCommandsText(string $text_part, int &$offset = 0): array
     {
         $commands = $matches = [];
 
@@ -761,17 +716,12 @@ class PDFObject
         return $commands;
     }
 
-    /**
-     * @param string $content
-     *
-     * @return PDFObject
-     */
     public static function factory(
         Document $document,
         Header $header,
-        $content,
-        Config $config = null
-    ) {
+        ?string $content,
+        ?Config $config = null
+    ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
                 switch ($header->get('Subtype')->getContent()) {
@@ -810,10 +760,8 @@ class PDFObject
 
     /**
      * Returns unique id identifying the object.
-     *
-     * @return string
      */
-    protected function getUniqueId()
+    protected function getUniqueId(): string
     {
         return spl_object_hash($this);
     }

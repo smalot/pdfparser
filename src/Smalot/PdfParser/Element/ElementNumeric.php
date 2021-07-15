@@ -38,22 +38,15 @@ use Smalot\PdfParser\Element;
  */
 class ElementNumeric extends Element
 {
-    /**
-     * @param string $value
-     */
-    public function __construct($value)
+    public function __construct(string $value)
     {
         parent::__construct((float) $value, null);
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementNumeric
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(?P<value>\-?[0-9\.]+)/s', $content, $match)) {
             $value = $match['value'];

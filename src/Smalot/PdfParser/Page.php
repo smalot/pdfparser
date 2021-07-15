@@ -94,12 +94,7 @@ class Page extends PDFObject
         return [];
     }
 
-    /**
-     * @param string $id
-     *
-     * @return Font|null
-     */
-    public function getFont($id)
+    public function getFont(string $id): ?Font
     {
         $fonts = $this->getFonts();
 
@@ -161,12 +156,7 @@ class Page extends PDFObject
         return [];
     }
 
-    /**
-     * @param string $id
-     *
-     * @return PDFObject|null
-     */
-    public function getXObject($id)
+    public function getXObject(string $id): ?PDFObject
     {
         $xobjects = $this->getXObjects();
 
@@ -184,12 +174,7 @@ class Page extends PDFObject
         }*/
     }
 
-    /**
-     * @param Page $page
-     *
-     * @return string
-     */
-    public function getText(self $page = null)
+    public function getText(self $page = null): string
     {
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
@@ -231,12 +216,7 @@ class Page extends PDFObject
         return '';
     }
 
-    /**
-     * @param Page $page
-     *
-     * @return array
-     */
-    public function getTextArray(self $page = null)
+    public function getTextArray(self $page = null): array
     {
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
@@ -285,7 +265,7 @@ class Page extends PDFObject
      *
      * @return array An array with the data and the internal representation
      */
-    public function extractRawData()
+    public function extractRawData(): array
     {
         /*
          * Now you can get the complete content of the object with the text on it
@@ -328,12 +308,12 @@ class Page extends PDFObject
      *
      * @return array An array with the data and the internal representation
      */
-    public function extractDecodedRawData($extractedRawData = null)
+    public function extractDecodedRawData(array $extractedRawData = null): array
     {
         if (!isset($extractedRawData) || !$extractedRawData) {
             $extractedRawData = $this->extractRawData();
         }
-        $currentFont = null;
+        $currentFont = null; /** @var Font $currentFont */
         $clippedFont = null;
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
@@ -405,7 +385,7 @@ class Page extends PDFObject
      *
      * @return array An array with the text command of the page
      */
-    public function getDataCommands($extractedDecodedRawData = null)
+    public function getDataCommands(array $extractedDecodedRawData = null): array
     {
         if (!isset($extractedDecodedRawData) || !$extractedDecodedRawData) {
             $extractedDecodedRawData = $this->extractDecodedRawData();
@@ -551,7 +531,7 @@ class Page extends PDFObject
      * @return array an array with the data of the page including the Tm information
      *               of any text in the page
      */
-    public function getDataTm($dataCommands = null)
+    public function getDataTm(array $dataCommands = null): array
     {
         if (!isset($dataCommands) || !$dataCommands) {
             $dataCommands = $this->getDataCommands();
@@ -749,7 +729,7 @@ class Page extends PDFObject
      *               "near" the x,y coordinate, an empty array is returned. If Both, x
      *               and y coordinates are null, null is returned.
      */
-    public function getTextXY($x = null, $y = null, $xError = 0, $yError = 0)
+    public function getTextXY(float $x = null, float $y = null, float $xError = 0, float $yError = 0): array
     {
         if (!isset($this->dataTm) || !$this->dataTm) {
             $this->getDataTm();

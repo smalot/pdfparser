@@ -66,6 +66,7 @@ require_once $rootFolder.'/PDFObject.php';
 require_once $rootFolder.'/Font.php';
 require_once $rootFolder.'/Page.php';
 require_once $rootFolder.'/Element/ElementString.php';
+require_once $rootFolder.'/Encoding/AbstractEncoding.php';
 
 /*
  * Load the rest of PDFParser files from /src/Smalot/PDFParser

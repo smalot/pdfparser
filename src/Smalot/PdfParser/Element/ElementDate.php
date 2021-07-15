@@ -59,29 +59,25 @@ class ElementDate extends ElementString
     protected $format = 'c';
 
     /**
-     * @param \DateTime $value
+     * @var \DateTime
      */
+    protected $value;
+
     public function __construct($value)
     {
         if (!($value instanceof \DateTime)) {
-            throw new \Exception('DateTime required.');
+            throw new \Exception('DateTime required.'); // FIXME: Sometimes strings are passed to this function
         }
 
         parent::__construct($value);
     }
 
-    /**
-     * @param string $format
-     */
-    public function setFormat($format)
+    public function setFormat(string $format)
     {
         $this->format = $format;
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         if ($value instanceof \DateTime) {
             $timestamp = $value->getTimeStamp();
@@ -92,22 +88,15 @@ class ElementDate extends ElementString
         return $timestamp == $this->value->getTimeStamp();
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) ($this->value->format($this->format));
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementDate
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\(D\:(?P<name>.*?)\)/s', $content, $match)) {
             $name = $match['name'];
