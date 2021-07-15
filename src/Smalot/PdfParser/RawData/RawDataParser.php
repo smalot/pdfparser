@@ -781,7 +781,7 @@ class RawDataParser
     /**
      * Get Cross-Reference (xref) table and trailer data from PDF document data.
      *
-     * @param int   $offset xref offset (if know)
+     * @param int   $offset xref offset (if known)
      * @param array $xref   previous xref array (if any)
      *
      * @return array containing xref and trailer data
