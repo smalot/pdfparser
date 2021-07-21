@@ -51,4 +51,15 @@ class ConfigTest extends TestCase
         $this->fixture->setFontSpaceLimit(1);
         $this->assertEquals(1, $this->fixture->getFontSpaceLimit());
     }
+
+    /**
+     * Tests setter and getter for retaining of raw image data.
+     */
+    public function testRetainImageContentSetterGetter()
+    {
+        $this->assertEquals(true, $this->fixture->getRetainImageContent());
+
+        $this->fixture->setRetainImageContent(false);
+        $this->assertEquals(false, $this->fixture->getRetainImageContent());
+    }
 }

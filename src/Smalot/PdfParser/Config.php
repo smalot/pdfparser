@@ -54,6 +54,13 @@ class Config
      */
     private $pdfWhitespacesRegex = '[\0\t\n\f\r ]';
 
+    /**
+     * Whether to retain raw image data as content or discard it to save memory
+     * 
+     * @var bool
+     */
+    private $retainImageContent = true;
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -82,5 +89,15 @@ class Config
     public function setPdfWhitespacesRegex(string $pdfWhitespacesRegex): void
     {
         $this->pdfWhitespacesRegex = $pdfWhitespacesRegex;
+    }
+
+    public function getRetainImageContent(): bool
+    {
+        return $this->retainImageContent;
+    }
+
+    public function setRetainImageContent(bool $retainImageContent): void
+    {
+        $this->retainImageContent = $retainImageContent;
     }
 }
