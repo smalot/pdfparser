@@ -56,7 +56,7 @@ class Config
 
     /**
      * Whether to retain raw image data as content or discard it to save memory
-     * 
+     *
      * @var bool
      */
     private $retainImageContent = true;

@@ -57,9 +57,9 @@ class ConfigTest extends TestCase
      */
     public function testRetainImageContentSetterGetter()
     {
-        $this->assertEquals(true, $this->fixture->getRetainImageContent());
+        $this->assertTrue($this->fixture->getRetainImageContent());
 
         $this->fixture->setRetainImageContent(false);
-        $this->assertEquals(false, $this->fixture->getRetainImageContent());
+        $this->assertFalse($this->fixture->getRetainImageContent());
     }
 }

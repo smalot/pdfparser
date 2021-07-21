@@ -307,19 +307,20 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/104#issuecomment-883422508
      */
-    public function testRetainImageContentImpact() {
+    public function testRetainImageContentImpact()
+    {
         $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
         $iterations = 2;
 
         // check default (= true)
         $this->fixture = new Parser([]);
-        $this->assertEquals(true, $this->fixture->getConfig()->getRetainImageContent());
+        $this->assertTrue($this->fixture->getConfig()->getRetainImageContent());
 
-        for($i=0;$i<$iterations;$i++) {
+        for ($i = 0; $i < $iterations; ++$i) {
             $document = $this->fixture->parseFile($filename);
         }
 
-        $this->assertTrue( memory_get_usage() > 200000000 );
+        $this->assertTrue(memory_get_usage() > 200000000);
 
         // force garbage collection
         $this->fixture = $document = null;
@@ -331,7 +332,7 @@ class ParserTest extends TestCase
         $this->fixture = new Parser([], $config);
         $this->assertEquals($config, $this->fixture->getConfig());
 
-        $this->assertTrue( memory_get_usage() < 200000000 );
+        $this->assertTrue(memory_get_usage() < 200000000);
     }
 }
 
