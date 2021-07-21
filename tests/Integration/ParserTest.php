@@ -309,6 +309,10 @@ class ParserTest extends TestCase
      */
     public function testRetainImageContentImpact()
     {
+        if (version_compare(\PHP_VERSION, '7.3.0', '<')) {
+            $this->markTestSkipped('Garbage collection doesn\'t work reliably enough for this test in PHP < 7.3');
+        }
+
         $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
         $iterations = 2;
 
