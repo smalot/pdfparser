@@ -56,7 +56,6 @@ class ParserTest extends TestCase
             $files = scandir($directory);
 
             foreach ($files as $file) {
-                break; // test if this loop is the source of out of memory errors
                 if (preg_match('/^.*\.pdf$/i', $file)) {
                     try {
                         // free memory from previous runs
