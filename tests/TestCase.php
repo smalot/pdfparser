@@ -49,6 +49,8 @@ abstract class TestCase extends PHPTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        
+        gc_collect_cycles();
 
         $this->rootDir = __DIR__.'/..';
     }
