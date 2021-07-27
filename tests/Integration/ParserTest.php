@@ -58,6 +58,8 @@ class ParserTest extends TestCase
             foreach ($files as $file) {
                 if (preg_match('/^.*\.pdf$/i', $file)) {
                     try {
+                        // free memory from previous runs
+                        gc_collect_cycles();
                         $document = $this->fixture->parseFile($directory.'/'.$file);
                         $pages = $document->getPages();
                         $this->assertTrue(0 < \count($pages));
