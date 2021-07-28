@@ -46,7 +46,7 @@ class Pages extends PDFObject
             return [];
         }
 
-        /** @var $kidsElement ElementArray */
+        /** @var ElementArray $kidsElement */
         $kidsElement = $this->get('Kids');
 
         if (!$deep) {
