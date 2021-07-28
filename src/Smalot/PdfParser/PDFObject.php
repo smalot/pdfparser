@@ -726,7 +726,7 @@ class PDFObject
             case 'XObject':
                 switch ($header->get('Subtype')->getContent()) {
                     case 'Image':
-                        return new Image($document, $header, $content, $config);
+                        return new Image($document, $header, $config->getRetainImageContent() ? $content : null, $config);
 
                     case 'Form':
                         return new Form($document, $header, $content, $config);
