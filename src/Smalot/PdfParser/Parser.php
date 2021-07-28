@@ -89,6 +89,8 @@ class Parser
     }
 
     /**
+     * @param string $content PDF content to parse
+     *
      * @throws \Exception if secured PDF file was detected
      * @throws \Exception if no object list was found
      */
