@@ -334,7 +334,8 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $this->assertTrue(memory_get_usage(true) > 100000000, 'Memory is only '.memory_get_usage());
+        $usedMemory = memory_get_usage(true);
+        $this->assertTrue($usedMemory > 100000000, 'Memory is only '.$usedMemory);
         $this->assertTrue(null != $document && 0 < \strlen($document->getText()));
 
         // force garbage collection
@@ -353,7 +354,8 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $this->assertTrue(memory_get_usage(true) < 100000000);
+        $usedMemory = memory_get_usage(true);
+        $this->assertTrue($usedMemory < 100000000, 'Memory is '.$usedMemory);
         $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
