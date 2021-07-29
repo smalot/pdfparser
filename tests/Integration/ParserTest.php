@@ -48,35 +48,28 @@ class ParserTest extends TestCase
         $this->fixture = new Parser();
     }
 
+    /**
+     * Parse bug related PDFs which are not part of a dedicated test case.
+     * We assume that parsing works without any problems.
+     */
     public function testParseFile()
     {
         $directory = $this->rootDir.'/samples/bugs';
 
-        if (is_dir($directory)) {
-            $files = scandir($directory);
+        $pdfsToCheck = [
+            'Issue104a.pdf',
+            'Issue229_mac_roman_encoding.pdf',
+            'Issue33.pdf',
+        ];
 
-            foreach ($files as $file) {
-                if (preg_match('/^.*\.pdf$/i', $file)) {
-                    try {
-                        // free memory from previous runs
-                        gc_collect_cycles();
-                        $document = $this->fixture->parseFile($directory.'/'.$file);
-                        $pages = $document->getPages();
-                        $this->assertTrue(0 < \count($pages));
+        foreach ($pdfsToCheck as $fileName) {
+            $document = $this->fixture->parseFile($directory.'/'.$fileName);
+            $pages = $document->getPages();
+            $this->assertTrue(0 < \count($pages));
 
-                        foreach ($pages as $page) {
-                            $content = $page->getText();
-                            $this->assertTrue(0 < \strlen($content));
-                        }
-                    } catch (Exception $e) {
-                        if (
-                            'Secured pdf file are currently not supported.' !== $e->getMessage()
-                            && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')
-                        ) {
-                            throw $e;
-                        }
-                    }
-                }
+            foreach ($pages as $page) {
+                $content = $page->getText();
+                $this->assertTrue(0 < \strlen($content));
             }
         }
     }
