@@ -54,7 +54,10 @@ class ParserTest extends TestCase
      */
     public function testParseFile()
     {
-        return;
+        $config = new Config();
+        $config->setRetainImageContent(false);
+
+        $this->fixture = new Parser([], $config);
         $directory = $this->rootDir.'/samples/bugs';
 
         $pdfsToCheck = [
@@ -310,9 +313,11 @@ class ParserTest extends TestCase
         }
 
         $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
-        $iterations = 2;
+        $iterations = 1;
 
-        // check default (= true)
+        /*
+         * check default (= true)
+         */
         $this->fixture = new Parser([]);
         $this->assertTrue($this->fixture->getConfig()->getRetainImageContent());
 
@@ -320,19 +325,27 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $this->assertTrue(memory_get_usage() > 200000000);
+        $this->assertTrue(memory_get_usage(true) > 100000000, 'Memory is only '.memory_get_usage());
+        $this->assertTrue(0 < strlen($document->getText()));
 
         // force garbage collection
         $this->fixture = $document = null;
         gc_collect_cycles();
 
-        // check false
+        /*
+         * check false
+         */
         $config = new Config();
         $config->setRetainImageContent(false);
         $this->fixture = new Parser([], $config);
         $this->assertEquals($config, $this->fixture->getConfig());
 
-        $this->assertTrue(memory_get_usage() < 200000000);
+        for ($i = 0; $i < $iterations; ++$i) {
+            $document = $this->fixture->parseFile($filename);
+        }
+
+        $this->assertTrue(memory_get_usage(true) < 100000000);
+        $this->assertTrue(0 < strlen($document->getText()));
     }
 }
 
