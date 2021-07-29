@@ -49,31 +49,37 @@ class ParserTest extends TestCase
     }
 
     /**
-     * Parse bug related PDFs which are not part of a dedicated test case.
-     * We expect parsing works without any problems.
+     * Notice: it may fail to run in Scrutinizer because of memory limitations.
+     *
+     * @group memory-heavy
      */
     public function testParseFile()
     {
-        $config = new Config();
-        $config->setRetainImageContent(false);
-
-        $this->fixture = new Parser([], $config);
         $directory = $this->rootDir.'/samples/bugs';
 
-        $pdfsToCheck = [
-            'Issue104a.pdf',
-            'Issue229_mac_roman_encoding.pdf',
-            'Issue33.pdf',
-        ];
+        if (is_dir($directory)) {
+            $files = scandir($directory);
 
-        foreach ($pdfsToCheck as $fileName) {
-            $document = $this->fixture->parseFile($directory.'/'.$fileName);
-            $pages = $document->getPages();
-            $this->assertTrue(0 < \count($pages));
+            foreach ($files as $file) {
+                if (preg_match('/^.*\.pdf$/i', $file)) {
+                    try {
+                        $document = $this->fixture->parseFile($directory.'/'.$file);
+                        $pages = $document->getPages();
+                        $this->assertTrue(0 < \count($pages));
 
-            foreach ($pages as $page) {
-                $content = $page->getText();
-                $this->assertTrue(0 < \strlen($content));
+                        foreach ($pages as $page) {
+                            $content = $page->getText();
+                            $this->assertTrue(0 < \strlen($content));
+                        }
+                    } catch (Exception $e) {
+                        if (
+                            'Secured pdf file are currently not supported.' !== $e->getMessage()
+                            && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')
+                        ) {
+                            throw $e;
+                        }
+                    }
+                }
             }
         }
     }
@@ -304,6 +310,8 @@ class ParserTest extends TestCase
     /**
      * Tests the impact of the retainImageContent config setting on memory usage
      *
+     * @group memory-heavy
+     *
      * @see https://github.com/smalot/pdfparser/issues/104#issuecomment-883422508
      */
     public function testRetainImageContentImpact()
@@ -320,13 +328,14 @@ class ParserTest extends TestCase
          */
         $this->fixture = new Parser([]);
         $this->assertTrue($this->fixture->getConfig()->getRetainImageContent());
+        $document = null;
 
         for ($i = 0; $i < $iterations; ++$i) {
             $document = $this->fixture->parseFile($filename);
         }
 
         $this->assertTrue(memory_get_usage(true) > 100000000, 'Memory is only '.memory_get_usage());
-        $this->assertTrue(0 < strlen($document->getText()));
+        $this->assertTrue(null != $document && 0 < \strlen($document->getText()));
 
         // force garbage collection
         $this->fixture = $document = null;
@@ -345,7 +354,7 @@ class ParserTest extends TestCase
         }
 
         $this->assertTrue(memory_get_usage(true) < 100000000);
-        $this->assertTrue(0 < strlen($document->getText()));
+        $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
 
