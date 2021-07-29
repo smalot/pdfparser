@@ -355,7 +355,11 @@ class ParserTest extends TestCase
         }
 
         $usedMemory = memory_get_usage(true);
-        $this->assertTrue($usedMemory < 100000000, 'Memory is '.$usedMemory);
+        /*
+         * note: the following memory value is set manually and may differ from system to system.
+         *       it must be high enough to not produce a false negative though.
+         */
+        $this->assertTrue($usedMemory < 106000000, 'Memory is '.$usedMemory);
         $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
