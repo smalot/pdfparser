@@ -48,6 +48,11 @@ class ParserTest extends TestCase
         $this->fixture = new Parser();
     }
 
+    /**
+     * Notice: it may fail to run in Scrutinizer because of memory limitations.
+     *
+     * @group memory-heavy
+     */
     public function testParseFile()
     {
         $directory = $this->rootDir.'/samples/bugs';
@@ -300,6 +305,62 @@ class ParserTest extends TestCase
         $config->setFontSpaceLimit(1000);
         $this->fixture = new Parser([], $config);
         $this->assertEquals($config, $this->fixture->getConfig());
+    }
+
+    /**
+     * Tests the impact of the retainImageContent config setting on memory usage
+     *
+     * @group memory-heavy
+     *
+     * @see https://github.com/smalot/pdfparser/issues/104#issuecomment-883422508
+     */
+    public function testRetainImageContentImpact()
+    {
+        if (version_compare(\PHP_VERSION, '7.3.0', '<')) {
+            $this->markTestSkipped('Garbage collection doesn\'t work reliably enough for this test in PHP < 7.3');
+        }
+
+        $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
+        $iterations = 1;
+
+        /*
+         * check default (= true)
+         */
+        $this->fixture = new Parser([]);
+        $this->assertTrue($this->fixture->getConfig()->getRetainImageContent());
+        $document = null;
+
+        for ($i = 0; $i < $iterations; ++$i) {
+            $document = $this->fixture->parseFile($filename);
+        }
+
+        $usedMemory = memory_get_usage(true);
+        $this->assertTrue($usedMemory > 100000000, 'Memory is only '.$usedMemory);
+        $this->assertTrue(null != $document && 0 < \strlen($document->getText()));
+
+        // force garbage collection
+        $this->fixture = $document = null;
+        gc_collect_cycles();
+
+        /*
+         * check false
+         */
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $this->fixture = new Parser([], $config);
+        $this->assertEquals($config, $this->fixture->getConfig());
+
+        for ($i = 0; $i < $iterations; ++$i) {
+            $document = $this->fixture->parseFile($filename);
+        }
+
+        $usedMemory = memory_get_usage(true);
+        /*
+         * note: the following memory value is set manually and may differ from system to system.
+         *       it must be high enough to not produce a false negative though.
+         */
+        $this->assertTrue($usedMemory < 106000000, 'Memory is '.$usedMemory);
+        $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
 
