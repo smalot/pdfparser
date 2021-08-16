@@ -35,9 +35,9 @@ namespace Smalot\PdfParser\Encoding;
 /**
  * Class WinAnsiEncoding
  */
-class WinAnsiEncoding
+class WinAnsiEncoding extends AbstractEncoding
 {
-    public function getTranslations()
+    public function getTranslations(): array
     {
         $encoding =
           '.notdef .notdef .notdef .notdef .notdef .notdef .notdef .notdef '.

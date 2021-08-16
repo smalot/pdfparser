@@ -43,30 +43,20 @@ class ElementNull extends Element
         parent::__construct(null, null);
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return 'null';
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         return $this->getContent() === $value;
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementNull
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(null)/s', $content, $match)) {
             $offset += strpos($content, 'null') + \strlen('null');

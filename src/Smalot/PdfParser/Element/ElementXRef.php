@@ -38,10 +38,7 @@ use Smalot\PdfParser\Element;
  */
 class ElementXRef extends Element
 {
-    /**
-     * @return string
-     */
-    public function getId()
+    public function getId(): string
     {
         return $this->getContent();
     }
@@ -51,10 +48,7 @@ class ElementXRef extends Element
         return $this->document->getObjectById($this->getId());
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         /**
          * In case $value is a number and $this->value is a string like 5_0
@@ -79,22 +73,15 @@ class ElementXRef extends Element
         return $this->getId() == $id;
     }
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return '#Obj#'.$this->getId();
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementXRef
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(?P<id>[0-9]+\s+[0-9]+\s+R)/s', $content, $match)) {
             $id = $match['id'];

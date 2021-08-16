@@ -39,30 +39,20 @@ use Smalot\PdfParser\Font;
  */
 class ElementName extends Element
 {
-    /**
-     * @param string $value
-     */
-    public function __construct($value)
+    public function __construct(string $value)
     {
         parent::__construct($value, null);
     }
 
-    /**
-     * @return bool
-     */
-    public function equals($value)
+    public function equals($value): bool
     {
         return $value == $this->value;
     }
 
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementName
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\/([A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
             $name = $match[1];
