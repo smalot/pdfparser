@@ -570,4 +570,47 @@ class PageTest extends TestCase
         $result = $page->getTextXY(174, 827, 1, 1);
         $this->assertStringContainsString('Purchase 2', $result[0][1]);
     }
+
+    public function testExtractDecodedRawDataIssue450()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue450.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $extractedDecodedRawData = $page->extractDecodedRawData();
+        $this->assertIsArray($extractedDecodedRawData);
+        $this->assertGreaterThan(3, sizeof($extractedDecodedRawData));
+        $this->assertIsArray($extractedDecodedRawData[3]);
+        $this->assertEquals("TJ", $extractedDecodedRawData[3]["o"]);
+        $this->assertIsArray($extractedDecodedRawData[3]["c"]);
+        $this->assertIsArray($extractedDecodedRawData[3]["c"][0]);
+        $this->assertEquals(3, sizeof($extractedDecodedRawData[3]["c"][0]));
+        $this->assertEquals("{signature:signer505906:Please+Sign+Here}", 
+                            $extractedDecodedRawData[3]["c"][0]["c"]);
+    }
+
+    public function testGetDataTmIssue450()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue450.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+        $this->assertIsArray($dataTm);
+        $this->assertEquals(1, sizeof($dataTm));
+        $this->assertIsArray($dataTm[0]);
+        $this->assertEquals(2, sizeof($dataTm[0]));
+        $this->assertIsArray($dataTm[0][0]);
+        $this->assertEquals(6, sizeof($dataTm[0][0]));
+        $this->assertEquals(1, $dataTm[0][0][0]);
+        $this->assertEquals(0, $dataTm[0][0][1]);
+        $this->assertEquals(0, $dataTm[0][0][2]);
+        $this->assertEquals(1, $dataTm[0][0][3]);
+        $this->assertEquals(67.5, $dataTm[0][0][4]);
+        $this->assertEquals(756.25, $dataTm[0][0][5]);
+        $this->assertEquals("{signature:signer505906:Please+Sign+Here}",
+                            $dataTm[0][1]);
+    }
 }
