@@ -348,7 +348,6 @@ class Page extends PDFObject
                         continue;
                     }
                     $tmpText = $data[$i]['c'];
-                    $decodedText = '';
                     $decodedText = isset($currentFont) ? $currentFont->decodeOctal($tmpText) : $tmpText;
                     $decodedText = str_replace(
                             ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
