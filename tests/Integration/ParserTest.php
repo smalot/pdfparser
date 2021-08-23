@@ -321,7 +321,7 @@ class ParserTest extends TestCase
         }
 
         $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
-        $iterations = 1;
+        $iterations = 2;
 
         /*
          * check default (= true)
@@ -359,7 +359,7 @@ class ParserTest extends TestCase
          * note: the following memory value is set manually and may differ from system to system.
          *       it must be high enough to not produce a false negative though.
          */
-        $this->assertTrue($usedMemory < 106000000, 'Memory is '.$usedMemory);
+        $this->assertTrue($usedMemory < 107000000, 'Memory is '.$usedMemory);
         $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
