@@ -335,7 +335,7 @@ class ParserTest extends TestCase
         }
 
         $usedMemory = memory_get_usage(true);
-        $this->assertTrue($usedMemory > 100000000, 'Memory is only '.$usedMemory);
+        $this->assertTrue($usedMemory > 200000000, 'Memory is only '.$usedMemory);
         $this->assertTrue(null != $document && 0 < \strlen($document->getText()));
 
         // force garbage collection
