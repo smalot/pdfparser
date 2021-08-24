@@ -243,7 +243,7 @@ class Page extends PDFObject
                 } else {
                     try {
                         $contents->getTextArray($this);
-                    } catch (\Error $e) {
+                    } catch (\Throwable $e) {
                         return $contents->getTextArray();
                     }
                 }
