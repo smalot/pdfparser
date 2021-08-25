@@ -30,6 +30,8 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
+
 /**
  * Class Pages
  */
@@ -37,21 +39,23 @@ class Pages extends PDFObject
 {
     /**
      * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
-     * see https://github.com/smalot/pdfparser/issues/331
      *
-     * @return array|string
+     * @see https://github.com/smalot/pdfparser/issues/331
      */
-    public function getPages(bool $deep = false)
+    public function getPages(bool $deep = false): array
     {
         if (!$this->has('Kids')) {
             return [];
         }
 
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
+
         if (!$deep) {
-            return $this->get('Kids')->getContent();
+            return $kidsElement->getContent();
         }
 
-        $kids = $this->get('Kids')->getContent();
+        $kids = $kidsElement->getContent();
         $pages = [];
 
         foreach ($kids as $kid) {

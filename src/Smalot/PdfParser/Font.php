@@ -321,10 +321,8 @@ class Font extends PDFObject
 
     public function decodeText(array $commands): string
     {
-        $text = '';
         $word_position = 0;
         $words = [];
-        $unicode = false;
         $font_space = $this->getFontSpaceLimit();
 
         foreach ($commands as $command) {
@@ -369,7 +367,7 @@ class Font extends PDFObject
     /**
      * @param bool $unicode This parameter is deprecated and might be removed in a future release
      */
-    public function decodeContent(string $text, bool &$unicode = null): string
+    public function decodeContent(string $text, ?bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
             $bytes = $this->tableSizes['from'];

@@ -93,7 +93,7 @@ class PDFObject
     }
 
     /**
-     * @return Element|PDFObject
+     * @return Element|PDFObject|Header
      */
     public function get(string $name)
     {

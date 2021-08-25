@@ -35,7 +35,7 @@ namespace Smalot\PdfParser\Encoding;
 /**
  * Class WinAnsiEncoding
  */
-class WinAnsiEncoding
+class WinAnsiEncoding extends AbstractEncoding
 {
     public function getTranslations(): array
     {

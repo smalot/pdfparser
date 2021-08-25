@@ -54,7 +54,8 @@ class ElementArray extends Element
         return parent::getContent();
     }
 
-    public function getRawContent()
+
+    public function getRawContent(): array
     {
         return $this->value;
     }
@@ -92,7 +93,7 @@ class ElementArray extends Element
     protected function resolveXRef(string $name)
     {
         if (($obj = $this->value[$name]) instanceof ElementXRef) {
-            /** @var PDFObject $obj */
+            /** @var ElementXRef $obj */
             $obj = $this->document->getObjectById($obj->getId());
             $this->value[$name] = $obj;
         }
@@ -101,7 +102,7 @@ class ElementArray extends Element
     }
 
     /**
-     * FIXME: These methods return mixed and mismatched types throughout the hierarchy
+     * @todo: These methods return mixed and mismatched types throughout the hierarchy
      *
      * @return bool|ElementArray
      */

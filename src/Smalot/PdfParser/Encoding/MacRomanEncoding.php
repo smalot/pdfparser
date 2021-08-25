@@ -35,7 +35,7 @@ namespace Smalot\PdfParser\Encoding;
 /**
  * Class MacRomanEncoding
  */
-class MacRomanEncoding
+class MacRomanEncoding extends AbstractEncoding
 {
     public function getTranslations(): array
     {

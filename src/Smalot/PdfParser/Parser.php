@@ -69,6 +69,9 @@ class Parser
         return $this->config;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function parseFile(string $filename): Document
     {
         $content = file_get_contents($filename);
@@ -86,6 +89,8 @@ class Parser
     }
 
     /**
+     * @param string $content PDF content to parse
+     *
      * @throws \Exception if secured PDF file was detected
      * @throws \Exception if no object list was found
      */
@@ -205,7 +210,6 @@ class Parser
                         }
 
                         // It is not necessary to store this content.
-                        $content = '';
 
                         return;
                     }
@@ -281,7 +285,7 @@ class Parser
                 return ElementString::parse('('.$value.')', $document);
 
             case '<':
-                return $this->parseHeaderElement('(', ElementHexa::decode($value, $document), $document);
+                return $this->parseHeaderElement('(', ElementHexa::decode($value), $document);
 
             case '/':
                 return ElementName::parse('/'.$value, $document);

@@ -35,7 +35,7 @@ namespace Smalot\PdfParser\Encoding;
 /**
  * Class ISOLatin9Encoding
  */
-class ISOLatin9Encoding
+class ISOLatin9Encoding extends AbstractEncoding
 {
     public function getTranslations(): array
     {

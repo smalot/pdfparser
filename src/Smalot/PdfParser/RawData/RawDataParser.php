@@ -430,7 +430,7 @@ class RawDataParser
                     }
                 }
             }
-            $ddata = [];
+
             // fill xref
             if (isset($index_first)) {
                 $obj_num = $index_first;
@@ -586,7 +586,7 @@ class RawDataParser
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject($pdfData, int $offset = 0): array
+    protected function getRawObject(string $pdfData, int $offset = 0): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -701,10 +701,10 @@ class RawDataParser
                     $objtype = $char;
                     ++$offset;
                     $pregResult = preg_match(
-                            '/^([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
-                            substr($pdfData, $offset),
-                            $matches
-                        );
+                        '/^([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
+                        substr($pdfData, $offset),
+                        $matches
+                    );
                     if (('<' == $char) && 1 == $pregResult) {
                         // remove white space characters
                         $objval = strtr($matches[1], $this->config->getPdfWhitespaces(), '');
@@ -713,66 +713,66 @@ class RawDataParser
                         $offset = $endpos + 1;
                     }
                 }
-                    break;
+                break;
 
             default:
-                    if ('endobj' == substr($pdfData, $offset, 6)) {
-                        // indirect object
-                        $objtype = 'endobj';
-                        $offset += 6;
-                    } elseif ('null' == substr($pdfData, $offset, 4)) {
-                        // null object
-                        $objtype = 'null';
-                        $offset += 4;
-                        $objval = 'null';
-                    } elseif ('true' == substr($pdfData, $offset, 4)) {
-                        // boolean true object
-                        $objtype = 'boolean';
-                        $offset += 4;
-                        $objval = 'true';
-                    } elseif ('false' == substr($pdfData, $offset, 5)) {
-                        // boolean false object
-                        $objtype = 'boolean';
-                        $offset += 5;
-                        $objval = 'false';
-                    } elseif ('stream' == substr($pdfData, $offset, 6)) {
-                        // start stream object
-                        $objtype = 'stream';
-                        $offset += 6;
-                        if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset), $matches)) {
-                            $offset += \strlen($matches[0]);
-                            $pregResult = preg_match(
-                                '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
-                                substr($pdfData, $offset),
-                                $matches,
-                                \PREG_OFFSET_CAPTURE
-                            );
-                            if (1 == $pregResult) {
-                                $objval = substr($pdfData, $offset, $matches[0][1]);
-                                $offset += $matches[1][1];
-                            }
+                if ('endobj' == substr($pdfData, $offset, 6)) {
+                    // indirect object
+                    $objtype = 'endobj';
+                    $offset += 6;
+                } elseif ('null' == substr($pdfData, $offset, 4)) {
+                    // null object
+                    $objtype = 'null';
+                    $offset += 4;
+                    $objval = 'null';
+                } elseif ('true' == substr($pdfData, $offset, 4)) {
+                    // boolean true object
+                    $objtype = 'boolean';
+                    $offset += 4;
+                    $objval = 'true';
+                } elseif ('false' == substr($pdfData, $offset, 5)) {
+                    // boolean false object
+                    $objtype = 'boolean';
+                    $offset += 5;
+                    $objval = 'false';
+                } elseif ('stream' == substr($pdfData, $offset, 6)) {
+                    // start stream object
+                    $objtype = 'stream';
+                    $offset += 6;
+                    if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset), $matches)) {
+                        $offset += \strlen($matches[0]);
+                        $pregResult = preg_match(
+                            '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
+                            substr($pdfData, $offset),
+                            $matches,
+                            \PREG_OFFSET_CAPTURE
+                        );
+                        if (1 == $pregResult) {
+                            $objval = substr($pdfData, $offset, $matches[0][1]);
+                            $offset += $matches[1][1];
                         }
-                    } elseif ('endstream' == substr($pdfData, $offset, 9)) {
-                        // end stream object
-                        $objtype = 'endstream';
-                        $offset += 9;
-                    } elseif (1 == preg_match('/^([0-9]+)[\s]+([0-9]+)[\s]+R/iU', substr($pdfData, $offset, 33), $matches)) {
-                        // indirect object reference
-                        $objtype = 'objref';
-                        $offset += \strlen($matches[0]);
-                        $objval = (int) ($matches[1]).'_'.(int) ($matches[2]);
-                    } elseif (1 == preg_match('/^([0-9]+)[\s]+([0-9]+)[\s]+obj/iU', substr($pdfData, $offset, 33), $matches)) {
-                        // object start
-                        $objtype = 'obj';
-                        $objval = (int) ($matches[1]).'_'.(int) ($matches[2]);
-                        $offset += \strlen($matches[0]);
-                    } elseif (($numlen = strspn($pdfData, '+-.0123456789', $offset)) > 0) {
-                        // numeric object
-                        $objtype = 'numeric';
-                        $objval = substr($pdfData, $offset, $numlen);
-                        $offset += $numlen;
                     }
-                    break;
+                } elseif ('endstream' == substr($pdfData, $offset, 9)) {
+                    // end stream object
+                    $objtype = 'endstream';
+                    $offset += 9;
+                } elseif (1 == preg_match('/^([0-9]+)[\s]+([0-9]+)[\s]+R/iU', substr($pdfData, $offset, 33), $matches)) {
+                    // indirect object reference
+                    $objtype = 'objref';
+                    $offset += \strlen($matches[0]);
+                    $objval = (int) ($matches[1]).'_'.(int) ($matches[2]);
+                } elseif (1 == preg_match('/^([0-9]+)[\s]+([0-9]+)[\s]+obj/iU', substr($pdfData, $offset, 33), $matches)) {
+                    // object start
+                    $objtype = 'obj';
+                    $objval = (int) ($matches[1]).'_'.(int) ($matches[2]);
+                    $offset += \strlen($matches[0]);
+                } elseif (($numlen = strspn($pdfData, '+-.0123456789', $offset)) > 0) {
+                    // numeric object
+                    $objtype = 'numeric';
+                    $objval = substr($pdfData, $offset, $numlen);
+                    $offset += $numlen;
+                }
+                break;
         }
 
         return [$objtype, $objval, $offset];
@@ -781,7 +781,7 @@ class RawDataParser
     /**
      * Get Cross-Reference (xref) table and trailer data from PDF document data.
      *
-     * @param int   $offset xref offset (if know)
+     * @param int   $offset xref offset (if known)
      * @param array $xref   previous xref array (if any)
      *
      * @return array containing xref and trailer data
