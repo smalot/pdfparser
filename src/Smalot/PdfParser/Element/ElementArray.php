@@ -54,7 +54,6 @@ class ElementArray extends Element
         return parent::getContent();
     }
 
-
     public function getRawContent(): array
     {
         return $this->value;

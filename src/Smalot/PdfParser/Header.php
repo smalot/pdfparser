@@ -119,6 +119,7 @@ class Header
 
     /**
      * Indicate if an element name is available in header.
+     *
      * @param string $name the name of the element
      */
     public function has(string $name): bool
