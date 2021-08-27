@@ -240,6 +240,12 @@ class Page extends PDFObject
 
                     $header = new Header([], $this->document);
                     $contents = new PDFObject($this->document, $header, $new_content, $this->config);
+                } else {
+                    try {
+                        $contents->getTextArray($this);
+                    } catch (\Throwable $e) {
+                        return $contents->getTextArray();
+                    }
                 }
             } elseif ($contents instanceof ElementArray) {
                 // Create a virtual global content.
@@ -342,11 +348,7 @@ class Page extends PDFObject
                         continue;
                     }
                     $tmpText = $data[$i]['c'];
-                    $decodedText = '';
-                    if (isset($currentFont)) {
-                        $decodedText = $currentFont->decodeOctal($tmpText);
-                        //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
-                    }
+                    $decodedText = isset($currentFont) ? $currentFont->decodeOctal($tmpText) : $tmpText;
                     $decodedText = str_replace(
                             ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
                             ['\\', '(', ')', "\n", "\r", "\t", ' '],
