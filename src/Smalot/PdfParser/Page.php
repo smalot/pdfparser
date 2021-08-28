@@ -216,8 +216,56 @@ class Page extends PDFObject
         return '';
     }
 
+    /**
+     * Return True if the current page is a (setasign\Fpdi\Fpdi) FPDI/FPDF document
+     * 
+     * @return bool true is the current page is a FPDI/FPDF document
+     */
+    public function isFpdf(): Bool
+    {
+        if (array_key_exists("Producer", $this->document->getDetails(true)) and 
+            is_string($this->document->getDetails(true)["Producer"]) and 
+            str_starts_with($this->document->getDetails(true)["Producer"], "FPDF")) {
+                return true;
+            }
+        return false;
+    }
+
+    /**
+     * Return the page number of the PDF document of the page object
+     * 
+     * @return int the page number
+    */
+    public function getPageNumber(): int 
+    {
+        $pages = $this->document->getPages();
+        $numOfPages = count($pages);
+        for ($pageNum = 0; $pageNum < $numOfPages; $pageNum++) {
+            if ($pages[$pageNum] === $this) {
+                break;
+            }
+        }
+        return $pageNum;
+    }
+
     public function getTextArray(self $page = null): array
     {
+        if ($this->isFpdf()) {
+            /** 
+             * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
+             * The page number is important for getting the PDF Commands and Text Matrix 
+             */
+            $pageNum = $this->getPageNumber();
+            $xObjects = $this->getXObjects();
+            /** The correct page info is in $xObject[$pageNum] */
+            $xObject = $xObjects[$pageNum];
+            $new_content = $xObject->getContent();
+            $header = $xObject->getHeader();
+            $config = $xObject->config;
+            /** Now we create the PDFObject object with the correct info */
+            $contents = new PDFObject($xObject->document, $header, $new_content, $config);
+            return $contents->getTextArray($xObject);
+        }
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
                 return [];
@@ -292,6 +340,16 @@ class Page extends PDFObject
                 }
             }
         } else {
+            if ($this->isFpdf()) {
+                /** 
+                 * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
+                 * The page number is important for getting the PDF Commands and Text Matrix 
+                 */
+                    $pageNum = $this->getPageNumber();
+                    $xObjects = $this->getXObjects();
+                    /** The correct page info is in $xObject[$pageNum] */
+                    $content = $xObjects[$pageNum];
+            }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
                 $extractedData[] = ['t' => '', 'o' => 'BT', 'c' => ''];
@@ -321,6 +379,16 @@ class Page extends PDFObject
         }
         $currentFont = null; /** @var Font $currentFont */
         $clippedFont = null;
+        $xObject = null;
+        if ($this->isFpdf()) {
+            /** This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
+             * The page number is important for getting the PDF Commands and Text Matrix 
+             */
+            $pageNum = $this->getPageNumber();
+            $xObjects = $this->getXObjects();
+            /** The correct font page info is in $xObject[$pageNum] */
+            $xObject = $xObjects[$pageNum];
+        }
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
                 $data = $command['c'];
@@ -363,7 +431,8 @@ class Page extends PDFObject
                 }
             } elseif ('Tf' == $command['o'] || 'TF' == $command['o']) {
                 $fontId = explode(' ', $command['c'])[0];
-                $currentFont = $this->getFont($fontId);
+                /** If document is a FPDI/FPDF the $xObject has the correct font */
+                $currentFont = isset($xObject) ? $xObject->getFont($fontId) : $this->getFont($fontId);
                 continue;
             } elseif ('Q' == $command['o']) {
                 $currentFont = $clippedFont;
