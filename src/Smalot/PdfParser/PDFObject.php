@@ -222,7 +222,7 @@ class PDFObject
             $fonts = $page->getFonts();
         }
 
-        $fonts = array_merge($fonts, array_values($this->document->getFonts()));
+        $fonts[] = $this->document->getFirstFont();
 
         if (\count($fonts) > 0) {
             return reset($fonts);

@@ -117,8 +117,8 @@ class DocumentTest extends TestCase
 
         $objects = $document->getDictionary();
         $this->assertEquals(1, \count($objects));
-        $this->assertEquals(1, \count($objects['Page']));
-        $this->assertEquals(2, $objects['Page'][2]);
+        $this->assertEquals(1, \count($objects['Page']['all']));
+        $this->assertEquals($object2, $objects['Page']['all'][2]);
     }
 
     public function testGetObjectsByType()

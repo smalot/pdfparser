@@ -269,7 +269,7 @@ class Page extends PDFObject
     /**
      * Gets all the text data with its internal representation of the page.
      *
-     * @return array An array with the data and the internal representation
+     * Returns an array with the data and the internal representation
      */
     public function extractRawData(): array
     {
