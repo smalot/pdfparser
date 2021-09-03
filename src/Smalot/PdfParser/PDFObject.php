@@ -437,8 +437,6 @@ class PDFObject
             $result .= $text;
         }
 
-        array_pop(self::$recursionStack);
-
         return $result.' ';
     }
 
