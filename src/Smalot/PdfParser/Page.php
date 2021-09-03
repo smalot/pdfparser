@@ -176,6 +176,8 @@ class Page extends PDFObject
 
     public function getText(self $page = null): string
     {
+        PDFObject::$recursionStack = [];
+        
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
                 return '';
