@@ -213,7 +213,7 @@ class Page extends PDFObject
             $contentsText = $contents->getText($this);
             PDFObject::$recursionStack = [];
 
-            return $contentsText
+            return $contentsText;
         }
 
         return '';
