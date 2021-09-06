@@ -141,6 +141,9 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Verdana', $text);
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/457
+     */
     public function testGetTextPullRequest457()
     {
         // Document with text.
