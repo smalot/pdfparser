@@ -162,6 +162,12 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Snelfilterkoffie', $text);
         $this->assertStringContainsString('AardappelenZak', $text);
         $this->assertStringContainsString('ALL', $text);
+
+        unset($parser);
+        unset($document);
+        unset($pages);
+        unset($page);
+        unset($text);
     }
 
     public function testExtractRawData()
