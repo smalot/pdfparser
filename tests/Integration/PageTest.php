@@ -163,11 +163,14 @@ class PageTest extends TestCase
         $this->assertStringContainsString('AardappelenZak', $text);
         $this->assertStringContainsString('ALL', $text);
 
+        // Force garbage collection to not interfere with other tests.
+        unset($filename);
         unset($parser);
         unset($document);
         unset($pages);
         unset($page);
         unset($text);
+        gc_collect_cycles();
     }
 
     public function testExtractRawData()
