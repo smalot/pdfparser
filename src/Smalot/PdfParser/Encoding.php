@@ -110,7 +110,10 @@ class Encoding extends PDFObject
         return $details;
     }
 
-    public function translateChar($dec): int
+    /**
+     * @return int|float|mixed
+     */
+    public function translateChar($dec)
     {
         if (isset($this->mapping[$dec])) {
             $dec = $this->mapping[$dec];

@@ -1084,6 +1084,9 @@ class PostScriptGlyphs
         ];
     }
 
+    /**
+     * @return float|int|mixed
+     */
     public static function getCodePoint($glyph)
     {
         $glyphsMap = static::getGlyphs();
