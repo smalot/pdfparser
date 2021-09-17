@@ -19,6 +19,6 @@ class EncodingTest extends TestCase
     {
         $encoding = new Encoding(new Document());
 
-        static::assertSame('foo', $encoding->translateChar('foo'));
+        static::assertNull($encoding->translateChar('foo'));
     }
 }
