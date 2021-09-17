@@ -428,7 +428,7 @@ class Font extends PDFObject
                 foreach ($chars as $char) {
                     $dec_av = hexdec(bin2hex($char));
                     $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= self::uchr($dec_ap);
+                    $result .= self::uchr($dec_ap ?? $dec_av);
                 }
             } else {
                 $length = \strlen($text);
@@ -436,7 +436,7 @@ class Font extends PDFObject
                 for ($i = 0; $i < $length; ++$i) {
                     $dec_av = hexdec(bin2hex($text[$i]));
                     $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= self::uchr($dec_ap);
+                    $result .= self::uchr($dec_ap ?? $dec_av);
                 }
             }
             $text = $result;
