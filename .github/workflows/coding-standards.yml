@@ -22,10 +22,10 @@ jobs:
         with:
           coverage: none
           php-version: "7.4"
-          tools: "composer:v1"
+          tools: "composer:v2"
       -
         name: Install dependencies with Composer
-        uses: ramsey/composer-install@v1
+        uses: ramsey/composer-install@v2
       -
         name: Install dev tools
         run: make install-dev-tools

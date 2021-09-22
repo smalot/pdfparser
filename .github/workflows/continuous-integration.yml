@@ -31,12 +31,12 @@ jobs:
         with:
           php-version: "${{ matrix.php }}"
           coverage: "none"
-          tools: composer:v1
+          tools: composer:v2
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       - name: "Install dev tools"
         run: "make install-dev-tools"
@@ -62,12 +62,12 @@ jobs:
         with:
           php-version: "${{ matrix.php }}"
           coverage: "none"
-          tools: composer:v1
+          tools: composer:v2
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       - name: "Install dev tools"
         run: "make install-dev-tools"
@@ -93,12 +93,12 @@ jobs:
         with:
           php-version: "${{ matrix.php }}"
           coverage: "xdebug"
-          tools: composer:v1
+          tools: composer:v2
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       - name: "Install dev tools"
         run: "make install-dev-tools"
@@ -129,7 +129,7 @@ jobs:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
 
       - name: "Install dev tools"
         run: "make install-dev-tools"
@@ -181,12 +181,12 @@ jobs:
         with:
           php-version: "${{ matrix.php }}"
           coverage: "none"
-          tools: composer:v1
+          tools: composer:v2
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
+        uses: "ramsey/composer-install@v2"
         with:
           dependency-versions: "lowest"
 
