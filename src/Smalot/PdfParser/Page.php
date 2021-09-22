@@ -211,7 +211,7 @@ class Page extends PDFObject
             }
 
             /*
-             * Elements referecing eachother on the same page can cause endless loops during text parsing.
+             * Elements referencing each other on the same page can cause endless loops during text parsing.
              * To combat this we keep a recursionStack containing already parsed elements on the page.
              * The stack is only emptied here after getting text from a page.
              */
