@@ -217,15 +217,15 @@ class Page extends PDFObject
     }
 
     /**
-     * Return True if the current page is a (setasign\Fpdi\Fpdi) FPDI/FPDF document
+     * Return true if the current page is a (setasign\Fpdi\Fpdi) FPDI/FPDF document
      * 
      * @return bool true is the current page is a FPDI/FPDF document
      */
     public function isFpdf(): Bool
     {
-        if (array_key_exists("Producer", $this->document->getDetails(true)) and 
-            is_string($this->document->getDetails(true)["Producer"]) and 
-            str_starts_with($this->document->getDetails(true)["Producer"], "FPDF")) {
+        if (array_key_exists("Producer", $this->document->getDetails()) and 
+            is_string($this->document->getDetails()["Producer"]) and 
+            str_starts_with($this->document->getDetails()["Producer"], "FPDF")) {
                 return true;
             }
         return false;
