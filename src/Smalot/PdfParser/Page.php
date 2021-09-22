@@ -221,7 +221,7 @@ class Page extends PDFObject
      * 
      * @return bool true is the current page is a FPDI/FPDF document
      */
-    public function isFpdf(): Bool
+    public function isFpdf(): bool
     {
         if (array_key_exists("Producer", $this->document->getDetails()) and 
             is_string($this->document->getDetails()["Producer"]) and 
@@ -341,14 +341,14 @@ class Page extends PDFObject
             }
         } else {
             if ($this->isFpdf()) {
-                /** 
+                /*
                  * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
                  * The page number is important for getting the PDF Commands and Text Matrix 
                  */
-                    $pageNum = $this->getPageNumber();
-                    $xObjects = $this->getXObjects();
-                    /** The correct page info is in $xObject[$pageNum] */
-                    $content = $xObjects[$pageNum];
+                $pageNum = $this->getPageNumber();
+                $xObjects = $this->getXObjects();
+                // The correct page info is in $xObject[$pageNum]
+                $content = $xObjects[$pageNum];
             }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
