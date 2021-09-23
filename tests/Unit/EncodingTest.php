@@ -8,14 +8,8 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Encoding;
 use Tests\Smalot\PdfParser\TestCase;
 
-/**
- * @coversDefaultClass \Smalot\PdfParser\Encoding
- */
 class EncodingTest extends TestCase
 {
-    /**
-     * @covers ::translateChar
-     */
     public function testTranslateCharOnUnknownGlyph(): void
     {
         $encoding = new Encoding(new Document());
