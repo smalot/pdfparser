@@ -20,6 +20,6 @@ class EncodingTest extends TestCase
     {
         $encoding = new Encoding(new Document());
 
-        static::assertNull($encoding->translateChar('foo'));
+        $this->assertNull($encoding->translateChar('foo'));
     }
 }
