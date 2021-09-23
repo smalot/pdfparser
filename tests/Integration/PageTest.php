@@ -141,6 +141,29 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Verdana', $text);
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/457
+     */
+    public function testGetTextPullRequest457()
+    {
+        // Document with text.
+        $filename = $this->rootDir.'/samples/bugs/PullRequest457.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $text = $page->getText();
+
+        $this->assertTrue(1000 < \strlen($text));
+        $this->assertStringContainsString('SUPER', $text);
+        $this->assertStringContainsString('VOORDEEL', $text);
+        $this->assertStringContainsString('KRANT', $text);
+        $this->assertStringContainsString('DINSDAG', $text);
+        $this->assertStringContainsString('Snelfilterkoffie', $text);
+        $this->assertStringContainsString('AardappelenZak', $text);
+        $this->assertStringContainsString('ALL', $text);
+    }
+
     public function testExtractRawData()
     {
         // Document with text.

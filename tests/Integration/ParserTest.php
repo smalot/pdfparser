@@ -320,6 +320,9 @@ class ParserTest extends TestCase
             $this->markTestSkipped('Garbage collection doesn\'t work reliably enough for this test in PHP < 7.3');
         }
 
+        gc_collect_cycles();
+        $baselineMemory = memory_get_usage(true);
+
         $filename = $this->rootDir.'/samples/bugs/Issue104a.pdf';
         $iterations = 2;
 
@@ -335,7 +338,7 @@ class ParserTest extends TestCase
         }
 
         $usedMemory = memory_get_usage(true);
-        $this->assertTrue($usedMemory > 200000000, 'Memory is only '.$usedMemory);
+        $this->assertTrue($usedMemory > ($baselineMemory * 1.5), 'Memory is only '.$usedMemory);
         $this->assertTrue(null != $document && 0 < \strlen($document->getText()));
 
         // force garbage collection
@@ -359,7 +362,7 @@ class ParserTest extends TestCase
          * note: the following memory value is set manually and may differ from system to system.
          *       it must be high enough to not produce a false negative though.
          */
-        $this->assertTrue($usedMemory < 107000000, 'Memory is '.$usedMemory);
+        $this->assertTrue($usedMemory < ($baselineMemory * 1.05), 'Memory is '.$usedMemory);
         $this->assertTrue(0 < \strlen($document->getText()));
     }
 }
