@@ -611,6 +611,7 @@ class PageTest extends TestCase
         $this->assertEquals(756.25, $dataTm[0][0][5]);
         $this->assertEquals('{signature:signer505906:Please+Sign+Here}', $dataTm[0][1]);
     }
+    
     public function testIsFpdf()
     {
         $filename = $this->rootDir.'/samples/Document1_foxitreader.pdf';

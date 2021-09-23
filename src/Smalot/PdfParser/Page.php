@@ -381,7 +381,8 @@ class Page extends PDFObject
         $clippedFont = null;
         $xObject = null;
         if ($this->isFpdf()) {
-            /** This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
+            /*
+             * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents. 
              * The page number is important for getting the PDF Commands and Text Matrix 
              */
             $pageNum = $this->getPageNumber();
