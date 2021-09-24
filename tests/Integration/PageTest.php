@@ -611,7 +611,7 @@ class PageTest extends TestCase
         $this->assertEquals(756.25, $dataTm[0][0][5]);
         $this->assertEquals('{signature:signer505906:Please+Sign+Here}', $dataTm[0][1]);
     }
-    
+
     public function testIsFpdf()
     {
         $filename = $this->rootDir.'/samples/Document1_foxitreader.pdf';
@@ -677,28 +677,28 @@ class PageTest extends TestCase
         $page = $pages[0];
         $dataTm = $page->getDataTm();
         $this->assertIsArray($dataTm);
-        $this->assertGreaterThan(0, sizeof($dataTm));
+        $this->assertGreaterThan(0, \count($dataTm));
         $this->assertIsArray($dataTm[0]);
-        $this->assertEquals(2, sizeof($dataTm[0]));
+        $this->assertEquals(2, \count($dataTm[0]));
         $this->assertIsArray($dataTm[0][0]);
-        $this->assertEquals(6, sizeof($dataTm[0][0]));
+        $this->assertEquals(6, \count($dataTm[0][0]));
         $this->assertEquals(201.96, $dataTm[0][0][4]);
         $this->assertEquals(720.68, $dataTm[0][0][5]);
-        $this->assertStringContainsString("Document title", $dataTm[0][1]);
+        $this->assertStringContainsString('Document title', $dataTm[0][1]);
         $textData = $page->getTextXY(201.96, 720.68);
-        $this->assertStringContainsString("Document title", $textData[0][1]);
+        $this->assertStringContainsString('Document title', $textData[0][1]);
         $page = $pages[2];
         $dataTm = $page->getDataTm();
         $this->assertIsArray($dataTm);
-        $this->assertGreaterThan(0, sizeof($dataTm));
+        $this->assertGreaterThan(0, \count($dataTm));
         $this->assertIsArray($dataTm[0]);
-        $this->assertEquals(2, sizeof($dataTm[0]));
+        $this->assertEquals(2, \count($dataTm[0]));
         $this->assertIsArray($dataTm[0][0]);
-        $this->assertEquals(6, sizeof($dataTm[0][0]));
+        $this->assertEquals(6, \count($dataTm[0][0]));
         $this->assertEquals(67.5, $dataTm[0][0][4]);
         $this->assertEquals(756.25, $dataTm[0][0][5]);
-        $this->assertStringContainsString("{signature:signer505906:Please+Sign+Here}", $dataTm[0][1]);
+        $this->assertStringContainsString('{signature:signer505906:Please+Sign+Here}', $dataTm[0][1]);
         $textData = $page->getTextXY(67.5, 756.25);
-        $this->assertStringContainsString("{signature:signer505906:Please+Sign+Here}", $textData[0][1]);
+        $this->assertStringContainsString('{signature:signer505906:Please+Sign+Here}', $textData[0][1]);
     }
 }
