@@ -383,6 +383,7 @@ class Page extends PDFObject
         $currentFont = null; /** @var Font $currentFont */
         $clippedFont = null;
         $xObject = null;
+        $page = null;
         if ($this->isFpdf()) {
             /*
              * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents.
@@ -390,8 +391,14 @@ class Page extends PDFObject
              */
             $pageNum = $this->getPageNumber();
             $xObjects = $this->getXObjects();
-            /** The correct font page info is in $xObject[$pageNum] */
+            // The correct font page info is in $xObject[$pageNum]
             $xObject = $xObjects[$pageNum];
+            // For using instead of $xObject
+            $new_content = $xObject->getContent();
+            $header = $xObject->getHeader();
+            $config = $xObject->config;
+            // Now we create the Page object with the correct info
+            $page = new self($xObject->document, $header, $new_content, $config);
         }
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
@@ -435,8 +442,12 @@ class Page extends PDFObject
                 }
             } elseif ('Tf' == $command['o'] || 'TF' == $command['o']) {
                 $fontId = explode(' ', $command['c'])[0];
-                /** If document is a FPDI/FPDF the $xObject has the correct font */
-                $currentFont = isset($xObject) ? $xObject->getFont($fontId) : $this->getFont($fontId);
+                /** If document is a FPDI/FPDF the $page has the correct font */
+                if (isset($page)) {
+                    $currentFont = $page->getFont($fontId);
+                } else {
+                    $currentFont = $this->getFont($fontId);
+                }
                 continue;
             } elseif ('Q' == $command['o']) {
                 $currentFont = $clippedFont;
