@@ -213,7 +213,7 @@ class Document
     public function getFirstFont(): ?Font
     {
         $fonts = $this->getFonts();
-        if ($fonts === []) {
+        if ([] === $fonts) {
             return null;
         }
 
