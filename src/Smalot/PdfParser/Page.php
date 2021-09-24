@@ -442,12 +442,8 @@ class Page extends PDFObject
                 }
             } elseif ('Tf' == $command['o'] || 'TF' == $command['o']) {
                 $fontId = explode(' ', $command['c'])[0];
-                /** If document is a FPDI/FPDF the $page has the correct font */
-                if (isset($page)) {
-                    $currentFont = $page->getFont($fontId);
-                } else {
-                    $currentFont = $this->getFont($fontId);
-                }
+                // If document is a FPDI/FPDF the $page has the correct font
+                $currentFont = (isset($page)) ? $page->getFont($fontId) : $this->getFont($fontId);
                 continue;
             } elseif ('Q' == $command['o']) {
                 $currentFont = $clippedFont;
