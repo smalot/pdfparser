@@ -213,6 +213,9 @@ class Document
     public function getFirstFont(): ?Font
     {
         $fonts = $this->getFonts();
+        if ([] === $fonts) {
+            return null;
+        }
 
         return reset($fonts);
     }
