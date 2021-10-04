@@ -250,24 +250,56 @@ class Page extends PDFObject
         return $pageNum;
     }
 
+    /**
+     * Return the xObject if the document is from fpdf
+     *
+     * @return object The xObject for the page
+     */
+    public function getXObjectForFpdf()
+    {
+        $pageNum = $this->getPageNumber();
+        $xObjects = $this->getXObjects();
+
+        return $xObjects[$pageNum];
+    }
+
+    /**
+     * Return a PDFObject if document is from fpdf
+     *
+     * @return object The xObject for the page
+     */
+    public function getPDFObjectForFpdf()
+    {
+        $xObject = $this->getXObjectForFpdf();
+        $new_content = $xObject->getContent();
+        $header = $xObject->getHeader();
+        $config = $xObject->config;
+
+        return new PDFObject($xObject->document, $header, $new_content, $config);
+    }
+
+    /**
+     * Return page if document is from fpdf
+     *
+     * @return object The page
+     */
+    public function getPageForFpdf()
+    {
+        $xObject = $this->getXObjectForFpdf();
+        $new_content = $xObject->getContent();
+        $header = $xObject->getHeader();
+        $config = $xObject->config;
+
+        return new self($xObject->document, $header, $new_content, $config);
+    }
+
     public function getTextArray(self $page = null): array
     {
         if ($this->isFpdf()) {
-            /**
-             * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents.
-             * The page number is important for getting the PDF Commands and Text Matrix
-             */
-            $pageNum = $this->getPageNumber();
-            $xObjects = $this->getXObjects();
-            /** The correct page info is in $xObject[$pageNum] */
-            $xObject = $xObjects[$pageNum];
-            $new_content = $xObject->getContent();
-            $header = $xObject->getHeader();
-            $config = $xObject->config;
-            /** Now we create the PDFObject object with the correct info */
-            $contents = new PDFObject($xObject->document, $header, $new_content, $config);
+            $xObject = $this->getXObjectForFpdf();
+            $pdfObject = $this->getPDFObjectForFpdf();
 
-            return $contents->getTextArray($xObject);
+            return $pdfObject->getTextArray($xObject);
         }
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
@@ -344,14 +376,7 @@ class Page extends PDFObject
             }
         } else {
             if ($this->isFpdf()) {
-                /*
-                 * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents.
-                 * The page number is important for getting the PDF Commands and Text Matrix
-                 */
-                $pageNum = $this->getPageNumber();
-                $xObjects = $this->getXObjects();
-                // The correct page info is in $xObject[$pageNum]
-                $content = $xObjects[$pageNum];
+                $content = $this->getXObjectForFpdf();
             }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
@@ -382,23 +407,9 @@ class Page extends PDFObject
         }
         $currentFont = null; /** @var Font $currentFont */
         $clippedFont = null;
-        $xObject = null;
-        $page = null;
+        $fpdfPage = null;
         if ($this->isFpdf()) {
-            /*
-             * This code is for the (setasign\Fpdi\Fpdi) FPDI-FPDF documents.
-             * The page number is important for getting the PDF Commands and Text Matrix
-             */
-            $pageNum = $this->getPageNumber();
-            $xObjects = $this->getXObjects();
-            // The correct font page info is in $xObject[$pageNum]
-            $xObject = $xObjects[$pageNum];
-            // For using instead of $xObject
-            $new_content = $xObject->getContent();
-            $header = $xObject->getHeader();
-            $config = $xObject->config;
-            // Now we create the Page object with the correct info
-            $page = new self($xObject->document, $header, $new_content, $config);
+            $fpdfPage = $this->getPageForFpdf();
         }
         foreach ($extractedRawData as &$command) {
             if ('Tj' == $command['o'] || 'TJ' == $command['o']) {
@@ -443,7 +454,7 @@ class Page extends PDFObject
             } elseif ('Tf' == $command['o'] || 'TF' == $command['o']) {
                 $fontId = explode(' ', $command['c'])[0];
                 // If document is a FPDI/FPDF the $page has the correct font
-                $currentFont = isset($page) ? $page->getFont($fontId) : $this->getFont($fontId);
+                $currentFont = isset($fpdfPage) ? $fpdfPage->getFont($fontId) : $this->getFont($fontId);
                 continue;
             } elseif ('Q' == $command['o']) {
                 $currentFont = $clippedFont;
