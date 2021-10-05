@@ -254,55 +254,55 @@ class Page extends PDFObject
     }
 
     /**
-     * Return the xObject if the document is from fpdf
+     * Return the Object of the page if the document is from fpdf
      *
-     * @return object The xObject for the page
+     * @return PDFObject The Object for the page
      */
-    public function getXObjectForFpdf(): object
+    public function getPageObjectForFpdf(): PDFObject
     {
         $pageNum = $this->getPageNumber();
-        $xObjects = $this->getXObjects();
+        $objects = $this->getXObjects();
 
-        return $xObjects[$pageNum];
+        return $objects[$pageNum];
     }
 
     /**
      * Return a PDFObject if document is from fpdf
      *
-     * @return object The xObject for the page
+     * @return PDFObject The PDFObject
      */
-    public function getPDFObjectForFpdf(): object
+    public function getPDFObjectForFpdf(): PDFObject
     {
-        $xObject = $this->getXObjectForFpdf();
-        $new_content = $xObject->getContent();
-        $header = $xObject->getHeader();
-        $config = $xObject->config;
+        $object = $this->getPageObjectForFpdf();
+        $new_content = $object->getContent();
+        $header = $object->getHeader();
+        $config = $object->config;
 
-        return new PDFObject($xObject->document, $header, $new_content, $config);
+        return new PDFObject($object->document, $header, $new_content, $config);
     }
 
     /**
      * Return page if document is from fpdf
      *
-     * @return object The page
+     * @return Page The page
      */
-    public function getPageForFpdf(): object
+    public function getPageForFpdf(): self
     {
-        $xObject = $this->getXObjectForFpdf();
-        $new_content = $xObject->getContent();
-        $header = $xObject->getHeader();
-        $config = $xObject->config;
+        $object = $this->getPageObjectForFpdf();
+        $new_content = $object->getContent();
+        $header = $object->getHeader();
+        $config = $object->config;
 
-        return new self($xObject->document, $header, $new_content, $config);
+        return new self($object->document, $header, $new_content, $config);
     }
 
     public function getTextArray(self $page = null): array
     {
         if ($this->isFpdf()) {
-            $xObject = $this->getXObjectForFpdf();
+            $object = $this->getPageObjectForFpdf();
             $pdfObject = $this->getPDFObjectForFpdf();
 
-            return $pdfObject->getTextArray($xObject);
+            return $pdfObject->getTextArray($object);
         }
         if ($contents = $this->get('Contents')) {
             if ($contents instanceof ElementMissing) {
@@ -379,7 +379,7 @@ class Page extends PDFObject
             }
         } else {
             if ($this->isFpdf()) {
-                $content = $this->getXObjectForFpdf();
+                $content = $this->getPageObjectForFpdf();
             }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
