@@ -612,7 +612,7 @@ class PageTest extends TestCase
         $this->assertEquals('{signature:signer505906:Please+Sign+Here}', $dataTm[0][1]);
     }
 
-    public function testIsFpdf()
+    public function testIsFpdf(): void
     {
         $filename = $this->rootDir.'/samples/Document1_foxitreader.pdf';
         $parser = $this->getParserInstance();
@@ -627,7 +627,7 @@ class PageTest extends TestCase
         $this->assertTrue($page->isFpdf());
     }
 
-    public function testGetPageNumber()
+    public function testGetPageNumber(): void
     {
         $filename = $this->rootDir.'/samples/Document1_foxitreader.pdf';
         $parser = $this->getParserInstance();
@@ -668,7 +668,7 @@ class PageTest extends TestCase
         $this->assertEquals(3, $page->getPageNumber());
     }
 
-    public function testIssue454()
+    public function testIssue454(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue454.pdf';
         $parser = $this->getParserInstance();

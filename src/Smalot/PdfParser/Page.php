@@ -255,7 +255,7 @@ class Page extends PDFObject
      *
      * @return object The xObject for the page
      */
-    public function getXObjectForFpdf()
+    public function getXObjectForFpdf(): object
     {
         $pageNum = $this->getPageNumber();
         $xObjects = $this->getXObjects();
@@ -268,7 +268,7 @@ class Page extends PDFObject
      *
      * @return object The xObject for the page
      */
-    public function getPDFObjectForFpdf()
+    public function getPDFObjectForFpdf(): object
     {
         $xObject = $this->getXObjectForFpdf();
         $new_content = $xObject->getContent();
@@ -283,7 +283,7 @@ class Page extends PDFObject
      *
      * @return object The page
      */
-    public function getPageForFpdf()
+    public function getPageForFpdf(): object
     {
         $xObject = $this->getXObjectForFpdf();
         $new_content = $xObject->getContent();
