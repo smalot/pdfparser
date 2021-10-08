@@ -223,7 +223,7 @@ class PDFObject
         }
 
         $firstFont = $this->document->getFirstFont();
-        if ($firstFont !== null) {
+        if (null !== $firstFont) {
             $fonts[] = $firstFont;
         }
 
