@@ -110,11 +110,17 @@ class Font extends PDFObject
         return $use_default ? self::MISSING : $fallbackDecoded;
     }
 
+    private static $uchrCache = [];
+    
     public static function uchr(int $code): string
     {
+        $code = (int) $code;
+		if (isset(self::$uchrCache[$code])) {
+			return self::$uchrCache[$code];
+		}
         // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
         // therefore, we use mb_convert_encoding() instead
-        return mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
+        return self::$uchrCache[$code] = mb_convert_encoding("&#{$code};", 'UTF-8', 'HTML-ENTITIES');
     }
 
     public function loadTranslateTable(): array
