@@ -309,53 +309,54 @@ class Page extends PDFObject
             $newPdfObject = $this->createPDFObjectForFpdf();
 
             return $newPdfObject->getTextArray($pdfObject);
-        }
-        if ($contents = $this->get('Contents')) {
-            if ($contents instanceof ElementMissing) {
-                return [];
-            } elseif ($contents instanceof ElementNull) {
-                return [];
-            } elseif ($contents instanceof PDFObject) {
-                $elements = $contents->getHeader()->getElements();
+        } else {
+            if ($contents = $this->get('Contents')) {
+                if ($contents instanceof ElementMissing) {
+                    return [];
+                } elseif ($contents instanceof ElementNull) {
+                    return [];
+                } elseif ($contents instanceof PDFObject) {
+                    $elements = $contents->getHeader()->getElements();
 
-                if (is_numeric(key($elements))) {
+                    if (is_numeric(key($elements))) {
+                        $new_content = '';
+
+                        /** @var PDFObject $element */
+                        foreach ($elements as $element) {
+                            if ($element instanceof ElementXRef) {
+                                $new_content .= $element->getObject()->getContent();
+                            } else {
+                                $new_content .= $element->getContent();
+                            }
+                        }
+
+                        $header = new Header([], $this->document);
+                        $contents = new PDFObject($this->document, $header, $new_content, $this->config);
+                    } else {
+                        try {
+                            $contents->getTextArray($this);
+                        } catch (\Throwable $e) {
+                            return $contents->getTextArray();
+                        }
+                    }
+                } elseif ($contents instanceof ElementArray) {
+                    // Create a virtual global content.
                     $new_content = '';
 
-                    /** @var PDFObject $element */
-                    foreach ($elements as $element) {
-                        if ($element instanceof ElementXRef) {
-                            $new_content .= $element->getObject()->getContent();
-                        } else {
-                            $new_content .= $element->getContent();
-                        }
+                    /** @var PDFObject $content */
+                    foreach ($contents->getContent() as $content) {
+                        $new_content .= $content->getContent()."\n";
                     }
 
                     $header = new Header([], $this->document);
                     $contents = new PDFObject($this->document, $header, $new_content, $this->config);
-                } else {
-                    try {
-                        $contents->getTextArray($this);
-                    } catch (\Throwable $e) {
-                        return $contents->getTextArray();
-                    }
-                }
-            } elseif ($contents instanceof ElementArray) {
-                // Create a virtual global content.
-                $new_content = '';
-
-                /** @var PDFObject $content */
-                foreach ($contents->getContent() as $content) {
-                    $new_content .= $content->getContent()."\n";
                 }
 
-                $header = new Header([], $this->document);
-                $contents = new PDFObject($this->document, $header, $new_content, $this->config);
+                return $contents->getTextArray($this);
             }
 
-            return $contents->getTextArray($this);
+            return [];
         }
-
-        return [];
     }
 
     /**
