@@ -115,7 +115,7 @@ class Font extends PDFObject
     public static function uchr(int $code): string
     {
         if (isset(self::$uchrCache[$code])) {
-		    return self::$uchrCache[$code];
+            return self::$uchrCache[$code];
         }
         // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
         // therefore, we use mb_convert_encoding() instead
