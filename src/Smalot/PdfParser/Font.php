@@ -111,7 +111,7 @@ class Font extends PDFObject
     }
 
     private static $uchrCache = [];
-    
+
     public static function uchr(int $code): string
     {
         if (isset(self::$uchrCache[$code])) {
