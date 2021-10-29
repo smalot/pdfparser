@@ -56,7 +56,7 @@ class FilterHelper
      *
      * @throws Exception if a certain decode function is not implemented yet
      */
-    public function decodeFilter(string $filter, string $data): string
+    public function decodeFilter(string $filter, string $data, $decodeMemoryLimit): string
     {
         switch ($filter) {
             case 'ASCIIHexDecode':
@@ -69,7 +69,7 @@ class FilterHelper
                 return $this->decodeFilterLZWDecode($data);
 
             case 'FlateDecode':
-                return $this->decodeFilterFlateDecode($data);
+                return $this->decodeFilterFlateDecode($data, $decodeMemoryLimit);
 
             case 'RunLengthDecode':
                 return $this->decodeFilterRunLengthDecode($data);
@@ -224,13 +224,14 @@ class FilterHelper
      *
      * Decompresses data encoded using the zlib/deflate compression method, reproducing the original text or binary data.
      *
-     * @param string $data Data to decode
+     * @param string $data              Data to decode
+     * @param int    $decodeMemoryLimit Memory limit on deflation
      *
      * @return string data string
      *
      * @throws Exception
      */
-    protected function decodeFilterFlateDecode(string $data): ?string
+    protected function decodeFilterFlateDecode(string $data, int $decodeMemoryLimit): ?string
     {
         /*
          * gzuncompress may throw a not catchable E_WARNING in case of an error (like $data is empty)
@@ -249,7 +250,7 @@ class FilterHelper
 
         // initialize string to return
         try {
-            $decoded = gzuncompress($data);
+            $decoded = gzuncompress($data, $decodeMemoryLimit);
             if (false === $decoded) {
                 throw new Exception('decodeFilterFlateDecode: invalid code');
             }
