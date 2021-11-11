@@ -119,4 +119,22 @@ class RawDataParserTest extends TestCase
 
         $this->assertStringContainsString('Bug fix: PR #405', $pages[0]->getText());
     }
+
+    /**
+     * Tests buggy behavior of decodeXrefStream.
+     *
+     * When PDF has more than one entry in the /Index area (for example by changing the document description), only the first entry is used.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/479
+     */
+    public function testDecodeXrefStreamIssue479()
+        $filename = $this->rootDir.'/samples/bugs/Issue479.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $details = $document->getDetails();
+
+        $this->assertArrayHasKey('Subject', $details);
+    }
+
 }
