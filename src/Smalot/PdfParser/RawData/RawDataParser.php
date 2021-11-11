@@ -271,9 +271,9 @@ class RawDataParser
             } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
                 // initialize list for: first object number in the subsection / number of objects
                 $index_blocks = [];
-				for($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
-					$index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
-				}
+                for($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
+                    $index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
+                }
             } elseif (('/' == $v[0]) && ('Prev' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
                 // get previous xref offset
                 $prevxref = (int) ($sarr[($k + 1)][1]);
