@@ -467,9 +467,9 @@ class RawDataParser
                 }
                 ++$obj_num;
                 if (isset($index_blocks)) {
-                    if (--$index_blocks[0][1] == 0) {
+                    if (0 == --$index_blocks[0][1]) {
                         array_shift($index_blocks);
-                        if (count($index_blocks) > 0) {
+                        if (0 < count($index_blocks)) {
                             $obj_num = $index_blocks[0][0];
                         } else {
                             unset($index_blocks);
