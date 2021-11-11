@@ -269,8 +269,8 @@ class RawDataParser
             ) {
                 $valid_crs = true;
             } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
-                // list of: first object number in the subsection / number of objects
-				$index_blocks = [];
+                // initialize list for: first object number in the subsection / number of objects
+                $index_blocks = [];
 				for($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
 					$index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
 				}
@@ -435,8 +435,8 @@ class RawDataParser
             }
 
             // fill xref
-			if (isset($index_blocks)) {
-				$obj_num = $index_blocks[0][0];
+            if (isset($index_blocks)) {
+                $obj_num = $index_blocks[0][0];
             } else {
                 $obj_num = 0;
             }
@@ -466,16 +466,16 @@ class RawDataParser
                             break;
                 }
                 ++$obj_num;
-				if (isset($index_blocks)) {
-					if (--$index_blocks[0][1] == 0) {
-						array_shift($index_blocks);
-						if (count($index_blocks) > 0) {
-							$obj_num = $index_blocks[0][0];
-						} else {
-							unset($index_blocks);
-						}
-					}
-				}
+                if (isset($index_blocks)) {
+                    if (--$index_blocks[0][1] == 0) {
+                        array_shift($index_blocks);
+                        if (count($index_blocks) > 0) {
+                            $obj_num = $index_blocks[0][0];
+                        } else {
+                            unset($index_blocks);
+                        }
+                    }
+                }
             }
         } // end decoding data
         if (isset($prevxref)) {
@@ -811,6 +811,7 @@ class RawDataParser
             \PREG_OFFSET_CAPTURE,
             $offset
         );
+        
         if (0 == $offset) {
             // find last startxref
             $pregResult = preg_match_all(
@@ -881,6 +882,7 @@ class RawDataParser
 
         // get xref and trailer data
         $xref = $this->getXrefData($pdfData);
+        
         // parse all document objects
         $objects = [];
         foreach ($xref['xref'] as $obj => $offset) {
