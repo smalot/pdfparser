@@ -271,7 +271,7 @@ class RawDataParser
             } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
                 // initialize list for: first object number in the subsection / number of objects
                 $index_blocks = [];
-                for($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
+                for ($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
                     $index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
                 }
             } elseif (('/' == $v[0]) && ('Prev' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
@@ -811,7 +811,7 @@ class RawDataParser
             \PREG_OFFSET_CAPTURE,
             $offset
         );
-        
+
         if (0 == $offset) {
             // find last startxref
             $pregResult = preg_match_all(
@@ -882,7 +882,7 @@ class RawDataParser
 
         // get xref and trailer data
         $xref = $this->getXrefData($pdfData);
-        
+
         // parse all document objects
         $objects = [];
         foreach ($xref['xref'] as $obj => $offset) {
