@@ -128,6 +128,7 @@ class RawDataParserTest extends TestCase
      * @see https://github.com/smalot/pdfparser/pull/479
      */
     public function testDecodeXrefStreamIssue479()
+    {
         $filename = $this->rootDir.'/samples/bugs/Issue479.pdf';
 
         $parser = $this->getParserInstance();
