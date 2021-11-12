@@ -484,13 +484,23 @@ class PageTest extends TestCase
         $document = $this->getParserInstance()->parseFile($filename);
         $pages = $document->getPages();
 
-        // This should actually be 3 pages, but as long as the cause for issue #331
-        // has not been found and the issue is not fixed, we'll settle for 2 here.
-        // We still test for the count, so in case the bug should be fixed
-        // unknowingly, we don't forget to resolve the issue as well and make sure
-        // this assertion is present.
-        $this->assertCount(2, $pages);
+        // // This should actually be 3 pages, but as long as the cause for issue #331
+        // // has not been found and the issue is not fixed, we'll settle for 2 here.
+        // // We still test for the count, so in case the bug should be fixed
+        // // unknowingly, we don't forget to resolve the issue as well and make sure
+        // // this assertion is present.
+        // $this->assertCount(2, $pages);
 
+        // The above problem is fixed by the pull request of the issue #479.
+        // The original Issue331.pdf was modified so for the updated version (actual
+        // version) a new xref was added and now the valid /Index has the following value:
+        //    [1 1 3 1 7 1 175 1 178 1 219 2]
+        // This means, that there a 6 pairs containing the values for 'first object id'
+        // and 'number of objects'. Till now only the first entry was used and so the
+        // objects of all following entries gots a wrong id.
+        // By the fix of issue #479 now the expected number of pages is counted.
+        $this->assertCount(3, $pages);
+        
         foreach ($pages as $page) {
             $this->assertTrue($page instanceof Page);
         }
