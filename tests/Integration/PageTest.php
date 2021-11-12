@@ -500,7 +500,7 @@ class PageTest extends TestCase
         // objects of all following entries gots a wrong id.
         // By the fix of issue #479 now the expected number of pages is counted.
         $this->assertCount(3, $pages);
-        
+
         foreach ($pages as $page) {
             $this->assertTrue($page instanceof Page);
         }
