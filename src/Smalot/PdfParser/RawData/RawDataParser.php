@@ -436,6 +436,7 @@ class RawDataParser
 
             // fill xref
             if (isset($index_blocks)) {
+                // load the first object number of the first /Index entry
                 $obj_num = $index_blocks[0][0];
             } else {
                 $obj_num = 0;
@@ -467,11 +468,16 @@ class RawDataParser
                 }
                 ++$obj_num;
                 if (isset($index_blocks)) {
-                    if (0 == --$index_blocks[0][1]) {
+                    // reduce the number of remaining objects
+                    $index_blocks[0][1]--;
+                    if (0 == $index_blocks[0][1]) {
+                        // remove the actual used /Index entry
                         array_shift($index_blocks);
                         if (0 < \count($index_blocks)) {
+                            // load the first object number of the following /Index entry
                             $obj_num = $index_blocks[0][0];
                         } else {
+                            // if there are no more entries, remove $index_blocks to avoid actions on an empty array
                             unset($index_blocks);
                         }
                     }
