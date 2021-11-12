@@ -150,5 +150,4 @@ class RawDataParserTest extends TestCase
         $this->assertArrayHasKey('Subject', $details);
         $this->assertArrayHasKey('Title', $details);
     }
-
 }
