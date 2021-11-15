@@ -485,7 +485,7 @@ class PageTest extends TestCase
         $pages = $document->getPages();
 
         /*
-         * The above problem is fixed by the pull request of the issue #479.
+         * The problem of issue 331 is fixed by the pull request of the issue #479.
          * The original Issue331.pdf was modified so for the updated version (actual
          * version) a new xref was added and now the valid /Index has the following value:
          *    [1 1 3 1 7 1 175 1 178 1 219 2]
