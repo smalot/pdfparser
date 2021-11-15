@@ -271,7 +271,7 @@ class RawDataParser
             } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
                 // initialize list for: first object number in the subsection / number of objects
                 $index_blocks = [];
-                for ($m = 0; $m < count($sarr[($k + 1)][1]); $m += 2) {
+                for ($m = 0; $m < \count($sarr[($k + 1)][1]); $m += 2) {
                     $index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
                 }
             } elseif (('/' == $v[0]) && ('Prev' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
@@ -469,7 +469,7 @@ class RawDataParser
                 ++$obj_num;
                 if (isset($index_blocks)) {
                     // reduce the number of remaining objects
-                    $index_blocks[0][1]--;
+                    --$index_blocks[0][1];
                     if (0 == $index_blocks[0][1]) {
                         // remove the actual used /Index entry
                         array_shift($index_blocks);
