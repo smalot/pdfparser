@@ -50,6 +50,13 @@ class Font extends PDFObject
      */
     protected $tableSizes = null;
 
+    /**
+     * Caches results from uchr.
+     *
+     * @var array
+     */
+    private static $uchrCache = [];
+
     public function init()
     {
         // Load translate table.
@@ -112,9 +119,13 @@ class Font extends PDFObject
 
     public static function uchr(int $code): string
     {
-        // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
-        // therefore, we use mb_convert_encoding() instead
-        return mb_convert_encoding('&#'.((int) $code).';', 'UTF-8', 'HTML-ENTITIES');
+        if (!isset(self::$uchrCache[$code])) {
+            // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
+            // therefore, we use mb_convert_encoding() instead
+            self::$uchrCache[$code] = mb_convert_encoding("&#{$code};", 'UTF-8', 'HTML-ENTITIES');
+        }
+
+        return self::$uchrCache[$code];
     }
 
     public function loadTranslateTable(): array
