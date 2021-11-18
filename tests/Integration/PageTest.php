@@ -724,4 +724,22 @@ class PageTest extends TestCase
         $textData = $page->getTextXY(67.5, 756.25);
         $this->assertStringContainsString('{signature:signer505906:Please+Sign+Here}', $textData[0][1]);
     }
+
+    public function testIssue482(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue482.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+        $this->assertIsArray($dataTm);
+        $this->assertCount(296, $dataTm);
+        $tmp = [[50, 0, 0, 50, 772.8475, 544], 'H'];
+        $this->assertEquals($tmp, $dataTm[0]);
+        $tmp = [[50, 0, 0, 50, 808.9315, 544], 'ATI'];
+        $this->assertEquals($tmp, $dataTm[1]);
+        $tmp = [[50, 0, 0, 50, 890.9627, 544], '-'];
+        $this->assertEquals($tmp, $dataTm[2]);
+    }
 }
