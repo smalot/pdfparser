@@ -703,7 +703,8 @@ class Page extends PDFObject
                  * current line by tx, ty.
                  */
                 case 'Td':
-                    $coord = explode(' ', $command['c']);
+                    $commandLine = str_replace("\n", " ", $command['c']);
+                    $coord = explode(' ', $commandLine);
                     $Tx += (float) $coord[0];
                     $Ty += (float) $coord[1];
                     $Tm[$x] = (string) $Tx;
