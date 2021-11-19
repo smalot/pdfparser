@@ -81,13 +81,12 @@ class RawDataParser
      * @param string $pdfData           PDF data
      * @param array  $sdic              Stream's dictionary array
      * @param string $stream            Stream to decode
-     * @param int    $decodeMemoryLimit Optional memory limit to decode
      *
      * @return array containing decoded stream data and remaining filters
      *
      * @throws Exception
      */
-    protected function decodeStream(string $pdfData, array $xref, array $sdic, string $stream, int $decodeMemoryLimit): array
+    protected function decodeStream(string $pdfData, array $xref, array $sdic, string $stream): array
     {
         // get stream length and filters
         $slength = \strlen($stream);
@@ -127,7 +126,7 @@ class RawDataParser
         foreach ($filters as $filter) {
             if (\in_array($filter, $this->filterHelper->getAvailableFilters())) {
                 try {
-                    $stream = $this->filterHelper->decodeFilter($filter, $stream, $decodeMemoryLimit);
+                    $stream = $this->filterHelper->decodeFilter($filter, $stream, $this->config->getDecodeMemoryLimit());
                 } catch (Exception $e) {
                     $emsg = $e->getMessage();
                     if ((('~' == $emsg[0]) && !$this->cfg['ignore_missing_filter_decoders'])
@@ -538,7 +537,7 @@ class RawDataParser
             $offset = $element[2];
             // decode stream using stream's dictionary information
             if ($decoding && ('stream' === $element[0]) && (isset($objContentArr[($i - 1)][0])) && ('<<' === $objContentArr[($i - 1)][0])) {
-                $element[3] = $this->decodeStream($pdfData, $xref, $objContentArr[($i - 1)][1], $element[1], $this->config->getDecodeMemoryLimit());
+                $element[3] = $this->decodeStream($pdfData, $xref, $objContentArr[($i - 1)][1], $element[1]);
             }
             $objContentArr[$i] = $element;
             ++$i;

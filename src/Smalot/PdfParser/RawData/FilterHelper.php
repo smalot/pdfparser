@@ -56,7 +56,7 @@ class FilterHelper
      *
      * @throws Exception if a certain decode function is not implemented yet
      */
-    public function decodeFilter(string $filter, string $data, $decodeMemoryLimit): string
+    public function decodeFilter(string $filter, string $data, $decodeMemoryLimit=0): string
     {
         switch ($filter) {
             case 'ASCIIHexDecode':
