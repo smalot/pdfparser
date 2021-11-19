@@ -142,6 +142,8 @@ class PageTest extends TestCase
     }
 
     /**
+     * @group memory-heavy
+     *
      * @see https://github.com/smalot/pdfparser/pull/457
      */
     public function testGetTextPullRequest457()
