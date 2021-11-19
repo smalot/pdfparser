@@ -236,7 +236,7 @@ class Page extends PDFObject
     {
         if (\array_key_exists('Producer', $this->document->getDetails()) &&
             \is_string($this->document->getDetails()['Producer']) &&
-            0 === strncmp($this->document->getDetails()['Producer'], 'FPDF', \strlen('FPDF'))) {
+            0 === strncmp($this->document->getDetails()['Producer'], 'FPDF', 4)) {
             return true;
         }
 
