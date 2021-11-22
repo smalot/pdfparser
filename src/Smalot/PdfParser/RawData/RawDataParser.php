@@ -269,8 +269,11 @@ class RawDataParser
             ) {
                 $valid_crs = true;
             } elseif (('/' == $v[0]) && ('Index' == $v[1]) && (isset($sarr[($k + 1)]))) {
-                // first object number in the subsection
-                $index_first = (int) ($sarr[($k + 1)][1][0][1]);
+                // initialize list for: first object number in the subsection / number of objects
+                $index_blocks = [];
+                for ($m = 0; $m < \count($sarr[($k + 1)][1]); $m += 2) {
+                    $index_blocks[] = [$sarr[($k + 1)][1][$m][1], $sarr[($k + 1)][1][$m + 1][1]];
+                }
             } elseif (('/' == $v[0]) && ('Prev' == $v[1]) && (isset($sarr[($k + 1)]) && ('numeric' == $sarr[($k + 1)][0]))) {
                 // get previous xref offset
                 $prevxref = (int) ($sarr[($k + 1)][1]);
@@ -432,8 +435,9 @@ class RawDataParser
             }
 
             // fill xref
-            if (isset($index_first)) {
-                $obj_num = $index_first;
+            if (isset($index_blocks)) {
+                // load the first object number of the first /Index entry
+                $obj_num = $index_blocks[0][0];
             } else {
                 $obj_num = 0;
             }
@@ -463,6 +467,21 @@ class RawDataParser
                             break;
                 }
                 ++$obj_num;
+                if (isset($index_blocks)) {
+                    // reduce the number of remaining objects
+                    --$index_blocks[0][1];
+                    if (0 == $index_blocks[0][1]) {
+                        // remove the actual used /Index entry
+                        array_shift($index_blocks);
+                        if (0 < \count($index_blocks)) {
+                            // load the first object number of the following /Index entry
+                            $obj_num = $index_blocks[0][0];
+                        } else {
+                            // if there are no more entries, remove $index_blocks to avoid actions on an empty array
+                            unset($index_blocks);
+                        }
+                    }
+                }
             }
         } // end decoding data
         if (isset($prevxref)) {
