@@ -78,9 +78,9 @@ class RawDataParser
     /**
      * Decode the specified stream.
      *
-     * @param string $pdfData           PDF data
-     * @param array  $sdic              Stream's dictionary array
-     * @param string $stream            Stream to decode
+     * @param string $pdfData PDF data
+     * @param array  $sdic    Stream's dictionary array
+     * @param string $stream  Stream to decode
      *
      * @return array containing decoded stream data and remaining filters
      *
