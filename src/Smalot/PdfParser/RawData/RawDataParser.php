@@ -126,7 +126,7 @@ class RawDataParser
         foreach ($filters as $filter) {
             if (\in_array($filter, $this->filterHelper->getAvailableFilters())) {
                 try {
-                    $stream = $this->filterHelper->decodeFilter($filter, $stream);
+                    $stream = $this->filterHelper->decodeFilter($filter, $stream, $this->config->getDecodeMemoryLimit());
                 } catch (Exception $e) {
                     $emsg = $e->getMessage();
                     if ((('~' == $emsg[0]) && !$this->cfg['ignore_missing_filter_decoders'])

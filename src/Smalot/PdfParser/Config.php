@@ -61,6 +61,13 @@ class Config
      */
     private $retainImageContent = true;
 
+    /**
+     * Memory limit to use when de-compressing files, in bytes.
+     *
+     * @var int
+     */
+    private $decodeMemoryLimit = 0;
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -99,5 +106,15 @@ class Config
     public function setRetainImageContent(bool $retainImageContent): void
     {
         $this->retainImageContent = $retainImageContent;
+    }
+
+    public function getDecodeMemoryLimit(): int
+    {
+        return $this->decodeMemoryLimit;
+    }
+
+    public function setDecodeMemoryLimit(int $decodeMemoryLimit): void
+    {
+        $this->decodeMemoryLimit = $decodeMemoryLimit;
     }
 }
