@@ -381,86 +381,133 @@ class Font extends PDFObject
     public function decodeContent(string $text, ?bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
-            $bytes = $this->tableSizes['from'];
-
-            if ($bytes) {
-                $result = '';
-                $length = \strlen($text);
-
-                for ($i = 0; $i < $length; $i += $bytes) {
-                    $char = substr($text, $i, $bytes);
-
-                    if (false !== ($decoded = $this->translateChar($char, false))) {
-                        $char = $decoded;
-                    } elseif ($this->has('DescendantFonts')) {
-                        if ($this->get('DescendantFonts') instanceof PDFObject) {
-                            $fonts = $this->get('DescendantFonts')->getHeader()->getElements();
-                        } else {
-                            $fonts = $this->get('DescendantFonts')->getContent();
-                        }
-                        $decoded = false;
-
-                        foreach ($fonts as $font) {
-                            if ($font instanceof self) {
-                                if (false !== ($decoded = $font->translateChar($char, false))) {
-                                    $decoded = mb_convert_encoding($decoded, 'UTF-8', 'Windows-1252');
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (false !== $decoded) {
-                            $char = $decoded;
-                        } else {
-                            $char = mb_convert_encoding($char, 'UTF-8', 'Windows-1252');
-                        }
-                    } else {
-                        $char = self::MISSING;
-                    }
-
-                    $result .= $char;
-                }
-
-                $text = $result;
-            }
-        } elseif ($this->has('Encoding') && $this->get('Encoding') instanceof Encoding) {
-            /** @var Encoding $encoding */
-            $encoding = $this->get('Encoding');
-            $unicode = mb_check_encoding($text, 'UTF-8');
-            $result = '';
-            if ($unicode) {
-                $chars = preg_split(
-                        '//s'.($unicode ? 'u' : ''),
-                        $text,
-                        -1,
-                        \PREG_SPLIT_DELIM_CAPTURE | \PREG_SPLIT_NO_EMPTY
-                );
-
-                foreach ($chars as $char) {
-                    $dec_av = hexdec(bin2hex($char));
-                    $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= self::uchr($dec_ap ?? $dec_av);
-                }
-            } else {
-                $length = \strlen($text);
-
-                for ($i = 0; $i < $length; ++$i) {
-                    $dec_av = hexdec(bin2hex($text[$i]));
-                    $dec_ap = $encoding->translateChar($dec_av);
-                    $result .= self::uchr($dec_ap ?? $dec_av);
-                }
-            }
-            $text = $result;
-        } elseif ($this->get('Encoding') instanceof Element &&
-                  $this->get('Encoding')->equals('MacRomanEncoding')) {
-            // mb_convert_encoding does not support MacRoman/macintosh,
-            // so we use iconv() here
-            $text = iconv('macintosh', 'UTF-8', $text);
-        } elseif (!mb_check_encoding($text, 'UTF-8')) {
-            // don't double-encode strings already in UTF-8
-            $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+            return $this->decodeContentToUnicode($text);
         }
 
+        if ($this->has('Encoding')) {
+            $encoding = $this->get('Encoding');
+
+            if ($encoding instanceof PDFObject) {
+                $encoding = $this->createEncodingByPdfObject($encoding);
+            }
+
+            if ($encoding instanceof Encoding) {
+                return $this->decodeContentByEncoding($text, $unicode, $encoding);
+            }
+
+            if ($encoding instanceof Element && $encoding->equals('MacRomanEncoding')) {
+                // mb_convert_encoding does not support MacRoman/macintosh,
+                // so we use iconv() here
+                return iconv('macintosh', 'UTF-8', $text);
+            }
+        }
+
+        return $this->decodeContentToUtf8IfNecessary($text);
+    }
+
+    /**
+     * @param string $text
+     * @return string
+     */
+    private function decodeContentToUnicode(string $text): string
+    {
+        $bytes = $this->tableSizes['from'];
+
+        if ($bytes) {
+            $result = '';
+            $length = \strlen($text);
+
+            for ($i = 0; $i < $length; $i += $bytes) {
+                $char = substr($text, $i, $bytes);
+
+                if (false !== ($decoded = $this->translateChar($char, false))) {
+                    $char = $decoded;
+                } elseif ($this->has('DescendantFonts')) {
+                    if ($this->get('DescendantFonts') instanceof PDFObject) {
+                        $fonts = $this->get('DescendantFonts')->getHeader()->getElements();
+                    } else {
+                        $fonts = $this->get('DescendantFonts')->getContent();
+                    }
+                    $decoded = false;
+
+                    foreach ($fonts as $font) {
+                        if ($font instanceof self) {
+                            if (false !== ($decoded = $font->translateChar($char, false))) {
+                                $decoded = mb_convert_encoding($decoded, 'UTF-8', 'Windows-1252');
+                                break;
+                            }
+                        }
+                    }
+
+                    if (false !== $decoded) {
+                        $char = $decoded;
+                    } else {
+                        $char = mb_convert_encoding($char, 'UTF-8', 'Windows-1252');
+                    }
+                } else {
+                    $char = self::MISSING;
+                }
+
+                $result .= $char;
+            }
+
+            $text = $result;
+        }
         return $text;
+    }
+
+    /**
+     * @param string $text
+     * @param bool $unicode
+     * @param Encoding $encoding
+     * @return string
+     */
+    private function decodeContentByEncoding(string $text, ?bool $unicode, Encoding $encoding): string
+    {
+        $unicode = mb_check_encoding($text, 'UTF-8');
+        $result = '';
+        if ($unicode) {
+            $chars = preg_split(
+                '//s' . ($unicode ? 'u' : ''),
+                $text,
+                -1,
+                \PREG_SPLIT_DELIM_CAPTURE | \PREG_SPLIT_NO_EMPTY
+            );
+
+            foreach ($chars as $char) {
+                $dec_av = hexdec(bin2hex($char));
+                $dec_ap = $encoding->translateChar($dec_av);
+                $result .= self::uchr($dec_ap ?? $dec_av);
+            }
+        } else {
+            $length = \strlen($text);
+
+            for ($i = 0; $i < $length; ++$i) {
+                $dec_av = hexdec(bin2hex($text[$i]));
+                $dec_ap = $encoding->translateChar($dec_av);
+                $result .= self::uchr($dec_ap ?? $dec_av);
+            }
+        }
+
+        return $result;
+    }
+
+    private function decodeContentToUtf8IfNecessary($text)
+    {
+        if (mb_check_encoding($text, 'UTF-8')) {
+            return $text;
+        }
+
+        return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+    }
+
+    private function createEncodingByPdfObject(PDFObject $PDFObject): Encoding
+    {
+        $document = $PDFObject->getDocument();
+        $header = $PDFObject->getHeader();
+        $content = $PDFObject->getContent();
+        $config = $PDFObject->getConfig();
+
+        return new Encoding($document, $header, $content, $config);
     }
 }

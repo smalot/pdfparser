@@ -87,9 +87,19 @@ class PDFObject
     {
     }
 
+    public function getDocument(): Document
+    {
+        return $this->document;
+    }
+
     public function getHeader(): ?Header
     {
         return $this->header;
+    }
+
+    public function getConfig(): ?Config
+    {
+        return $this->config;
     }
 
     /**
