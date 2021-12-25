@@ -388,7 +388,7 @@ class Font extends PDFObject
             $encoding = $this->get('Encoding');
 
             if ($encoding instanceof PDFObject) {
-                $encoding = $this->createEncodingByPdfObject($encoding);
+                $encoding = $this->createInitializedEncodingByPdfObject($encoding);
             }
 
             if ($encoding instanceof Encoding) {
@@ -501,6 +501,15 @@ class Font extends PDFObject
         return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
     }
 
+    private function createInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
+    {
+        $encoding = $this->createEncodingByPdfObject($PDFObject);
+
+        $this->initEncoding($encoding);
+
+        return $encoding;
+    }
+
     private function createEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
         $document = $PDFObject->getDocument();
@@ -509,5 +518,11 @@ class Font extends PDFObject
         $config = $PDFObject->getConfig();
 
         return new Encoding($document, $header, $content, $config);
+    }
+
+    private function initEncoding(Encoding $encoding)
+    {
+        $encoding->getHeader()->init();
+        $encoding->init();
     }
 }
