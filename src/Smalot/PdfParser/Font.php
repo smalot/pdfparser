@@ -500,7 +500,7 @@ class Font extends PDFObject
 
     private function getInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
-        if ($this->initializedEncodingByPdfObject) {
+        if (!$this->initializedEncodingByPdfObject) {
             $this->initializedEncodingByPdfObject = $this->createInitializedEncodingByPdfObject($PDFObject);
         }
 
