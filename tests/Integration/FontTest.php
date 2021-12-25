@@ -340,14 +340,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));
-
-        $commands = [
-            [
-                't' => '<',
-                'c' => 'C3A6C3B6C3BC', //Unicode encoded string
-            ],
-        ];
-        $this->assertEquals('æöü', $font->decodeText($commands));
     }
 
     /**
