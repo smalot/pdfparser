@@ -462,7 +462,7 @@ class Font extends PDFObject
      * @param Encoding $encoding
      * @return string
      */
-    private function decodeContentByEncoding(string $text, ?bool $unicode, Encoding $encoding): string
+    private function decodeContentByEncoding(string $text, ?bool &$unicode, Encoding $encoding): string
     {
         $unicode = mb_check_encoding($text, 'UTF-8');
         $result = '';
