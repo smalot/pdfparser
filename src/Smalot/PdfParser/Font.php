@@ -57,6 +57,9 @@ class Font extends PDFObject
      */
     private static $uchrCache = [];
 
+    /** @var Encoding */
+    private $initializedEncodingByPdfObject;
+
     public function init()
     {
         // Load translate table.
@@ -388,27 +391,29 @@ class Font extends PDFObject
             $encoding = $this->get('Encoding');
 
             if ($encoding instanceof PDFObject) {
-                $encoding = $this->createInitializedEncodingByPdfObject($encoding);
+                $encoding = $this->getInitializedEncodingByPdfObject($encoding);
             }
 
             if ($encoding instanceof Encoding) {
-                return $this->decodeContentByEncoding($text, $unicode, $encoding);
+                return $this->decodeContentByEncoding($text, $encoding);
             }
 
-            if ($encoding instanceof Element && $encoding->equals('MacRomanEncoding')) {
+            if ($encoding instanceof Element) {
+                $pdfEncodingName = $encoding->getContent();
+
                 // mb_convert_encoding does not support MacRoman/macintosh,
                 // so we use iconv() here
-                return iconv('macintosh', 'UTF-8', $text);
+                $iconvEncodingName = $this->getIconvEncodingNameOrNullByPdfEncodingName($pdfEncodingName);
+
+                if ($iconvEncodingName) {
+                    return iconv($iconvEncodingName, 'UTF-8', $text);
+                }
             }
         }
 
         return $this->decodeContentToUtf8IfNecessary($text);
     }
 
-    /**
-     * @param string $text
-     * @return string
-     */
     private function decodeContentToUnicode(string $text): string
     {
         $bytes = $this->tableSizes['from'];
@@ -453,43 +458,35 @@ class Font extends PDFObject
 
             $text = $result;
         }
+
         return $text;
     }
 
-    /**
-     * @param string $text
-     * @param bool $unicode
-     * @param Encoding $encoding
-     * @return string
-     */
-    private function decodeContentByEncoding(string $text, ?bool &$unicode, Encoding $encoding): string
+    private function decodeContentByEncoding(string $text, Encoding $encoding): string
     {
-        $unicode = mb_check_encoding($text, 'UTF-8');
         $result = '';
-        if ($unicode) {
-            $chars = preg_split(
-                '//s' . ($unicode ? 'u' : ''),
-                $text,
-                -1,
-                \PREG_SPLIT_DELIM_CAPTURE | \PREG_SPLIT_NO_EMPTY
-            );
+        $length = \strlen($text);
 
-            foreach ($chars as $char) {
-                $dec_av = hexdec(bin2hex($char));
-                $dec_ap = $encoding->translateChar($dec_av);
-                $result .= self::uchr($dec_ap ?? $dec_av);
-            }
-        } else {
-            $length = \strlen($text);
-
-            for ($i = 0; $i < $length; ++$i) {
-                $dec_av = hexdec(bin2hex($text[$i]));
-                $dec_ap = $encoding->translateChar($dec_av);
-                $result .= self::uchr($dec_ap ?? $dec_av);
-            }
+        for ($i = 0; $i < $length; ++$i) {
+            $dec_av = hexdec(bin2hex($text[$i]));
+            $dec_ap = $encoding->translateChar($dec_av);
+            $result .= self::uchr($dec_ap ?? $dec_av);
         }
 
         return $result;
+    }
+
+    private function getIconvEncodingNameOrNullByPdfEncodingName(string $pdfEncodingName): ?string
+    {
+        $pdfToIconvEncodingNameMap = [
+            'StandardEncoding' => 'ISO-8859-1',
+            'MacRomanEncoding' => 'MACINTOSH',
+            'WinAnsiEncoding' => 'CP1252',
+        ];
+
+        return \array_key_exists($pdfEncodingName, $pdfToIconvEncodingNameMap)
+            ? $pdfToIconvEncodingNameMap[$pdfEncodingName]
+            : null;
     }
 
     private function decodeContentToUtf8IfNecessary($text)
@@ -499,6 +496,15 @@ class Font extends PDFObject
         }
 
         return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+    }
+
+    private function getInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
+    {
+        if ($this->initializedEncodingByPdfObject) {
+            $this->initializedEncodingByPdfObject = $this->createInitializedEncodingByPdfObject($PDFObject);
+        }
+
+        return $this->initializedEncodingByPdfObject;
     }
 
     private function createInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
