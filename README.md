@@ -1,4 +1,4 @@
-# PdfParser
+# PdfParser #
 
 Pdf Parser, a standalone PHP library, provides various tools to extract data from a PDF file.
 
@@ -18,40 +18,40 @@ Test the API on our [demo page](https://www.pdfparser.org/demo).
 
 This project is supported by [Actualys](http://www.actualys.com).
 
-## Features
+## Features ##
 
 Features included :
 
--   Load/parse objects and headers
--   Extract meta data (author, description, ...)
--   Extract text from ordered pages
--   Support of compressed pdf
--   Support of MAC OS Roman charset encoding
--   Handling of hexa and octal encoding in text sections
--   PSR-0 compliant ([autoloader](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md))
--   PSR-1 compliant ([code styling](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md))
+- Load/parse objects and headers
+- Extract meta data (author, description, ...)
+- Extract text from ordered pages
+- Support of compressed pdf
+- Support of MAC OS Roman charset encoding
+- Handling of hexa and octal encoding in text sections
+- PSR-0 compliant ([autoloader](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md))
+- PSR-1 compliant ([code styling](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md))
 
 Currently, secured documents are not supported.
 
 **This Library is under active maintenance.**
 There is no active development by the author of this library (at the moment), but we welcome any pull request adding/extending functionality!
 
-## Documentation
+## Documentation ##
 
 [Read the documentation on website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
 
 Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 
-For Base64 Encoded PDFs see [DEVELOPER.md](DEVELOPER.md)
+### For developers
 
-**For developers**: Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library.
+Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library. Here you will also find information about how to handle Base63 encoded PDFs.
 
 ## Installation
 
 ### Using Composer
 
--   Obtain [Composer](https://getcomposer.org)
--   Run `composer require smalot/pdfparser`
+* Obtain [Composer](https://getcomposer.org)
+* Run `composer require smalot/pdfparser`
 
 ### Use alternate file loader
 
@@ -59,6 +59,6 @@ In case you can't use Composer, you can include `alt_autoload.php-dist` into you
 It will load all required files at once.
 Afterwards you can use `PDFParser` class and others.
 
-## License
+## License ##
 
 This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).
