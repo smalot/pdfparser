@@ -88,13 +88,6 @@ class Parser
         return $this->parseContent($content);
     }
 
-    // This function parses a base 64 enconded pdf instead of a file
-    public function parseB64(string $base64EncodedPdf): Document
-    {
-        $decoded = base64_decode($base64EncodedPdf);
-        return $this->parseContent($decoded);
-    }
-
     /**
      * @param string $content PDF content to parse
      *
