@@ -60,7 +60,7 @@ class Font extends PDFObject
 
     /**
      * In some pdf-files (@see https://github.com/smalot/pdfparser/pull/500) encoding could be referenced by object id
-     * but object itself not contains `/Type /Encoding` in its dictionary. That objects wouldn't be initialized as
+     * but object itself not contains `/Type /Encoding` in its dictionary. These objects wouldn't be initialized as
      * Encoding in \Smalot\PdfParser\PDFObject::factory() during file parsing (they would be just PDFObject).
      *
      * Therefore, we create Encoding instance from them during decoding and cache this value in this property.
@@ -462,17 +462,17 @@ class Font extends PDFObject
     {
         $encoding = $this->get('Encoding');
 
-        // When Encoding referenced by object id but object itself not contains `/Type /Encoding` in it's dictionary.
+        // When Encoding referenced by object id (/Encoding 520 0 R) but object itself does not contain `/Type /Encoding` in it's dictionary.
         if ($encoding instanceof PDFObject) {
             $encoding = $this->getInitializedEncodingByPdfObject($encoding);
         }
 
-        // When Encoding contains `/Type /Encoding` in it's dictionary.
+        // When Encoding referenced by object id (/Encoding 520 0 R) but object itself contains `/Type /Encoding` in it's dictionary.
         if ($encoding instanceof Encoding) {
             return $this->decodeContentByEncodingEncoding($text, $encoding);
         }
 
-        // When Encoding is just String
+        // When Encoding is just string (/Encoding /WinAnsiEncoding)
         if ($encoding instanceof Element) { //todo: ElementString class must by used?
             return $this->decodeContentByEncodingElement($text, $encoding);
         }
