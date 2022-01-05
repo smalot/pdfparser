@@ -77,12 +77,12 @@ class Font extends PDFObject
 
     public function getName(): string
     {
-        return $this->has('BaseFont') ? (string)$this->get('BaseFont') : '[Unknown]';
+        return $this->has('BaseFont') ? (string) $this->get('BaseFont') : '[Unknown]';
     }
 
     public function getType(): string
     {
-        return (string)$this->header->get('Subtype');
+        return (string) $this->header->get('Subtype');
     }
 
     public function getDetails(bool $deep = true): array
@@ -91,7 +91,7 @@ class Font extends PDFObject
 
         $details['Name'] = $this->getName();
         $details['Type'] = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
+        $details['Encoding'] = ($this->has('Encoding') ? (string) $this->get('Encoding') : 'Ansi');
 
         $details += parent::getDetails($deep);
 
@@ -351,13 +351,13 @@ class Font extends PDFObject
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if ((float)(trim($command[PDFObject::COMMAND])) < $font_space) {
+                    if ((float) (trim($command[PDFObject::COMMAND])) < $font_space) {
                         $word_position = \count($words);
                     }
                     continue 2;
                 case '<':
                     // Decode hexadecimal.
-                    $text = self::decodeHexadecimal('<' . $command[PDFObject::COMMAND] . '>');
+                    $text = self::decodeHexadecimal('<'.$command[PDFObject::COMMAND].'>');
                     break;
 
                 default:
@@ -457,9 +457,6 @@ class Font extends PDFObject
 
     /**
      * Decode content by any type of Encoding (dictionary's item) instance.
-     *
-     * @param string $text
-     * @return string|null
      */
     private function decodeContentByEncoding(string $text): ?string
     {
@@ -481,7 +478,7 @@ class Font extends PDFObject
         }
 
         // Encoding has unintended type.
-        $encodingClassName = get_class($encoding);
+        $encodingClassName = \get_class($encoding);
         throw new LogicException("Unknown encoding instance type: {$encodingClassName}");
     }
 
@@ -496,10 +493,6 @@ class Font extends PDFObject
 
     /**
      * Decode content when Encoding is instance of Encoding.
-     *
-     * @param string $text
-     * @param Encoding $encoding
-     * @return string
      */
     private function decodeContentByEncodingEncoding(string $text, Encoding $encoding): string
     {
@@ -517,10 +510,6 @@ class Font extends PDFObject
 
     /**
      * Decode content when Encoding is instance of Element.
-     *
-     * @param string $text
-     * @param Element $encoding
-     * @return string|null
      */
     private function decodeContentByEncodingElement(string $text, Element $encoding): ?string
     {
@@ -535,9 +524,6 @@ class Font extends PDFObject
 
     /**
      * Convert PDF encoding name to iconv-known encoding name.
-     *
-     * @param string $pdfEncodingName
-     * @return string|null
      */
     private function getIconvEncodingNameOrNullByPdfEncodingName(string $pdfEncodingName): ?string
     {
@@ -564,9 +550,6 @@ class Font extends PDFObject
 
     /**
      * Create Encoding instance by PDFObject instance and init it.
-     *
-     * @param PDFObject $PDFObject
-     * @return Encoding
      */
     private function createInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
@@ -578,9 +561,6 @@ class Font extends PDFObject
 
     /**
      * Create Encoding instance by PDFObject instance (without init).
-     *
-     * @param PDFObject $PDFObject
-     * @return Encoding
      */
     private function createEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
