@@ -30,6 +30,7 @@
 
 namespace Smalot\PdfParser;
 
+use LogicException;
 use Smalot\PdfParser\Encoding\WinAnsiEncoding;
 use Smalot\PdfParser\Exception\EncodingNotFoundException;
 
@@ -57,7 +58,15 @@ class Font extends PDFObject
      */
     private static $uchrCache = [];
 
-    /** @var Encoding */
+    /**
+     * In some pdf-files (@see https://github.com/smalot/pdfparser/pull/500) encoding could be referenced by object id
+     * but object itself not contains `/Type /Encoding` in its dictionary. That objects wouldn't be initialized as
+     * Encoding in \Smalot\PdfParser\PDFObject::factory() during file parsing (they would be just PDFObject).
+     *
+     * Therefore, we create Encoding instance from them during decoding and cache this value in this property.
+     *
+     * @var Encoding
+     */
     private $initializedEncodingByPdfObject;
 
     public function init()
@@ -68,12 +77,12 @@ class Font extends PDFObject
 
     public function getName(): string
     {
-        return $this->has('BaseFont') ? (string) $this->get('BaseFont') : '[Unknown]';
+        return $this->has('BaseFont') ? (string)$this->get('BaseFont') : '[Unknown]';
     }
 
     public function getType(): string
     {
-        return (string) $this->header->get('Subtype');
+        return (string)$this->header->get('Subtype');
     }
 
     public function getDetails(bool $deep = true): array
@@ -82,7 +91,7 @@ class Font extends PDFObject
 
         $details['Name'] = $this->getName();
         $details['Type'] = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding') ? (string) $this->get('Encoding') : 'Ansi');
+        $details['Encoding'] = ($this->has('Encoding') ? (string)$this->get('Encoding') : 'Ansi');
 
         $details += parent::getDetails($deep);
 
@@ -342,13 +351,13 @@ class Font extends PDFObject
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if ((float) (trim($command[PDFObject::COMMAND])) < $font_space) {
+                    if ((float)(trim($command[PDFObject::COMMAND])) < $font_space) {
                         $word_position = \count($words);
                     }
                     continue 2;
                 case '<':
                     // Decode hexadecimal.
-                    $text = self::decodeHexadecimal('<'.$command[PDFObject::COMMAND].'>');
+                    $text = self::decodeHexadecimal('<' . $command[PDFObject::COMMAND] . '>');
                     break;
 
                 default:
@@ -384,37 +393,21 @@ class Font extends PDFObject
     public function decodeContent(string $text, ?bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
-            return $this->decodeContentToUnicode($text);
+            return $this->decodeContentByToUnicodeCMap($text);
         }
 
         if ($this->has('Encoding')) {
-            $encoding = $this->get('Encoding');
+            $result = $this->decodeContentByEncoding($text);
 
-            if ($encoding instanceof PDFObject) {
-                $encoding = $this->getInitializedEncodingByPdfObject($encoding);
-            }
-
-            if ($encoding instanceof Encoding) {
-                return $this->decodeContentByEncoding($text, $encoding);
-            }
-
-            if ($encoding instanceof Element) {
-                $pdfEncodingName = $encoding->getContent();
-
-                // mb_convert_encoding does not support MacRoman/macintosh,
-                // so we use iconv() here
-                $iconvEncodingName = $this->getIconvEncodingNameOrNullByPdfEncodingName($pdfEncodingName);
-
-                if ($iconvEncodingName) {
-                    return iconv($iconvEncodingName, 'UTF-8', $text);
-                }
+            if (null !== $result) {
+                return $result;
             }
         }
 
-        return $this->decodeContentToUtf8IfNecessary($text);
+        return $this->decodeContentByAutodetectIfNecessary($text);
     }
 
-    private function decodeContentToUnicode(string $text): string
+    private function decodeContentByToUnicodeCMap(string $text): string
     {
         $bytes = $this->tableSizes['from'];
 
@@ -462,7 +455,53 @@ class Font extends PDFObject
         return $text;
     }
 
-    private function decodeContentByEncoding(string $text, Encoding $encoding): string
+    /**
+     * Decode content by any type of Encoding (dictionary's item) instance.
+     *
+     * @param string $text
+     * @return string|null
+     */
+    private function decodeContentByEncoding(string $text): ?string
+    {
+        $encoding = $this->get('Encoding');
+
+        // When Encoding referenced by object id but object itself not contains `/Type /Encoding` in it's dictionary.
+        if ($encoding instanceof PDFObject) {
+            $encoding = $this->getInitializedEncodingByPdfObject($encoding);
+        }
+
+        // When Encoding contains `/Type /Encoding` in it's dictionary.
+        if ($encoding instanceof Encoding) {
+            return $this->decodeContentByEncodingEncoding($text, $encoding);
+        }
+
+        // When Encoding is just String
+        if ($encoding instanceof Element) { //todo: ElementString class must by used?
+            return $this->decodeContentByEncodingElement($text, $encoding);
+        }
+
+        // Encoding has unintended type.
+        $encodingClassName = get_class($encoding);
+        throw new LogicException("Unknown encoding instance type: {$encodingClassName}");
+    }
+
+    private function getInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
+    {
+        if (!$this->initializedEncodingByPdfObject) {
+            $this->initializedEncodingByPdfObject = $this->createInitializedEncodingByPdfObject($PDFObject);
+        }
+
+        return $this->initializedEncodingByPdfObject;
+    }
+
+    /**
+     * Decode content when Encoding is instance of Encoding.
+     *
+     * @param string $text
+     * @param Encoding $encoding
+     * @return string
+     */
+    private function decodeContentByEncodingEncoding(string $text, Encoding $encoding): string
     {
         $result = '';
         $length = \strlen($text);
@@ -476,6 +515,30 @@ class Font extends PDFObject
         return $result;
     }
 
+    /**
+     * Decode content when Encoding is instance of Element.
+     *
+     * @param string $text
+     * @param Element $encoding
+     * @return string|null
+     */
+    private function decodeContentByEncodingElement(string $text, Element $encoding): ?string
+    {
+        $pdfEncodingName = $encoding->getContent();
+
+        // mb_convert_encoding does not support MacRoman/macintosh,
+        // so we use iconv() here
+        $iconvEncodingName = $this->getIconvEncodingNameOrNullByPdfEncodingName($pdfEncodingName);
+
+        return $iconvEncodingName ? iconv($iconvEncodingName, 'UTF-8', $text) : null;
+    }
+
+    /**
+     * Convert PDF encoding name to iconv-known encoding name.
+     *
+     * @param string $pdfEncodingName
+     * @return string|null
+     */
     private function getIconvEncodingNameOrNullByPdfEncodingName(string $pdfEncodingName): ?string
     {
         $pdfToIconvEncodingNameMap = [
@@ -489,33 +552,36 @@ class Font extends PDFObject
             : null;
     }
 
-    private function decodeContentToUtf8IfNecessary($text)
+    private function decodeContentByAutodetectIfNecessary($text)
     {
         if (mb_check_encoding($text, 'UTF-8')) {
             return $text;
         }
 
         return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+        //todo: Why exactly `Windows-1252` used?
     }
 
-    private function getInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
-    {
-        if (!$this->initializedEncodingByPdfObject) {
-            $this->initializedEncodingByPdfObject = $this->createInitializedEncodingByPdfObject($PDFObject);
-        }
-
-        return $this->initializedEncodingByPdfObject;
-    }
-
+    /**
+     * Create Encoding instance by PDFObject instance and init it.
+     *
+     * @param PDFObject $PDFObject
+     * @return Encoding
+     */
     private function createInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
         $encoding = $this->createEncodingByPdfObject($PDFObject);
-
-        $this->initEncoding($encoding);
+        $encoding->init();
 
         return $encoding;
     }
 
+    /**
+     * Create Encoding instance by PDFObject instance (without init).
+     *
+     * @param PDFObject $PDFObject
+     * @return Encoding
+     */
     private function createEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
         $document = $PDFObject->getDocument();
@@ -524,11 +590,5 @@ class Font extends PDFObject
         $config = $PDFObject->getConfig();
 
         return new Encoding($document, $header, $content, $config);
-    }
-
-    private function initEncoding(Encoding $encoding)
-    {
-        $encoding->getHeader()->init();
-        $encoding->init();
     }
 }
