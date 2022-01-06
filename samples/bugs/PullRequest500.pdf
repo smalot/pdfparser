@@ -1,0 +1,246 @@
+%PDF-1.7 
+
+% root
+115 0 obj 
+<<
+/Type /Catalog
+/Pages 2 0 R 
+>>
+endobj
+
+% pages
+2 0 obj
+<<
+	/Type/Pages
+	/Count 1
+	/Kids [5 0 R]
+>>
+endobj 
+
+% page
+5 0 obj
+<<
+	/Contents 20 0 R
+	/Type /Page
+	/Resources <<
+		/ProcSet 1 0 R
+		/Font <<
+			/F 12 0 R
+			/F0 13 0 R
+			/F1 19 0 R
+			>>
+%		/XObject <<
+%			/R3 16 0 R
+%			/R4 17 0 R
+%			/R5 18 0 R
+%			/R 6 0 R
+%			/R0 11 0 R
+%			/R1 14 0 R
+%			/R2 15 0 R
+%			>>
+		>>
+	/Parent 2 0 R
+%	/Annots [118 0 R]
+	/MediaBox [0 0 600.0 850.0]
+>>
+endobj 
+
+
+% page content
+20 0 obj
+<<
+%	/Filter/FlateDecode
+	/Length 723
+>>
+stream
+BT
+/F 20 Tf
+56.692913 671.69087 Td
+(Export transakèní historie)Tj
+/F0 14 Tf
+0 -20.826 Td
+(Výpis zaúètovaných plateb)Tj
+/F 10 Tf
+0 -42.032 Td
+(Typ produktu: Podnikatelský úèet Maxi)Tj
+0 -13.62 Td
+(Èíslo úètu: 0000000000/0000)Tj
+0 -39.498 Td
+(Poèáteèní zùstatek:)Tj
+169.71559 0 Td
+(000 000,00 Kè)Tj
+/F0 10 Tf
+-169.71559 -13.62 Td
+(Celkem pøišlo:)Tj
+156.92559 0 Td
+(+0 000 000,00 Kè)Tj
+-156.92559 -13.62 Td
+(Celkem odešlo:)Tj
+159.42559 0 Td
+(-0 000 000,00 Kè)Tj
+-159.42559 -13.62 Td
+(Rozdíl:)Tj
+170.96559 0 Td
+(+00 000,00 Kè)Tj
+/F 10 Tf
+-170.96559 -13.62 Td
+(Koneèný zùstatek:)Tj
+169.71559 0 Td
+(000 000,00 Kè)Tj
+/F 9 Tf
+-169.71559 -26.896 Td
+(Cena za služby)Tj
+/F0 9 Tf
+0 -12.258 Td
+(Cena za výbìr hotovosti poboèka ès)Tj
+ET
+endstream
+endobj
+
+
+% encodings
+
+104 0 obj
+<<
+/BaseEncoding /WinAnsiEncoding
+/Differences [160/nbspace 200/Ccaron 216/Rcaron 232/ccaron 236/ecaron 248/rcaron/uring]
+>>
+endobj 
+
+
+% font descriptiors
+
+105 0 obj
+<<
+/Type/FontDescriptor
+/FontName/OpenSans-Bold
+/FontBBox [-74 -240 967 931]
+/Flags 32
+/CapHeight 0
+/Ascent 0
+/Descent 0
+/StemV 50
+/ItalicAngle 0
+/CharSet (/space/parenleft/parenright/plus/comma/hyphen/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/R/S/T/U/V/W/X/Z/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/r/s/t/u/v/x/y/z/zcaron/nbspace/Aacute/Ccaron/Rcaron/aacute/ccaron/eacute/ecaron/iacute/uring/uacute/yacute)
+/FontFile3 106 0 R
+>>
+endobj
+
+
+107 0 obj
+<<
+/Type/FontDescriptor
+/FontName/OpenSans
+/FontBBox [-78 -240 912 931]
+/Flags 32
+/CapHeight 0
+/Ascent 0
+/Descent 0
+/StemV 50
+/ItalicAngle 0
+/CharSet (/space/parenleft/parenright/asterisk/plus/comma/hyphen/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/R/S/T/U/V/W/X/Y/Z/underscore/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/r/s/t/u/v/x/y/z/scaron/zcaron/nbspace/Ccaron/aacute/ccaron/eacute/ecaron/iacute/rcaron/uacute/yacute)
+/FontFile3 108 0 R
+>>
+endobj 
+
+109 0 obj
+<<
+/Type/FontDescriptor
+/FontName/Arial-BoldMT
+/FontBBox [-2 -13 617 729]
+/Flags 32
+/CapHeight 0
+/Ascent 0
+/Descent 0
+/StemV 50
+/ItalicAngle 0
+/CharSet (/space/slash/zero/one/two/three/four/five/six/seven/eight/nine/S/a/n/r/t)
+/FontFile3 110 0 R
+>>
+endobj 
+
+
+
+% fonts
+
+% fonts > F
+
+12 0 obj
+<<
+/Type/Font
+/Subtype/Type1
+/BaseFont/OpenSans-Bold
+/Encoding 104 0 R
+/FirstChar 32
+/LastChar 253
+/Widths [260 0 0 0 0 0 0 0 339 339 0 571 290 322 285 413 571 571 571 571 571 571 571 571 571 571 285 0 0 0 0 0 0 690 672 637 740 560 549 724 765 331 331 664 565 943 813 796 628 0 660 551 579 756 650 967 667 0 579 0 0 0 0 0 0 604 633 514 633 591 387 565 657 305 305 620 305 982 657 619 633 0 454 497 434 657 569 0 578 569 488 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 488 0 260 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 690 0 0 0 0 0 0 637 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 660 0 0 0 0 0 0 0 0 604 0 0 0 0 0 0 514 591 0 0 591 305 0 0 0 0 0 0 0 0 0 0 0 657 657 0 0 569]
+/FontDescriptor 105 0 R
+>>
+endobj 
+
+
+% fonts > F0
+
+13 0 obj
+<<
+/Type/Font
+/Subtype/Type1
+/BaseFont/OpenSans
+/Encoding 104 0 R
+/FirstChar 32
+/LastChar 253
+/Widths [260 0 0 0 0 0 0 0 296 296 552 572 245 322 266 367 572 572 572 572 572 572 572 572 572 572 266 0 0 0 0 0 0 633 648 631 729 556 516 728 738 279 267 614 519 903 754 779 602 0 618 549 553 728 595 926 577 560 571 0 0 0 0 448 0 556 613 476 613 561 339 548 614 253 253 525 253 930 614 604 613 0 408 477 353 614 501 0 524 504 468 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 477 0 0 0 468 0 260 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 631 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 556 0 0 0 0 0 0 476 561 0 0 561 253 0 0 0 0 0 0 0 0 0 0 408 0 614 0 0 504]
+/FontDescriptor 107 0 R
+>>
+endobj 
+
+% fonts > F1
+
+19 0 obj
+<<
+/Type/Font
+/Subtype/Type1
+/BaseFont/Arial-BoldMT
+/Encoding 104 0 R
+/FirstChar 32
+/LastChar 116
+/Widths [278 0 0 0 0 0 0 0 0 0 0 0 0 0 0 278 556 556 556 556 556 556 556 556 556 556 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 667 0 0 0 0 0 0 0 0 0 0 0 0 0 556 0 0 0 0 0 0 0 0 0 0 0 0 611 0 0 0 389 0 333]
+/FontDescriptor 109 0 R
+>>
+endobj 
+
+
+
+
+xref
+0 1
+0000000000 65535 f 
+2 1
+0000000080 00000 n 
+5 1
+0000000148 00000 n 
+12 2
+0000002783 00000 n 
+0000003556 00000 n 
+19 2
+0000004327 00000 n 
+0000000502 00000 n 
+104 1
+0000001314 00000 n 
+0000001480 00000 n 
+107 1
+0000001980 00000 n 
+109 1
+0000002491 00000 n 
+115 1
+0000000018 00000 n 
+
+trailer
+<<
+/Size 10
+/Root 115 0 R
+>> 
+
+startxref
+4687
+%%EOF
