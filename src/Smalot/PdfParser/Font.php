@@ -59,13 +59,15 @@ class Font extends PDFObject
     private static $uchrCache = [];
 
     /**
-     * In some pdf-files (@see https://github.com/smalot/pdfparser/pull/500) encoding could be referenced by object id
-     * but object itself not contains `/Type /Encoding` in its dictionary. These objects wouldn't be initialized as
-     * Encoding in \Smalot\PdfParser\PDFObject::factory() during file parsing (they would be just PDFObject).
+     * In some PDF-files encoding could be referenced by object id but object itself does not contain
+     * `/Type /Encoding` in its dictionary. These objects wouldn't be initialized as Encoding in
+     * \Smalot\PdfParser\PDFObject::factory() during file parsing (they would be just PDFObject).
      *
-     * Therefore, we create Encoding instance from them during decoding and cache this value in this property.
+     * Therefore, we create an instance of Encoding from them during decoding and cache this value in this property.
      *
      * @var Encoding
+     *
+     * @see https://github.com/smalot/pdfparser/pull/500
      */
     private $initializedEncodingByPdfObject;
 
