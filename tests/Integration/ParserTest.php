@@ -53,7 +53,7 @@ class ParserTest extends TestCase
      *
      * @group memory-heavy
      */
-    public function testParseFile()
+    public function testParseFile(): void
     {
         $directory = $this->rootDir.'/samples/bugs';
 
@@ -89,7 +89,7 @@ class ParserTest extends TestCase
      *
      * @todo the other languages in the test document need work because of issues with UTF-16 decoding (Chinese, Japanese) and missing right-to-left language support
      */
-    public function testUnicodeDecoding()
+    public function testUnicodeDecoding(): void
     {
         $filename = $this->rootDir.'/samples/InternationalChars.pdf';
 
@@ -115,7 +115,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/336
      */
-    public function testIssue19()
+    public function testIssue19(): void
     {
         $fixture = new ParserSub();
         $structure = [
@@ -158,7 +158,7 @@ class ParserTest extends TestCase
      * @see https://github.com/smalot/pdfparser/issues/202
      * @see https://github.com/smalot/pdfparser/pull/257
      */
-    public function testIssue202()
+    public function testIssue202(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue202.pdf';
 
@@ -172,7 +172,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/267
      */
-    public function testIssue267()
+    public function testIssue267(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue267_array_access_on_int.pdf';
 
@@ -189,7 +189,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/322
      */
-    public function testIssue322()
+    public function testIssue322(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue322.pdf';
 
@@ -208,7 +208,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/334
      */
-    public function testIssue334()
+    public function testIssue334(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue334.pdf';
 
@@ -223,7 +223,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/359
      */
-    public function testIssue359()
+    public function testIssue359(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue359.pdf';
 
@@ -250,7 +250,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/391
      */
-    public function testIssue391()
+    public function testIssue391(): void
     {
         /**
          * PDF provided by @dhildreth for usage in our test environment.
@@ -273,7 +273,7 @@ class ParserTest extends TestCase
      *
      * Test is based on testIssue359 (above).
      */
-    public function testChangedFontSpaceLimit()
+    public function testChangedFontSpaceLimit(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue359.pdf';
 
@@ -290,7 +290,7 @@ class ParserTest extends TestCase
      * Tests if a given Config object is really used.
      * Or if a default one is generated, if null was given.
      */
-    public function testUsageOfConfigObject()
+    public function testUsageOfConfigObject(): void
     {
         // check default
         $this->fixture = new Parser([]);
@@ -314,7 +314,7 @@ class ParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/104#issuecomment-883422508
      */
-    public function testRetainImageContentImpact()
+    public function testRetainImageContentImpact(): void
     {
         if (version_compare(\PHP_VERSION, '7.3.0', '<')) {
             $this->markTestSkipped('Garbage collection doesn\'t work reliably enough for this test in PHP < 7.3');
@@ -374,7 +374,7 @@ class ParserSub extends Parser
         return $this->parseObject($id, $structure, $document);
     }
 
-    public function getObjects()
+    public function getObjects(): array
     {
         return $this->objects;
     }

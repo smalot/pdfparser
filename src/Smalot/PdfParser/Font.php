@@ -117,6 +117,9 @@ class Font extends PDFObject
         return $use_default ? self::MISSING : $fallbackDecoded;
     }
 
+    /**
+     * Convert unicode character code to "utf-8" encoded string.
+     */
     public static function uchr(int $code): string
     {
         if (!isset(self::$uchrCache[$code])) {
@@ -128,6 +131,9 @@ class Font extends PDFObject
         return self::$uchrCache[$code];
     }
 
+    /**
+     * Init internal chars translation table by ToUnicode CMap.
+     */
     public function loadTranslateTable(): array
     {
         if (null !== $this->table) {
@@ -236,11 +242,21 @@ class Font extends PDFObject
         return $this->table;
     }
 
+    /**
+     * Set custom char translation table where:
+     * - key - integer character code;
+     * - value - "utf-8" encoded value;
+     *
+     * @return void
+     */
     public function setTable(array $table)
     {
         $this->table = $table;
     }
 
+    /**
+     * Decode hexadecimal encoded string. If $add_braces is true result value would be wrapped by parentheses.
+     */
     public static function decodeHexadecimal(string $hexa, bool $add_braces = false): string
     {
         // Special shortcut for XML content.
@@ -274,6 +290,9 @@ class Font extends PDFObject
         return $text;
     }
 
+    /**
+     * Decode string with octal-decoded chunks.
+     */
     public static function decodeOctal(string $text): string
     {
         $parts = preg_split('/(\\\\[0-7]{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
@@ -290,6 +309,9 @@ class Font extends PDFObject
         return $text;
     }
 
+    /**
+     * Decode string with html entity encoded chars.
+     */
     public static function decodeEntities(string $text): string
     {
         $parts = preg_split('/(#\d{2})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
@@ -306,6 +328,13 @@ class Font extends PDFObject
         return $text;
     }
 
+    /**
+     * Check if given string is Unicode text (by BOM);
+     * If true - decode to "utf-8" encoded string.
+     * Otherwise - return text as is.
+     *
+     * @todo Rename in next major release to make the name correspond to reality (for ex. decodeIfUnicode())
+     */
     public static function decodeUnicode(string $text): string
     {
         if (preg_match('/^\xFE\xFF/i', $text)) {
@@ -330,6 +359,9 @@ class Font extends PDFObject
         return $this->config->getFontSpaceLimit();
     }
 
+    /**
+     * Decode text by commands array.
+     */
     public function decodeText(array $commands): string
     {
         $word_position = 0;

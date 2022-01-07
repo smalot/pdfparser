@@ -46,7 +46,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -120,7 +120,7 @@ class ElementTest extends TestCase
         $this->assertEquals(0, \count($elements));
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = $this->getElementInstance(42);
         $content = $element->getContent();
@@ -130,14 +130,14 @@ class ElementTest extends TestCase
         $this->assertEquals(2, \count($element->getContent()));
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = $this->getElementInstance(2);
 
         $this->assertTrue($element->equals(2));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = $this->getElementInstance([$this->getElementInstance(4), $this->getElementInstance(2)]);
 
@@ -145,7 +145,7 @@ class ElementTest extends TestCase
         $this->assertFalse($element->contains(8));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $this->assertEquals((string) $this->getElementInstance('2'), '2');
     }

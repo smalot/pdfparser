@@ -37,7 +37,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementBooleanTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
         $offset = 0;
@@ -102,7 +102,7 @@ class ElementBooleanTest extends TestCase
         $this->assertEquals(7, $offset);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new ElementBoolean('true');
         $this->assertTrue($element->getContent());
@@ -111,7 +111,7 @@ class ElementBooleanTest extends TestCase
         $this->assertFalse($element->getContent());
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new ElementBoolean('true');
         $this->assertTrue($element->equals(true));
@@ -126,7 +126,7 @@ class ElementBooleanTest extends TestCase
         $this->assertFalse($element->equals(null));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new ElementBoolean('true');
         $this->assertTrue($element->contains(true));
@@ -134,7 +134,7 @@ class ElementBooleanTest extends TestCase
         $this->assertFalse($element->contains(1));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $element = new ElementBoolean('true');
         $this->assertEquals('true', (string) $element);

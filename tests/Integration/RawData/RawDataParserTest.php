@@ -64,7 +64,7 @@ class RawDataParserTest extends TestCase
      * @see https://github.com/smalot/pdfparser/issues/372
      * @see https://github.com/smalot/pdfparser/pull/377
      */
-    public function testGetRawObjectIssue372()
+    public function testGetRawObjectIssue372(): void
     {
         // The following $data content is a minimal example to trigger the infinite loop
         $data = '<</Producer (eDkºãa˜þõ‚LÅòÕ�PïÙ��)©)>>';
@@ -98,7 +98,7 @@ class RawDataParserTest extends TestCase
      * @see https://github.com/smalot/pdfparser/issues/392
      * @see https://github.com/smalot/pdfparser/issues/397
      */
-    public function testDecodeXrefStreamIssue356()
+    public function testDecodeXrefStreamIssue356(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue356.pdf';
 
@@ -109,7 +109,7 @@ class RawDataParserTest extends TestCase
         $this->assertStringContainsString('Ημερήσια έκθεση επιδημιολογικής', $pages[0]->getText());
     }
 
-    public function testDecodeObjectHeaderIssue405()
+    public function testDecodeObjectHeaderIssue405(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue405.pdf';
 
@@ -134,7 +134,7 @@ class RawDataParserTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/pull/479
      */
-    public function testDecodeXrefStreamIssue479()
+    public function testDecodeXrefStreamIssue479(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue479.pdf';
 

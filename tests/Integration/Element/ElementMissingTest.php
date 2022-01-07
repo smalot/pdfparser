@@ -37,7 +37,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementMissingTest extends TestCase
 {
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new ElementMissing();
         $this->assertFalse($element->equals(null));
@@ -46,13 +46,13 @@ class ElementMissingTest extends TestCase
         $this->assertFalse($element->equals(false));
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new ElementMissing();
         $this->assertFalse($element->getContent());
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new ElementMissing();
         $this->assertFalse($element->contains(null));
@@ -61,7 +61,7 @@ class ElementMissingTest extends TestCase
         $this->assertFalse($element->contains(false));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $element = new ElementMissing();
         $this->assertEquals('', (string) $element);

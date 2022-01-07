@@ -48,7 +48,7 @@ class HeaderTest extends TestCase
     /**
      * Checks that init function is called for each element.
      */
-    public function testInitHappyPath()
+    public function testInitHappyPath(): void
     {
         $element = $this->createMock(Element::class);
         $element->expects($this->exactly(1))->method('init');
@@ -66,7 +66,7 @@ class HeaderTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
-    public function testInitInvalidElement()
+    public function testInitInvalidElement(): void
     {
         $element = false;
 
@@ -74,7 +74,7 @@ class HeaderTest extends TestCase
         $fixture->init();
     }
 
-    public function testParse()
+    public function testParse(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -108,7 +108,7 @@ class HeaderTest extends TestCase
         $this->assertEquals(1, \count($header->getElements()));
     }
 
-    public function testGetElements()
+    public function testGetElements(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -126,7 +126,7 @@ class HeaderTest extends TestCase
         $this->assertEquals(ElementName::class, $types['Subtype']);
     }
 
-    public function testHas()
+    public function testHas(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -140,7 +140,7 @@ class HeaderTest extends TestCase
         $this->assertFalse($header->has('Text'));
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -157,7 +157,7 @@ class HeaderTest extends TestCase
         $this->assertTrue($header->get('Resources') instanceof ElementMissing);
     }
 
-    public function testResolveXRef()
+    public function testResolveXRef(): void
     {
         $document = $this->getDocumentInstance();
         $content = '<</Type/Page/SubType/Text/Font 5 0 R/Resources 8 0 R>>foo';

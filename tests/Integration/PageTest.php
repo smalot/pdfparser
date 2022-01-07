@@ -40,7 +40,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class PageTest extends TestCase
 {
-    public function testGetFonts()
+    public function testGetFonts(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -74,7 +74,7 @@ class PageTest extends TestCase
         $this->assertEquals(0, \count($fonts));
     }
 
-    public function testGetFontsElementMissing()
+    public function testGetFontsElementMissing(): void
     {
         $headerResources = $this->getMockBuilder('Smalot\PdfParser\Header')
             ->disableOriginalConstructor()
@@ -103,7 +103,7 @@ class PageTest extends TestCase
         $this->assertEquals([], $fonts);
     }
 
-    public function testGetFont()
+    public function testGetFont(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -120,7 +120,7 @@ class PageTest extends TestCase
         $this->assertTrue($font instanceof Font);
     }
 
-    public function testGetText()
+    public function testGetText(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -146,7 +146,7 @@ class PageTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/pull/457
      */
-    public function testGetTextPullRequest457()
+    public function testGetTextPullRequest457(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/bugs/PullRequest457.pdf';
@@ -166,7 +166,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('ALL', $text);
     }
 
-    public function testExtractRawData()
+    public function testExtractRawData(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -197,7 +197,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
     }
 
-    public function testExtractDecodedRawData()
+    public function testExtractDecodedRawData(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -232,7 +232,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('o', $tjItem['c'][2]['c']);
     }
 
-    public function testExtractRawDataWithCorruptedPdf()
+    public function testExtractRawDataWithCorruptedPdf(): void
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Unable to find xref (PDF corrupted?)');
@@ -243,7 +243,7 @@ class PageTest extends TestCase
             ->getPages();
     }
 
-    public function testGetDataCommands()
+    public function testGetDataCommands(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -278,7 +278,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('o', $tjItem['c'][2]['c']);
     }
 
-    public function testGetDataTm()
+    public function testGetDataTm(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -446,7 +446,7 @@ class PageTest extends TestCase
      *
      * @see https://github.com/smalot/pdfparser/issues/336
      */
-    public function testGetDataTmIssue336()
+    public function testGetDataTmIssue336(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue336_decode_hexadecimal.pdf';
         $document = $this->getParserInstance()->parseFile($filename);
@@ -480,7 +480,7 @@ class PageTest extends TestCase
      * Sample pdf file provided by @Reqrefusion, see
      * https://github.com/smalot/pdfparser/pull/350#issuecomment-703195220
      */
-    public function testGetPages()
+    public function testGetPages(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue331.pdf';
         $document = $this->getParserInstance()->parseFile($filename);
@@ -503,7 +503,7 @@ class PageTest extends TestCase
         }
     }
 
-    public function testGetTextXY()
+    public function testGetTextXY(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -601,7 +601,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Purchase 2', $result[0][1]);
     }
 
-    public function testExtractDecodedRawDataIssue450()
+    public function testExtractDecodedRawDataIssue450(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue450.pdf';
         $parser = $this->getParserInstance();
@@ -619,7 +619,7 @@ class PageTest extends TestCase
         $this->assertEquals('{signature:signer505906:Please+Sign+Here}', $extractedDecodedRawData[3]['c'][0]['c']);
     }
 
-    public function testGetDataTmIssue450()
+    public function testGetDataTmIssue450(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue450.pdf';
         $parser = $this->getParserInstance();
