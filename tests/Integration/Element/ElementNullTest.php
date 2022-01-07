@@ -37,7 +37,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementNullTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
         $offset = 0;
@@ -97,13 +97,13 @@ class ElementNullTest extends TestCase
         $this->assertEquals(7, $offset);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new ElementNull();
         $this->assertTrue(null === $element->getContent());
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new ElementNull();
         $this->assertTrue($element->equals(null));
@@ -112,7 +112,7 @@ class ElementNullTest extends TestCase
         $this->assertFalse($element->equals(1));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new ElementNull();
         $this->assertTrue($element->contains(null));
@@ -120,7 +120,7 @@ class ElementNullTest extends TestCase
         $this->assertFalse($element->contains(0));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $element = new ElementNull();
         $this->assertEquals('null', (string) $element);

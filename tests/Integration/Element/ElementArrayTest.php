@@ -41,7 +41,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementArrayTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -96,7 +96,7 @@ class ElementArrayTest extends TestCase
         $this->assertEquals(10, $offset);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $val_4 = new ElementNumeric('4');
         $val_2 = new ElementNumeric('2');
@@ -106,7 +106,7 @@ class ElementArrayTest extends TestCase
         $this->assertCount(2, $content);
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $val_4 = new ElementNumeric('4');
         $val_2 = new ElementNumeric('2');
@@ -118,7 +118,7 @@ class ElementArrayTest extends TestCase
         $this->assertFalse($element->contains(8));
     }
 
-    public function testResolveXRef()
+    public function testResolveXRef(): void
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
@@ -134,7 +134,7 @@ class ElementArrayTest extends TestCase
         $this->assertTrue(reset($pages) instanceof Page);
     }
 
-    public function testGetDetails()
+    public function testGetDetails(): void
     {
         $document = $this->getDocumentInstance();
         $content = '<</Type/Page/Types[8]/Sizes[1 2 3 4 5 <</Subtype/XObject>> [8 [9 <</FontSize 10>>]]]>>';
@@ -170,7 +170,7 @@ class ElementArrayTest extends TestCase
         $this->assertEquals($details_reference, $details);
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $val_4 = new ElementNumeric('4');
         $val_2 = new ElementNumeric('2');

@@ -133,9 +133,6 @@ class Font extends PDFObject
 
     /**
      * Convert unicode character code to "utf-8" encoded string.
-     *
-     * @param int $code
-     * @return string
      */
     public static function uchr(int $code): string
     {
@@ -150,8 +147,6 @@ class Font extends PDFObject
 
     /**
      * Init internal chars translation table by ToUnicode CMap.
-     *
-     * @return array
      */
     public function loadTranslateTable(): array
     {
@@ -266,7 +261,6 @@ class Font extends PDFObject
      * - key - integer character code;
      * - value - "utf-8" encoded value;
      *
-     * @param array $table
      * @return void
      */
     public function setTable(array $table)
@@ -276,10 +270,6 @@ class Font extends PDFObject
 
     /**
      * Decode hexadecimal encoded string. If $add_braces is true result value would be wrapped by parentheses.
-     *
-     * @param string $hexa
-     * @param bool $add_braces
-     * @return string
      */
     public static function decodeHexadecimal(string $hexa, bool $add_braces = false): string
     {
@@ -316,9 +306,6 @@ class Font extends PDFObject
 
     /**
      * Decode string with octal-decoded chunks.
-     *
-     * @param string $text
-     * @return string
      */
     public static function decodeOctal(string $text): string
     {
@@ -338,8 +325,6 @@ class Font extends PDFObject
 
     /**
      * Decode string with html entity encoded chars.
-     * @param string $text
-     * @return string
      */
     public static function decodeEntities(string $text): string
     {
@@ -362,9 +347,7 @@ class Font extends PDFObject
      * If true - decode to "utf-8" encoded string.
      * Otherwise - return text as is.
      *
-     * //todo: rename in next major release to make the name correspond to reality (for ex. decodeIfUnicode())
-     * @param string $text
-     * @return string
+     * @todo Rename in next major release to make the name correspond to reality (for ex. decodeIfUnicode())
      */
     public static function decodeUnicode(string $text): string
     {
@@ -392,9 +375,6 @@ class Font extends PDFObject
 
     /**
      * Decode text by commands array.
-     *
-     * @param array $commands
-     * @return string
      */
     public function decodeText(array $commands): string
     {
@@ -470,9 +450,7 @@ class Font extends PDFObject
      *      - If have no success to decode by DescendantFonts interpret $text as a string with "Windows-1252" encoding.
      *  - If DescendantFonts does not exist just return "?" as decoded char.
      *
-     * //todo: Seems this is invalid algorithm that do not follow pdf-format specification. Must be rewritten.
-     * @param string $text
-     * @return string
+     * @todo Seems this is invalid algorithm that do not follow pdf-format specification. Must be rewritten.
      */
     private function decodeContentByToUnicodeCMapOrDescendantFonts(string $text): string
     {
@@ -524,6 +502,8 @@ class Font extends PDFObject
 
     /**
      * Decode content by any type of Encoding (dictionary's item) instance.
+     *
+     * @throws LogicException if unknown encoding instance type is used (given by $this->get('Encoding'))
      */
     private function decodeContentByEncoding(string $text): ?string
     {
@@ -551,9 +531,6 @@ class Font extends PDFObject
 
     /**
      * Returns already created or create a new one if not created before Encoding instance by PDFObject instance.
-     *
-     * @param PDFObject $PDFObject
-     * @return Encoding
      */
     private function getInitializedEncodingByPdfObject(PDFObject $PDFObject): Encoding
     {
@@ -615,10 +592,9 @@ class Font extends PDFObject
      * If string seems like "utf-8" encoded string do nothing and just return given string as is.
      * Otherwise, interpret string as "Window-1252" encoded string.
      *
-     * @param string $text
-     * @return string|null
+     * @return string|false
      */
-    private function decodeContentByAutodetectIfNecessary(string $text): string
+    private function decodeContentByAutodetectIfNecessary(string $text)
     {
         if (mb_check_encoding($text, 'UTF-8')) {
             return $text;

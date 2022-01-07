@@ -43,7 +43,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class EncodingTest extends TestCase
 {
-    public function testGetEncodingClass()
+    public function testGetEncodingClass(): void
     {
         $header = new Header(['BaseEncoding' => new Element('StandardEncoding')]);
 
@@ -61,7 +61,7 @@ class EncodingTest extends TestCase
      * Calling init is enough to trigger the exception, but __toString call afterwards
      * makes sure that we don't missing it.
      */
-    public function testInitGetEncodingClassMissingClassException()
+    public function testInitGetEncodingClassMissingClassException(): void
     {
         $this->expectException(EncodingNotFoundException::class);
         $this->expectExceptionMessage('Missing encoding data for: "invalid"');
@@ -80,7 +80,7 @@ class EncodingTest extends TestCase
      * Prior PHP 7.4 we expect an empty string to be returned (based on PHP specification).
      * PHP 7.4+ we expect an exception to be thrown when class is invalid.
      */
-    public function testToStringGetEncodingClassMissingClassException()
+    public function testToStringGetEncodingClassMissingClassException(): void
     {
         // prior to PHP 7.4 toString has to return an empty string.
         if (version_compare(\PHP_VERSION, '7.4.0', '<')) {

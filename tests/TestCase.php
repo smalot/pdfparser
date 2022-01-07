@@ -53,17 +53,17 @@ abstract class TestCase extends PHPTestCase
         $this->rootDir = __DIR__.'/..';
     }
 
-    protected function getDocumentInstance()
+    protected function getDocumentInstance(): Document
     {
         return new Document();
     }
 
-    protected function getElementInstance($value)
+    protected function getElementInstance($value): Element
     {
         return new Element($value);
     }
 
-    protected function getParserInstance()
+    protected function getParserInstance(): Parser
     {
         return new Parser();
     }

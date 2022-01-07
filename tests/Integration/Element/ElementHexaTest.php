@@ -39,7 +39,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementHexaTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
         $offset = 0;

@@ -49,7 +49,7 @@ class FilterHelperTest extends TestCase
      * Tests for filter ASCII85Decode
      */
 
-    public function testDecodeFilterASCII85Decode()
+    public function testDecodeFilterASCII85Decode(): void
     {
         $compressed = '6Z6g\Eb0<5ARlp)FE2)5B)'; // = Compressed string
         $result = $this->fixture->decodeFilter('ASCII85Decode', $compressed);
@@ -61,7 +61,7 @@ class FilterHelperTest extends TestCase
      * Tests for filter ASCIIHexDecode
      */
 
-    public function testDecodeFilterASCIIHexDecode()
+    public function testDecodeFilterASCIIHexDecode(): void
     {
         $compressed = '43 6f 6d 70 72 65 73 73 65 64 20 73 74 72 69 6e 67'; // = Compressed string
         $result = $this->fixture->decodeFilter('ASCIIHexDecode', $compressed);
@@ -73,7 +73,7 @@ class FilterHelperTest extends TestCase
      * Tests for filter FlateDecode
      */
 
-    public function testDecodeFilterFlateDecode()
+    public function testDecodeFilterFlateDecode(): void
     {
         $compressed = gzcompress('Compress me', 9);
         $result = $this->fixture->decodeFilter('FlateDecode', $compressed);
@@ -84,7 +84,7 @@ class FilterHelperTest extends TestCase
     /**
      * How does function behave if an empty string was given.
      */
-    public function testDecodeFilterFlateDecodeEmptyString()
+    public function testDecodeFilterFlateDecodeEmptyString(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('gzuncompress(): data error');
@@ -95,7 +95,7 @@ class FilterHelperTest extends TestCase
     /**
      * How does function behave if an uncompressed string was given.
      */
-    public function testDecodeFilterFlateDecodeUncompressedString()
+    public function testDecodeFilterFlateDecodeUncompressedString(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('gzuncompress(): data error');
@@ -106,7 +106,7 @@ class FilterHelperTest extends TestCase
     /**
      * How does function behave if an uncompressed string was given.
      */
-    public function testDecodeFilterUnknownFilter()
+    public function testDecodeFilterUnknownFilter(): void
     {
         $result = $this->fixture->decodeFilter('a string '.rand(), 'something');
         $this->assertEquals('something', $result);
@@ -119,7 +119,7 @@ class FilterHelperTest extends TestCase
     /**
      * CCITTFaxDecode
      */
-    public function testDecodeFilterCCITTFaxDecode()
+    public function testDecodeFilterCCITTFaxDecode(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Decode CCITTFaxDecode not implemented yet.');
@@ -130,7 +130,7 @@ class FilterHelperTest extends TestCase
     /**
      * Crypt
      */
-    public function testDecodeFilterCrypt()
+    public function testDecodeFilterCrypt(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Decode Crypt not implemented yet.');
@@ -141,7 +141,7 @@ class FilterHelperTest extends TestCase
     /**
      * DCTDecode
      */
-    public function testDecodeFilterDCTDecode()
+    public function testDecodeFilterDCTDecode(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Decode DCTDecode not implemented yet.');
@@ -152,7 +152,7 @@ class FilterHelperTest extends TestCase
     /**
      * JBIG2Decode
      */
-    public function testDecodeFilterJBIG2Decode()
+    public function testDecodeFilterJBIG2Decode(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Decode JBIG2Decode not implemented yet.');
@@ -163,7 +163,7 @@ class FilterHelperTest extends TestCase
     /**
      * JPXDecode
      */
-    public function testDecodeFilterJPXDecode()
+    public function testDecodeFilterJPXDecode(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Decode JPXDecode not implemented yet.');

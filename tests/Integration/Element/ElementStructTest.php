@@ -38,7 +38,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementStructTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         $document = $this->getDocumentInstance();
 

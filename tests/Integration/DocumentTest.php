@@ -42,27 +42,27 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class DocumentTest extends TestCase
 {
-    protected function getDocumentInstance()
+    protected function getDocumentInstance(): Document
     {
         return new Document();
     }
 
-    protected function getPDFObjectInstance(Document $document, ?Header $header = null)
+    protected function getPDFObjectInstance(Document $document, ?Header $header = null): PDFObject
     {
         return new PDFObject($document, $header);
     }
 
-    protected function getPageInstance(Document $document, Header $header)
+    protected function getPageInstance(Document $document, Header $header): PDFObject
     {
         return new Page($document, $header);
     }
 
-    protected function getPagesInstance(Document $document, Header $header)
+    protected function getPagesInstance(Document $document, Header $header): PDFObject
     {
         return new Pages($document, $header);
     }
 
-    public function testSetObjects()
+    public function testSetObjects(): void
     {
         $document = $this->getDocumentInstance();
         $object = $this->getPDFObjectInstance($document);
@@ -86,7 +86,7 @@ class DocumentTest extends TestCase
         $this->assertTrue($document->getObjectById(2) instanceof PDFObject);
     }
 
-    public function testGetObjects()
+    public function testGetObjects(): void
     {
         $document = $this->getDocumentInstance();
         $object1 = $this->getPDFObjectInstance($document);
@@ -103,7 +103,7 @@ class DocumentTest extends TestCase
         $this->assertTrue($objects[2] instanceof Page);
     }
 
-    public function testDictionary()
+    public function testDictionary(): void
     {
         $document = $this->getDocumentInstance();
         $objects = $document->getDictionary();
@@ -121,7 +121,7 @@ class DocumentTest extends TestCase
         $this->assertEquals($object2, $objects['Page']['all'][2]);
     }
 
-    public function testGetObjectsByType()
+    public function testGetObjectsByType(): void
     {
         $document = $this->getDocumentInstance();
         $object1 = $this->getPDFObjectInstance($document);
@@ -136,7 +136,7 @@ class DocumentTest extends TestCase
         $this->assertTrue($objects[2] instanceof Page);
     }
 
-    public function testGetPages()
+    public function testGetPages(): void
     {
         $document = $this->getDocumentInstance();
 
@@ -218,7 +218,7 @@ class DocumentTest extends TestCase
         $this->assertTrue($pages[2] instanceof Page);
     }
 
-    public function testGetPagesMissingCatalog()
+    public function testGetPagesMissingCatalog(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Missing catalog.');
