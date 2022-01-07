@@ -349,8 +349,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      * @see https://github.com/smalot/pdfparser/pull/500
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testDecodeTextForFontWithIndirectEncodingWithoutTypeEncoding()
     {
