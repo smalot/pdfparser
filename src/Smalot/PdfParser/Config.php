@@ -40,6 +40,8 @@ class Config
 {
     private $fontSpaceLimit = -50;
 
+    private $horizontalOffset = ' ';
+
     /**
      * Represents: (NUL, HT, LF, FF, CR, SP)
      *
@@ -76,6 +78,16 @@ class Config
     public function setFontSpaceLimit($value)
     {
         $this->fontSpaceLimit = $value;
+    }
+
+    public function getHorizontalOffset()
+    {
+        return $this->horizontalOffset;
+    }
+
+    public function setHorizontalOffset($value)
+    {
+        $this->horizontalOffset = $value;
     }
 
     public function getPdfWhitespaces(): string
