@@ -4,7 +4,7 @@
  * @file This file is part of the PdfParser library.
  *
  * @author  Konrad Abicht <k.abicht@gmail.com>
- * @date    2020-06-02
+ * @date    2020-06-01
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
  * @date    2017-01-03
@@ -30,42 +30,26 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Tests\Smalot\PdfParser;
+namespace Tests\Smalot\PdfParser\Integration;
 
-use PHPUnit\Framework\TestCase as PHPTestCase;
 use Smalot\PdfParser\Config;
-use Smalot\PdfParser\Document;
-use Smalot\PdfParser\Element;
-use Smalot\PdfParser\Parser;
+use Tests\Smalot\PdfParser\TestCase;
 
-abstract class TestCase extends PHPTestCase
+class ConfigTest extends TestCase
 {
-    /**
-     * Contains an instance of the class to test.
-     */
-    protected $fixture;
-
-    protected $rootDir;
-
-    protected function setUp(): void
+    public function testHorizontalOffset()
     {
-        parent::setUp();
+        $filename = $this->rootDir.'/samples/bugs/Issue494.pdf';
 
-        $this->rootDir = __DIR__.'/..';
-    }
+        $config = new Config();
+        $config->setHorizontalOffset('');
 
-    protected function getDocumentInstance()
-    {
-        return new Document();
-    }
+        $parser = $this->getParserInstance($config);
+        $document = $parser->parseFile($filename);
+        $text = $document->getText();
 
-    protected function getElementInstance($value)
-    {
-        return new Element($value);
-    }
-
-    protected function getParserInstance(?Config $config = null)
-    {
-        return new Parser([], $config);
+        $reference = '11 ADET DERGİ İÇİN 3 KALEM HİZMET ALIMI İHALE EDİLECEKTİR ';
+        $firstLine = explode("\n", $text)[0];
+        $this->assertEquals($reference, $firstLine);
     }
 }
