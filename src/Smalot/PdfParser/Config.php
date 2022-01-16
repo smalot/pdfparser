@@ -40,6 +40,9 @@ class Config
 {
     private $fontSpaceLimit = -50;
 
+    /**
+     * @var string
+     */
     private $horizontalOffset = ' ';
 
     /**
@@ -80,12 +83,12 @@ class Config
         $this->fontSpaceLimit = $value;
     }
 
-    public function getHorizontalOffset()
+    public function getHorizontalOffset(): string
     {
         return $this->horizontalOffset;
     }
 
-    public function setHorizontalOffset($value)
+    public function setHorizontalOffset($value): void
     {
         $this->horizontalOffset = $value;
     }
