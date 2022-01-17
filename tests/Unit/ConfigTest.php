@@ -53,6 +53,17 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * Tests setter and getter for horizontal offset.
+     */
+    public function testHorizontalOffsetSetterGetter()
+    {
+        $this->assertEquals(' ', $this->fixture->getHorizontalOffset());
+
+        $this->fixture->setHorizontalOffset('	');
+        $this->assertEquals('	', $this->fixture->getHorizontalOffset());
+    }
+
+    /**
      * Tests setter and getter for retaining of raw image data.
      */
     public function testRetainImageContentSetterGetter()
