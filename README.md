@@ -38,7 +38,7 @@ There is no active development by the author of this library (at the moment), bu
 
 ## Documentation ##
 
-[Read the documentation on website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
+[Read the documentation on the wiki](https://github.com/smalot/pdfparser/wiki).
 
 Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 
