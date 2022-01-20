@@ -38,11 +38,13 @@ There is no active development by the author of this library (at the moment), bu
 
 ## Documentation ##
 
-[Read the documentation on website](http://www.pdfparser.org/documentation?utm_source=GitHub&utm_medium=documentation&utm_campaign=GitHub).
+[Read the documentation on the wiki](https://github.com/smalot/pdfparser/wiki).
 
 Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 
-**For developers**: Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library.
+### For developers
+
+Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library. Here you will also find information about how to handle Base63 encoded PDFs.
 
 ## Installation
 
