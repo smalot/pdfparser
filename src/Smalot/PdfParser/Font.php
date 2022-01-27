@@ -504,6 +504,8 @@ class Font extends PDFObject
      * Decode content by any type of Encoding (dictionary's item) instance.
      *
      * @throws LogicException if unknown encoding instance type is used (given by $this->get('Encoding'))
+     *
+     * @throws LogicException if unknown Encoding instance type is used.
      */
     private function decodeContentByEncoding(string $text): ?string
     {
