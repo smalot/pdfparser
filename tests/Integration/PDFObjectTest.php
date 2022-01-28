@@ -44,12 +44,12 @@ class PDFObjectTest extends TestCase
 
     const COMMAND = 'c';
 
-    protected function getPdfObjectInstance($document)
+    protected function getPdfObjectInstance($document): PDFObject
     {
         return new PDFObject($document);
     }
 
-    public function testGetCommandsText()
+    public function testGetCommandsText(): void
     {
         $content = "/R14 30 Tf 0.999016 0 0 1 137.4
 342.561 Tm
@@ -151,7 +151,7 @@ BI";
         $this->assertEquals(172, $offset);
     }
 
-    public function testCleanContent()
+    public function testCleanContent(): void
     {
         $content = '/Shape <</MCID << /Font<8>>> BT >>BDC
 Q
@@ -196,7 +196,7 @@ q
         $this->assertEquals($cleaned, $expected);
     }
 
-    public function testGetSectionText()
+    public function testGetSectionText(): void
     {
         $content = '/Shape <</MCID 1 >>BDC
 Q
@@ -237,7 +237,7 @@ q'],
      *
      * @see: https://github.com/smalot/pdfparser/issues/398
      */
-    public function testReversedChars()
+    public function testReversedChars(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue398.pdf';
 

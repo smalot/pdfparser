@@ -39,7 +39,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementDateTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
         $offset = 0;
@@ -136,13 +136,13 @@ class ElementDateTest extends TestCase
         $this->assertEquals(0, $offset);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
         $this->assertEquals(new DateTime('2013-09-01 21:55:55+00:00'), $element->getContent());
     }
 
-    public function testGetContentInvalidParameter()
+    public function testGetContentInvalidParameter(): void
     {
         $this->expectException(Exception::class);
 
@@ -150,7 +150,7 @@ class ElementDateTest extends TestCase
         $this->assertEquals(new DateTime('2013-09-01 21:55:55+02:00'), $element->getContent());
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
         $element->setFormat('c');
@@ -164,7 +164,7 @@ class ElementDateTest extends TestCase
         $this->assertFalse($element->equals('ABC'));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
 
@@ -172,7 +172,7 @@ class ElementDateTest extends TestCase
         $this->assertFalse($element->contains('2013-06-15'));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
 

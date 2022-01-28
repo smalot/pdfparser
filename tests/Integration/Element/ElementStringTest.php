@@ -37,7 +37,7 @@ use Tests\Smalot\PdfParser\TestCase;
 
 class ElementStringTest extends TestCase
 {
-    public function testParse()
+    public function testParse(): void
     {
         // Skipped.
         $offset = 0;
@@ -130,13 +130,13 @@ class ElementStringTest extends TestCase
         $this->assertEquals(27, $offset);
     }
 
-    public function testGetContent()
+    public function testGetContent(): void
     {
         $element = new ElementString('Copyright');
         $this->assertEquals('Copyright', $element->getContent());
     }
 
-    public function testEquals()
+    public function testEquals(): void
     {
         $element = new ElementString('CopyRight');
         $this->assertTrue($element->equals('CopyRight'));
@@ -151,7 +151,7 @@ class ElementStringTest extends TestCase
         $this->assertFalse($element->equals('Flate-Decode3'));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $element = new ElementString('CopyRight');
         $this->assertTrue($element->contains('CopyRight'));
@@ -162,7 +162,7 @@ class ElementStringTest extends TestCase
         $this->assertFalse($element->contains('CopyRight3'));
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $element = new ElementString('CopyRight');
         $this->assertEquals('CopyRight', (string) $element);
