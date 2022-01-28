@@ -358,16 +358,11 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $page1Text = $page1->getText();
         $expectedText = <<<TEXT
 Export\u{a0}transakční\u{a0}historie
-Výpis\u{a0}zaúčtovaných\u{a0}plateb
 Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi
 Číslo\u{a0}účtu:\u{a0}0000000000/0000
 Počáteční\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
-Celkem\u{a0}přišlo: +0\u{a0}000\u{a0}000,00\u{a0}Kč
-Celkem\u{a0}odešlo: -0\u{a0}000\u{a0}000,00\u{a0}Kč
-Rozdíl: +00\u{a0}000,00\u{a0}Kč
 Konečný\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
 Cena\u{a0}za\u{a0}služby
-Cena\u{a0}za\u{a0}výběr\u{a0}hotovosti\u{a0}pobočka\u{a0}čs
 TEXT;
 
         $this->assertEquals($expectedText, trim($page1Text));
