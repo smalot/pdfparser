@@ -30,7 +30,6 @@
 
 namespace Smalot\PdfParser;
 
-use LogicException;
 use Smalot\PdfParser\Encoding\WinAnsiEncoding;
 use Smalot\PdfParser\Exception\EncodingNotFoundException;
 
@@ -502,9 +501,6 @@ class Font extends PDFObject
 
     /**
      * Decode content by any type of Encoding (dictionary's item) instance.
-     *
-     * @throws LogicException if unknown encoding instance type is used (given by $this->get('Encoding'))
-     * @throws LogicException if unknown Encoding instance type is used
      */
     private function decodeContentByEncoding(string $text): ?string
     {
@@ -525,9 +521,12 @@ class Font extends PDFObject
             return $this->decodeContentByEncodingElement($text, $encoding);
         }
 
-        // Encoding has unintended type.
-        $encodingClassName = \get_class($encoding);
-        throw new LogicException("Unknown encoding instance type: {$encodingClassName}");
+        // don't double-encode strings already in UTF-8
+        if (!mb_check_encoding($text, 'UTF-8')) {
+            return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+        }
+
+        return $text;
     }
 
     /**
