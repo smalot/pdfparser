@@ -67,12 +67,18 @@ class ElementHexa extends ElementString
         if ('00' === substr($value, 0, 2)) {
             for ($i = 0; $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
-                $text .= '&#'.str_pad(hexdec($hex), 4, '0', \STR_PAD_LEFT).';';
+
+                if (ctype_xdigit($hex)) {
+                    $text .= '&#'.str_pad(hexdec(trim($hex)), 4, '0', \STR_PAD_LEFT).';';
+                }
             }
         } else {
             for ($i = 0; $i < $length; $i += 2) {
                 $hex = substr($value, $i, 2);
-                $text .= \chr(hexdec($hex));
+
+                if (ctype_xdigit($hex)) {
+                    $text .= \chr(hexdec($hex));
+                }
             }
         }
 

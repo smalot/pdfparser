@@ -168,6 +168,21 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Without a proper fix it throws deprecated message like:
+     *
+     * `Invalid characters passed for attempted conversion, these have been ignored`
+     */
+    public function testEbook(): void
+    {
+        $filename = $this->rootDir.'/samples/ebook_sept2003.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertEquals('Ebook3-6-version-pdf.sxw', $document->getDetails()['Title']);
+        $this->assertEquals('Communauté Wireless francophone', $document->getDetails()['Author']);
+    }
+
+    /**
      * Test that issue related pdf can now be parsed
      *
      * @see https://github.com/smalot/pdfparser/issues/267

@@ -114,6 +114,20 @@ class Header
             }
         }
 
+        // ensure detail information aren't badly encoded
+        foreach ($values as $key => $value) {
+            if (false === preg_match('!!u', $value)) {
+                $font = $this->document->getFirstFont();
+                if ($font) {
+                    $newValue = $font->decodeContent($value);
+                } else {
+                    $newValue = mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
+                }
+
+                $values[$key] = $newValue;
+            }
+        }
+
         return $values;
     }
 
