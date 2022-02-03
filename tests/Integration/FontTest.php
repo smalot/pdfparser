@@ -340,14 +340,32 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));
+    }
 
-        $commands = [
-            [
-                't' => '<',
-                'c' => 'C3A6C3B6C3BC', //Unicode encoded string
-            ],
-        ];
-        $this->assertEquals('æöü', $font->decodeText($commands));
+    /**
+     * Font could have indirect encoding without `/Type /Encoding`
+     * which would be instance of PDFObject class (but not Encoding or ElementString).
+     *
+     * @see https://github.com/smalot/pdfparser/pull/500
+     */
+    public function testDecodeTextForFontWithIndirectEncodingWithoutTypeEncoding(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/PullRequest500.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page1 = reset($pages);
+        $page1Text = $page1->getText();
+        $expectedText = <<<TEXT
+Export\u{a0}transakční\u{a0}historie
+Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi
+Číslo\u{a0}účtu:\u{a0}0000000000/0000
+Počáteční\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
+Konečný\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
+Cena\u{a0}za\u{a0}služby
+TEXT;
+
+        $this->assertEquals($expectedText, trim($page1Text));
     }
 
     /**
