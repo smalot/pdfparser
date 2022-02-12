@@ -1,64 +1,85 @@
-# PdfParser #
+# PDF parser
 
-Pdf Parser, a standalone PHP library, provides various tools to extract data from a PDF file.
-
+[![Version](https://poser.pugx.org/smalot/pdfparser/v)](//packagist.org/packages/smalot/pdfparser)
 ![CI](https://github.com/smalot/pdfparser/workflows/CI/badge.svg)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/smalot/pdfparser/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smalot/pdfparser/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/smalot/pdfparser/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smalot/pdfparser/?branch=master)
-[![License](https://poser.pugx.org/smalot/pdfparser/license)](//packagist.org/packages/smalot/pdfparser)
+[![Downloads](https://poser.pugx.org/smalot/pdfparser/downloads)](//packagist.org/packages/smalot/pdfparser)
 
-[![Latest Stable Version](https://poser.pugx.org/smalot/pdfparser/v)](//packagist.org/packages/smalot/pdfparser)
-[![Total Downloads](https://poser.pugx.org/smalot/pdfparser/downloads)](//packagist.org/packages/smalot/pdfparser)
-[![Monthly Downloads](https://poser.pugx.org/smalot/pdfparser/d/monthly)](//packagist.org/packages/smalot/pdfparser)
-[![Daily Downloads](https://poser.pugx.org/smalot/pdfparser/d/daily)](//packagist.org/packages/smalot/pdfparser)
+The `smalot/pdfparser` is a standalone PHP package that provides various tools to extract data from PDF files.
 
-Website : [https://www.pdfparser.org](https://www.pdfparser.org/?utm_source=GitHub&utm_medium=website&utm_campaign=GitHub)
+This Library is under **active maintenance**. There is no active development by the author of this library (at the
+moment), but we welcome any pull request adding/extending functionality!
 
-Test the API on our [demo page](https://www.pdfparser.org/demo).
+## Install
 
-This project is supported by [Actualys](http://www.actualys.com).
+This library requires PHP 7.1+ since [v1](https://github.com/smalot/pdfparser/releases/tag/v1.0.0). You can install the
+package via composer:
 
-## Features ##
+```bash
+compose require smalot/pdfparser
+```
 
-Features included :
+In case you can't use composer, you can include `alt_autoload.php-dist`.
 
-- Load/parse objects and headers
-- Extract meta data (author, description, ...)
-- Extract text from ordered pages
-- Support of compressed pdf
-- Support of MAC OS Roman charset encoding
-- Handling of hexa and octal encoding in text sections
-- PSR-0 compliant ([autoloader](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md))
-- PSR-1 compliant ([code styling](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md))
+## Usage
 
-Currently, secured documents are not supported.
+First create a parser object and point it to a file.
 
-**This Library is under active maintenance.**
-There is no active development by the author of this library (at the moment), but we welcome any pull request adding/extending functionality!
+```php
+$parser = new \Smalot\PdfParser\Parser();
+$pdf = $parser->parseFile('document.pdf');
 
-## Documentation ##
+// or:
+$pdf = $parser->parseContent(file_get_contents('document.pdf'))
+ ```
 
-[Read the documentation on the wiki](https://github.com/smalot/pdfparser/wiki).
+A common scenario is to extract text.
 
-Original PDF References files can be downloaded from this url: http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
+```php
+$text = $pdf->getText();
 
-### For developers
+// or extract the text of a specific page
+$text = $pdf->getPages()[0]->getText();
+```
 
-Please read [DEVELOPER.md](DEVELOPER.md) for more information about local development of the PDFParser library. Here you will also find information about how to handle Base63 encoded PDFs.
+You can also extract metadata. The available data varies from pdf to pdf.
 
-## Installation
+```php
+$metaData = $pdf->getDetails();
 
-### Using Composer
+Array
+(
+    [Producer] => Adobe Acrobat
+    [CreatedOn] => 2022-01-28T16:36:11+00:00
+    [Pages] => 35
+)
+```
 
-* Obtain [Composer](https://getcomposer.org)
-* Run `composer require smalot/pdfparser`
+### Configuring the behavior of the parser
 
-### Use alternate file loader
+To change the behavior the parser, create a config object and pass it to the parser.
+In this case, we're setting the font space limit.
+Changing this value can be helpful when `getText()` returns a text with too many spaces.
 
-In case you can't use Composer, you can include `alt_autoload.php-dist` into your project.
-It will load all required files at once.
-Afterwards you can use `PDFParser` class and others.
+```php
+$config = new \Smalot\PdfParser\Config();
+$config->setFontSpaceLimit(-60);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+$pdf = $parser->parseFile('document.pdf');
+```
 
-## License ##
+When words are broken up or when structure of a table is not preserved, you can use `setHorizontalOffset`.
+
+```php
+$config->setFontSpaceLimit(""); // an empty string can prevent words from breaking up
+$config->setFontSpaceLimit("\t"); // a tab can help preserve the structure of your document
+```
+
+To manage memory usage you can use the following options.
+```php
+$config->setRetainImageContent(false); // Whether to retain raw image data as content or discard it to save memory
+$config->setDecodeMemoryLimit(1000000); //  Memory limit to use when de-compressing files, in bytes.
+```
+
+## License
 
 This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).
