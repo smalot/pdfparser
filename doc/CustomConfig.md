@@ -47,9 +47,9 @@ When words are broken up or when structure of a table is not preserved, you can 
 ```php
 $config = new \Smalot\PdfParser\Config();
 // an empty string can prevent words from breaking up
-$config->setFontSpaceLimit('');
+$config->setHorizontalOffset('');
 // a tab can help preserve the structure of your document
-$config->setFontSpaceLimit("\t");
+$config->setHorizontalOffset("\t");
 $parser = new \Smalot\PdfParser\Parser([], $config);
 ```
 
