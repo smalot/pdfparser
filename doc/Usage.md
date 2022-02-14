@@ -23,7 +23,7 @@ $text = $pdf->getPages()[0]->getText();
 
 ## Extract metadata
 
-You can also extract metadata. The available data varies from pdf to pdf.
+You can also extract metadata. The available data varies from PDF to PDF.
 
 ```php
 $metaData = $pdf->getDetails();
@@ -38,14 +38,11 @@ Array
 
 ## Read Base64 encoded PDFs
 
-If working with [Base64](https://en.wikipedia.org/wiki/Base64) encoded PDFs you might want to parse the PDF without saving the file on disk.
+If working with [Base64](https://en.wikipedia.org/wiki/Base64) encoded PDFs, you might want to parse the PDF without saving the file to disk.
 This sample will parse the Base64 encoded PDF and extract text from each page.
 
 ```php
 <?php
-// Include Composer autoloader if not already done.
-include "vendor/autoload.php";
-
 // Parse Base64 encoded PDF string and build necessary objects.
 $parser = new \Smalot\PdfParser\Parser();
 $pdf = $parser->parseContent(base64_decode($base64PDF));

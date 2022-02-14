@@ -14,7 +14,7 @@ There is no active development by the author of this library (at the moment), bu
 ## Features
 
 - Load/parse objects and headers
-- Extract meta data (author, description, ...)
+- Extract metadata (author, description, ...)
 - Extract text from ordered pages
 - Support of compressed PDFs
 - Support of MAC OS Roman charset encoding
@@ -55,4 +55,4 @@ Further usage information can be found [here](/doc/Usage.md).
 
 ## Documentation
 
-Documentation can be found in [doc](/doc) folder.
+Documentation can be found in the [doc](/doc) folder.
