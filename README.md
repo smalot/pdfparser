@@ -19,7 +19,7 @@ There is no active development by the author of this library (at the moment), bu
 - Support of compressed PDFs
 - Support of MAC OS Roman charset encoding
 - Handling of hexa and octal encoding in text sections
-- Create custom configurations (see [/doc/CustomConfig.md]).
+- Create custom configurations (see [CustomConfig.md](/doc/CustomConfig.md)).
 
 Currently, secured documents and extracting form data are not supported.
 
