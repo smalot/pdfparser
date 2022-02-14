@@ -1,8 +1,15 @@
 # Developers
 
+Here you will find information about our development tools and how to use them.
+
 ## .editorconfig
 
 Please make sure your editor uses our `.editorconfig` file. It contains rules about our coding styles.
+
+## Github Action Workflows
+
+We use Github Actions to run our continous integration as well as other tasks after pushing changes.
+You will find related files in `.github/workflows/`.
 
 ## Development Tools and Tests
 
@@ -38,20 +45,3 @@ To check coding styles run:
 To run a static code analysis use:
 
 > make run-phpstan
-
-## Base64 encoded PDFs
-
-If working with [Base64](https://en.wikipedia.org/wiki/Base64) encoded PDFs you might want to parse the PDF without saving the file on disk. This sample will parse the Base64 encoded PDF and extract text from each page.
-
-```php
-<?php
-// Include Composer autoloader if not already done.
-include "vendor/autoload.php";
-
-// Parse Base64 encoded PDF string and build necessary objects.
-$parser = new \Smalot\PdfParser\Parser();
-$pdf = $parser->parseContent(base64_decode($base64PDF));
-
-$text = $pdf->getText();
-echo $text;
-```

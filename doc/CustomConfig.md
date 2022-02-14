@@ -1,0 +1,65 @@
+# Configuring the behavior of the parser
+
+To change the behavior the parser, create a `Config` object and pass it to the parser.
+In this case, we're setting the font space limit.
+Changing this value can be helpful when `getText()` returns a text with too many spaces.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+$config->setFontSpaceLimit(-60);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+$pdf = $parser->parseFile('document.pdf');
+// output extracted text
+// echo $pdf->getText();
+```
+
+## Config options overview
+
+Class `Config` has the following options:
+
+| Option                   | Type    | Default         | Description |
+|--------------------------|---------|-----------------|-------------|
+| `setDecodeMemoryLimit`   | Integer | `0`             |             |
+| `setFontSpaceLimit`      | Integer | `-50`           |             |
+| `setHorizontalOffset`    | String  | ` `             |             |
+| `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |             |
+| `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |             |
+| `setRetainImageContent`  | Boolean | `true`          |             |
+
+
+## option setDecodeMemoryLimit + setRetainImageContent (manage memory usage)
+
+If parsing fails because of memory exhaustion you can use the following options.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+// Whether to retain raw image data as content or discard it to save memory
+$config->setRetainImageContent(false);
+// Memory limit to use when de-compressing files, in bytes.
+$config->setDecodeMemoryLimit(1000000);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+```
+
+## option setHorizontalOffset
+
+When words are broken up or when structure of a table is not preserved, you can use `setHorizontalOffset`.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+// an empty string can prevent words from breaking up
+$config->setFontSpaceLimit('');
+// a tab can help preserve the structure of your document
+$config->setFontSpaceLimit("\t");
+$parser = new \Smalot\PdfParser\Parser([], $config);
+```
+
+## option setFontSpaceLimit
+
+Changing font space limit can be helpful when `getText()` returns a text with too many spaces.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+$config->setFontSpaceLimit(-60);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+$pdf = $parser->parseFile('document.pdf');
+```
