@@ -21,7 +21,7 @@ There is no active development by the author of this library (at the moment), bu
 - Handling of hexa and octal encoding in text sections
 - Create custom configurations (see [/doc/CustomConfig.md]).
 
-Currently, secured documents are not supported.
+Currently, secured documents and extracting form data are not supported.
 
 ## License
 
