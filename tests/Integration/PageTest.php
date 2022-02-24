@@ -32,6 +32,7 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
@@ -439,6 +440,46 @@ class PageTest extends TestCase
             $item[0]
         );
         $this->assertStringContainsString('Purchase 2', $item[1]);
+    }
+
+    public function testDataTmFontInfoHasToBeIncluded(): void
+    {
+        $config = new Config();
+        $config->setDataTmFontInfoHasToBeIncluded(true);
+
+        $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = $this->getParserInstance($config);
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+        $fonts = $page->getFonts();
+
+        $item = $dataTm[0];
+        $this->assertCount(4, $item);
+        $this->assertEquals($item[2], 'R7');
+        $this->assertEquals($item[3], '27.96');
+        $this->assertArrayHasKey('R7', $fonts);
+        $item = $dataTm[80];
+        $this->assertCount(4, $item);
+        $this->assertEquals($item[2], 'R14');
+        $this->assertEquals($item[3], '11.04');
+        $this->assertArrayHasKey('R7', $fonts);
+
+        $filename = $this->rootDir.'/samples/InternationalChars.pdf';
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+        $fonts = $page->getFonts();
+
+        $item = $dataTm[88];
+        $this->assertEquals($item[2], 'C2_0');
+        $this->assertEquals($item[3], '1');
+        $this->assertArrayHasKey('C2_0', $fonts);
+        foreach ($dataTm as $item) {
+            $this->assertCount(4, $item);
+        }
     }
 
     /**

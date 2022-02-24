@@ -606,6 +606,13 @@ class Page extends PDFObject
                     $extractedData[] = $command;
                     break;
 
+                case 'Tf':
+                case 'TF':
+                    if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
+                        $extractedData[] = $command;
+                    }
+                    break;
+
                 /*
                  * array TJ
                  * Show one or more text strings allow individual glyph positioning.
@@ -659,6 +666,12 @@ class Page extends PDFObject
         $defaultTl = 0;
 
         /*
+         *  Set default values for font data
+         */
+        $defaultFontId = -1;
+        $defaultFontSize = 0;
+
+        /*
          * Setting where are the X and Y coordinates in the matrix (Tm)
          */
         $x = 4;
@@ -668,6 +681,8 @@ class Page extends PDFObject
 
         $Tm = $defaultTm;
         $Tl = $defaultTl;
+        $fontId = $defaultFontId;
+        $fontSize = $defaultFontSize;
 
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
@@ -683,6 +698,8 @@ class Page extends PDFObject
                     $Tl = $defaultTl; //review this.
                     $Tx = 0;
                     $Ty = 0;
+                    $fontId = $defaultFontId;
+                    $fontSize = $defaultFontSize;
                     break;
 
                 /*
@@ -694,6 +711,8 @@ class Page extends PDFObject
                     $Tl = $defaultTl;  //review this
                     $Tx = 0;
                     $Ty = 0;
+                    $fontId = $defaultFontId;
+                    $fontSize = $defaultFontSize;
                     break;
 
                 /*
@@ -765,7 +784,12 @@ class Page extends PDFObject
                  * Show a Text String
                  */
                 case 'Tj':
-                    $extractedData[] = [$Tm, $currentText];
+                    $data = [$Tm, $currentText];
+                    if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
+                        $data[] = $fontId;
+                        $data[] = $fontSize;
+                    }
+                    $extractedData[] = $data;
                     break;
 
                 /*
@@ -799,6 +823,10 @@ class Page extends PDFObject
                     $extractedData[] = [$Tm, $data[2]]; //Verify
                     break;
 
+                case 'Tf':
+                    list($fontId, $fontSize) = explode(' ', $command['c'], 2);
+                    break;
+
                 /*
                  * array TJ
                  * Show one or more text strings allow individual glyph positioning.
@@ -812,7 +840,12 @@ class Page extends PDFObject
                  * amount.
                  */
                 case 'TJ':
-                    $extractedData[] = [$Tm, $currentText];
+                    $data = [$Tm, $currentText];
+                    if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
+                        $data[] = $fontId;
+                        $data[] = $fontSize;
+                    }
+                    $extractedData[] = $data;
                     break;
                 default:
             }
