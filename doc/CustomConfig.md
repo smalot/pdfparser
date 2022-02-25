@@ -17,14 +17,14 @@ $pdf = $parser->parseFile('document.pdf');
 
 The `Config` class has the following options:
 
-| Option                   | Type    | Default         | Description |
-|--------------------------|---------|-----------------|-------------|
-| `setDecodeMemoryLimit`   | Integer | `0`             |             |
-| `setFontSpaceLimit`      | Integer | `-50`           |             |
-| `setHorizontalOffset`    | String  | ` `             |             |
-| `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |             |
-| `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |             |
-| `setRetainImageContent`  | Boolean | `true`          |             |
+| Option                   | Type    | Default         | Description                                                                                                                                          |
+|--------------------------|---------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `setDecodeMemoryLimit`   | Integer | `0`             | If parsing fails because of memory exhaustion, you can set a lower memory limit for decoding operations.                                             |
+| `setFontSpaceLimit`      | Integer | `-50`           | Changing font space limit can be helpful when `Parser::getText()` returns a text with too many spaces.                                               |
+| `setHorizontalOffset`    | String  | ` `             | When words are broken up or when the structure of a table is not preserved, you may get better results when adapting `setHorizontalOffset`.          |
+| `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |                                                                                                                                                      |
+| `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |                                                                                                                                                      |
+| `setRetainImageContent`  | Boolean | `true`          | If parsing fails because of memory exhaustion, you can set the value to `false`. It wont retain image content anymore, but will use less memory too. |
 
 
 ## option setDecodeMemoryLimit + setRetainImageContent (manage memory usage)
