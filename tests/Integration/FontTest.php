@@ -410,4 +410,25 @@ TEXT;
         $font->setTable([]);
         $this->assertEquals('?', $font->translateChar('a'));
     }
+
+    public function testCalculateTextWidth(): void
+    {
+        $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $fonts = $document->getFonts();
+
+        $font = $fonts['7_0'];
+        $widths = $font->getDetails()['Widths'];
+        $this->assertEquals($widths[0], $font->calculateTextWidth('D'));
+        $this->assertEquals($widths[10], $font->calculateTextWidth('l'));
+
+        $width = $font->calculateTextWidth('Calibri', $missing);
+        $this->assertEquals(936, $width);
+        $this->assertEquals(['C', 'a', 'b', 'r'], $missing);
+
+        $width = $fonts['9_0']->calculateTextWidth('Calibri', $missing);
+        $this->assertEquals(2573, $width);
+        $this->assertEquals([], $missing);
+    }
 }
