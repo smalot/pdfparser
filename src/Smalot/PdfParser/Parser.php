@@ -263,6 +263,10 @@ class Parser
         switch ($type) {
             case '<<':
             case '>>':
+                
+                if(empty($value))
+                    return null;
+                
                 $header = $this->parseHeader($value, $document);
                 PDFObject::factory($document, $header, null, $this->config);
 
