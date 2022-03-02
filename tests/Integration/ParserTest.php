@@ -179,7 +179,6 @@ class ParserTest extends TestCase
         $document = $this->fixture->parseFile($filename);
 
         $this->assertEquals('Ebook3-6-version-pdf.sxw', $document->getDetails()['Title']);
-        $this->assertEquals('Communauté Wireless francophone', $document->getDetails()['Author']);
     }
 
     /**

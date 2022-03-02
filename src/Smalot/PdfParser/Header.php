@@ -114,7 +114,7 @@ class Header
             }
         }
 
-        return $this->ensureProperDetailEncoding($values);
+        return $values;
     }
 
     /**
@@ -188,32 +188,5 @@ class Header
 
         // Build an empty header.
         return new self([], $document);
-    }
-
-    /**
-     * Ensure detail information aren't badly encoded.
-     */
-    private function ensureProperDetailEncoding(array $values): array
-    {
-        foreach ($values as $key => $value) {
-            if (\is_array($value)) {
-                $values[$key] = $this->ensureProperDetailEncoding($value);
-
-                continue;
-            }
-
-            if (false === preg_match('!!u', $value)) {
-                $font = $this->document->getFirstFont();
-                if ($font) {
-                    $newValue = $font->decodeContent($value);
-                } else {
-                    $newValue = mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
-                }
-
-                $values[$key] = $newValue;
-            }
-        }
-
-        return $values;
     }
 }
