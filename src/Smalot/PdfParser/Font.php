@@ -270,7 +270,7 @@ class Font extends PDFObject
     /**
      * Calculate text width with data from header 'Widths'. If width of character is not found then character is added to missing array.
      */
-    public function calculateTextWidth($text, &$missing = null): ?float
+    public function calculateTextWidth(string $text, array &$missing = null): ?float
     {
         $index_map = array_flip($this->table);
         $details = $this->getDetails();
