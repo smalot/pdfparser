@@ -57,6 +57,10 @@ Try to calculate text width for given font.
 Characters without width are added to `$missing` array in second parameter.
 
 ```php
-$font = reset($pdf->getFonts()); //get first font
-$width = $font->calculateTextWidth("Some text", $missing);
+$parser = new \Smalot\PdfParser\Parser();
+$pdf = $parser->parseFile('document.pdf');
+// get first font (we assume here there is at least one)
+$font = reset($pdf->getFonts());
+// get width
+$width = $font->calculateTextWidth('Some text', $missing);
 ```
