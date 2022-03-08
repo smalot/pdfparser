@@ -62,7 +62,7 @@ Array
 )
 ```
 
-When activated via Config setting (Config::setDataTmFontInfoHasToBeIncluded(true)) font identifier (index 2) and font size (index 3) are added to dataTm.
+When activated via Config setting (`Config::setDataTmFontInfoHasToBeIncluded(true)`) font identifier (index 2) and font size (index 3) are added to dataTm.
 
 ```php
 // create config
