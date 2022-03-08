@@ -824,6 +824,16 @@ class Page extends PDFObject
                     break;
 
                 case 'Tf':
+                    /*
+                     * From PDF 1.0 specification, page 106:
+                     *     fontname size Tf Set font and size
+                     *     Sets the text font and text size in the graphics state. There is no default value for
+                     *     either fontname or size; they must be selected using Tf before drawing any text.
+                     *     fontname is a resource name. size is a number expressed in text space units.
+                     *
+                     * Source: https://ia902503.us.archive.org/10/items/pdfy-0vt8s-egqFwDl7L2/PDF%20Reference%201.0.pdf
+                     * Introduced with https://github.com/smalot/pdfparser/pull/516
+                     */
                     list($fontId, $fontSize) = explode(' ', $command['c'], 2);
                     break;
 
