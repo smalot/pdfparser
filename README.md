@@ -33,7 +33,7 @@ This library requires PHP 7.1+ since [v1](https://github.com/smalot/pdfparser/re
 You can install it via [Composer](https://getcomposer.org/):
 
 ```bash
-compose require smalot/pdfparser
+composer require smalot/pdfparser
 ```
 
 In case you can't use Composer, you can include `alt_autoload.php-dist`. It will include all required files automatically.
