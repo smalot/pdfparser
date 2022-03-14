@@ -73,6 +73,13 @@ class Config
      */
     private $decodeMemoryLimit = 0;
 
+    /**
+     * Whether to include font id and size in dataTm array
+     *
+     * @var bool
+     */
+    private $dataTmFontInfoHasToBeIncluded = false;
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -131,5 +138,15 @@ class Config
     public function setDecodeMemoryLimit(int $decodeMemoryLimit): void
     {
         $this->decodeMemoryLimit = $decodeMemoryLimit;
+    }
+
+    public function getDataTmFontInfoHasToBeIncluded(): bool
+    {
+        return $this->dataTmFontInfoHasToBeIncluded;
+    }
+
+    public function setDataTmFontInfoHasToBeIncluded(bool $dataTmFontInfoHasToBeIncluded): void
+    {
+        $this->dataTmFontInfoHasToBeIncluded = $dataTmFontInfoHasToBeIncluded;
     }
 }
