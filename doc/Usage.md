@@ -153,3 +153,17 @@ $pdf = $parser->parseContent(base64_decode($base64PDF));
 $text = $pdf->getText();
 echo $text;
 ```
+
+## Calculate text width
+
+Try to calculate text width for given font.
+Characters without width are added to `$missing` array in second parameter.
+
+```php
+$parser = new \Smalot\PdfParser\Parser();
+$pdf = $parser->parseFile('document.pdf');
+// get first font (we assume here there is at least one)
+$font = reset($pdf->getFonts());
+// get width
+$width = $font->calculateTextWidth('Some text', $missing);
+```

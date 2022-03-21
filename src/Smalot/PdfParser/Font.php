@@ -268,6 +268,38 @@ class Font extends PDFObject
     }
 
     /**
+     * Calculate text width with data from header 'Widths'. If width of character is not found then character is added to missing array.
+     */
+    public function calculateTextWidth(string $text, array &$missing = null): ?float
+    {
+        $index_map = array_flip($this->table);
+        $details = $this->getDetails();
+        $widths = $details['Widths'];
+
+        // Widths array is zero indexed but table is not. We must map them based on FirstChar and LastChar
+        $width_map = array_flip(range($details['FirstChar'], $details['LastChar']));
+
+        $width = null;
+        $missing = [];
+        $textLength = mb_strlen($text);
+        for ($i = 0; $i < $textLength; ++$i) {
+            $char = mb_substr($text, $i, 1);
+            if (
+                !\array_key_exists($char, $index_map)
+                || !\array_key_exists($index_map[$char], $width_map)
+                || !\array_key_exists($width_map[$index_map[$char]], $widths)
+            ) {
+                $missing[] = $char;
+                continue;
+            }
+            $width_index = $width_map[$index_map[$char]];
+            $width += $widths[$width_index];
+        }
+
+        return $width;
+    }
+
+    /**
      * Decode hexadecimal encoded string. If $add_braces is true result value would be wrapped by parentheses.
      */
     public static function decodeHexadecimal(string $hexa, bool $add_braces = false): string
