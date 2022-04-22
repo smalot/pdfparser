@@ -132,8 +132,8 @@ class Header
      */
     public function get(string $name)
     {
-        if (\array_key_exists($name, $this->elements)) {
-            return $this->resolveXRef($name);
+        if (\array_key_exists($name, $this->elements) && $element = $this->resolveXRef($name)) {
+            return $element;
         }
 
         return new ElementMissing();

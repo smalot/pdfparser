@@ -78,7 +78,7 @@ class PDFObject
         ?Config $config = null
     ) {
         $this->document = $document;
-        $this->header = null !== $header ? $header : new Header();
+        $this->header = $header ?? new Header();
         $this->content = $content;
         $this->config = $config;
     }

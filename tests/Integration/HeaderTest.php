@@ -155,6 +155,18 @@ class HeaderTest extends TestCase
         $this->assertTrue($header->get('Font') instanceof Page);
         $this->assertTrue($header->get('Image') instanceof ElementMissing);
         $this->assertTrue($header->get('Resources') instanceof ElementMissing);
+
+        /**
+         * A double forward slash in the header's content results in a falsy element
+         * that should be parsed to ElementMissing instead.
+         *
+         * @see https://github.com/smalot/pdfparser/pull/525
+         */
+        $content = '<</Type/Page/SubType//Text>>foo';
+        $position = 0;
+        $header = Header::parse($content, $document, $position);
+
+        $this->assertTrue($header->get('SubType') instanceof ElementMissing);
     }
 
     public function testResolveXRef(): void
