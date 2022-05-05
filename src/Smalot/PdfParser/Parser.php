@@ -58,6 +58,11 @@ class Parser
 
     protected $rawDataParser;
 
+    /**
+     * @var array<string, int> an array of xrefs with the number of objects we have seen for it (0-based indexed)
+     */
+    protected $xrefIndices = [];
+
     public function __construct($cfg = [], ?Config $config = null)
     {
         $this->config = $config ?: new Config();
@@ -200,7 +205,14 @@ class Parser
                         $positions = array_keys($table);
 
                         foreach ($positions as $index => $position) {
-                            $id = $ids[$index].'_0';
+                            $xrefId = (string) $ids[$index];
+                            if (array_key_exists($xrefId, $this->xrefIndices)) {
+                                $xrefIndex = $this->xrefIndices[$xrefId]++; // This xref was seen before, id becomes 9999_1 or 9999_2 etc.
+                            } else {
+                                $xrefIndex = $this->xrefIndices[$xrefId] = 0; // This xref was not seen before. id becomes 9999_0p
+                            }
+
+                            $id = $xrefId.'_'.$xrefIndex;
                             $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
                             $sub_content = substr($content, $position, (int) $next_position - (int) $position);
 
