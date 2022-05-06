@@ -207,7 +207,7 @@ class Parser
                         foreach ($positions as $index => $position) {
                             $xrefId = (string) $ids[$index];
                             if (\array_key_exists($xrefId, $this->xrefIndices)) {
-                                $xrefIndex = $this->xrefIndices[$xrefId]++; // This xref was seen before, id becomes 9999_1 or 9999_2 etc.
+                                $xrefIndex = ++$this->xrefIndices[$xrefId]; // This xref was seen before, id becomes 9999_1 or 9999_2 etc.
                             } else {
                                 $xrefIndex = $this->xrefIndices[$xrefId] = 0; // This xref was not seen before. id becomes 9999_0
                             }
