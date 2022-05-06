@@ -114,7 +114,7 @@ class Parser
 
         // Create destination object.
         $document = new Document();
-        $this->objects = [];
+        $this->objects = $this->xrefIndices = [];
 
         foreach ($data as $id => $structure) {
             $this->parseObject($id, $structure, $document);
