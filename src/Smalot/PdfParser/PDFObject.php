@@ -191,8 +191,8 @@ class PDFObject
         $textCleaned = $this->cleanContent($content, '_');
 
         // Extract text blocks.
-        if (preg_match_all('/(\sQ)?\s+(.*?)BT[\s|\(|\[]+(.*?)\s*ET(\sq)?/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
-            foreach ($matches[3] as $pos => $part) {
+        if (preg_match_all('/(.*?)\s+BT[\s|\(|\[]+(.*?)\s*ET(?=\s|$)?/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[2] as $pos => $part) {
                 $text = $part[0];
                 if ('' === $text) {
                     continue;
@@ -201,18 +201,33 @@ class PDFObject
                 $section = substr($content, $offset, \strlen($text));
 
                 // Removes BDC and EMC markup.
-                $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section.' ');
+                $section = trim(preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section.' '));
 
-                // Add Tx commands which before BT.
-                // @see: https://github.com/smalot/pdfparser/issues/542
-                if (!empty($matches[2][$pos][0]) && preg_match('/\sTf\s/', $matches[2][$pos][0])) {
-                    $section = trim($matches[2][$pos][0].$section);
-                }
-
-                // Add Q and q flags if detected around BT/ET.
+                // Add Q & q flags and Tf commands which before text block.
                 // @see: https://github.com/smalot/pdfparser/issues/387
-                if (empty($matches[2][$pos][0]) || !preg_match('/\sq\s/', $matches[2][$pos][0])) {
-                    $section = trim((!empty($matches[1][$pos][0]) ? "Q\n" : '').$section).(!empty($matches[4][$pos][0]) ? "\nq" : '');
+                // @see: https://github.com/smalot/pdfparser/issues/542
+                if (!empty($matches[1][$pos][0])) {
+                    if (preg_match_all('/(?:\s|^)([Qq])(?:\s|$)/', $matches[1][$pos][0], $qMatches, \PREG_OFFSET_CAPTURE)) {
+                        $len = \strlen($matches[1][$pos][0]);
+                        for ($i = \count($qMatches[0]) - 1; $i >= 0; --$i) {
+                            $str = substr($matches[1][$pos][0], $qMatches[0][$i][1] + 3, $len - ($qMatches[0][$i][1] + 3));
+                            $len = $qMatches[0][$i][1];
+                            if (preg_match('/\sTf(\s|$)/', $str)) {
+                                $section = trim($str)."\n".$section;
+                            }
+                            if ('Q' == $qMatches[1][$i][0]) {
+                                $section = "Q\n".$section;
+                            } elseif ('q' == $qMatches[1][$i][0]) {
+                                $section = "q\n".$section;
+                            }
+                        }
+                        $str = substr($matches[1][$pos][0], 0, $qMatches[0][0][1]);
+                        if (preg_match('/\sTf(\s|$)/', $str)) {
+                            $section = trim($str)."\n".$section;
+                        }
+                    } elseif (preg_match('/\sTf(\s|$)/', $matches[1][$pos][0])) {
+                        $section = trim($matches[1][$pos][0])."\n".$section;
+                    }
                 }
 
                 $sections[] = $section;

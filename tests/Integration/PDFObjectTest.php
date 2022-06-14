@@ -220,14 +220,14 @@ q
         $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
 
         $this->assertEquals(
-            ['/TT0 1 Tf
+            ['Q
+/TT0 1 Tf
 0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
 (Mod BT atio[ns] au \(14\) septembre 2009 ET 2010)Tj
 EMC
 (ABC) Tj
 
-[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD', '/TT1 1.5 Tf (BT )Tj
-q'],
+[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD', '/TT1 1.5 Tf (BT )Tj'],
             $sections
         );
     }
@@ -246,5 +246,21 @@ q'],
         $pages = $document->getPages();
 
         $this->assertStringContainsString('שלומי טסט', $pages[0]->getText());
+    }
+
+    /**
+     * Tests Tf commands are outside the text block
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/542
+     */
+    public function testIssue542(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue542.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString("Timbre imprimé sur laposte.frFRANCESD : 87000639942948A\nLettre verte \n\nMax 50g\nFRANCE     ", $pages[0]->getText());
     }
 }
