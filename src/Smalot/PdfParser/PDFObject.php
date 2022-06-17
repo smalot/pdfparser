@@ -709,6 +709,9 @@ class PDFObject
                         $operator = $matches[1];
                         $command = '';
                         $offset += \strlen($matches[0]);
+                    } elseif (preg_match('/^\s*([% \*]+.*[\*]{3})/si', substr($text_part, $offset), $matches)) {
+                        $command = '';
+                        $offset += \strlen($matches[0]);
                     }
             }
 
