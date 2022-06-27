@@ -194,7 +194,7 @@ class PDFObject
     {
         if (preg_match_all('/(?:\s|^)([Qq])(?:\s|$)/', $matches[1][$pos][0], $qMatches, \PREG_OFFSET_CAPTURE)) {
             $len = \strlen($matches[1][$pos][0]);
-            $matchesCount = count($qMatches[0]);
+            $matchesCount = \count($qMatches[0]);
             for ($i = $matchesCount - 1; $i >= 0; --$i) {
                 $str = substr($matches[1][$pos][0], $qMatches[0][$i][1] + 3, $len - ($qMatches[0][$i][1] + 3));
                 $len = $qMatches[0][$i][1];
