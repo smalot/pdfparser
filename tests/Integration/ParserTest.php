@@ -365,6 +365,27 @@ class ParserTest extends TestCase
         $this->assertTrue($usedMemory < ($baselineMemory * 1.05), 'Memory is '.$usedMemory);
         $this->assertTrue(0 < \strlen($document->getText()));
     }
+
+    /**
+     * Test for not showing some characters "ö, ü and ç " in some files
+     * 
+     * @see https://github.com/smalot/pdfparser/issues/495
+     */
+    public function testIssue495(): void
+    {
+        $filename2021113033 = $this->rootDir.'/samples/bugs/Issue495_20211130-3-3.pdf';
+        $filename20211130422 = $this->rootDir.'/samples/bugs/Issue495_20211130-4-22.pdf';
+        $filename20211201420 = $this->rootDir.'/samples/bugs/Issue495_20211201-4-20.pdf';
+
+        $document2021113033 = $this->fixture->parseFile($filename2021113033);
+        $document20211130422 = $this->fixture->parseFile($filename20211130422);
+        $document20211201420 = $this->fixture->parseFile($filename20211201420);
+
+        $this->assertStringContainsString('İhale 14.12.2021 tarihinde Saat 11.00’de yapılacaktır. Katılmak isteyenler 2886 sayılı Devlet İhale Kanununun 36ncı maddesine istinaden tahmin edilen bedel Genel Bütçe Kanununun 45’inci maddesinde belirtilen bedeli aştığından ihale için verilecek “Kapalı Teklif Usulü” ile yapılması gerektiğinden, ihaleden bir gün önce yani 13.12.2021 tarihi Saat:16.00’ya kadar tekliflerini ve istenilen belgeleri dış zarf içerisinde Emlak ve İstimlak Müdürlüğü’ne teslim etmeleri gerekir. 13.12.2021 Pazartesi Günü Saat 16.00’dan sonra teklif zarfı kabul edilmeyecek ve teklifler ihale dışı kalacaktır. 2886 sayılı Devlet İhale Kanununun 37nci maddesindeki hükümler esas alınacaktır', $document2021113033->getText());
+        $this->assertStringContainsString('Edebiyat veya Fen-Edebiyat Fakültelerinin Tarih Bölümü mezunu olup Orta Çağ Tarihi alanında yüksek lisans yapıyor olmak.', $document20211130422->getText());
+        $this->assertStringContainsString('Çocuk Cerrahisi', $document20211201420->getText());
+    }
+
 }
 
 class ParserSub extends Parser
