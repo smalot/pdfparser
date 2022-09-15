@@ -1,6 +1,20 @@
 <?php
 
-return PhpCsFixer\Config::create()
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+
+$finder = Finder::create()
+    ->in([
+        __DIR__.'/src',
+        __DIR__.'/tests',
+    ])
+    ->name('*.php')
+;
+
+$config = new Config();
+$config
+    ->setFinder($finder)
+    ->setRiskyAllowed(true)
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
@@ -11,13 +25,7 @@ return PhpCsFixer\Config::create()
         'ordered_imports' => true,
         'phpdoc_summary' => false,
         'protected_to_private' => false,
-     ])
-    ->setRiskyAllowed(true)
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude([
-                'vendor',
-            ])
-            ->in(__DIR__)
-            ->name('*.php')
-    );
+    ])
+;
+
+return $config;

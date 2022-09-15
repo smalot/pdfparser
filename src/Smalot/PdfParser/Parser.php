@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -185,7 +187,7 @@ class Parser
                             '/(\d+\s+\d+\s*)/s',
                             $match[1],
                             -1,
-                          \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
+                            \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                         );
                         $table = [];
 
@@ -308,7 +310,7 @@ class Parser
                 return new ElementArray($values, $document);
 
             case 'endstream':
-            case 'obj': //I don't know what it means but got my project fixed.
+            case 'obj': // I don't know what it means but got my project fixed.
             case '':
                 // Nothing to do with.
                 return null;

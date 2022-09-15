@@ -4,9 +4,11 @@
  * @file This file is part of the PdfParser library.
  *
  * @author  Konrad Abicht <k.abicht@gmail.com>
+ *
  * @date    2021-02-09
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.

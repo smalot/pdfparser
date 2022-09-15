@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -65,7 +67,7 @@ class ElementXRef extends Element
             && true === \is_string($this->getContent())
             && 1 === preg_match('/[0-9]+\_[0-9]+/', $this->getContent(), $matches)
         ) {
-            return (float) ($this->getContent()) == $value;
+            return (float) $this->getContent() == $value;
         }
 
         $id = ($value instanceof self) ? $value->getId() : $value;

@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHPi, extraction oriented.
@@ -90,7 +92,7 @@ class ElementDate extends ElementString
 
     public function __toString(): string
     {
-        return (string) ($this->value->format($this->format));
+        return (string) $this->value->format($this->format);
     }
 
     /**

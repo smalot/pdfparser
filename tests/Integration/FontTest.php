@@ -4,12 +4,15 @@
  * @file This file is part of the PdfParser library.
  *
  * @author  Konrad Abicht <k.abicht@gmail.com>
+ *
  * @date    2020-06-01
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -327,7 +330,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         ];
         $this->assertEquals('Docu Docu', $font->decodeText($commands));
 
-        //Check if ANSI/Unicode detection is working properly
+        // Check if ANSI/Unicode detection is working properly
         $filename = $this->rootDir.'/samples/bugs/Issue95_ANSI.pdf';
         $parser = $this->getParserInstance();
         $document = $parser->parseFile($filename);
@@ -336,7 +339,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $commands = [
             [
                 't' => '<',
-                'c' => 'E6F6FC', //ANSI encoded string
+                'c' => 'E6F6FC', // ANSI encoded string
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));

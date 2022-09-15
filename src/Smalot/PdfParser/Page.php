@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -436,12 +438,12 @@ class Page extends PDFObject
                     $tmpText = '';
                     if (isset($currentFont)) {
                         $tmpText = $currentFont->decodeOctal($data);
-                        //$tmpText = $currentFont->decodeHexadecimal($tmpText, false);
+                        // $tmpText = $currentFont->decodeHexadecimal($tmpText, false);
                     }
                     $tmpText = str_replace(
-                            ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
-                            ['\\', '(', ')', "\n", "\r", "\t", ' '],
-                            $tmpText
+                        ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
+                        ['\\', '(', ')', "\n", "\r", "\t", ' '],
+                        $tmpText
                     );
                     $tmpText = utf8_encode($tmpText);
                     if (isset($currentFont)) {
@@ -458,9 +460,9 @@ class Page extends PDFObject
                     $tmpText = $data[$i]['c'];
                     $decodedText = isset($currentFont) ? $currentFont->decodeOctal($tmpText) : $tmpText;
                     $decodedText = str_replace(
-                            ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
-                            ['\\', '(', ')', "\n", "\r", "\t", ' '],
-                            $decodedText
+                        ['\\\\', '\(', '\)', '\n', '\r', '\t', '\ '],
+                        ['\\', '(', ')', "\n", "\r", "\t", ' '],
+                        $decodedText
                     );
                     $decodedText = utf8_encode($decodedText);
                     if (isset($currentFont)) {
@@ -512,96 +514,96 @@ class Page extends PDFObject
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * ET
-                 * End a text object, discarding the text matrix
-                 */
+                    /*
+                     * ET
+                     * End a text object, discarding the text matrix
+                     */
                 case 'ET':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * leading TL
-                 * Set the text leading, Tl, to leading. Tl is used by the T*, ' and " operators.
-                 * Initial value: 0
-                 */
+                    /*
+                     * leading TL
+                     * Set the text leading, Tl, to leading. Tl is used by the T*, ' and " operators.
+                     * Initial value: 0
+                     */
                 case 'TL':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * tx ty Td
-                 * Move to the start of the next line, offset form the start of the
-                 * current line by tx, ty.
-                 */
+                    /*
+                     * tx ty Td
+                     * Move to the start of the next line, offset form the start of the
+                     * current line by tx, ty.
+                     */
                 case 'Td':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * tx ty TD
-                 * Move to the start of the next line, offset form the start of the
-                 * current line by tx, ty. As a side effect, this operator set the leading
-                 * parameter in the text state. This operator has the same effect as the
-                 * code:
-                 * -ty TL
-                 * tx ty Td
-                 */
+                    /*
+                     * tx ty TD
+                     * Move to the start of the next line, offset form the start of the
+                     * current line by tx, ty. As a side effect, this operator set the leading
+                     * parameter in the text state. This operator has the same effect as the
+                     * code:
+                     * -ty TL
+                     * tx ty Td
+                     */
                 case 'TD':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * a b c d e f Tm
-                 * Set the text matrix, Tm, and the text line matrix, Tlm. The operands are
-                 * all numbers, and the initial value for Tm and Tlm is the identity matrix
-                 * [1 0 0 1 0 0]
-                 */
+                    /*
+                     * a b c d e f Tm
+                     * Set the text matrix, Tm, and the text line matrix, Tlm. The operands are
+                     * all numbers, and the initial value for Tm and Tlm is the identity matrix
+                     * [1 0 0 1 0 0]
+                     */
                 case 'Tm':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * T*
-                 * Move to the start of the next line. This operator has the same effect
-                 * as the code:
-                 * 0 Tl Td
-                 * Where Tl is the current leading parameter in the text state.
-                 */
+                    /*
+                     * T*
+                     * Move to the start of the next line. This operator has the same effect
+                     * as the code:
+                     * 0 Tl Td
+                     * Where Tl is the current leading parameter in the text state.
+                     */
                 case 'T*':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * string Tj
-                 * Show a Text String
-                 */
+                    /*
+                     * string Tj
+                     * Show a Text String
+                     */
                 case 'Tj':
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * string '
-                 * Move to the next line and show a text string. This operator has the
-                 * same effect as the code:
-                 * T*
-                 * string Tj
-                 */
+                    /*
+                     * string '
+                     * Move to the next line and show a text string. This operator has the
+                     * same effect as the code:
+                     * T*
+                     * string Tj
+                     */
                 case "'":
                     $extractedData[] = $command;
                     break;
 
-                /*
-                 * aw ac string "
-                 * Move to the next lkine and show a text string, using aw as the word
-                 * spacing and ac as the character spacing. This operator has the same
-                 * effect as the code:
-                 * aw Tw
-                 * ac Tc
-                 * string '
-                 * Tw set the word spacing, Tw, to wordSpace.
-                 * Tc Set the character spacing, Tc, to charsSpace.
-                 */
+                    /*
+                     * aw ac string "
+                     * Move to the next lkine and show a text string, using aw as the word
+                     * spacing and ac as the character spacing. This operator has the same
+                     * effect as the code:
+                     * aw Tw
+                     * ac Tc
+                     * string '
+                     * Tw set the word spacing, Tw, to wordSpace.
+                     * Tc Set the character spacing, Tc, to charsSpace.
+                     */
                 case '"':
                     $extractedData[] = $command;
                     break;
@@ -613,18 +615,18 @@ class Page extends PDFObject
                     }
                     break;
 
-                /*
-                 * array TJ
-                 * Show one or more text strings allow individual glyph positioning.
-                 * Each lement of array con be a string or a number. If the element is
-                 * a string, this operator shows the string. If it is a number, the
-                 * operator adjust the text position by that amount; that is, it translates
-                 * the text matrix, Tm. This amount is substracted form the current
-                 * horizontal or vertical coordinate, depending on the writing mode.
-                 * in the default coordinate system, a positive adjustment has the effect
-                 * of moving the next glyph painted either to the left or down by the given
-                 * amount.
-                 */
+                    /*
+                     * array TJ
+                     * Show one or more text strings allow individual glyph positioning.
+                     * Each lement of array con be a string or a number. If the element is
+                     * a string, this operator shows the string. If it is a number, the
+                     * operator adjust the text position by that amount; that is, it translates
+                     * the text matrix, Tm. This amount is substracted form the current
+                     * horizontal or vertical coordinate, depending on the writing mode.
+                     * in the default coordinate system, a positive adjustment has the effect
+                     * of moving the next glyph painted either to the left or down by the given
+                     * amount.
+                     */
                 case 'TJ':
                     $extractedData[] = $command;
                     break;
@@ -695,40 +697,40 @@ class Page extends PDFObject
                  */
                 case 'BT':
                     $Tm = $defaultTm;
-                    $Tl = $defaultTl; //review this.
+                    $Tl = $defaultTl; // review this.
                     $Tx = 0;
                     $Ty = 0;
                     $fontId = $defaultFontId;
                     $fontSize = $defaultFontSize;
                     break;
 
-                /*
-                 * ET
-                 * End a text object, discarding the text matrix
-                 */
+                    /*
+                     * ET
+                     * End a text object, discarding the text matrix
+                     */
                 case 'ET':
                     $Tm = $defaultTm;
-                    $Tl = $defaultTl;  //review this
+                    $Tl = $defaultTl;  // review this
                     $Tx = 0;
                     $Ty = 0;
                     $fontId = $defaultFontId;
                     $fontSize = $defaultFontSize;
                     break;
 
-                /*
-                 * leading TL
-                 * Set the text leading, Tl, to leading. Tl is used by the T*, ' and " operators.
-                 * Initial value: 0
-                 */
+                    /*
+                     * leading TL
+                     * Set the text leading, Tl, to leading. Tl is used by the T*, ' and " operators.
+                     * Initial value: 0
+                     */
                 case 'TL':
                     $Tl = (float) $command['c'];
                     break;
 
-                /*
-                 * tx ty Td
-                 * Move to the start of the next line, offset form the start of the
-                 * current line by tx, ty.
-                 */
+                    /*
+                     * tx ty Td
+                     * Move to the start of the next line, offset form the start of the
+                     * current line by tx, ty.
+                     */
                 case 'Td':
                     $coord = explode(' ', $command['c']);
                     $Tx += (float) $coord[0];
@@ -737,15 +739,15 @@ class Page extends PDFObject
                     $Tm[$y] = (string) $Ty;
                     break;
 
-                /*
-                 * tx ty TD
-                 * Move to the start of the next line, offset form the start of the
-                 * current line by tx, ty. As a side effect, this operator set the leading
-                 * parameter in the text state. This operator has the same effect as the
-                 * code:
-                 * -ty TL
-                 * tx ty Td
-                 */
+                    /*
+                     * tx ty TD
+                     * Move to the start of the next line, offset form the start of the
+                     * current line by tx, ty. As a side effect, this operator set the leading
+                     * parameter in the text state. This operator has the same effect as the
+                     * code:
+                     * -ty TL
+                     * tx ty Td
+                     */
                 case 'TD':
                     $coord = explode(' ', $command['c']);
                     $Tl = (float) $coord[1];
@@ -755,34 +757,34 @@ class Page extends PDFObject
                     $Tm[$y] = (string) $Ty;
                     break;
 
-                /*
-                 * a b c d e f Tm
-                 * Set the text matrix, Tm, and the text line matrix, Tlm. The operands are
-                 * all numbers, and the initial value for Tm and Tlm is the identity matrix
-                 * [1 0 0 1 0 0]
-                 */
+                    /*
+                     * a b c d e f Tm
+                     * Set the text matrix, Tm, and the text line matrix, Tlm. The operands are
+                     * all numbers, and the initial value for Tm and Tlm is the identity matrix
+                     * [1 0 0 1 0 0]
+                     */
                 case 'Tm':
                     $Tm = explode(' ', $command['c']);
                     $Tx = (float) $Tm[$x];
                     $Ty = (float) $Tm[$y];
                     break;
 
-                /*
-                 * T*
-                 * Move to the start of the next line. This operator has the same effect
-                 * as the code:
-                 * 0 Tl Td
-                 * Where Tl is the current leading parameter in the text state.
-                 */
+                    /*
+                     * T*
+                     * Move to the start of the next line. This operator has the same effect
+                     * as the code:
+                     * 0 Tl Td
+                     * Where Tl is the current leading parameter in the text state.
+                     */
                 case 'T*':
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     break;
 
-                /*
-                 * string Tj
-                 * Show a Text String
-                 */
+                    /*
+                     * string Tj
+                     * Show a Text String
+                     */
                 case 'Tj':
                     $data = [$Tm, $currentText];
                     if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
@@ -792,35 +794,35 @@ class Page extends PDFObject
                     $extractedData[] = $data;
                     break;
 
-                /*
-                 * string '
-                 * Move to the next line and show a text string. This operator has the
-                 * same effect as the code:
-                 * T*
-                 * string Tj
-                 */
+                    /*
+                     * string '
+                     * Move to the next line and show a text string. This operator has the
+                     * same effect as the code:
+                     * T*
+                     * string Tj
+                     */
                 case "'":
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $currentText];
                     break;
 
-                /*
-                 * aw ac string "
-                 * Move to the next line and show a text string, using aw as the word
-                 * spacing and ac as the character spacing. This operator has the same
-                 * effect as the code:
-                 * aw Tw
-                 * ac Tc
-                 * string '
-                 * Tw set the word spacing, Tw, to wordSpace.
-                 * Tc Set the character spacing, Tc, to charsSpace.
-                 */
+                    /*
+                     * aw ac string "
+                     * Move to the next line and show a text string, using aw as the word
+                     * spacing and ac as the character spacing. This operator has the same
+                     * effect as the code:
+                     * aw Tw
+                     * ac Tc
+                     * string '
+                     * Tw set the word spacing, Tw, to wordSpace.
+                     * Tc Set the character spacing, Tc, to charsSpace.
+                     */
                 case '"':
                     $data = explode(' ', $currentText);
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
-                    $extractedData[] = [$Tm, $data[2]]; //Verify
+                    $extractedData[] = [$Tm, $data[2]]; // Verify
                     break;
 
                 case 'Tf':
@@ -837,18 +839,18 @@ class Page extends PDFObject
                     list($fontId, $fontSize) = explode(' ', $command['c'], 2);
                     break;
 
-                /*
-                 * array TJ
-                 * Show one or more text strings allow individual glyph positioning.
-                 * Each lement of array con be a string or a number. If the element is
-                 * a string, this operator shows the string. If it is a number, the
-                 * operator adjust the text position by that amount; that is, it translates
-                 * the text matrix, Tm. This amount is substracted form the current
-                 * horizontal or vertical coordinate, depending on the writing mode.
-                 * in the default coordinate system, a positive adjustment has the effect
-                 * of moving the next glyph painted either to the left or down by the given
-                 * amount.
-                 */
+                    /*
+                     * array TJ
+                     * Show one or more text strings allow individual glyph positioning.
+                     * Each lement of array con be a string or a number. If the element is
+                     * a string, this operator shows the string. If it is a number, the
+                     * operator adjust the text position by that amount; that is, it translates
+                     * the text matrix, Tm. This amount is substracted form the current
+                     * horizontal or vertical coordinate, depending on the writing mode.
+                     * in the default coordinate system, a positive adjustment has the effect
+                     * of moving the next glyph painted either to the left or down by the given
+                     * amount.
+                     */
                 case 'TJ':
                     $data = [$Tm, $currentText];
                     if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
