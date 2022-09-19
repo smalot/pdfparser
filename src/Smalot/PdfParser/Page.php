@@ -445,7 +445,7 @@ class Page extends PDFObject
                         ['\\', '(', ')', "\n", "\r", "\t", ' '],
                         $tmpText
                     );
-                    $tmpText = utf8_encode($tmpText);
+                    $tmpText = mb_convert_encoding($tmpText, 'UTF-8', 'ISO-8859-1');
                     if (isset($currentFont)) {
                         $tmpText = $currentFont->decodeContent($tmpText);
                     }
@@ -464,7 +464,9 @@ class Page extends PDFObject
                         ['\\', '(', ')', "\n", "\r", "\t", ' '],
                         $decodedText
                     );
-                    $decodedText = utf8_encode($decodedText);
+
+                    $decodedText = mb_convert_encoding($decodedText, 'UTF-8', 'ISO-8859-1');
+
                     if (isset($currentFont)) {
                         $decodedText = $currentFont->decodeContent($decodedText);
                     }
