@@ -15,9 +15,11 @@
  * @file This file is part of the PdfParser library.
  *
  * @author  Konrad Abicht <k.abicht@gmail.com>
+ *
  * @date    2020-01-06
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -171,7 +173,7 @@ class FilterHelper
         // position inside a group of 4 bytes (0-3)
         $group_pos = 0;
         $tuple = 0;
-        $pow85 = [(85 * 85 * 85 * 85), (85 * 85 * 85), (85 * 85), 85, 1];
+        $pow85 = [85 * 85 * 85 * 85, 85 * 85 * 85, 85 * 85, 85, 1];
 
         // for each byte
         for ($i = 0; $i < $data_length; ++$i) {
@@ -196,7 +198,7 @@ class FilterHelper
             }
         }
         if ($group_pos > 1) {
-            $tuple += $pow85[($group_pos - 1)];
+            $tuple += $pow85[$group_pos - 1];
         }
         // last tuple (if any)
         switch ($group_pos) {
@@ -371,13 +373,13 @@ class FilterHelper
             } elseif ($byte < 128) {
                 // if the length byte is in the range 0 to 127
                 // the following length + 1 (1 to 128) bytes shall be copied literally during decompression
-                $decoded .= substr($data, ($i + 1), ($byte + 1));
+                $decoded .= substr($data, $i + 1, $byte + 1);
                 // move to next block
                 $i += ($byte + 2);
             } else {
                 // if length is in the range 129 to 255,
                 // the following single byte shall be copied 257 - length (2 to 128) times during decompression
-                $decoded .= str_repeat($data[($i + 1)], (257 - $byte));
+                $decoded .= str_repeat($data[$i + 1], 257 - $byte);
                 // move to next block
                 $i += 2;
             }

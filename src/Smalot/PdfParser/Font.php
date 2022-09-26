@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -38,7 +40,7 @@ use Smalot\PdfParser\Exception\EncodingNotFoundException;
  */
 class Font extends PDFObject
 {
-    const MISSING = '?';
+    public const MISSING = '?';
 
     /**
      * @var array
@@ -416,7 +418,7 @@ class Font extends PDFObject
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if ((float) (trim($command[PDFObject::COMMAND])) < $font_space) {
+                    if ((float) trim($command[PDFObject::COMMAND]) < $font_space) {
                         $word_position = \count($words);
                     }
                     continue 2;
@@ -549,7 +551,7 @@ class Font extends PDFObject
         }
 
         // When Encoding is just string (/Encoding /WinAnsiEncoding)
-        if ($encoding instanceof Element) { //todo: ElementString class must by used?
+        if ($encoding instanceof Element) { // todo: ElementString class must by used?
             return $this->decodeContentByEncodingElement($text, $encoding);
         }
 
@@ -633,7 +635,7 @@ class Font extends PDFObject
         }
 
         return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
-        //todo: Why exactly `Windows-1252` used?
+        // todo: Why exactly `Windows-1252` used?
     }
 
     /**

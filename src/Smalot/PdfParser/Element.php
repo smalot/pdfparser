@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -91,7 +93,7 @@ class Element
 
     public function __toString(): string
     {
-        return (string) ($this->value);
+        return (string) $this->value;
     }
 
     public static function parse(string $content, ?Document $document = null, int &$position = 0)

@@ -5,9 +5,11 @@
  *          This file is part of the PdfParser library.
  *
  * @author  Sébastien MALOT <sebastien@malot.fr>
+ *
  * @date    2017-01-03
  *
  * @license LGPLv3
+ *
  * @url     <https://github.com/smalot/pdfparser>
  *
  *  PdfParser is a pdf library written in PHP, extraction oriented.
@@ -43,7 +45,7 @@ class ElementBoolean extends Element
      */
     public function __construct($value)
     {
-        parent::__construct(('true' == strtolower($value) || true === $value), null);
+        parent::__construct('true' == strtolower($value) || true === $value, null);
     }
 
     public function __toString(): string
