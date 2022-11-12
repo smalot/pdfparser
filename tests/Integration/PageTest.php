@@ -256,9 +256,9 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $dataCommands = $page->getDataCommands();
-        $this->assertCount(168, $dataCommands);
+        $this->assertCount(174, $dataCommands);
 
-        $tmItem = $dataCommands[1];
+        $tmItem = $dataCommands[2];
         $this->assertCount(3, $tmItem);
         $this->assertArrayHasKey('t', $tmItem);
         $this->assertArrayHasKey('o', $tmItem);
@@ -267,7 +267,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Tm', $tmItem['o']);
         $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
 
-        $tjItem = $dataCommands[2];
+        $tjItem = $dataCommands[3];
         $this->assertCount(3, $tjItem);
         $this->assertArrayHasKey('t', $tjItem);
         $this->assertArrayHasKey('o', $tjItem);
@@ -292,6 +292,7 @@ class PageTest extends TestCase
         $page = $pages[0];
 
         $dataTm = $page->getDataTm();
+
         $this->assertCount(81, $dataTm);
 
         $item = $dataTm[0];
@@ -308,8 +309,8 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-
         $this->assertStringContainsString('Document title', $item[1]);
+
         $item = $dataTm[2];
         $this->assertEquals(
             [
@@ -322,7 +323,6 @@ class PageTest extends TestCase
             ],
             $item[0]
         );
-
         $this->assertStringContainsString('Calibri : Lorem ipsum dolor sit amet, consectetur a', $item[1]);
 
         $item = $dataTm[80];
@@ -332,7 +332,7 @@ class PageTest extends TestCase
                 '0',
                 '0',
                 '1',
-                '343.003',
+                '342.840222606',
                 '81.44',
             ],
             $item[0]
@@ -443,6 +443,77 @@ class PageTest extends TestCase
             $item[0]
         );
         $this->assertStringContainsString('Purchase 2', $item[1]);
+
+        // test if scaling by fontSize (Tf, Tfs) and test matrix (Tm) are taken into account
+        $dataCommands = [
+            ['t' => '', 'o' => 'BT', 'c' => ''], // begin text
+            ['t' => '/', 'o' => 'Tf', 'c' => 'TT0 1'], // set font and scale font by 1 pt
+            ['t' => '', 'o' => 'Tm', 'c' => '7.5 -0 0 8.5 45.36 791.52'], // additionally scale by 7.5 pt
+            ['t' => '', 'o' => 'Td', 'c' => '0.568 0'], // move 0.568 * 7.5 pts (7.5 is horizontal scaling) to the right
+            ['t' => '(', 'o' => 'Tj', 'c' => 'test'], // print "test"
+            ['t' => '', 'o' => 'TD', 'c' => '-3.5 -1.291'], // move 3.5 * 7.5 pts left, 1.291 * 8.5 (vertical scaling) pts down and set text leading to 9.464
+            ['t' => '(', 'o' => 'Tj', 'c' => 'another test'], // print "another test"
+            ['t' => '', 'o' => '\'', 'c' => 'again a test'], // go to next line and print "again a test"
+            ['t' => '', 'o' => 'TL', 'c' => '5'], // set text leading by TL
+            ['t' => '', 'o' => '\'', 'c' => 'the next line'], // go to next line and print "the next line"
+        ];
+
+        // verify scaling is taken into account for Td
+        $dataTm = $page->getDataTm($dataCommands);
+        $item = $dataTm[0];
+        $this->assertEquals(
+            [
+                '7.5',
+                '-0',
+                '0',
+                '8.5',
+                '49.62',
+                '791.52',
+            ],
+            $item[0]
+        );
+
+        // verify scaling is taken into account for TD
+        $item = $dataTm[1];
+        $this->assertEquals(
+            [
+                '7.5',
+                '-0',
+                '0',
+                '8.5',
+                '23.37',
+                '780.5465',
+            ],
+            $item[0]
+        );
+
+        // verify scaling is taken into account for text leading set by TD
+        $item = $dataTm[2];
+        $this->assertEquals(
+            [
+                '7.5',
+                '-0',
+                '0',
+                '8.5',
+                '23.37',
+                '769.573',
+            ],
+            $item[0]
+        );
+
+        // verify scaling is taken into account for text leading set by TL
+        $item = $dataTm[3];
+        $this->assertEquals(
+            [
+                '7.5',
+                '-0',
+                '0',
+                '8.5',
+                '23.37',
+                '727.073',
+            ],
+            $item[0]
+        );
     }
 
     public function testDataTmFontInfoHasToBeIncluded(): void
