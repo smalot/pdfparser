@@ -74,7 +74,7 @@ class ParserTest extends TestCase
                             $content = $page->getText();
                             $this->assertTrue('' !== $content);
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         if (
                             'Secured pdf file are currently not supported.' !== $e->getMessage()
                             && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')

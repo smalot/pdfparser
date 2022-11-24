@@ -94,7 +94,7 @@ class EncodingTest extends TestCase
             $this->assertEquals('', $encoding->__toString());
         } else {
             // PHP 7.4+
-            $this->expectException(Exception::class);
+            $this->expectException(\Exception::class);
             $this->expectExceptionMessage('Missing encoding data for: "invalid"');
 
             $header = new Header(['BaseEncoding' => new Element('invalid')]);
