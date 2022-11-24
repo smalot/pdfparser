@@ -262,13 +262,13 @@ class Parser
      */
     protected function parseHeaderElement(?string $type, $value, ?Document $document)
     {
+        if (empty($value)) {
+            return new ElementNull();
+        }
+
         switch ($type) {
             case '<<':
             case '>>':
-                if (empty($value)) {
-                    return null;
-                }
-
                 $header = $this->parseHeader($value, $document);
                 PDFObject::factory($document, $header, null, $this->config);
 
