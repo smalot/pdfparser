@@ -262,8 +262,8 @@ class Parser
      */
     protected function parseHeaderElement(?string $type, $value, ?Document $document)
     {
-        if (empty($value)) {
-            return new ElementNull();
+        if (($type === "<<" || $type === ">>") && empty($value)) {
+            $value = [];
         }
 
         switch ($type) {
