@@ -264,10 +264,15 @@ class Document
         throw new \Exception('Missing catalog.');
     }
 
-    public function getText(): string
+    public function getText($limit = NULL): string
     {
         $texts = [];
         $pages = $this->getPages();
+
+        // Only use the first X number of pages if $limit is set and numeric.
+        if (!empty($limit) && is_numeric($limit)) {
+          $pages = array_slice($pages, 0, $limit);
+        }
 
         foreach ($pages as $index => $page) {
             /**
