@@ -35,8 +35,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration\Element;
 
-use DateTime;
-use Exception;
 use Smalot\PdfParser\Element\ElementDate;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -79,56 +77,56 @@ class ElementDateTest extends TestCase
         $offset = 0;
         $element = ElementDate::parse(' (D:20130901235555+02\'00\') ', null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);
         $this->assertEquals(26, $offset);
 
         $offset = 0;
         $element = ElementDate::parse(' (D:20130901235555+02\'00\') ', null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);
         $this->assertEquals(26, $offset);
 
         $offset = 0;
         $element = ElementDate::parse(' (D:20130901235555+02\'00\')', null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);
         $this->assertEquals(26, $offset);
 
         $offset = 0;
         $element = ElementDate::parse('(D:20130901235555+02\'00\')', null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);
         $this->assertEquals(25, $offset);
 
         $offset = 0;
         $element = ElementDate::parse(" \n (D:20130901235555+02'00') ", null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);
         $this->assertEquals(28, $offset);
 
         $offset = 0;
         $element = ElementDate::parse(" \n (D:20130901235555) ", null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-09-01T23:55:55+00:00', (string) $element);
         $this->assertEquals(21, $offset);
 
         $offset = 0;
         $element = ElementDate::parse("(D:20131206091846Z00'00')", null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2013-12-06T09:18:46+00:00', (string) $element);
         $this->assertEquals(25, $offset);
 
         $offset = 0;
         $element = ElementDate::parse(" \n (D:1-23-2014, 19:02:15-03'00') ", null, $offset);
         $element->setFormat('c');
-        $this->assertTrue($element->getContent() instanceof DateTime);
+        $this->assertTrue($element->getContent() instanceof \DateTime);
         $this->assertEquals('2014-01-23T19:02:15-03:00', (string) $element);
         $this->assertEquals(33, $offset);
 
@@ -141,35 +139,35 @@ class ElementDateTest extends TestCase
 
     public function testGetContent(): void
     {
-        $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
-        $this->assertEquals(new DateTime('2013-09-01 21:55:55+00:00'), $element->getContent());
+        $element = new ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
+        $this->assertEquals(new \DateTime('2013-09-01 21:55:55+00:00'), $element->getContent());
     }
 
     public function testGetContentInvalidParameter(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
 
         $element = new ElementDate('2013-09-01 23:55:55+02:00');
-        $this->assertEquals(new DateTime('2013-09-01 21:55:55+02:00'), $element->getContent());
+        $this->assertEquals(new \DateTime('2013-09-01 21:55:55+02:00'), $element->getContent());
     }
 
     public function testEquals(): void
     {
-        $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
+        $element = new ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
         $element->setFormat('c');
 
         $this->assertTrue($element->equals('2013-09-01T23:55:55+02:00'));
         $this->assertFalse($element->equals('2013-09-01T23:55:55+01:00'));
 
-        $this->assertTrue($element->equals(new DateTime('2013-09-01T21:55:55+00:00')));
-        $this->assertFalse($element->equals(new DateTime('2013-09-01T23:55:55+01:00')));
+        $this->assertTrue($element->equals(new \DateTime('2013-09-01T21:55:55+00:00')));
+        $this->assertFalse($element->equals(new \DateTime('2013-09-01T23:55:55+01:00')));
 
         $this->assertFalse($element->equals('ABC'));
     }
 
     public function testContains(): void
     {
-        $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
+        $element = new ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
 
         $this->assertTrue($element->contains('2013-09-01T21:55:55+00:00'));
         $this->assertFalse($element->contains('2013-06-15'));
@@ -177,7 +175,7 @@ class ElementDateTest extends TestCase
 
     public function testToString(): void
     {
-        $element = new ElementDate(new DateTime('2013-09-01 23:55:55+02:00'));
+        $element = new ElementDate(new \DateTime('2013-09-01 23:55:55+02:00'));
 
         $element->setFormat('c');
         $this->assertEquals('2013-09-01T23:55:55+02:00', (string) $element);

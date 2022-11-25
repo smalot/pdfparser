@@ -35,7 +35,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
-use Exception;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
@@ -223,7 +222,7 @@ class DocumentTest extends TestCase
 
     public function testGetPagesMissingCatalog(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Missing catalog.');
 
         // Missing catalog
