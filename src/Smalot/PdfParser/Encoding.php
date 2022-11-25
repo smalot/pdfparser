@@ -130,7 +130,7 @@ class Encoding extends PDFObject
     {
         try {
             return $this->getEncodingClass();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // prior to PHP 7.4 toString has to return an empty string.
             if (version_compare(\PHP_VERSION, '7.4.0', '<')) {
                 return '';
