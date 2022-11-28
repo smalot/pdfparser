@@ -35,7 +35,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
-use Exception;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;

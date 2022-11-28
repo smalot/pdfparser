@@ -329,7 +329,10 @@ class RawDataParser
                 // number of bytes in a row
                 $rowlen = ($columns + 1);
                 // convert the stream into an array of integers
+                /** @var array<int> */
                 $sdata = unpack('C*', $xrefcrs[1][3][0]);
+                // TODO: Handle the case when unpack returns false
+
                 // split the rows
                 $sdata = array_chunk($sdata, $rowlen);
 
