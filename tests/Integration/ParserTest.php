@@ -271,6 +271,30 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Tests if a PDF with null or empty string headers trigger an Exception.
+     *
+     * It happened because there was a check missing in Parser.php (parseHeaderElement function).
+     *
+     * @see https://github.com/smalot/pdfparser/issues/557
+     */
+    public function testIssue557(): void
+    {
+        /**
+         * PDF provided by @DogLoc for usage in our test environment.
+         *
+         * @see https://github.com/smalot/pdfparser/pull/560#issue-1461437944
+         */
+        $filename = $this->rootDir.'/samples/bugs/Issue557.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString(
+            'Metal Face Inductive Sensor',
+            $document->getText()
+        );
+    }
+
+    /**
      * Tests behavior when changing default font space limit (-50).
      *
      * Test is based on testIssue359 (above).
