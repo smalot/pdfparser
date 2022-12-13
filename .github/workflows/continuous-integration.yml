@@ -223,4 +223,4 @@ jobs:
         run: composer update --working-dir=dev-tools
 
       - name: Tests
-        run: dev-tools/vendor/bin/phpunit
+        run: dev-tools/vendor/bin/phpunit -c phpunit-windows.xml
