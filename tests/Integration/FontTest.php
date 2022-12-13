@@ -353,6 +353,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      * which would be instance of PDFObject class (but not Encoding or ElementString).
      *
      * @see https://github.com/smalot/pdfparser/pull/500
+     *
      * @group linux-only
      */
     public function testDecodeTextForFontWithIndirectEncodingWithoutTypeEncoding(): void
