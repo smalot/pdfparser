@@ -53,7 +53,7 @@ class PDFObjectTest extends TestCase
     }
 
     /**
-     * @linux-only
+     * @group linux-only
      */
     public function testGetCommandsText(): void
     {
@@ -203,7 +203,7 @@ q
     }
 
     /**
-     * @linux-only
+     * @group linux-only
      */
     public function testGetSectionText(): void
     {

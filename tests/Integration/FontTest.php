@@ -295,7 +295,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
     }
 
     /**
-     * @linux-only
+     * @group linux-only
      */
     public function testDecodeText(): void
     {
@@ -353,7 +353,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      * which would be instance of PDFObject class (but not Encoding or ElementString).
      *
      * @see https://github.com/smalot/pdfparser/pull/500
-     * @linux-only
+     * @group linux-only
      */
     public function testDecodeTextForFontWithIndirectEncodingWithoutTypeEncoding(): void
     {
