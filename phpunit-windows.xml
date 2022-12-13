@@ -5,7 +5,7 @@
          xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/6.1/phpunit.xsd"
          backupGlobals="false"
          backupStaticAttributes="false"
-         bootstrap="D:\a\pdfparser\pdfparser\vendor\autoload.php"
+         bootstrap="vendor\autoload.php"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
