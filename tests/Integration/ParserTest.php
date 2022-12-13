@@ -35,7 +35,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration;
 
-use Exception;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
@@ -74,7 +73,7 @@ class ParserTest extends TestCase
                             $content = $page->getText();
                             $this->assertTrue('' !== $content);
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         if (
                             'Secured pdf file are currently not supported.' !== $e->getMessage()
                             && 0 != strpos($e->getMessage(), 'TCPDF_PARSER')
@@ -267,6 +266,30 @@ class ParserTest extends TestCase
         // check for an example string (PDF consists of many pages)
         $this->assertStringContainsString(
             '(This Code will be changed while mass production)',
+            $document->getText()
+        );
+    }
+
+    /**
+     * Tests if a PDF with null or empty string headers trigger an Exception.
+     *
+     * It happened because there was a check missing in Parser.php (parseHeaderElement function).
+     *
+     * @see https://github.com/smalot/pdfparser/issues/557
+     */
+    public function testIssue557(): void
+    {
+        /**
+         * PDF provided by @DogLoc for usage in our test environment.
+         *
+         * @see https://github.com/smalot/pdfparser/pull/560#issue-1461437944
+         */
+        $filename = $this->rootDir.'/samples/bugs/Issue557.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+
+        $this->assertStringContainsString(
+            'Metal Face Inductive Sensor',
             $document->getText()
         );
     }

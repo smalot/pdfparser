@@ -35,7 +35,6 @@
 
 namespace Tests\Smalot\PdfParser\Integration\RawData;
 
-use Exception;
 use Smalot\PdfParser\RawData\FilterHelper;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -89,7 +88,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterFlateDecodeEmptyString(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('gzuncompress(): data error');
 
         $this->fixture->decodeFilter('FlateDecode', '');
@@ -100,7 +99,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterFlateDecodeUncompressedString(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('gzuncompress(): data error');
 
         $this->fixture->decodeFilter('FlateDecode', 'something');
@@ -124,7 +123,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterCCITTFaxDecode(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Decode CCITTFaxDecode not implemented yet.');
 
         $this->fixture->decodeFilter('CCITTFaxDecode', '');
@@ -135,7 +134,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterCrypt(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Decode Crypt not implemented yet.');
 
         $this->fixture->decodeFilter('Crypt', '');
@@ -146,7 +145,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterDCTDecode(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Decode DCTDecode not implemented yet.');
 
         $this->fixture->decodeFilter('DCTDecode', '');
@@ -157,7 +156,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterJBIG2Decode(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Decode JBIG2Decode not implemented yet.');
 
         $this->fixture->decodeFilter('JBIG2Decode', '');
@@ -168,7 +167,7 @@ class FilterHelperTest extends TestCase
      */
     public function testDecodeFilterJPXDecode(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Decode JPXDecode not implemented yet.');
 
         $this->fixture->decodeFilter('JPXDecode', '');
