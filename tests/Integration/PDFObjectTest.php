@@ -52,6 +52,9 @@ class PDFObjectTest extends TestCase
         return new PDFObject($document);
     }
 
+    /**
+     * @linux-only
+     */
     public function testGetCommandsText(): void
     {
         $content = "/R14 30 Tf 0.999016 0 0 1 137.4
@@ -199,6 +202,9 @@ q
         $this->assertEquals($cleaned, $expected);
     }
 
+    /**
+     * @linux-only
+     */
     public function testGetSectionText(): void
     {
         $content = '/Shape <</MCID 1 >>BDC

@@ -225,8 +225,5 @@ jobs:
       - name: Install Composer dependencies (dev-tools)
         run: composer update --working-dir=dev-tools
 
-      - name: Show files and folders
-        run: dir -s
-
       - name: Tests
-        run: dev-tools/vendor/bin/phpunit -c phpunit-windows.xml
+        run: dev-tools/vendor/bin/phpunit -c phpunit-windows.xml --exclude-group linux-only
