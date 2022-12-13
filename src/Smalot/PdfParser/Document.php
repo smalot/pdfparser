@@ -270,7 +270,7 @@ class Document
         $pages = $this->getPages();
 
         // Only use the first X number of pages if $limit is set and numeric.
-        if (!empty($limit) && is_numeric($limit)) {
+        if (is_int($pageLimit) && 0 < $pageLimit) {
           $pages = array_slice($pages, 0, $limit);
         }
 
