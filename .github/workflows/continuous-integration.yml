@@ -220,7 +220,7 @@ jobs:
           ini-values: memory_limit=1G
 
       - name: Install Composer dependencies
-        run: "make install-dev-tools"
+        run: composer update --working-dir=dev-tools
 
       - name: Tests
-        run: "make run-phpunit"
+        run: dev-tools/vendor/bin/phpunit
