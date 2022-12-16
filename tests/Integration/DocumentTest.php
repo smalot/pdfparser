@@ -39,6 +39,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\PDFObject;
 use Tests\Smalot\PdfParser\TestCase;
 
@@ -228,5 +229,30 @@ class DocumentTest extends TestCase
         // Missing catalog
         $document = $this->getDocumentInstance();
         $document->getPages();
+    }
+
+    /**
+     * Tests getText method without a given page limit.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/562
+     */
+    public function testGetTextNoPageLimit(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/Issue331.pdf');
+
+        self::assertStringContainsString('Medeni Usul ve İcra İflas Hukuku', $document->getText());
+    }
+
+    /**
+     * Tests getText method with a given page limit.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/562
+     */
+    public function testGetTextWithPageLimit(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/Issue331.pdf');
+
+        // given text is on page 2, it has to be ignored because of that
+        self::assertStringNotContainsString('Medeni Usul ve İcra İflas Hukuku', $document->getText(1));
     }
 }

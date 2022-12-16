@@ -15,10 +15,14 @@ $pdf = $parser->parseContent(file_get_contents('document.pdf'))
 A common scenario is to extract text.
 
 ```php
+// extract text of the whole PDF
 $text = $pdf->getText();
 
 // or extract the text of a specific page (in this case the first page)
 $text = $pdf->getPages()[0]->getText();
+
+// you can also extract text of a limited amount of pages. here, it will only use the first five pages.
+$text = $pdf->getText(5);
 ```
 
 ## Extract text positions
