@@ -612,9 +612,7 @@ class Page extends PDFObject
 
                 case 'Tf':
                 case 'TF':
-                    if ($this->config->getDataTmFontInfoHasToBeIncluded()) {
-                        $extractedData[] = $command;
-                    }
+                    $extractedData[] = $command;
                     break;
 
                     /*
@@ -673,20 +671,32 @@ class Page extends PDFObject
          *  Set default values for font data
          */
         $defaultFontId = -1;
-        $defaultFontSize = 0;
+        $defaultFontSize = 1;
 
         /*
-         * Setting where are the X and Y coordinates in the matrix (Tm)
+         * Indexes of horizontal/vertical scaling and X,Y-coordinates in the matrix (Tm)
          */
+        $hSc = 0; // horizontal scaling
+        /**
+         * index of vertical scaling in the array that encodes the text matrix.
+         * for more information: https://github.com/smalot/pdfparser/pull/559#discussion_r1053415500
+         */
+        $vSc = 3;
         $x = 4;
         $y = 5;
+
+        /*
+         * x,y-coordinates of text space origin in user units
+         *
+         * These will be assigned the value of the currently printed string
+         */
         $Tx = 0;
         $Ty = 0;
 
         $Tm = $defaultTm;
         $Tl = $defaultTl;
         $fontId = $defaultFontId;
-        $fontSize = $defaultFontSize;
+        $fontSize = $defaultFontSize; // reflects fontSize set by Tf or Tfs
 
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
@@ -695,11 +705,11 @@ class Page extends PDFObject
             switch ($command['o']) {
                 /*
                  * BT
-                 * Begin a text object, inicializind the Tm and Tlm to identity matrix
+                 * Begin a text object, initializing the Tm and Tlm to identity matrix
                  */
                 case 'BT':
                     $Tm = $defaultTm;
-                    $Tl = $defaultTl; // review this.
+                    $Tl = $defaultTl;
                     $Tx = 0;
                     $Ty = 0;
                     $fontId = $defaultFontId;
@@ -712,7 +722,7 @@ class Page extends PDFObject
                      */
                 case 'ET':
                     $Tm = $defaultTm;
-                    $Tl = $defaultTl;  // review this
+                    $Tl = $defaultTl;
                     $Tx = 0;
                     $Ty = 0;
                     $fontId = $defaultFontId;
@@ -720,12 +730,13 @@ class Page extends PDFObject
                     break;
 
                     /*
-                     * leading TL
+                     * text leading TL
                      * Set the text leading, Tl, to leading. Tl is used by the T*, ' and " operators.
                      * Initial value: 0
                      */
                 case 'TL':
-                    $Tl = (float) $command['c'];
+                    // scaled text leading
+                    $Tl = (float) $command['c'] * (float) $Tm[$vSc];
                     break;
 
                     /*
@@ -735,8 +746,8 @@ class Page extends PDFObject
                      */
                 case 'Td':
                     $coord = explode(' ', $command['c']);
-                    $Tx += (float) $coord[0];
-                    $Ty += (float) $coord[1];
+                    $Tx += (float) $coord[0] * (float) $Tm[$hSc];
+                    $Ty += (float) $coord[1] * (float) $Tm[$vSc];
                     $Tm[$x] = (string) $Tx;
                     $Tm[$y] = (string) $Ty;
                     break;
@@ -752,9 +763,9 @@ class Page extends PDFObject
                      */
                 case 'TD':
                     $coord = explode(' ', $command['c']);
-                    $Tl = (float) $coord[1];
-                    $Tx += (float) $coord[0];
-                    $Ty -= (float) $coord[1];
+                    $Tl = -((float) $coord[1] * (float) $Tm[$vSc]);
+                    $Tx += (float) $coord[0] * (float) $Tm[$hSc];
+                    $Ty += (float) $coord[1] * (float) $Tm[$vSc];
                     $Tm[$x] = (string) $Tx;
                     $Tm[$y] = (string) $Ty;
                     break;
