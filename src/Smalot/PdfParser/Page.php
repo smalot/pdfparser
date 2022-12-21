@@ -677,7 +677,11 @@ class Page extends PDFObject
          * Indexes of horizontal/vertical scaling and X,Y-coordinates in the matrix (Tm)
          */
         $hSc = 0; // horizontal scaling
-        $vSc = 3; // vertical scaling
+        /**
+         * index of vertical scaling in the array that encodes the text matrix.
+         * for more information: https://github.com/smalot/pdfparser/pull/559#discussion_r1053415500
+         */
+        $vSc = 3;
         $x = 4;
         $y = 5;
 
