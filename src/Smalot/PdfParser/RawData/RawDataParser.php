@@ -635,14 +635,10 @@ class RawDataParser
                 // name object
                 $objtype = $char;
                 ++$offset;
-                $pregResult = preg_match(
-                    '/^([^\x00\x09\x0a\x0c\x0d\x20\s\x28\x29\x3c\x3e\x5b\x5d\x7b\x7d\x2f\x25]+)/',
-                    substr($pdfData, $offset, 256),
-                    $matches
-                );
-                if (1 == $pregResult) {
-                    $objval = $matches[1]; // unescaped value
-                    $offset += \strlen($objval);
+                $span = strcspn($pdfData, "\x00\x09\x0a\x0c\x0d\x20\n\t\r\v\f\x28\x29\x3c\x3e\x5b\x5d\x7b\x7d\x2f\x25", $offset, 256);
+                if ($span > 0) {
+                    $objval = substr($pdfData, $offset, $span); // unescaped value
+                    $offset += $span;
                 }
                 break;
 
@@ -723,15 +719,12 @@ class RawDataParser
                     // hexadecimal string object
                     $objtype = $char;
                     ++$offset;
-                    $pregResult = preg_match(
-                        '/^([0-9A-Fa-f\x09\x0a\x0c\x0d\x20]+)>/iU',
-                        substr($pdfData, $offset),
-                        $matches
-                    );
-                    if (('<' == $char) && 1 == $pregResult) {
+
+                    $span = strspn($pdfData, "0123456789abcdefABCDEF\x09\x0a\x0c\x0d\x20", $offset);
+                    if (('<' == $char) && $span > 0 && @$pdfData[$offset+$span] == '>') {
                         // remove white space characters
-                        $objval = strtr($matches[1], $this->config->getPdfWhitespaces(), '');
-                        $offset += \strlen($matches[0]);
+                        $objval = strtr(substr($pdfData, $offset, $span), $this->config->getPdfWhitespaces(), '');
+                        $offset += $span + 1;
                     } elseif (false !== ($endpos = strpos($pdfData, '>', $offset))) {
                         $offset = $endpos + 1;
                     }
@@ -762,17 +755,18 @@ class RawDataParser
                     // start stream object
                     $objtype = 'stream';
                     $offset += 6;
-                    if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset), $matches)) {
+                    if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
-                            substr($pdfData, $offset),
+                            $pdfData,
                             $matches,
-                            \PREG_OFFSET_CAPTURE
+                            \PREG_OFFSET_CAPTURE,
+                            $offset
                         );
                         if (1 == $pregResult) {
-                            $objval = substr($pdfData, $offset, $matches[0][1]);
-                            $offset += $matches[1][1];
+                            $objval = substr($pdfData, $offset, $matches[0][1] - $offset);
+                            $offset = $matches[1][1];
                         }
                     }
                 } elseif ('endstream' == substr($pdfData, $offset, 9)) {
@@ -888,7 +882,7 @@ class RawDataParser
         }
 
         // get PDF content string
-        $pdfData = substr($data, $trimpos);
+        $pdfData = $trimpos > 0 ? substr($data, $trimpos) : $data;
 
         // get xref and trailer data
         $xref = $this->getXrefData($pdfData);
