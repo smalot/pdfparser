@@ -25,7 +25,7 @@
 
     <testsuites>
         <testsuite name="all">
-            <directory>tests</directory>
+            <directory>tests/PHPUnit</directory>
         </testsuite>
     </testsuites>
     <filter>

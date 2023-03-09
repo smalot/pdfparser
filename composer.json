@@ -27,7 +27,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Smalot\\PdfParser\\": "tests/"
+            "PerformanceTests\\": "tests/Performance/",
+            "PHPUnitTests\\": "tests/PHPUnit/"
         }
     },
     "config": {

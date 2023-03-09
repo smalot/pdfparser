@@ -33,9 +33,9 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Tests\Smalot\PdfParser\Performance\Test;
+namespace PerformanceTests\Test;
 
-use Smalot\PdfParser\Page;
+use PerformanceTests\AbstractPerformanceTestClass;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -44,7 +44,7 @@ use Smalot\PdfParser\Parser;
  * to cache the objects inside the PDF file, then the parsing should be quick.
  * If it does not, the parsing can be extensively slow or even crash.
  */
-class DocumentDictionaryCacheTest extends AbstractPerformanceTest
+class DocumentDictionaryCacheTest extends AbstractPerformanceTestClass
 {
     /**
      * @var Parser
