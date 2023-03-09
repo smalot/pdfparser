@@ -32,7 +32,7 @@ require __DIR__.'/../../alt_autoload.php-dist';
 
 $parser = new Smalot\PdfParser\Parser();
 
-$filename = __DIR__.'/../samples/InternationalChars.pdf';
+$filename = __DIR__.'/../../samples/InternationalChars.pdf';
 $document = $parser->parseFile($filename);
 
 $needle = 'Лорем ипсум долор сит амет, еу сед либрис долорем инцоррупте.';
