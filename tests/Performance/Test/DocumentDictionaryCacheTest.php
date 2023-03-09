@@ -35,7 +35,7 @@
 
 namespace PerformanceTests\Test;
 
-use PerformanceTests\AbstractPerformanceTestClass;
+use PerformanceTests\AbstractPerformanceTest;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -44,7 +44,7 @@ use Smalot\PdfParser\Parser;
  * to cache the objects inside the PDF file, then the parsing should be quick.
  * If it does not, the parsing can be extensively slow or even crash.
  */
-class DocumentDictionaryCacheTest extends AbstractPerformanceTestClass
+class DocumentDictionaryCacheTest extends AbstractPerformanceTest
 {
     /**
      * @var Parser

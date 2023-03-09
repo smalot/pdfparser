@@ -2,7 +2,7 @@
 
 namespace PerformanceTests;
 
-abstract class AbstractPerformanceTestClass
+abstract class AbstractPerformanceTest
 {
     /**
      * Initializes the test (eg, fetches the files etc).
