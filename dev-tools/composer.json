@@ -4,6 +4,6 @@
         "friendsofphp/php-cs-fixer": "^3",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-phpunit": "^1",
-        "phpunit/phpunit": ">=7.5"
+        "phpunit/phpunit": ">=7.5 <10.0"
     }
 }
