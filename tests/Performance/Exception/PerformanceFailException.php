@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Smalot\PdfParser\Performance\Exception;
+namespace PerformanceTests\Exception;
 
 class PerformanceFailException extends \Exception
 {

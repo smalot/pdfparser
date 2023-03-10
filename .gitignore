@@ -8,4 +8,5 @@
 debug*
 composer.lock
 /.php-cs-fixer.cache
+/.phpunit.cache
 /.phpunit.result.cache
