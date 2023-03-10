@@ -33,9 +33,9 @@
  *  If not, see <http://www.pdfparser.org/sites/default/LICENSE.txt>.
  */
 
-namespace Tests\Smalot\PdfParser\Performance\Test;
+namespace PerformanceTests\Test;
 
-use Smalot\PdfParser\Page;
+use PerformanceTests\AbstractPerformanceTest;
 use Smalot\PdfParser\Parser;
 
 /**

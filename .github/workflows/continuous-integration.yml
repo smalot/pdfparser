@@ -165,7 +165,7 @@ jobs:
           coverage: "none"
 
       - name: "Test alt-autoload"
-        run: "php tests/AltAutoloadTest.php"
+        run: "php tests/AltAutoloading/AltAutoloadCheck.php"
 
   phpunit-lowest:
     name: "PHPUnit lowest deps (PHP ${{ matrix.php }})"
