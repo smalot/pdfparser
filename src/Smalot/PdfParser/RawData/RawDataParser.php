@@ -721,7 +721,7 @@ class RawDataParser
                     ++$offset;
 
                     $span = strspn($pdfData, "0123456789abcdefABCDEF\x09\x0a\x0c\x0d\x20", $offset);
-                    if (('<' == $char) && $span > 0 && @$pdfData[$offset+$span] == '>') {
+                    if ('<' == $char && $span > 0 && '>' == @$pdfData[$offset + $span]) {
                         // remove white space characters
                         $objval = strtr(substr($pdfData, $offset, $span), $this->config->getPdfWhitespaces(), '');
                         $offset += $span + 1;
