@@ -553,16 +553,18 @@ class RawDataParser
         $offset += $objHeaderLen;
         $objContentArr = [];
         $i = 0; // object main index
+        $header = null;
         do {
             $oldOffset = $offset;
             // get element
-            $element = $this->getRawObject($pdfData, $offset);
+            $element = $this->getRawObject($pdfData, $offset, $header);
             $offset = $element[2];
             // decode stream using stream's dictionary information
-            if ($decoding && ('stream' === $element[0]) && (isset($objContentArr[$i - 1][0])) && ('<<' === $objContentArr[$i - 1][0])) {
-                $element[3] = $this->decodeStream($pdfData, $xref, $objContentArr[$i - 1][1], $element[1]);
+            if ($decoding && ('stream' === $element[0]) && $header != null) {
+                $element[3] = $this->decodeStream($pdfData, $xref, $header[1], $element[1]);
             }
             $objContentArr[$i] = $element;
+            $header = isset($element[0]) && '<<' === $element[0] ? $element : null;
             ++$i;
         } while (('endobj' !== $element[0]) && ($offset !== $oldOffset));
         // remove closing delimiter
@@ -606,10 +608,11 @@ class RawDataParser
      * Get object type, raw value and offset to next object
      *
      * @param int $offset Object offset
+     * @param array|null $header obj header value, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject(string $pdfData, int $offset = 0): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $header = null): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -758,6 +761,7 @@ class RawDataParser
                     $offset += 6;
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
+                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($header, 'Type') && 'Image' == $this->getHeaderValue($header, 'Subtype');
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
                             $pdfData,
@@ -765,8 +769,9 @@ class RawDataParser
                             \PREG_OFFSET_CAPTURE,
                             $offset
                         );
+
                         if (1 == $pregResult) {
-                            $objval = substr($pdfData, $offset, $matches[0][1] - $offset);
+                            $objval = $skip ? '' : substr($pdfData, $offset,  $matches[0][1] - $offset);
                             $offset = $matches[1][1];
                         }
                     }
@@ -794,6 +799,27 @@ class RawDataParser
         }
 
         return [$objtype, $objval, $offset];
+    }
+
+    /**
+     * @param array|null $header obj's header, parsed by getRawObject
+     * @param string $key Header's section
+     * @param string|null $default default value for header's section
+     * @return string|null value of obj header's section, or default value if none found
+     */
+    protected function getHeaderValue(?array $header, string $key, ?string $default = ''): ?string
+    {
+        if ($header == null || !is_array($header) || 2 > count($header) || '<<' !== $header[0] || !is_array($header[1]))
+            return $default;
+
+        $dic = $header[1];
+        $cn = count($dic);
+        foreach ($dic as $i => $val) {
+            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && $i < $cn - 1)
+                return is_array($dic[$i + 1]) && 1 < count($dic[$i + 1]) ? $dic[$i + 1][1]: $default;
+        }
+
+        return $default;
     }
 
     /**
