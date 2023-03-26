@@ -761,13 +761,16 @@ class RawDataParser
                     $offset += 6;
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
-                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype');
+
+                        $streamLen = intval($this->getHeaderValue($headerDic, 'Length', 'numeric', 0));
+                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
+
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
                             $pdfData,
                             $matches,
                             \PREG_OFFSET_CAPTURE,
-                            $offset
+                            $offset + $streamLen
                         );
 
                         if (1 == $pregResult) {
