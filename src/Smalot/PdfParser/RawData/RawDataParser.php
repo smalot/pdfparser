@@ -557,7 +557,7 @@ class RawDataParser
         do {
             $oldOffset = $offset;
             // get element
-            $element = $this->getRawObject($pdfData, $offset, $header);
+            $element = $this->getRawObject($pdfData, $offset, $header[1]);
             $offset = $element[2];
             // decode stream using stream's dictionary information
             if ($decoding && ('stream' === $element[0]) && $header != null) {
@@ -608,11 +608,11 @@ class RawDataParser
      * Get object type, raw value and offset to next object
      *
      * @param int $offset Object offset
-     * @param array|null $header obj header value, parsed by getRawObject. Used for stream parsing optimization
+     * @param array|null $headerDic obj header's dictionary, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject(string $pdfData, int $offset = 0, ?array $header = null): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -761,7 +761,7 @@ class RawDataParser
                     $offset += 6;
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
-                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($header, 'Type') && 'Image' == $this->getHeaderValue($header, 'Subtype');
+                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype');
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
                             $pdfData,
@@ -804,19 +804,18 @@ class RawDataParser
     /**
      * @param array|null $header obj's header, parsed by getRawObject
      * @param string $key Header's section
+     * @param string $type type of the section (ie 'numeric', '/', '<<', etc.)
      * @param string|null $default default value for header's section
      * @return string|null value of obj header's section, or default value if none found
      */
-    protected function getHeaderValue(?array $header, string $key, ?string $default = ''): ?string
+    protected function getHeaderValue(?array $headerDic, string $key, string $type, ?string $default = ''): ?string
     {
-        if ($header == null || !is_array($header) || 2 > count($header) || '<<' !== $header[0] || !is_array($header[1]))
+        if (!is_array($headerDic))
             return $default;
 
-        $dic = $header[1];
-        $cn = count($dic);
-        foreach ($dic as $i => $val) {
-            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && $i < $cn - 1)
-                return is_array($dic[$i + 1]) && 1 < count($dic[$i + 1]) ? $dic[$i + 1][1]: $default;
+        foreach ($headerDic as $i => $val) {
+            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && isset($headerDic[$i + 1]))
+                return is_array($headerDic[$i + 1]) && 1 < count($headerDic[$i + 1]) && $type == $headerDic[$i+1][0] ? $headerDic[$i + 1][1] : $default;
         }
 
         return $default;
