@@ -805,20 +805,25 @@ class RawDataParser
     }
 
     /**
+     * Get value of an object header's section
+     *
      * @param array|null $header obj's header, parsed by getRawObject
-     * @param string $key Header's section
+     * @param string $key header's section name
      * @param string $type type of the section (ie 'numeric', '/', '<<', etc.)
      * @param string|null $default default value for header's section
-     * @return string|null value of obj header's section, or default value if none found
+     *
+     * returns string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
      */
-    protected function getHeaderValue(?array $headerDic, string $key, string $type, ?string $default = ''): ?string
+    protected function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
     {
-        if (!is_array($headerDic))
+        if (!is_array($headerDic)) {
             return $default;
+        }
 
         foreach ($headerDic as $i => $val) {
-            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && isset($headerDic[$i + 1]))
-                return is_array($headerDic[$i + 1]) && 1 < count($headerDic[$i + 1]) && $type == $headerDic[$i+1][0] ? $headerDic[$i + 1][1] : $default;
+            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && isset($headerDic[$i + 1])) {
+                return is_array($headerDic[$i + 1]) && 1 < count($headerDic[$i + 1]) && $type == $headerDic[$i + 1][0] ? $headerDic[$i + 1][1] : $default;
+            }
         }
 
         return $default;
