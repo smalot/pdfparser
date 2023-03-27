@@ -557,7 +557,7 @@ class RawDataParser
         do {
             $oldOffset = $offset;
             // get element
-            $element = $this->getRawObject($pdfData, $offset, $header[1]);
+            $element = $this->getRawObject($pdfData, $offset, $header != null ? $header[1] : null);
             $offset = $element[2];
             // decode stream using stream's dictionary information
             if ($decoding && ('stream' === $element[0]) && $header != null) {
