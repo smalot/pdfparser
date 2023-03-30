@@ -557,10 +557,10 @@ class RawDataParser
         do {
             $oldOffset = $offset;
             // get element
-            $element = $this->getRawObject($pdfData, $offset, $header != null ? $header[1] : null);
+            $element = $this->getRawObject($pdfData, $offset, null != $header ? $header[1] : null);
             $offset = $element[2];
             // decode stream using stream's dictionary information
-            if ($decoding && ('stream' === $element[0]) && $header != null) {
+            if ($decoding && ('stream' === $element[0]) && null != $header) {
                 $element[3] = $this->decodeStream($pdfData, $xref, $header[1], $element[1]);
             }
             $objContentArr[$i] = $element;
@@ -607,7 +607,7 @@ class RawDataParser
     /**
      * Get object type, raw value and offset to next object
      *
-     * @param int $offset Object offset
+     * @param int        $offset    Object offset
      * @param array|null $headerDic obj header's dictionary, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
@@ -762,7 +762,7 @@ class RawDataParser
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
 
-                        $streamLen = intval($this->getHeaderValue($headerDic, 'Length', 'numeric', 0));
+                        $streamLen = (int) $this->getHeaderValue($headerDic, 'Length', 'numeric', 0);
                         $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
 
                         $pregResult = preg_match(
@@ -774,7 +774,7 @@ class RawDataParser
                         );
 
                         if (1 == $pregResult) {
-                            $objval = $skip ? '' : substr($pdfData, $offset,  $matches[0][1] - $offset);
+                            $objval = $skip ? '' : substr($pdfData, $offset, $matches[0][1] - $offset);
                             $offset = $matches[1][1];
                         }
                     }
@@ -807,22 +807,29 @@ class RawDataParser
     /**
      * Get value of an object header's section
      *
-     * @param array|null $header obj's header, parsed by getRawObject
-     * @param string $key header's section name
-     * @param string $type type of the section (ie 'numeric', '/', '<<', etc.)
+     * @param string      $key     header's section name
+     * @param string      $type    type of the section (i.e. 'numeric', '/', '<<', etc.)
      * @param string|null $default default value for header's section
      *
-     * returns string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
+     * @return string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
      */
-    protected function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
+    private function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
     {
-        if (!is_array($headerDic)) {
+        if (!\is_array($headerDic)) {
             return $default;
         }
 
         foreach ($headerDic as $i => $val) {
-            if (is_array($val) && 3 == count($val) && '/' == $val[0] && $val[1] == $key && isset($headerDic[$i + 1])) {
-                return is_array($headerDic[$i + 1]) && 1 < count($headerDic[$i + 1]) && $type == $headerDic[$i + 1][0] ? $headerDic[$i + 1][1] : $default;
+            if (
+                \is_array($val)
+                && 3 == \count($val)
+                && '/' == $val[0]
+                && $val[1] == $key
+                && isset($headerDic[$i + 1])
+            ) {
+                return \is_array($headerDic[$i + 1]) && 1 < \count($headerDic[$i + 1]) && $type == $headerDic[$i + 1][0]
+                    ? $headerDic[$i + 1][1]
+                    : $default;
             }
         }
 
