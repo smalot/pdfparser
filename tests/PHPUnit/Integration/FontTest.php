@@ -439,4 +439,32 @@ TEXT;
         $this->assertEquals(2573, $width);
         $this->assertEquals([], $missing);
     }
+
+    /**
+     * Check behavior if iconv function gets input which contains illegal characters.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/549
+     * @see https://github.com/smalot/pdfparser/pull/580
+     */
+    public function testDecodeContentIssue549(): void
+    {
+        /*
+         * we do this to get into the branch with private method "decodeContentByEncodingElement" in Font.php
+         */
+        $encoding = $this->createMock(Element::class);
+        $encoding->method('getContent')->willReturn('WinAnsiEncoding');
+        $header = new Header(['Encoding' => $encoding]);
+
+        $font = new Font($this->createMock(Document::class), $header);
+
+        // these 3 lines should trigger the following PHP notice: iconv(): Detected an illegal character in input string
+        $text = 'äüüß';
+        $encoded = mb_convert_encoding($text, 'UTF-8', 'CP1252');
+        iconv("CP1252", "UTF-8", $encoded);
+
+        $result = $font->decodeContent($encoded);
+
+        // check result
+        // $this->assertEquals('', $result);
+    }
 }

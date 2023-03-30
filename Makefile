@@ -15,4 +15,4 @@ run-phpstan:
 	dev-tools/vendor/bin/phpstan analyze $(ARGS)
 
 run-phpunit:
-	dev-tools/vendor/bin/phpunit $(ARGS)
+	dev-tools/vendor/bin/phpunit --display-notices $(ARGS)
