@@ -763,7 +763,7 @@ class RawDataParser
                         $offset += \strlen($matches[0]);
 
                         $streamLen = (int) $this->getHeaderValue($headerDic, 'Length', 'numeric', 0);
-                        $skip = !$this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
+                        $skip = false === $this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
 
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
@@ -807,9 +807,9 @@ class RawDataParser
     /**
      * Get value of an object header's section
      *
-     * @param string      $key     header's section name
-     * @param string      $type    type of the section (i.e. 'numeric', '/', '<<', etc.)
-     * @param string|null $default default value for header's section
+     * @param string            $key     header's section name
+     * @param string            $type    type of the section (i.e. 'numeric', '/', '<<', etc.)
+     * @param string|array|null $default default value for header's section
      *
      * @return string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
      */
@@ -820,14 +820,14 @@ class RawDataParser
         }
 
         foreach ($headerDic as $i => $val) {
+            $isSectionName = \is_array($val) && 3 == \count($val) && '/' == $val[0];
             if (
-                \is_array($val)
-                && 3 == \count($val)
-                && '/' == $val[0]
+                $isSectionName
                 && $val[1] == $key
                 && isset($headerDic[$i + 1])
             ) {
-                return \is_array($headerDic[$i + 1]) && 1 < \count($headerDic[$i + 1]) && $type == $headerDic[$i + 1][0]
+                $isSectionValue = \is_array($headerDic[$i + 1]) && 1 < \count($headerDic[$i + 1]);
+                return $isSectionValue && $type == $headerDic[$i + 1][0]
                     ? $headerDic[$i + 1][1]
                     : $default;
             }
