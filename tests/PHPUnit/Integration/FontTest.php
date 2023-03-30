@@ -460,7 +460,7 @@ TEXT;
         // these 3 lines should trigger the following PHP notice: iconv(): Detected an illegal character in input string
         $text = 'äüüß';
         $encoded = mb_convert_encoding($text, 'UTF-8', 'CP1252');
-        iconv("CP1252", "UTF-8", $encoded);
+        iconv('CP1252', 'UTF-8', $encoded);
 
         $result = $font->decodeContent($encoded);
 
