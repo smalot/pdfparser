@@ -13,7 +13,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         env:
           COMPOSER_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -25,7 +25,7 @@ jobs:
           tools: "composer:v2"
       -
         name: Install dependencies with Composer
-        uses: ramsey/composer-install@v1
+        uses: ramsey/composer-install@v2
       -
         name: Install dev tools
         run: make install-dev-tools

@@ -2,15 +2,14 @@
 
 require __DIR__.'/../../vendor/autoload.php';
 
-use Tests\Smalot\PdfParser\Performance\Exception\PerformanceFailException;
-use Tests\Smalot\PdfParser\Performance\Test\AbstractPerformanceTest;
-use Tests\Smalot\PdfParser\Performance\Test\DocumentDictionaryCacheTest;
+use PerformanceTests\Exception\PerformanceFailException;
+use PerformanceTests\Test\DocumentDictionaryCacheTest;
 
 $tests = [
     new DocumentDictionaryCacheTest(),
 ];
 
-foreach ($tests as $test) { /* @var $test AbstractPerformanceTest */
+foreach ($tests as $test) {
     $test->init();
 
     $startTime = microtime(true);
