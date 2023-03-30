@@ -827,6 +827,7 @@ class RawDataParser
                 && isset($headerDic[$i + 1])
             ) {
                 $isSectionValue = \is_array($headerDic[$i + 1]) && 1 < \count($headerDic[$i + 1]);
+
                 return $isSectionValue && $type == $headerDic[$i + 1][0]
                     ? $headerDic[$i + 1][1]
                     : $default;
