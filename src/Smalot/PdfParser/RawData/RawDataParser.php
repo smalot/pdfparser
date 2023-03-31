@@ -815,7 +815,7 @@ class RawDataParser
      */
     private function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
     {
-        if (!\is_array($headerDic)) {
+        if (false === \is_array($headerDic)) {
             return $default;
         }
 
