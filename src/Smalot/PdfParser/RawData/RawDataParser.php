@@ -262,8 +262,7 @@ class RawDataParser
             if (
                 ('/' == $v[0])
                 && ('Type' == $v[1])
-                && (
-                    isset($sarr[$k + 1])
+                && (isset($sarr[$k + 1])
                     && '/' == $sarr[$k + 1][0]
                     && 'XRef' == $sarr[$k + 1][1]
                 )
@@ -289,8 +288,7 @@ class RawDataParser
                     if (
                         '/' == $vdc[0]
                         && 'Columns' == $vdc[1]
-                        && (
-                            isset($decpar[$kdc + 1])
+                        && (isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -298,8 +296,7 @@ class RawDataParser
                     } elseif (
                         '/' == $vdc[0]
                         && 'Predictor' == $vdc[1]
-                        && (
-                            isset($decpar[$kdc + 1])
+                        && (isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -647,7 +644,7 @@ class RawDataParser
 
             case '(':   // \x28 LEFT PARENTHESIS
             case ')':  // \x29 RIGHT PARENTHESIS
-                    // literal string object
+                // literal string object
                 $objtype = $char;
                 ++$offset;
                 $strpos = $offset;
@@ -872,7 +869,8 @@ class RawDataParser
             // find last startxref
             $pregResult = preg_match_all(
                 '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
-                $pdfData, $matches,
+                $pdfData,
+                $matches,
                 \PREG_SET_ORDER,
                 $offset
             );
