@@ -807,7 +807,7 @@ class RawDataParser
 
     /**
      * Get value of an object header's section (obj << YYY >> part ).
-     * 
+     *
      * It is similar to Header::get('...')->getContent(), the only difference is it can be used during the parsing process,
      * when no Smalot\PdfParser\Header objects are created yet.
      *
