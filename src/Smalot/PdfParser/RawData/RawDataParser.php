@@ -762,6 +762,7 @@ class RawDataParser
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
 
+                        // we get stream length here to later help preg_match test less data
                         $streamLen = (int) $this->getHeaderValue($headerDic, 'Length', 'numeric', 0);
                         $skip = false === $this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
 
@@ -805,7 +806,10 @@ class RawDataParser
     }
 
     /**
-     * Get value of an object header's section
+     * Get value of an object header's section (obj << YYY >> part ).
+     * 
+     * It is similar to Header::get('...')->getContent(), the only difference is it can be used during the parsing process,
+     * when no Smalot\PdfParser\Header objects are created yet.
      *
      * @param string            $key     header's section name
      * @param string            $type    type of the section (i.e. 'numeric', '/', '<<', etc.)
@@ -819,6 +823,12 @@ class RawDataParser
             return $default;
         }
 
+        /*
+         * It recieves dictionary of header fields, as it is returned by RawDataParser::getRawObject,
+         * iterates over it, searching for section of type '/' whith requested key.
+         * If such a section is found, it tries to receive it's value (next object in dictionary),
+         * returning it, if it matches requested type, or default value otherwise.
+         */
         foreach ($headerDic as $i => $val) {
             $isSectionName = \is_array($val) && 3 == \count($val) && '/' == $val[0];
             if (
