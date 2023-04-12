@@ -180,6 +180,7 @@ Ref: [#472](https://github.com/smalot/pdfparser/issues/427#issuecomment-97341678
 $parser = new \Smalot\PdfParser\Parser();
 $pdf = $parser->parseFile('document.pdf');
 $pages = $pdf->getPages();
+// this variable will contain the height and width of each page of the given PDF
 $mediaBox = [];
 foreach ($pages as $page) {
 	$details = $page->getDetails();
