@@ -262,8 +262,7 @@ class RawDataParser
             if (
                 ('/' == $v[0])
                 && ('Type' == $v[1])
-                && (
-                    isset($sarr[$k + 1])
+                && (isset($sarr[$k + 1])
                     && '/' == $sarr[$k + 1][0]
                     && 'XRef' == $sarr[$k + 1][1]
                 )
@@ -289,8 +288,7 @@ class RawDataParser
                     if (
                         '/' == $vdc[0]
                         && 'Columns' == $vdc[1]
-                        && (
-                            isset($decpar[$kdc + 1])
+                        && (isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -298,8 +296,7 @@ class RawDataParser
                     } elseif (
                         '/' == $vdc[0]
                         && 'Predictor' == $vdc[1]
-                        && (
-                            isset($decpar[$kdc + 1])
+                        && (isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -553,16 +550,18 @@ class RawDataParser
         $offset += $objHeaderLen;
         $objContentArr = [];
         $i = 0; // object main index
+        $header = null;
         do {
             $oldOffset = $offset;
             // get element
-            $element = $this->getRawObject($pdfData, $offset);
+            $element = $this->getRawObject($pdfData, $offset, null != $header ? $header[1] : null);
             $offset = $element[2];
             // decode stream using stream's dictionary information
-            if ($decoding && ('stream' === $element[0]) && (isset($objContentArr[$i - 1][0])) && ('<<' === $objContentArr[$i - 1][0])) {
-                $element[3] = $this->decodeStream($pdfData, $xref, $objContentArr[$i - 1][1], $element[1]);
+            if ($decoding && ('stream' === $element[0]) && null != $header) {
+                $element[3] = $this->decodeStream($pdfData, $xref, $header[1], $element[1]);
             }
             $objContentArr[$i] = $element;
+            $header = isset($element[0]) && '<<' === $element[0] ? $element : null;
             ++$i;
         } while (('endobj' !== $element[0]) && ($offset !== $oldOffset));
         // remove closing delimiter
@@ -605,11 +604,12 @@ class RawDataParser
     /**
      * Get object type, raw value and offset to next object
      *
-     * @param int $offset Object offset
+     * @param int        $offset    Object offset
+     * @param array|null $headerDic obj header's dictionary, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject(string $pdfData, int $offset = 0): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -758,15 +758,21 @@ class RawDataParser
                     $offset += 6;
                     if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
+
+                        // we get stream length here to later help preg_match test less data
+                        $streamLen = (int) $this->getHeaderValue($headerDic, 'Length', 'numeric', 0);
+                        $skip = false === $this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
+
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
                             $pdfData,
                             $matches,
                             \PREG_OFFSET_CAPTURE,
-                            $offset
+                            $offset + $streamLen
                         );
+
                         if (1 == $pregResult) {
-                            $objval = substr($pdfData, $offset, $matches[0][1] - $offset);
+                            $objval = $skip ? '' : substr($pdfData, $offset, $matches[0][1] - $offset);
                             $offset = $matches[1][1];
                         }
                     }
@@ -797,6 +803,48 @@ class RawDataParser
     }
 
     /**
+     * Get value of an object header's section (obj << YYY >> part ).
+     *
+     * It is similar to Header::get('...')->getContent(), the only difference is it can be used during the parsing process,
+     * when no Smalot\PdfParser\Header objects are created yet.
+     *
+     * @param string            $key     header's section name
+     * @param string            $type    type of the section (i.e. 'numeric', '/', '<<', etc.)
+     * @param string|array|null $default default value for header's section
+     *
+     * @return string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
+     */
+    private function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
+    {
+        if (false === \is_array($headerDic)) {
+            return $default;
+        }
+
+        /*
+         * It recieves dictionary of header fields, as it is returned by RawDataParser::getRawObject,
+         * iterates over it, searching for section of type '/' whith requested key.
+         * If such a section is found, it tries to receive it's value (next object in dictionary),
+         * returning it, if it matches requested type, or default value otherwise.
+         */
+        foreach ($headerDic as $i => $val) {
+            $isSectionName = \is_array($val) && 3 == \count($val) && '/' == $val[0];
+            if (
+                $isSectionName
+                && $val[1] == $key
+                && isset($headerDic[$i + 1])
+            ) {
+                $isSectionValue = \is_array($headerDic[$i + 1]) && 1 < \count($headerDic[$i + 1]);
+
+                return $isSectionValue && $type == $headerDic[$i + 1][0]
+                    ? $headerDic[$i + 1][1]
+                    : $default;
+            }
+        }
+
+        return $default;
+    }
+
+    /**
      * Get Cross-Reference (xref) table and trailer data from PDF document data.
      *
      * @param int   $offset xref offset (if known)
@@ -821,7 +869,8 @@ class RawDataParser
             // find last startxref
             $pregResult = preg_match_all(
                 '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
-                $pdfData, $matches,
+                $pdfData,
+                $matches,
                 \PREG_SET_ORDER,
                 $offset
             );
