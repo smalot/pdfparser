@@ -261,8 +261,6 @@ class PDFObject
 
         self::$recursionStack[] = $this->getUniqueId();
 
-        $parts = [];
-
         foreach ($sections as $section) {
             $commands = $this->getCommandsText($section);
             $reverse_text = false;
@@ -450,11 +448,7 @@ class PDFObject
             }
 
             $result .= $text;
-
-            //$parts[] = $text;
         }
-
-        //die(print_r($parts, 1) . "<br>\n<br>\n ->" . gettype($sections[9]). " - ". print_r($sections, 1));
 
         return $result.' ';
     }
