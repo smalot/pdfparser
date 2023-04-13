@@ -644,7 +644,7 @@ class RawDataParser
 
             case '(':   // \x28 LEFT PARENTHESIS
             case ')':  // \x29 RIGHT PARENTHESIS
-                    // literal string object
+                // literal string object
                 $objtype = $char;
                 ++$offset;
                 $strpos = $offset;
