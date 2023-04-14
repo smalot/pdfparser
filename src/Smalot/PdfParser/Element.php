@@ -107,7 +107,7 @@ class Element
             $old_position = $position;
 
             if (!$only_values) {
-                if (false === preg_match('/\G\s*(?P<name>\/[A-Z0-9\._]+)(?P<value>.*)/si', $content, $match, 0, $position)) {
+                if (!preg_match('/\G\s*(?P<name>\/[A-Z0-9\._]+)(?P<value>.*)/si', $content, $match, 0, $position)) {
                     break;
                 } else {
                     $name = ltrim($match['name'], '/');
