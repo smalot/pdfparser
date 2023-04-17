@@ -171,3 +171,22 @@ $font = reset($pdf->getFonts());
 // get width
 $width = $font->calculateTextWidth('Some text', $missing);
 ```
+
+## Get pages width and height
+
+Ref: [#472](https://github.com/smalot/pdfparser/issues/427#issuecomment-973416786)
+
+```php
+$parser = new \Smalot\PdfParser\Parser();
+$pdf = $parser->parseFile('document.pdf');
+$pages = $pdf->getPages();
+// this variable will contain the height and width of each page of the given PDF
+$mediaBox = [];
+foreach ($pages as $page) {
+    $details = $page->getDetails();
+    $mediaBox[] = [
+        'width' => $details['MediaBox'][2],
+        'height' => $details['MediaBox'][3]
+    ];
+}
+```
