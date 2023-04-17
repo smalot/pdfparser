@@ -183,10 +183,10 @@ $pages = $pdf->getPages();
 // this variable will contain the height and width of each page of the given PDF
 $mediaBox = [];
 foreach ($pages as $page) {
-	$details = $page->getDetails();
-	$mediaBox[] = [
-		'width' => $details['MediaBox'][2],
-		'height' => $details['MediaBox'][3]
-	];
+    $details = $page->getDetails();
+    $mediaBox[] = [
+        'width' => $details['MediaBox'][2],
+        'height' => $details['MediaBox'][3]
+    ];
 }
 ```
