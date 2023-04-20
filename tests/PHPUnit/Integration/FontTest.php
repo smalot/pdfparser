@@ -443,6 +443,16 @@ TEXT;
     /**
      * Check behavior if iconv function gets input which contains illegal characters.
      *
+     * In this test we create a CP1252-encoded string, which contains a character that has no counterpart in UTF-8.
+     * This way we check if the old code triggers the expected warning:
+     *
+     *      iconv(): Detected an illegal character in input string
+     *
+     * Note: Don't use PHPUnit 10+, because it will hide the warning.
+     *
+     * A list of invalid characters can be found here:
+     * https://www.ibm.com/docs/en/rational-synergy/7.2.1?topic=uc-text-encoding-illegal-character-detection-tool
+     *
      * @see https://github.com/smalot/pdfparser/pull/549
      * @see https://github.com/smalot/pdfparser/pull/580
      */
@@ -457,14 +467,7 @@ TEXT;
 
         $font = new Font($this->createMock(Document::class), $header);
 
-        // these 3 lines should trigger the following PHP notice: iconv(): Detected an illegal character in input string
-        $text = 'äüüß';
-        $encoded = mb_convert_encoding($text, 'UTF-8', 'CP1252');
-        iconv('CP1252', 'UTF-8', $encoded);
-
-        $result = $font->decodeContent($encoded);
-
         // check result
-        // $this->assertEquals('', $result);
+        $this->assertEquals('foobar-', $font->decodeContent("foobar-\x8D"));
     }
 }
