@@ -150,13 +150,13 @@ class FilterHelper
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
         // remove start sequence 2-character sequence <~ (3Ch)(7Eh)
-        if (false !== strpos($data, '<~')) {
+        if (0 === strpos($data, '<~')) {
             // remove EOD and extra data (if any)
             $data = substr($data, 2);
         }
         // check for EOD: 2-character sequence ~> (7Eh)(3Eh)
         $eod = strpos($data, '~>');
-        if (false !== $eod) {
+        if (\strlen($data) - 2 === $eod) {
             // remove EOD and extra data (if any)
             $data = substr($data, 0, $eod);
         }
