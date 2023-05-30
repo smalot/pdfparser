@@ -42,17 +42,17 @@ class Page extends PDFObject
     /**
      * @var Font[]
      */
-    protected $fonts = null;
+    protected $fonts;
 
     /**
      * @var PDFObject[]
      */
-    protected $xobjects = null;
+    protected $xobjects;
 
     /**
      * @var array
      */
-    protected $dataTm = null;
+    protected $dataTm;
 
     /**
      * @return Font[]
@@ -236,9 +236,9 @@ class Page extends PDFObject
      */
     public function isFpdf(): bool
     {
-        if (\array_key_exists('Producer', $this->document->getDetails()) &&
-            \is_string($this->document->getDetails()['Producer']) &&
-            0 === strncmp($this->document->getDetails()['Producer'], 'FPDF', 4)) {
+        if (\array_key_exists('Producer', $this->document->getDetails())
+            && \is_string($this->document->getDetails()['Producer'])
+            && 0 === strncmp($this->document->getDetails()['Producer'], 'FPDF', 4)) {
             return true;
         }
 
@@ -926,23 +926,23 @@ class Page extends PDFObject
             $yTm = (float) $tm[5];
             $text = $item[1];
             if (null === $y) {
-                if (($xTm >= ($x - $xError)) &&
-                    ($xTm <= ($x + $xError))) {
+                if (($xTm >= ($x - $xError))
+                    && ($xTm <= ($x + $xError))) {
                     $extractedData[] = [$tm, $text];
                     continue;
                 }
             }
             if (null === $x) {
-                if (($yTm >= ($y - $yError)) &&
-                    ($yTm <= ($y + $yError))) {
+                if (($yTm >= ($y - $yError))
+                    && ($yTm <= ($y + $yError))) {
                     $extractedData[] = [$tm, $text];
                     continue;
                 }
             }
-            if (($xTm >= ($x - $xError)) &&
-                ($xTm <= ($x + $xError)) &&
-                ($yTm >= ($y - $yError)) &&
-                ($yTm <= ($y + $yError))) {
+            if (($xTm >= ($x - $xError))
+                && ($xTm <= ($x + $xError))
+                && ($yTm >= ($y - $yError))
+                && ($yTm <= ($y + $yError))) {
                 $extractedData[] = [$tm, $text];
                 continue;
             }

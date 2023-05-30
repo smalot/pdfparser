@@ -56,17 +56,17 @@ class PDFObject
     /**
      * @var Document
      */
-    protected $document = null;
+    protected $document;
 
     /**
      * @var Header
      */
-    protected $header = null;
+    protected $header;
 
     /**
      * @var string
      */
-    protected $content = null;
+    protected $content;
 
     /**
      * @var Config
@@ -75,9 +75,9 @@ class PDFObject
 
     public function __construct(
         Document $document,
-        ?Header $header = null,
-        ?string $content = null,
-        ?Config $config = null
+        Header $header = null,
+        string $content = null,
+        Config $config = null
     ) {
         $this->document = $document;
         $this->header = $header ?? new Header();
@@ -249,7 +249,7 @@ class PDFObject
     /**
      * @throws \Exception
      */
-    public function getText(?Page $page = null): string
+    public function getText(Page $page = null): string
     {
         $result = '';
         $sections = $this->getSectionsText($this->content);
@@ -283,8 +283,8 @@ class PDFObject
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y = array_pop($args);
                         $x = array_pop($args);
-                        if (((float) $x <= 0) ||
-                            (false !== $current_position_td['y'] && (float) $y < (float) $current_position_td['y'])
+                        if (((float) $x <= 0)
+                            || (false !== $current_position_td['y'] && (float) $y < (float) $current_position_td['y'])
                         ) {
                             // vertical offset
                             $text .= "\n";
@@ -456,7 +456,7 @@ class PDFObject
     /**
      * @throws \Exception
      */
-    public function getTextArray(?Page $page = null): array
+    public function getTextArray(Page $page = null): array
     {
         $text = [];
         $sections = $this->getSectionsText($this->content);
@@ -772,7 +772,7 @@ class PDFObject
         Document $document,
         Header $header,
         ?string $content,
-        ?Config $config = null
+        Config $config = null
     ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':

@@ -150,7 +150,7 @@ class FilterHelper
         // all white-space characters shall be ignored
         $data = preg_replace('/[\s]/', '', $data);
         // remove start sequence 2-character sequence <~ (3Ch)(7Eh)
-        if (false !== strpos($data, '<~')) {
+        if (str_contains($data, '<~')) {
             // remove EOD and extra data (if any)
             $data = substr($data, 2);
         }

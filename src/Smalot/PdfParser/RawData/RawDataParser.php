@@ -402,7 +402,7 @@ class RawDataParser
                     }
                     $prev_row = $ddata[$k];
                 } // end for each row
-            // complete decoding
+                // complete decoding
             } else {
                 // number of bytes in a row
                 $rowlen = array_sum($wb);
@@ -609,7 +609,7 @@ class RawDataParser
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
+    protected function getRawObject(string $pdfData, int $offset = 0, array $headerDic = null): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned

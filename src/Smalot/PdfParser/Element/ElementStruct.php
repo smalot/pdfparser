@@ -44,7 +44,7 @@ class ElementStruct extends Element
     /**
      * @return false|Header
      */
-    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
+    public static function parse(string $content, Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*<<(?P<struct>.*)/is', $content)) {
             preg_match_all('/(.*?)(<<|>>)/s', trim($content), $matches);
@@ -53,7 +53,7 @@ class ElementStruct extends Element
             $sub = '';
             foreach ($matches[0] as $part) {
                 $sub .= $part;
-                $level += (false !== strpos($part, '<<') ? 1 : -1);
+                $level += (str_contains($part, '<<') ? 1 : -1);
                 if ($level <= 0) {
                     break;
                 }

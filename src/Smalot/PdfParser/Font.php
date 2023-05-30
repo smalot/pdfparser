@@ -45,12 +45,12 @@ class Font extends PDFObject
     /**
      * @var array
      */
-    protected $table = null;
+    protected $table;
 
     /**
      * @var array
      */
-    protected $tableSizes = null;
+    protected $tableSizes;
 
     /**
      * Caches results from uchr.
@@ -459,7 +459,7 @@ class Font extends PDFObject
      *
      * @param bool $unicode This parameter is deprecated and might be removed in a future release
      */
-    public function decodeContent(string $text, ?bool &$unicode = null): string
+    public function decodeContent(string $text, bool &$unicode = null): string
     {
         if ($this->has('ToUnicode')) {
             return $this->decodeContentByToUnicodeCMapOrDescendantFonts($text);

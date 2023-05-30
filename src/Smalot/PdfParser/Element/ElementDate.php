@@ -98,7 +98,7 @@ class ElementDate extends ElementString
     /**
      * @return bool|ElementDate
      */
-    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
+    public static function parse(string $content, Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\(D\:(?P<name>.*?)\)/s', $content, $match)) {
             $name = $match['name'];

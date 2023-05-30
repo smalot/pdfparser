@@ -60,7 +60,7 @@ class Parser
 
     protected $rawDataParser;
 
-    public function __construct($cfg = [], ?Config $config = null)
+    public function __construct($cfg = [], Config $config = null)
     {
         $this->config = $config ?: new Config();
         $this->rawDataParser = new RawDataParser($cfg, $this->config);
@@ -136,7 +136,7 @@ class Parser
             } elseif (\is_array($values)) {
                 $value = $this->parseTrailer($values, null);
                 $trailer[$name] = new ElementArray($value, null);
-            } elseif (false !== strpos($values, '_')) {
+            } elseif (str_contains($values, '_')) {
                 $trailer[$name] = new ElementXRef($values, $document);
             } else {
                 $trailer[$name] = $this->parseHeaderElement('(', $values, $document);
