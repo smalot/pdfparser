@@ -36,7 +36,7 @@ $filename = __DIR__.'/../../samples/InternationalChars.pdf';
 $document = $parser->parseFile($filename);
 
 $needle = 'Лорем ипсум долор сит амет, еу сед либрис долорем инцоррупте.';
-if (!str_starts_with($document->getText(), $needle)) {
+if (0 !== strpos($document->getText(), $needle)) {
     return 0;
 }
 
