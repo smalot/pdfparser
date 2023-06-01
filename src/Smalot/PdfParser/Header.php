@@ -91,7 +91,7 @@ class Header
         $types = [];
 
         foreach ($this->elements as $key => $element) {
-            $types[$key] = $element::class;
+            $types[$key] = \get_class($element);
         }
 
         return $types;

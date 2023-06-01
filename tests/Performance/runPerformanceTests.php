@@ -21,7 +21,7 @@ foreach ($tests as $test) {
     if ($test->getMaxEstimatedTime() <= $time) {
         $msg = sprintf(
             'Performance failed on test "%s". Time taken was %.2f seconds, expected less than %d seconds.',
-            $test::class,
+            get_class($test),
             $time,
             $test->getMaxEstimatedTime()
         );
