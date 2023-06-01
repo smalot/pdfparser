@@ -12,12 +12,12 @@ env:
 jobs:
   performance-tests:
     name: "Tests for the performance testing the PDF parsing"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
 
     strategy:
       matrix:
         php:
-          - "7.4"
+          - "8.1"
 
     steps:
       - name: "Checkout"

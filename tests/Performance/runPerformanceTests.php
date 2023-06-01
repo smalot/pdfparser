@@ -19,6 +19,13 @@ foreach ($tests as $test) {
     $time = $endTime - $startTime;
 
     if ($test->getMaxEstimatedTime() <= $time) {
-        throw new PerformanceFailException(sprintf('Performance failed on test "%s". Time taken was %.2f seconds, expected less than %d seconds.', get_class($test), $time, $test->getMaxEstimatedTime()));
+        $msg = sprintf(
+            'Performance failed on test "%s". Time taken was %.2f seconds, expected less than %d seconds.',
+            $test::class,
+            $time,
+            $test->getMaxEstimatedTime()
+        );
+
+        throw new PerformanceFailException($msg);
     }
 }
