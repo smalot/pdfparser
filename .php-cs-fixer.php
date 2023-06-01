@@ -25,6 +25,7 @@ $config
         'ordered_imports' => true,
         'phpdoc_summary' => false,
         'protected_to_private' => false,
+        'get_class_to_class_keyword' => false,
     ])
 ;
 
