@@ -136,7 +136,7 @@ class Parser
             } elseif (\is_array($values)) {
                 $value = $this->parseTrailer($values, null);
                 $trailer[$name] = new ElementArray($value, null);
-            } elseif (str_contains($values, '_')) {
+            } elseif (false !== strpos($values, '_')) {
                 $trailer[$name] = new ElementXRef($values, $document);
             } else {
                 $trailer[$name] = $this->parseHeaderElement('(', $values, $document);

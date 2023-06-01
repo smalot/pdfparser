@@ -53,7 +53,7 @@ class ElementStruct extends Element
             $sub = '';
             foreach ($matches[0] as $part) {
                 $sub .= $part;
-                $level += (str_contains($part, '<<') ? 1 : -1);
+                $level += (false !== strpos($part, '<<') ? 1 : -1);
                 if ($level <= 0) {
                     break;
                 }
