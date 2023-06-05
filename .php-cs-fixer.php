@@ -25,6 +25,8 @@ $config
         'ordered_imports' => true,
         'phpdoc_summary' => false,
         'protected_to_private' => false,
+        'get_class_to_class_keyword' => false, // override for PHP < 8.0 (because ::class usage is not allowed there)
+        'modernize_strpos' => false, // override for PHP < 8.0 (because str_contains not available in PHP 7.x)
     ])
 ;
 

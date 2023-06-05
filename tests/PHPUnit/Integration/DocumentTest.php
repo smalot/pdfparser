@@ -50,7 +50,7 @@ class DocumentTest extends TestCase
         return new Document();
     }
 
-    protected function getPDFObjectInstance(Document $document, ?Header $header = null): PDFObject
+    protected function getPDFObjectInstance(Document $document, Header $header = null): PDFObject
     {
         return new PDFObject($document, $header);
     }

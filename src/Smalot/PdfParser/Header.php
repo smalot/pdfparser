@@ -45,18 +45,18 @@ class Header
     /**
      * @var Document
      */
-    protected $document = null;
+    protected $document;
 
     /**
      * @var Element[]
      */
-    protected $elements = null;
+    protected $elements;
 
     /**
      * @param Element[] $elements list of elements
      * @param Document  $document document
      */
-    public function __construct(array $elements = [], ?Document $document = null)
+    public function __construct(array $elements = [], Document $document = null)
     {
         $this->elements = $elements;
         $this->document = $document;
