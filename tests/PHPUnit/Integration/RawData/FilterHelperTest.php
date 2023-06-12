@@ -59,6 +59,30 @@ class FilterHelperTest extends TestCase
         $this->assertEquals('Compressed string', $result);
     }
 
+    public function testDecodeFilterASCII85DecodeInitSequence(): void
+    {
+        $compressed = '<~6Z6g\Eb0<5ARlp)FE2)5B)'; // = Compressed string
+        $result = $this->fixture->decodeFilter('ASCII85Decode', $compressed);
+
+        $this->assertEquals('Compressed string', $result);
+    }
+
+    public function testDecodeFilterASCII85DecodeEndSequence(): void
+    {
+        $compressed = '6Z6g\Eb0<5ARlp)FE2)5B)~>'; // = Compressed string
+        $result = $this->fixture->decodeFilter('ASCII85Decode', $compressed);
+
+        $this->assertEquals('Compressed string', $result);
+    }
+
+    public function testDecodeFilterASCII85DecodeSpecificEndSequence(): void
+    {
+        $compressed = '+^6b<~>'; // = 0x215B33C0 = "![3\xC0"
+        $result = $this->fixture->decodeFilter('ASCII85Decode', $compressed);
+
+        $this->assertEquals("\x21\x5B\x33\xC0", $result);
+    }
+
     /*
      * Tests for filter ASCIIHexDecode
      */
