@@ -166,7 +166,7 @@ class Document
 
             $detail = '';
 
-            foreach ($values as $index => $val) {
+            foreach ($values as $val) {
                 switch ($val['tag']) {
                     case 'DC:CREATOR':
                         $detail = ($val['type'] == 'open') ? 'Author' : '';
