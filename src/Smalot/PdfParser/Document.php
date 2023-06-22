@@ -62,6 +62,11 @@ class Document
     protected $trailer;
 
     /**
+     * @var Metadata
+     */
+    protected $metadata = [];
+
+    /**
      * @var array
      */
     protected $details;
@@ -144,8 +149,118 @@ class Document
             $details['Pages'] = 0;
         }
 
+        $details = array_merge($details, $this->metadata);
+
         $this->details = $details;
     }
+
+    /**
+     * Get XMP Metadata
+     */
+    public function getXMPMetadata(string $content)
+    {
+        $xml = xml_parser_create();
+        xml_parser_set_option($xml, XML_OPTION_SKIP_WHITE, 1);
+
+        if (xml_parse_into_struct($xml, $content, $values, $index)) {
+
+            $detail = '';
+
+            foreach ($values as $index => $val) {
+                switch ($val['tag']) {
+                    case 'DC:CREATOR':
+                        $detail = ($val['type'] == 'open') ? 'Author' : '';
+                        break;
+
+                    case 'DC:DESCRIPTION':
+                        $detail = ($val['type'] == 'open') ? 'Description' : '';
+                        break;
+
+                    case 'DC:TITLE':
+                        $detail = ($val['type'] == 'open') ? 'Title' : '';
+                        break;
+
+                    case 'DC:SUBJECT':
+                        $detail = ($val['type'] == 'open') ? 'Subject' : '';
+                        break;
+
+                    case 'RDF:LI':
+                        if ($detail && $val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata[$detail] = $val['value'];
+                        }
+                        break;
+
+                    case 'DC:FORMAT':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['Format'] = $val['value'];
+                        }
+                        break;
+
+                    case 'PDF:KEYWORDS':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['Keywords'] = $val['value'];
+                        }
+                        break;
+
+                    case 'PDF:PRODUCER':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['Producer'] = $val['value'];
+                        }
+                        break;
+
+                    case 'PDFX:SOURCEMODIFIED':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['SourceModified'] = $val['value'];
+                        }
+                        break;
+
+                    case 'PDFX:COMPANY':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['Company'] = $val['value'];
+                        }
+                        break;
+
+                    case 'XMP:CREATEDATE':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['CreationDate'] = $val['value'];
+                        }
+                        break;
+
+                    case 'XMP:CREATORTOOL':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['Creator'] = $val['value'];
+                        }
+                        break;
+
+                    case 'XMP:MODIFYDATE':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['ModifyDate'] = $val['value'];
+                        }
+                        break;
+
+                    case 'XMP:METADATADATE':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['MetadataDate'] = $val['value'];
+                        }
+                        break;                
+
+                    case 'XMPMM:DOCUMENTID':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['DocumentUUID'] = $val['value'];
+                        }
+                        break;                
+
+                    case 'XMPMM:INSTANCEID':
+                        if ($val['type'] == 'complete' && isset($val['value'])) {
+                            $this->metadata['InstanceUUID'] = $val['value'];
+                        }
+                        break;                
+
+                }
+            }
+        }
+    }
+
 
     public function getDictionary(): array
     {
