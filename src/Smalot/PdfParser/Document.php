@@ -155,9 +155,9 @@ class Document
     }
 
     /**
-     * Get XMP Metadata
+     * Extract XMP Metadata
      */
-    public function getXMPMetadata(string $content)
+    public function extractXMPMetadata(string $content): void
     {
         $xml = xml_parser_create();
         xml_parser_set_option($xml, XML_OPTION_SKIP_WHITE, 1);

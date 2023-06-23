@@ -218,7 +218,7 @@ class Parser
                     } else if ($header->get('Type')->equals('Metadata')) {
 
                         // Attempt to parse XMP XML Metadata
-                        $document->getXMPMetadata($content);
+                        $document->extractXMPMetadata($content);
 
                     }
                     break;
