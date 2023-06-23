@@ -234,7 +234,7 @@ class Document
 
                     case 'XMP:MODIFYDATE':
                         if ($val['type'] == 'complete' && isset($val['value'])) {
-                            $this->metadata['ModifyDate'] = $val['value'];
+                            $this->metadata['ModDate'] = $val['value'];
                         }
                         break;
 
