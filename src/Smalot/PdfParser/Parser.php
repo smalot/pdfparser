@@ -214,12 +214,9 @@ class Parser
                         // It is not necessary to store this content.
 
                         return;
-
-                    } else if ($header->get('Type')->equals('Metadata')) {
-
+                    } elseif ($header->get('Type')->equals('Metadata')) {
                         // Attempt to parse XMP XML Metadata
                         $document->extractXMPMetadata($content);
-
                     }
                     break;
 
