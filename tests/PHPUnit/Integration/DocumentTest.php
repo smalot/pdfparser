@@ -278,19 +278,17 @@ class DocumentTest extends TestCase
             }
         }
 
-        // Check that the Title does not contain a UTF-8 Right Single
-        // Quotation Mark, and that the Creator does not contain a UTF-8
-        // Registered Trademark symbol, an indication that getHeader()
-        // did not find the correct values.
+        // Check that the Title does not contain a Right Single
+        // Quotation Mark, a high UTF-8 glyph that cannot be encoded in
+        // ISO-8859-1 and is replaced by an uninterpretable UTF-8
+        // control character.
         self::assertStringNotContainsString("\u{2019}", $details['Title']);
-        self::assertStringNotContainsString("\u{00AE}", $details['Creator']);
 
         $detailsXMP = $document->getDetails();
 
-        // Test two fields for special characters that getHeader() does
-        // not handle properly.
+        // Test that the correct Right Single Quotation Mark glyph was
+        // extracted from the XMP Metadata.
         self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $detailsXMP['Title']);
-        self::assertStringContainsString("Microsoft\u{00AE} Word for Microsoft 365", $detailsXMP['Creator']);
 
         // Test that getDetails() data NOT contained in the XMP Metadata
         // is still accessible and not discarded/overwritten.
