@@ -255,4 +255,45 @@ class DocumentTest extends TestCase
         // given text is on page 2, it has to be ignored because of that
         self::assertStringNotContainsString('Medeni Usul ve İcra İflas Hukuku', $document->getText(1));
     }
+
+    /**
+     * Tests extraction of XMP Metadata vs. getHeader() data.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/606
+     */
+    public function testExtractXMPMetadata(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/XMP_Metadata.pdf');
+
+        // Get the original parsed details from getHeader().
+        $ref = new \ReflectionClass('\Smalot\PdfParser\Document');
+        $prop = $ref->getProperty('trailer');
+        $prop->setAccessible(true);
+        $trailer = $prop->getValue($document);
+
+        if ($trailer->has('Info')) {
+            $info = $trailer->get('Info');
+            if (null !== $info && method_exists($info, 'getHeader')) {
+                $details = $info->getHeader()->getDetails();
+            }
+        }
+
+        // Check that the Title does not contain a UTF-8 Right Single
+        // Quotation Mark, and that the Creator does not contain a UTF-8
+        // Registered Trademark symbol, an indication that getHeader()
+        // did not find the correct values.
+        self::assertStringNotContainsString("\u{2019}", $details['Title']);
+        self::assertStringNotContainsString("\u{00AE}", $details['Creator']);
+
+        $detailsXMP = $document->getDetails();
+
+        // Test two fields for special characters that getHeader() does
+        // not handle properly.
+        self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $detailsXMP['Title']);
+        self::assertStringContainsString("Microsoft\u{00AE} Word for Microsoft 365", $detailsXMP['Creator']);
+
+        // Test that getDetails() data NOT contained in the XMP Metadata
+        // is still accessible and not discarded/overwritten.
+        self::assertEquals(1, $detailsXMP['Pages']);
+    }
 }
