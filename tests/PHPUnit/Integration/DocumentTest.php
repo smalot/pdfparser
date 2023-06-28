@@ -270,6 +270,7 @@ class DocumentTest extends TestCase
         $prop = $ref->getProperty('trailer');
         $prop->setAccessible(true);
         $trailer = $prop->getValue($document);
+        $details = [];
 
         if ($trailer->has('Info')) {
             $info = $trailer->get('Info');
