@@ -62,7 +62,7 @@ class Document
     protected $trailer;
 
     /**
-     * @var Metadata
+     * @var array<mixed>
      */
     protected $metadata = [];
 
@@ -184,7 +184,7 @@ class Document
                         break;
 
                     case 'RDF:LI':
-                        if ($detail && 'complete' == $val['type'] && isset($val['value'])) {
+                        if ('' !== $detail && 'complete' == $val['type'] && isset($val['value'])) {
                             $this->metadata[$detail] = $val['value'];
                         }
                         break;
