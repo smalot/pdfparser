@@ -132,16 +132,24 @@ $width = $font->calculateTextWidth($text, $missing);
 
 You can also extract metadata. The available data varies from PDF to PDF.
 
-Data taken from an Extensible Metadata Platform (XMP) XML block will have their key values prefixed with an XML tag namespace. You can read more about what values are available in the [XMP Specifications](https://github.com/adobe/XMP-Toolkit-SDK/tree/main/docs).
-
 ```php
 $metaData = $pdf->getDetails();
 
 Array
 (
-    [Creator] => Adobe Acrobat
     [Producer] => Adobe Acrobat
     [CreatedOn] => 2022-01-28T16:36:11+00:00
+    [Pages] => 35
+    ...
+)
+```
+
+If the PDF contains Extensible Metadata Platform (XMP) XML metadata, their values, including the XMP namespace, will be appended to the data returned by `getDetails()`. You can read more about what values and namespaces are commonly used in the [XMP Specifications](https://github.com/adobe/XMP-Toolkit-SDK/tree/main/docs).
+
+```php
+Array
+(
+    ...
     [Pages] => 35
     [dc:creator] => My Name
     [pdf:producer] => Adobe Acrobat
@@ -153,8 +161,6 @@ Array
 Some XMP metadata values may have multiple values, or even named children with their own values. In these cases, the value will be an array. The XMP metadata will follow the structure of the XML so it is possible to have multiple levels of nested values.
 
 ```php
-$metaData = $pdf->getDetails();
-
 Array
 (
     ...
