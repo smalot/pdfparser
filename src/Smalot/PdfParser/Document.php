@@ -226,12 +226,16 @@ class Document
                 }
             }
 
-            // According to the XMP specifications: 'Conflict resolution
-            // for separate packets that describe the same resource is
-            // beyond the scope of this document.' - Section 6.1
-            // So if there are multiple XMP blocks, just merge the values
-            // of each found block over top of the existing values
-            $this->metadata = array_merge($this->metadata, $metadata);
+            // Only use this metadata if it's referring to a PDF
+            if (isset($metadata['dc:format']) && 'application/pdf' == $metadata['dc:format']) {
+
+                // According to the XMP specifications: 'Conflict resolution
+                // for separate packets that describe the same resource is
+                // beyond the scope of this document.' - Section 6.1
+                // So if there are multiple XMP blocks, just merge the values
+                // of each found block over top of the existing values
+                $this->metadata = array_merge($this->metadata, $metadata);
+            }
         }
         xml_parser_free($xml);
     }
