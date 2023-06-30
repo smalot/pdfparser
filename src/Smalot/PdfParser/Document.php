@@ -210,11 +210,11 @@ class Document
                         break;
 
                     case 'close':
-                        // If the value of this item is a single element
-                        // array of just one list item, use the value of
-                        // the first list item as the value for this
-                        // property
-                        if (is_array($metadata) && isset($metadata[0]) && count($metadata) == 1) {
+                        // If the value of this property is a single-
+                        // element array where the element is of type
+                        // string, use the value of the first list item
+                        // as the value for this property
+                        if (is_array($metadata) && isset($metadata[0]) && count($metadata) == 1 && is_string($metadata[0])) {
                             $metadata = $metadata[0];
                         }
 
