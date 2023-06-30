@@ -163,100 +163,77 @@ class Document
         xml_parser_set_option($xml, \XML_OPTION_SKIP_WHITE, 1);
 
         if (xml_parse_into_struct($xml, $content, $values, $index)) {
-            $detail = '';
 
+            $metadata = [];
+            $stack = [];
             foreach ($values as $val) {
-                switch ($val['tag']) {
-                    case 'DC:CREATOR':
-                        $detail = ('open' == $val['type']) ? 'Author' : '';
-                        break;
 
-                    case 'DC:DESCRIPTION':
-                        $detail = ('open' == $val['type']) ? 'Description' : '';
-                        break;
+                // Standardize to lowercase
+                $val['tag'] = strtolower($val['tag']);
 
-                    case 'DC:TITLE':
-                        $detail = ('open' == $val['type']) ? 'Title' : '';
-                        break;
+                // Ignore structural x: and rdf: XML elements
+                if (strpos($val['tag'], 'x:') === 0) continue;
+                if (strpos($val['tag'], 'rdf:') === 0 && 'rdf:li' != $val['tag']) continue;
+  
+                switch ($val['type']) {
+                    case 'open':
+                        // Create an array of list items
+                        if ('rdf:li' == $val['tag']) {
+                            $metadata[] = [];
 
-                    case 'DC:SUBJECT':
-                        $detail = ('open' == $val['type']) ? 'Subject' : '';
-                        break;
+                            // Move up one level in the stack
+                            $stack[count($stack)] = &$metadata;
+                            $metadata = &$metadata[count($metadata) - 1];
 
-                    case 'RDF:LI':
-                        if ('' !== $detail && 'complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata[$detail] = $val['value'];
+                        // Else create an array of named values
+                        } else {
+                            $metadata[$val['tag']] = [];
+
+                            // Move up one level in the stack
+                            $stack[count($stack)] = &$metadata;
+                            $metadata = &$metadata[$val['tag']];
                         }
                         break;
 
-                    case 'DC:FORMAT':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['Format'] = $val['value'];
+                    case 'complete':
+                        if (isset($val['value'])) {
+
+                            // Assign a value to this list item
+                            if ('rdf:li' == $val['tag']) {
+                                $metadata[] = $val['value'];
+
+                            // Else assign a value to this property
+                            } else {
+                                $metadata[$val['tag']] = $val['value'];
+                            }
                         }
                         break;
 
-                    case 'PDF:KEYWORDS':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['Keywords'] = $val['value'];
+                    case 'close':
+                        // If the value of this item is a single element
+                        // array of just one list item, use the value of
+                        // the first list item as the value for this
+                        // property
+                        if (is_array($metadata) && isset($metadata[0]) && count($metadata) == 1) {
+                            $metadata = $metadata[0];
                         }
+
+                        // Move down one level in the stack
+                        $metadata = &$stack[count($stack) - 1];
+                        unset($stack[count($stack) - 1]);
                         break;
 
-                    case 'PDF:PRODUCER':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['Producer'] = $val['value'];
-                        }
-                        break;
-
-                    case 'PDFX:SOURCEMODIFIED':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['SourceModified'] = $val['value'];
-                        }
-                        break;
-
-                    case 'PDFX:COMPANY':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['Company'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMP:CREATEDATE':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['CreationDate'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMP:CREATORTOOL':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['Creator'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMP:MODIFYDATE':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['ModDate'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMP:METADATADATE':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['MetadataDate'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMPMM:DOCUMENTID':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['DocumentUUID'] = $val['value'];
-                        }
-                        break;
-
-                    case 'XMPMM:INSTANCEID':
-                        if ('complete' == $val['type'] && isset($val['value'])) {
-                            $this->metadata['InstanceUUID'] = $val['value'];
-                        }
-                        break;
                 }
             }
+
+            // According to the XMP specifications: 'Conflict resolution
+            // for separate packets that describe the same resource is
+            // beyond the scope of this document.' - Section 6.1
+            // So if there are multiple XMP blocks, just merge the values
+            // of each found block over top of the existing values
+            $this->metadata = array_merge($this->metadata, $metadata);
         }
+        xml_parser_free($xml);
     }
 
     public function getDictionary(): array

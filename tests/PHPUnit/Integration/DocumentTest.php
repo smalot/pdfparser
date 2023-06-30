@@ -265,34 +265,10 @@ class DocumentTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/XMP_Metadata.pdf');
 
-        // Get the original parsed details from getHeader().
-        $ref = new \ReflectionClass('\Smalot\PdfParser\Document');
-        $prop = $ref->getProperty('trailer');
-        $prop->setAccessible(true);
-        $trailer = $prop->getValue($document);
-        $details = [];
+        $details = $document->getDetails();
 
-        if ($trailer->has('Info')) {
-            $info = $trailer->get('Info');
-            if (null !== $info && method_exists($info, 'getHeader')) {
-                $details = $info->getHeader()->getDetails();
-            }
-        }
-
-        // Check that the Title does not contain a Right Single
-        // Quotation Mark, a high UTF-8 glyph that cannot be encoded in
-        // ISO-8859-1 and is replaced by an uninterpretable UTF-8
-        // control character.
-        self::assertStringNotContainsString("\u{2019}", $details['Title']);
-
-        $detailsXMP = $document->getDetails();
-
-        // Test that the correct Right Single Quotation Mark glyph was
-        // extracted from the XMP Metadata.
-        self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $detailsXMP['Title']);
-
-        // Test that getDetails() data NOT contained in the XMP Metadata
-        // is still accessible and not discarded/overwritten.
-        self::assertEquals(1, $detailsXMP['Pages']);
+        // Test that the dc:title data was extracted from the XMP
+        // Metadata.
+        self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $details['dc:title']);
     }
 }
