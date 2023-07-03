@@ -162,7 +162,7 @@ class Document
         $xml = xml_parser_create();
         xml_parser_set_option($xml, \XML_OPTION_SKIP_WHITE, 1);
 
-        if (xml_parse_into_struct($xml, $content, $values, $index)) {
+        if (1 === xml_parse_into_struct($xml, $content, $values, $index)) {
 
             $metadata = [];
             $stack = [];
@@ -172,8 +172,8 @@ class Document
                 $val['tag'] = strtolower($val['tag']);
 
                 // Ignore structural x: and rdf: XML elements
-                if (strpos($val['tag'], 'x:') === 0) continue;
-                if (strpos($val['tag'], 'rdf:') === 0 && 'rdf:li' != $val['tag']) continue;
+                if (0 === strpos($val['tag'], 'x:')) continue;
+                if (0 === strpos($val['tag'], 'rdf:') && 'rdf:li' != $val['tag']) continue;
   
                 switch ($val['type']) {
                     case 'open':
@@ -214,7 +214,7 @@ class Document
                         // element array where the element is of type
                         // string, use the value of the first list item
                         // as the value for this property
-                        if (is_array($metadata) && isset($metadata[0]) && count($metadata) == 1 && is_string($metadata[0])) {
+                        if (is_array($metadata) && isset($metadata[0]) && 1 == count($metadata) && is_string($metadata[0])) {
                             $metadata = $metadata[0];
                         }
 
@@ -232,6 +232,8 @@ class Document
                 // According to the XMP specifications: 'Conflict resolution
                 // for separate packets that describe the same resource is
                 // beyond the scope of this document.' - Section 6.1
+                // Source: https://www.adobe.com/devnet/xmp.html
+                // Source: https://github.com/adobe/XMP-Toolkit-SDK/blob/main/docs/XMPSpecificationPart1.pdf
                 // So if there are multiple XMP blocks, just merge the values
                 // of each found block over top of the existing values
                 $this->metadata = array_merge($this->metadata, $metadata);
