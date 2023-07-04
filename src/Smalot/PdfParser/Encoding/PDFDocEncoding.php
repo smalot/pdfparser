@@ -1,12 +1,11 @@
 <?php
 
 /**
- * @file
- *          This file is part of the PdfParser library.
+ * @file    This file is part of the PdfParser library.
  *
- * @author  Sébastien MALOT <sebastien@malot.fr>
+ * @author  Brian Huisman <bhuisman@greywyvern.com>
  *
- * @date    2017-01-03
+ * @date    2023-06-28
  *
  * @license LGPLv3
  *
