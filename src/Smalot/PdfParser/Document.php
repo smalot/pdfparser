@@ -163,7 +163,17 @@ class Document
         xml_parser_set_option($xml, \XML_OPTION_SKIP_WHITE, 1);
 
         if (1 === xml_parse_into_struct($xml, $content, $values, $index)) {
-
+            /*
+             * short overview about the following code parts:
+             *
+             * The output of xml_parse_into_struct is a single dimensional array (= $values), and the $stack is a last-on, 
+             * first-off array of pointers to positions in $metadata, while iterating through it, that potentially turn the
+             * results into a more intuitive multi-dimensional array. When an "open" XML tag is encountered, 
+             * we save the current $metadata context in the $stack, then create a child array of $metadata and 
+             * make that the current $metadata context. When a "close" XML tag is encountered, the operations are
+             * reversed: the most recently added $metadata context from $stack (IOW, the parent of the current
+             * element) is set as the current $metadata context.
+             */
             $metadata = [];
             $stack = [];
             foreach ($values as $val) {
