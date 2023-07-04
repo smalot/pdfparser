@@ -271,4 +271,31 @@ class DocumentTest extends TestCase
         // Metadata.
         self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $details['dc:title']);
     }
+
+    /**
+     * Tests PDFDocEncoding decode of Document Properties
+     *
+     * @see https://github.com/smalot/pdfparser/issues/609
+     */
+    public function testPDFDocEncodingDecode(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/Issue609.pdf');
+
+        $details = $document->getDetails();
+
+        // These test that Adobe-inserted \r are removed from a UTF-8
+        // escaped metadata string, and the surrounding characters are
+        // repaired
+        $testKeywords = '˘ˇˆ˙˝˛˞˜•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ﬁﬂŁŒŠŸŽıłœšž€¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ';
+        self::assertStringContainsString($testKeywords, $details['Keywords']);
+
+        $testKeywords = 'added line-feeds often destroy multibyte characters';
+        self::assertStringContainsString($testKeywords, $details['Keywords']);
+
+        // This tests that the PDFDocEncoding characters that differ
+        // from CP-1252 are decoded to their correct UTF-8 code points
+        // as well as removing \r line-feeds
+        $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
+        self::assertStringContainsString($testSubject, $details['Subject']);
+    }
 }
