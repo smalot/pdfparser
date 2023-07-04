@@ -62,6 +62,11 @@ class Document
     protected $trailer;
 
     /**
+     * @var array<mixed>
+     */
+    protected $metadata = [];
+
+    /**
      * @var array
      */
     protected $details;
@@ -144,7 +149,105 @@ class Document
             $details['Pages'] = 0;
         }
 
+        $details = array_merge($details, $this->metadata);
+
         $this->details = $details;
+    }
+
+    /**
+     * Extract XMP Metadata
+     */
+    public function extractXMPMetadata(string $content): void
+    {
+        $xml = xml_parser_create();
+        xml_parser_set_option($xml, \XML_OPTION_SKIP_WHITE, 1);
+
+        if (1 === xml_parse_into_struct($xml, $content, $values, $index)) {
+            /*
+             * short overview about the following code parts:
+             *
+             * The output of xml_parse_into_struct is a single dimensional array (= $values), and the $stack is a last-on,
+             * first-off array of pointers to positions in $metadata, while iterating through it, that potentially turn the
+             * results into a more intuitive multi-dimensional array. When an "open" XML tag is encountered,
+             * we save the current $metadata context in the $stack, then create a child array of $metadata and
+             * make that the current $metadata context. When a "close" XML tag is encountered, the operations are
+             * reversed: the most recently added $metadata context from $stack (IOW, the parent of the current
+             * element) is set as the current $metadata context.
+             */
+            $metadata = [];
+            $stack = [];
+            foreach ($values as $val) {
+                // Standardize to lowercase
+                $val['tag'] = strtolower($val['tag']);
+
+                // Ignore structural x: and rdf: XML elements
+                if (0 === strpos($val['tag'], 'x:')) {
+                    continue;
+                } elseif (0 === strpos($val['tag'], 'rdf:') && 'rdf:li' != $val['tag']) {
+                    continue;
+                }
+
+                switch ($val['type']) {
+                    case 'open':
+                        // Create an array of list items
+                        if ('rdf:li' == $val['tag']) {
+                            $metadata[] = [];
+
+                            // Move up one level in the stack
+                            $stack[\count($stack)] = &$metadata;
+                            $metadata = &$metadata[\count($metadata) - 1];
+                        } else {
+                            // Else create an array of named values
+                            $metadata[$val['tag']] = [];
+
+                            // Move up one level in the stack
+                            $stack[\count($stack)] = &$metadata;
+                            $metadata = &$metadata[$val['tag']];
+                        }
+                        break;
+
+                    case 'complete':
+                        if (isset($val['value'])) {
+                            // Assign a value to this list item
+                            if ('rdf:li' == $val['tag']) {
+                                $metadata[] = $val['value'];
+
+                                // Else assign a value to this property
+                            } else {
+                                $metadata[$val['tag']] = $val['value'];
+                            }
+                        }
+                        break;
+
+                    case 'close':
+                        // If the value of this property is a single-
+                        // element array where the element is of type
+                        // string, use the value of the first list item
+                        // as the value for this property
+                        if (\is_array($metadata) && isset($metadata[0]) && 1 == \count($metadata) && \is_string($metadata[0])) {
+                            $metadata = $metadata[0];
+                        }
+
+                        // Move down one level in the stack
+                        $metadata = &$stack[\count($stack) - 1];
+                        unset($stack[\count($stack) - 1]);
+                        break;
+                }
+            }
+
+            // Only use this metadata if it's referring to a PDF
+            if (isset($metadata['dc:format']) && 'application/pdf' == $metadata['dc:format']) {
+                // According to the XMP specifications: 'Conflict resolution
+                // for separate packets that describe the same resource is
+                // beyond the scope of this document.' - Section 6.1
+                // Source: https://www.adobe.com/devnet/xmp.html
+                // Source: https://github.com/adobe/XMP-Toolkit-SDK/blob/main/docs/XMPSpecificationPart1.pdf
+                // So if there are multiple XMP blocks, just merge the values
+                // of each found block over top of the existing values
+                $this->metadata = array_merge($this->metadata, $metadata);
+            }
+        }
+        xml_parser_free($xml);
     }
 
     public function getDictionary(): array

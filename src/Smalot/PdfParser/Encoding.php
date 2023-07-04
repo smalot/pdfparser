@@ -32,7 +32,6 @@
 
 namespace Smalot\PdfParser;
 
-use Exception;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Encoding\EncodingLocator;
 use Smalot\PdfParser\Encoding\PostScriptGlyphs;

@@ -255,4 +255,20 @@ class DocumentTest extends TestCase
         // given text is on page 2, it has to be ignored because of that
         self::assertStringNotContainsString('Medeni Usul ve İcra İflas Hukuku', $document->getText(1));
     }
+
+    /**
+     * Tests extraction of XMP Metadata vs. getHeader() data.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/606
+     */
+    public function testExtractXMPMetadata(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/XMP_Metadata.pdf');
+
+        $details = $document->getDetails();
+
+        // Test that the dc:title data was extracted from the XMP
+        // Metadata.
+        self::assertStringContainsString("Enhance PdfParser\u{2019}s Metadata Capabilities", $details['dc:title']);
+    }
 }
