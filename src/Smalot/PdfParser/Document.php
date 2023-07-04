@@ -181,9 +181,9 @@ class Document
                 $val['tag'] = strtolower($val['tag']);
 
                 // Ignore structural x: and rdf: XML elements
-                if (str_starts_with($val['tag'], 'x:')) {
+                if (0 === strpos($val['tag'], 'x:')) {
                     continue;
-                } elseif (str_starts_with($val['tag'], 'rdf:') && 'rdf:li' != $val['tag']) {
+                } elseif (0 === strpos($val['tag'], 'rdf:') && 'rdf:li' != $val['tag']) {
                     continue;
                 }
 
