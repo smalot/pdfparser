@@ -111,7 +111,7 @@ class Element
                     break;
                 } else {
                     $name = preg_replace_callback(
-                        '/#(\d\d)/',
+                        '/#([0-9a-f]{2})/i',
                         function($m) {
                             return \chr(base_convert($m[1], 16, 10));
                         },
