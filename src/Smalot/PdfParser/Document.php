@@ -161,20 +161,27 @@ class Document
                 // safe
                 if (mb_check_encoding($value, 'UTF-8')) {
 
+                    // Remove literal backslash + line-feed "\\r"
                     $value = str_replace("\x5c\x0d", '', $value);
 
+                    // Remove backslash plus bytes written into high part of
+                    // multibyte unicode character
                     while (preg_match("/\x5c\x5c\xe0([\xb4-\xb8])(.)/", $value, $match)) {
                         $diff = (\ord($match[1]) - 182) * 64;
                         $newbyte = PDFDocEncoding::convertPDFDoc2UTF8(\chr(\ord($match[2]) + $diff));
                         $value = preg_replace("/\x5c\x5c\xe0".$match[1].$match[2]."/", $newbyte, $value);
                     }
 
+                    // Remove bytes written into low part of multibyte unicode
+                    // character
                     while (preg_match("/(.)\x9c\xe0([\xb3-\xb7])/", $value, $match)) {
                         $diff = \ord($match[2]) - 181;
                         $newbyte = \chr(\ord($match[1]) + $diff);
                         $value = preg_replace("/".$match[1]."\x9c\xe0".$match[2]."/", $newbyte, $value);
                     }
 
+                    // Remove this byte string that Adobe occasionally adds
+                    // between two single byte characters in a unicode string
                     $value = str_replace("\xe5\xb0\x8d", '', $value);
 
                     $details[$key] = $value;

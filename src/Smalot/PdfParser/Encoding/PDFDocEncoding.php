@@ -37,11 +37,11 @@ namespace Smalot\PdfParser\Encoding;
 /**
  * Class PDFDocEncoding
  */
-abstract class PDFDocEncoding extends AbstractEncoding
+class PDFDocEncoding
 {
-    public static function convertPDFDoc2UTF8(string $content): string
+    public static function getCodePage(): array
     {
-        return strtr($content, array(
+        return [
             "\x18" => "\u{02d8}", // breve
             "\x19" => "\u{02c7}", // caron
             "\x1a" => "\u{02c6}", // circumflex
@@ -179,6 +179,11 @@ abstract class PDFDocEncoding extends AbstractEncoding
             "\xfd" => "\u{00fd}", // yacute
             "\xfe" => "\u{00fe}", // thorn
             "\xff" => "\u{00ff}"  // ydieresis
-        ));
+        ];
+    }
+
+    public static function convertPDFDoc2UTF8(string $content): string
+    {
+        return strtr($content, static::getCodePage());
     }
 }
