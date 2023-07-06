@@ -107,10 +107,16 @@ class Element
             $old_position = $position;
 
             if (!$only_values) {
-                if (!preg_match('/\G\s*(?P<name>\/[A-Z0-9\._]+)(?P<value>.*)/si', $content, $match, 0, $position)) {
+                if (!preg_match('/\G\s*(?P<name>\/[A-Z#0-9\._]+)(?P<value>.*)/si', $content, $match, 0, $position)) {
                     break;
                 } else {
-                    $name = ltrim($match['name'], '/');
+                    $name = preg_replace_callback(
+                        '/#(\d\d)/',
+                        function($m) {
+                            return \chr(base_convert($m[1], 16, 10));
+                        },
+                        ltrim($match['name'], '/')
+                    );
                     $value = $match['value'];
                     $position = strpos($content, $value, $position + \strlen($match['name']));
                 }
