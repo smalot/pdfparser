@@ -112,7 +112,7 @@ class Element
                 } else {
                     $name = preg_replace_callback(
                         '/#([0-9a-f]{2})/i',
-                        function($m) {
+                        function ($m) {
                             return \chr(base_convert($m[1], 16, 10));
                         },
                         ltrim($match['name'], '/')
