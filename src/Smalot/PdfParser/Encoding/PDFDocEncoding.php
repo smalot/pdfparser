@@ -178,7 +178,7 @@ class PDFDocEncoding
             "\xfc" => "\u{00fc}", // udieresis
             "\xfd" => "\u{00fd}", // yacute
             "\xfe" => "\u{00fe}", // thorn
-            "\xff" => "\u{00ff}"  // ydieresis
+            "\xff" => "\u{00ff}",  // ydieresis
         ];
     }
 
