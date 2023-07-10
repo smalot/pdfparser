@@ -154,13 +154,11 @@ class Document
         // Decode and repair encoded document properties
         foreach ($details as $key => $value) {
             if (\is_string($value)) {
-
                 // If the string is already UTF-8 encoded, that means we only
                 // need to repair Adobe's ham-fisted insertion of line-feeds
                 // every ~127 characters, which doesn't seem to be multi-byte
                 // safe
                 if (mb_check_encoding($value, 'UTF-8')) {
-
                     // Remove literal backslash + line-feed "\\r"
                     $value = str_replace("\x5c\x0d", '', $value);
 
@@ -169,7 +167,7 @@ class Document
                     while (preg_match("/\x5c\x5c\xe0([\xb4-\xb8])(.)/", $value, $match)) {
                         $diff = (\ord($match[1]) - 182) * 64;
                         $newbyte = PDFDocEncoding::convertPDFDoc2UTF8(\chr(\ord($match[2]) + $diff));
-                        $value = preg_replace("/\x5c\x5c\xe0".$match[1].$match[2]."/", $newbyte, $value);
+                        $value = preg_replace("/\x5c\x5c\xe0".$match[1].$match[2].'/', $newbyte, $value);
                     }
 
                     // Remove bytes written into low part of multibyte unicode
@@ -177,7 +175,7 @@ class Document
                     while (preg_match("/(.)\x9c\xe0([\xb3-\xb7])/", $value, $match)) {
                         $diff = \ord($match[2]) - 181;
                         $newbyte = \chr(\ord($match[1]) + $diff);
-                        $value = preg_replace("/".$match[1]."\x9c\xe0".$match[2]."/", $newbyte, $value);
+                        $value = preg_replace('/'.$match[1]."\x9c\xe0".$match[2].'/', $newbyte, $value);
                     }
 
                     // Remove this byte string that Adobe occasionally adds
@@ -185,10 +183,9 @@ class Document
                     $value = str_replace("\xe5\xb0\x8d", '', $value);
 
                     $details[$key] = $value;
-
-                // If the string is just PDFDocEncoding, remove any line-feeds
-                // and decode the whole thing.
                 } else {
+                    // If the string is just PDFDocEncoding, remove any line-feeds
+                    // and decode the whole thing.
                     $value = str_replace("\\\r", '', $value);
                     $details[$key] = PDFDocEncoding::convertPDFDoc2UTF8($value);
                 }
