@@ -57,7 +57,8 @@ class ElementTest extends TestCase
         $content = '/NameType /FlateDecode
         /Contents[4 0 R 42]/Fonts<</F1 41/F2 43>>/NullType
         null/StringType(hello)/DateType(D:20130901235555+02\'00\')/XRefType 2 0 R
-        /NumericType 8/HexaType<0020>/BooleanType false';
+        /NumericType 8/HexaType<0020>/BooleanType false
+        /Space#20Test(Templates)/Hyphen#2DTest(Templates)';
         $offset = 0;
 
         $elements = Element::parse($content, $document, $offset, false);
@@ -99,6 +100,10 @@ class ElementTest extends TestCase
         $this->assertTrue(\array_key_exists('BooleanType', $elements));
         $this->assertTrue($elements['BooleanType'] instanceof ElementBoolean);
         $this->assertFalse($elements['BooleanType']->getContent());
+
+        $this->assertTrue(\array_key_exists('Space Test', $elements));
+
+        $this->assertTrue(\array_key_exists('Hyphen-Test', $elements));
 
         // Only_values = true.
         $content = '/NameType /FlateDecode';
