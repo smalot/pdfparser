@@ -256,4 +256,38 @@ q'],
 
         $this->assertStringContainsString('שלומי טסט', $pages[0]->getText());
     }
+
+    /**
+     * Tests that a text stream with an improperly selected font code
+     * page falls back to one that maps all characters.
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/586
+     */
+    public function testImproperFontFallback(): void
+    {
+        $filename = $this->rootDir.'/samples/ImproperFontFallback.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString('вокруг  нунатака,  судя  по  всему,  сделал  перевал  сложнее  и', $pages[0]->getText());
+    }
+
+    /**
+     * Tests that a font ID containing a hyphen / dash character was
+     * correctly parsed
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/145
+     */
+    public function testFontIDWithHyphen(): void
+    {
+        $filename = $this->rootDir.'/samples/FontIDHyphen.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString('AERODROME LOCATION INDICATOR AND NAME', $pages[0]->getText());
+    }
 }
