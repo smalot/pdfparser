@@ -260,7 +260,7 @@ class PDFObject
             // then the font page being used is probably the wrong one.
             // Loop through the rest of the fonts to see if we can get
             // a good decode.
-            while (preg_match("/[\x00-\x1f\x7f]/u", $text)) {
+            while (preg_match('/[\x00-\x1f\x7f]/u', $text)) {
                 // If we're out of font IDs, then give up and use the
                 // original string
                 if (0 == \count($font_ids)) {
