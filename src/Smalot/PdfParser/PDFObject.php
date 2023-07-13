@@ -246,6 +246,36 @@ class PDFObject
         return new Font($this->document, null, null, $this->config);
     }
 
+    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+    {
+        $orig_text = $font->decodeText($command);
+        $text = $orig_text;
+
+        // If we make this a Config option, we can add a check if it's
+        // enabled here.
+        if (null !== $page) {
+            $font_ids = array_keys($page->getFonts());
+
+            // If the decoded text contains UTF-8 control characters
+            // then the font page being used is probably the wrong one.
+            // Loop through the rest of the fonts to see if we can get
+            // a good decode.
+            while (preg_match("/[\x00-\x1f\x7f]/u", $text)) {
+                // If we're out of font IDs, then give up and use the
+                // original string
+                if (0 == \count($font_ids)) {
+                    return $orig_text;
+                }
+
+                // Try the next font ID
+                $font = $page->getFont(array_shift($font_ids));
+                $text = $font->decodeText($command);
+            }
+        }
+
+        return $text;
+    }
+
     /**
      * @throws \Exception
      */
@@ -339,32 +369,11 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        // Check to see if $current_font can properly decode all this.
-                        $use_font = $current_font;
-                        $orig_text = $use_font->decodeText($command[self::COMMAND]);
-                        $sub_text = $orig_text;
-
-                        if (null !== $page) {
-                            $font_ids = array_keys($page->getFonts());
-
-                            // If the decoded text contains UTF-8 control characters
-                            // then the font page being used is probably the wrong one.
-                            // Loop through the rest of the fonts to see if we can get
-                            // a good decode.
-                            while (preg_match("/[\x00-\x1f\x7f]/u", $sub_text)) {
-                                // If we're out of font IDs, then give up and use the
-                                // original string
-                                if (!\count($font_ids)) {
-                                    $sub_text = $orig_text;
-                                    break;
-                                }
-
-                                // Try the next font ID
-                                $use_font = $page->getFont(array_pop($font_ids));
-                                $sub_text = $use_font->decodeText($command[self::COMMAND]);
-                            }
-                        }
-                        $text .= $sub_text;
+                        $text .= $this->getTJUsingFontFallback(
+                            $current_font,
+                            $command[self::COMMAND],
+                            $page
+                        );
                         break;
 
                         // set leading
@@ -516,32 +525,11 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        // Check to see if $current_font can properly decode all this.
-                        $use_font = $current_font;
-                        $orig_text = $use_font->decodeText($command[self::COMMAND]);
-                        $sub_text = $orig_text;
-
-                        if (null !== $page) {
-                            $font_ids = array_keys($page->getFonts());
-
-                            // If the decoded text contains UTF-8 control characters
-                            // then the font page being used is probably the wrong one.
-                            // Loop through the rest of the fonts to see if we can get
-                            // a good decode.
-                            while (preg_match("/[\x00-\x1f\x7f]/u", $sub_text)) {
-                                // If we're out of font IDs, then give up and use the
-                                // original string
-                                if (!\count($font_ids)) {
-                                    $sub_text = $orig_text;
-                                    break;
-                                }
-
-                                // Try the next font ID
-                                $use_font = $page->getFont(array_pop($font_ids));
-                                $sub_text = $use_font->decodeText($command[self::COMMAND]);
-                            }
-                        }
-                        $text[] = $sub_text;
+                        $text[] = $this->getTJUsingFontFallback(
+                            $current_font,
+                            $command[self::COMMAND],
+                            $page
+                        );
                         break;
 
                         // set leading
