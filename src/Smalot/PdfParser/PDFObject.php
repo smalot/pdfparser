@@ -227,7 +227,7 @@ class PDFObject
         return $sections;
     }
 
-    private function getDefaultFont(?Page $page = null): Font
+    private function getDefaultFont(Page $page = null): Font
     {
         $fonts = [];
         if (null !== $page) {
@@ -249,7 +249,7 @@ class PDFObject
     /**
      * @param array<int,array<string,string|bool>> $command
      */
-    private function getTJUsingFontFallback(Font $font, array $command, ?Page $page = null): string
+    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
     {
         $orig_text = $font->decodeText($command);
         $text = $orig_text;
@@ -282,7 +282,7 @@ class PDFObject
     /**
      * @throws \Exception
      */
-    public function getText(?Page $page = null): string
+    public function getText(Page $page = null): string
     {
         $result = '';
         $sections = $this->getSectionsText($this->content);
@@ -492,7 +492,7 @@ class PDFObject
     /**
      * @throws \Exception
      */
-    public function getTextArray(?Page $page = null): array
+    public function getTextArray(Page $page = null): array
     {
         $text = [];
         $sections = $this->getSectionsText($this->content);
@@ -811,7 +811,7 @@ class PDFObject
         Document $document,
         Header $header,
         ?string $content,
-        ?Config $config = null
+        Config $config = null
     ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
