@@ -246,7 +246,10 @@ class PDFObject
         return new Font($this->document, null, null, $this->config);
     }
 
-    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+   /**
+    * @param array<int,array<string,string|bool>> $command
+    */
+    private function getTJUsingFontFallback(Font $font, array $command, ?Page $page = null): string
     {
         $orig_text = $font->decodeText($command);
         $text = $orig_text;
