@@ -282,12 +282,12 @@ q'],
      */
     public function testFontIDWithHyphen(): void
     {
-        $filename = $this->rootDir.'/samples/FontIDHyphen.pdf';
+        $pdfObject = $this->getPdfObjectInstance(new Document());
 
-        $parser = $this->getParserInstance();
-        $document = $parser->parseFile($filename);
-        $pages = $document->getPages();
+        $fontCommandHyphen = $pdfObject->getCommandsText('/FID-01 15.00 Tf');
 
-        $this->assertStringContainsString('AERODROME', $pages[0]->getText());
+        $this->assertEquals('/', $fontCommandHyphen[0]['t']);
+        $this->assertEquals('Tf', $fontCommandHyphen[0]['o']);
+        $this->assertEquals('FID-01 15.00', $fontCommandHyphen[0]['c']);
     }
 }
