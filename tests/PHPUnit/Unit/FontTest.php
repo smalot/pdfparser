@@ -56,7 +56,7 @@ class FontTest extends TestCase
             [
                 PDFObject::TYPE => '<',
                 PDFObject::COMMAND => "<ab>\b",
-            ]
+            ],
         ];
 
         // result is a binary string and looks like: 0x3cc2ab083e
