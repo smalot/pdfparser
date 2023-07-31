@@ -247,6 +247,39 @@ class PDFObject
     }
 
     /**
+     * @param array<int,array<string,string|bool>> $command
+     */
+    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+    {
+        $orig_text = $font->decodeText($command);
+        $text = $orig_text;
+
+        // If we make this a Config option, we can add a check if it's
+        // enabled here.
+        if (null !== $page) {
+            $font_ids = array_keys($page->getFonts());
+
+            // If the decoded text contains UTF-8 control characters
+            // then the font page being used is probably the wrong one.
+            // Loop through the rest of the fonts to see if we can get
+            // a good decode.
+            while (preg_match('/[\x00-\x1f\x7f]/u', $text) || false !== strpos(bin2hex($text), '00')) {
+                // If we're out of font IDs, then give up and use the
+                // original string
+                if (0 == \count($font_ids)) {
+                    return $orig_text;
+                }
+
+                // Try the next font ID
+                $font = $page->getFont(array_shift($font_ids));
+                $text = $font->decodeText($command);
+            }
+        }
+
+        return $text;
+    }
+
+    /**
      * @throws \Exception
      */
     public function getText(Page $page = null): string
@@ -339,8 +372,11 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        $sub_text = $current_font->decodeText($command[self::COMMAND]);
-                        $text .= $sub_text;
+                        $text .= $this->getTJUsingFontFallback(
+                            $current_font,
+                            $command[self::COMMAND],
+                            $page
+                        );
                         break;
 
                         // set leading
@@ -492,8 +528,11 @@ class PDFObject
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        $sub_text = $current_font->decodeText($command[self::COMMAND]);
-                        $text[] = $sub_text;
+                        $text[] = $this->getTJUsingFontFallback(
+                            $current_font,
+                            $command[self::COMMAND],
+                            $page
+                        );
                         break;
 
                         // set leading
@@ -592,7 +631,7 @@ class PDFObject
                 case '/':
                     $type = $char;
                     if (preg_match(
-                        '/\G\/([A-Z0-9\._,\+]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
+                        '/\G\/([A-Z0-9\._,\+-]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
                         $text_part,
                         $matches,
                         0,
@@ -603,7 +642,7 @@ class PDFObject
                         $command = $matches[1];
                         $offset += \strlen($matches[0]);
                     } elseif (preg_match(
-                        '/\G\/([A-Z0-9\._,\+]+)\s+([A-Z]+)\s*/si',
+                        '/\G\/([A-Z0-9\._,\+-]+)\s+([A-Z]+)\s*/si',
                         $text_part,
                         $matches,
                         0,
