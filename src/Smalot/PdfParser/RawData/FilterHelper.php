@@ -255,7 +255,25 @@ class FilterHelper
                 throw new \Exception('decodeFilterFlateDecode: invalid code');
             }
         } catch (\Exception $e) {
-            throw $e;
+            try {
+                // If gzuncompress() failed with a data error, try again
+                // allowing for a CRC32 checksum instead of Adler-32.
+                // See: https://www.php.net/manual/en/function.gzuncompress.php#79042
+                // Issue: https://github.com/smalot/pdfparser/issues/592
+                $crc32 = @tempnam('/tmp', 'gz_fix');
+                if (false != $crc32) {
+                    file_put_contents($crc32, "\x1f\x8b\x08\x00\x00\x00\x00\x00".$data);
+                    $decoded = file_get_contents('compress.zlib://'.$crc32);
+                    unlink($crc32);
+                }
+
+                // If the decoded string is empty, that means decoding failed.
+                if (empty($decoded)) {
+                    throw $e;
+                }
+            } catch (\Exception $e) {
+                throw $e;
+            }
         } finally {
             // Restore old handler just in case it was customized outside of PDFParser.
             restore_error_handler();

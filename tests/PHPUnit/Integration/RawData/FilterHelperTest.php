@@ -36,6 +36,7 @@
 namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\FilterHelper;
 
 class FilterHelperTest extends TestCase
@@ -130,7 +131,17 @@ class FilterHelperTest extends TestCase
     }
 
     /**
-     * How does function behave if an uncompressed string was given.
+     * How does function behave if compression checksum is CRC32 instead of Adler-32.
+     */
+    public function testDecodeFilterFlateDecodeCRC32Checksum(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/Issue592.pdf');
+
+        self::assertStringContainsString('Two Westbrook Corporate Center Suite 500', $document->getText());
+    }
+
+    /**
+     * How does function behave if an unknown filter name was given.
      */
     public function testDecodeFilterUnknownFilter(): void
     {
