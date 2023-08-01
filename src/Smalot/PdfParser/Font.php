@@ -135,7 +135,7 @@ class Font extends PDFObject
     /**
      * Convert unicode character code to "utf-8" encoded string.
      */
-    public static function uchr(int $code): string
+    public static function uchr(int|float $code): string
     {
         if (!isset(self::$uchrCache[$code])) {
             // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
