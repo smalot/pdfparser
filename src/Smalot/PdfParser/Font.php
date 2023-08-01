@@ -139,7 +139,7 @@ class Font extends PDFObject
      */
     public static function uchr($code): string
     {
-        // note: 
+        // note:
         // $code was typed as int before, but changed in https://github.com/smalot/pdfparser/pull/623
         // because in some cases uchr was called with a float instead of an integer.
         $code = (int) $code;
