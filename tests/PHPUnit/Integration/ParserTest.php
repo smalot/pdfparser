@@ -295,6 +295,18 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Tests if an integer overflow triggers a TypeError in Font::uchr.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/621
+     */
+    public function testIssue621(): void
+    {
+        $document = $this->fixture->parseFile($this->rootDir.'/samples/bugs/Issue621.pdf');
+
+        $this->assertStringContainsString('What is a biological product?', $document->getText());
+    }
+
+    /**
      * Tests behavior when changing default font space limit (-50).
      *
      * Test is based on testIssue359 (above).
