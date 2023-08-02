@@ -114,7 +114,7 @@ class FilterHelperTest extends TestCase
     public function testDecodeFilterFlateDecodeEmptyString(): void
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('gzuncompress(): data error');
+        $this->expectExceptionMessage('decodeFilterFlateDecode: invalid data');
 
         $this->fixture->decodeFilter('FlateDecode', '');
     }
@@ -125,13 +125,14 @@ class FilterHelperTest extends TestCase
     public function testDecodeFilterFlateDecodeUncompressedString(): void
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('gzuncompress(): data error');
+        $this->expectExceptionMessage('decodeFilterFlateDecode: invalid data');
 
         $this->fixture->decodeFilter('FlateDecode', 'something');
     }
 
     /**
      * How does function behave if compression checksum is CRC32 instead of Adler-32.
+     * See: https://github.com/smalot/pdfparser/issues/592
      */
     public function testDecodeFilterFlateDecodeCRC32Checksum(): void
     {
