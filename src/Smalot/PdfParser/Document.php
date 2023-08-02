@@ -263,12 +263,21 @@ class Document
                         break;
 
                     case 'close':
-                        // If the value of this property is a single-
-                        // element array where the element is of type
-                        // string, use the value of the first list item
-                        // as the value for this property
-                        if (\is_array($metadata) && isset($metadata[0]) && 1 == \count($metadata) && \is_string($metadata[0])) {
-                            $metadata = $metadata[0];
+                        // If the value of this property is an array
+                        if (\is_array($metadata)) {
+                            // If the value is a single element array
+                            // where the element is of type string, use
+                            // the value of the first list item as the
+                            // value for this property
+                            if (1 == \count($metadata) && isset($metadata[0]) && \is_string($metadata[0])) {
+                                $metadata = $metadata[0];
+
+                                // else if the value is an empty array, set
+                                // the value of this property to the empty
+                                // string
+                            } elseif (0 == \count($metadata)) {
+                                $metadata = '';
+                            }
                         }
 
                         // Move down one level in the stack
