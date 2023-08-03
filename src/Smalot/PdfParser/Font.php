@@ -134,9 +134,16 @@ class Font extends PDFObject
 
     /**
      * Convert unicode character code to "utf-8" encoded string.
+     *
+     * @param int|float $code Unicode character code. Will be casted to int internally!
      */
-    public static function uchr(int $code): string
+    public static function uchr($code): string
     {
+        // note:
+        // $code was typed as int before, but changed in https://github.com/smalot/pdfparser/pull/623
+        // because in some cases uchr was called with a float instead of an integer.
+        $code = (int) $code;
+
         if (!isset(self::$uchrCache[$code])) {
             // html_entity_decode() will not work with UTF-16 or UTF-32 char entities,
             // therefore, we use mb_convert_encoding() instead
