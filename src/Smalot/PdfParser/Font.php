@@ -319,12 +319,12 @@ class Font extends PDFObject
         }
 
         $text = '';
-        $parts = preg_split('/(<[a-f0-9]+>)/si', $hexa, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(<[a-f0-9\s]+>)/si', $hexa, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($parts as $part) {
-            if (preg_match('/^<.*>$/s', $part) && false === stripos($part, '<?xml')) {
-                // strip line breaks
-                $part = preg_replace("/[\r\n]/", '', $part);
+            if (preg_match('/^<[a-f0-9\s]+>$/si', $part)) {
+                // strip whitespace
+                $part = preg_replace("/\s/", '', $part);
                 $part = trim($part, '<>');
                 if ($add_braces) {
                     $text .= '(';
@@ -349,14 +349,14 @@ class Font extends PDFObject
      */
     public static function decodeOctal(string $text): string
     {
-        $parts = preg_split('/(\\\\[0-7]{3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(?<!\\\\)(\\\\[0-7]{1,3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
 
         foreach ($parts as $part) {
-            if (preg_match('/^\\\\[0-7]{3}$/', $part)) {
+            if (preg_match('/^\\\\[0-7]{1,3}$/', $part)) {
                 $text .= \chr(octdec(trim($part, '\\')));
             } else {
-                $text .= $part;
+                $text .= str_replace(['\\\\', '\\(', '\\)'], ['\\', '(', ')'], $part);
             }
         }
 
