@@ -271,7 +271,6 @@ class Document
                             // value for this property
                             if (1 == \count($metadata) && isset($metadata[0]) && \is_string($metadata[0])) {
                                 $metadata = $metadata[0];
-
                             } elseif (0 == \count($metadata)) {
                                 // if the value is an empty array, set
                                 // the value of this property to the empty
