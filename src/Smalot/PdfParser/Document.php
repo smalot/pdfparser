@@ -272,10 +272,10 @@ class Document
                             if (1 == \count($metadata) && isset($metadata[0]) && \is_string($metadata[0])) {
                                 $metadata = $metadata[0];
 
-                                // else if the value is an empty array, set
+                            } elseif (0 == \count($metadata)) {
+                                // if the value is an empty array, set
                                 // the value of this property to the empty
                                 // string
-                            } elseif (0 == \count($metadata)) {
                                 $metadata = '';
                             }
                         }
