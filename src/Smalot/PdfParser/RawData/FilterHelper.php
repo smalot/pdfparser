@@ -233,32 +233,32 @@ class FilterHelper
      */
     protected function decodeFilterFlateDecode(string $data, int $decodeMemoryLimit): ?string
     {
-        /*
-         * gzuncompress may throw a not catchable E_WARNING in case of an error (like $data is empty)
-         * the following set_error_handler changes an E_WARNING to an E_ERROR, which is catchable.
-         */
-        set_error_handler(function ($errNo, $errStr) {
-            if (\E_WARNING === $errNo) {
-                throw new \Exception($errStr);
-            } else {
-                // fallback to default php error handler
-                return false;
-            }
-        });
+        // Uncatchable E_WARNING for "data error" is @ suppressed
+        // so execution may proceed with an alternate decompression
+        // method.
+        $decoded = @gzuncompress($data, $decodeMemoryLimit);
 
-        $decoded = null;
-
-        // initialize string to return
-        try {
-            $decoded = gzuncompress($data, $decodeMemoryLimit);
-            if (false === $decoded) {
-                throw new \Exception('decodeFilterFlateDecode: invalid code');
+        if (false === $decoded) {
+            // If gzuncompress() failed, try again using the compress.zlib://
+            // wrapper to decode it in a file-based context.
+            // See: https://www.php.net/manual/en/function.gzuncompress.php#79042
+            // Issue: https://github.com/smalot/pdfparser/issues/592
+            $ztmp = tmpfile();
+            if (false != $ztmp) {
+                fwrite($ztmp, "\x1f\x8b\x08\x00\x00\x00\x00\x00".$data);
+                $file = stream_get_meta_data($ztmp)['uri'];
+                if (0 === $decodeMemoryLimit) {
+                    $decoded = file_get_contents('compress.zlib://'.$file);
+                } else {
+                    $decoded = file_get_contents('compress.zlib://'.$file, false, null, 0, $decodeMemoryLimit);
+                }
+                fclose($ztmp);
             }
-        } catch (\Exception $e) {
-            throw $e;
-        } finally {
-            // Restore old handler just in case it was customized outside of PDFParser.
-            restore_error_handler();
+        }
+
+        if (false === \is_string($decoded) || '' === $decoded) {
+            // If the decoded string is empty, that means decoding failed.
+            throw new \Exception('decodeFilterFlateDecode: invalid data');
         }
 
         return $decoded;
