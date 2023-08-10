@@ -846,4 +846,47 @@ class PageTest extends TestCase
         $textData = $page->getTextXY(67.5, 756.25);
         $this->assertStringContainsString('{signature:signer505906:Please+Sign+Here}', $textData[0][1]);
     }
+
+    /**
+     * Check that BT and ET do not reset the font.
+     *
+     * Data TM font info is included.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/630
+     */
+    public function testIssue629WithDataTmFontInfo(): void
+    {
+        $config = new Config();
+        $config->setDataTmFontInfoHasToBeIncluded(true);
+
+        $filename = $this->rootDir.'/samples/bugs/Issue629.pdf';
+        $parser = $this->getParserInstance($config);
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = end($pages);
+        $dataTm = $page->getDataTm();
+
+        $this->assertCount(4, $dataTm[0]);
+        $this->assertEquals('F2', $dataTm[0][2]);
+    }
+
+    /**
+     * Data TM font info is NOT included.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/630
+     */
+    public function testIssue629WithoutDataTmFontInfo(): void
+    {
+        $config = new Config();
+
+        $filename = $this->rootDir.'/samples/bugs/Issue629.pdf';
+        $parser = $this->getParserInstance($config);
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = end($pages);
+        $dataTm = $page->getDataTm();
+
+        $this->assertCount(2, $dataTm[0]);
+        $this->assertFalse(isset($dataTm[0][2]));
+    }
 }
