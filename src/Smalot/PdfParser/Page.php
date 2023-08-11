@@ -712,8 +712,6 @@ class Page extends PDFObject
                     $Tl = $defaultTl;
                     $Tx = 0;
                     $Ty = 0;
-                    $fontId = $defaultFontId;
-                    $fontSize = $defaultFontSize;
                     break;
 
                     /*

@@ -76,8 +76,8 @@ $config->setDataTmFontInfoHasToBeIncluded(true);
 // use config and parse file
 $parser = new Smalot\PdfParser\Parser([], $config);
 $pdf = $parser->parseFile('document.pdf');
-
-$data = $pdf->getPages()[0]->getDataTm();
+$firstpage = $pdf->getPages()[0];
+$data = $firstpage->getDataTm();
 
 Array
 (
@@ -121,9 +121,8 @@ Text width should be calculated on text from dataTm to make sure all character w
 In next example we are using data from above.
 
 ```php
-$fonts = $pdf->getFonts();
 $font_id = $data[0][2]; //R7
-$font = $fonts[$font_id];
+$font = $firstpage->getFont($font_id);
 $text = $data[0][1];
 $width = $font->calculateTextWidth($text, $missing);
 ```
