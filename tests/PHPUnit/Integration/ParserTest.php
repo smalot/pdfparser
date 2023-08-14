@@ -321,7 +321,7 @@ class ParserTest extends TestCase
         $this->fixture = new Parser([], $config);
         $document = $this->fixture->parseFile($filename);
 
-        $this->assertStringContainsString('dni a  10  maj a  2018', $document->getText());
+        $this->assertStringContainsString('d n i a   1 0   m a j a   2 0 1 8', $document->getText());
     }
 
     /**

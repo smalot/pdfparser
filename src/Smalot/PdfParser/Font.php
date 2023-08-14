@@ -414,19 +414,31 @@ class Font extends PDFObject
     }
 
     /**
-     * Decode text by commands array.
+     * Decode text by commands array. decodeText now inserts the proper
+     * whitespace by examining the scaling of the current text matrix.
+     * Supply the identity matrix '1 0 0 1' by default.
      */
-    public function decodeText(array $commands): string
+    public function decodeText(
+        array $commands,
+        array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1]
+    ): string
     {
         $word_position = 0;
         $words = [];
+        $whitespace = [''];
+
         $font_space = $this->getFontSpaceLimit();
+        $font_space = $font_space * $textMatrix['a'] + $font_space * $textMatrix['b'];
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if ((float) trim($command[PDFObject::COMMAND]) < $font_space) {
+                    $offset = (float) trim($command[PDFObject::COMMAND]);
+                    if (abs($offset) > abs((float) $font_space)) {
                         $word_position = \count($words);
+                        $whitespace[$word_position] = ' ';
+                    } elseif (empty($whitespace[$word_position])) {
+                        $whitespace[$word_position] = '';
                     }
                     continue 2;
                 case '<':
@@ -454,11 +466,11 @@ class Font extends PDFObject
             }
         }
 
-        foreach ($words as &$word) {
-            $word = $this->decodeContent($word);
+        foreach ($words as $key => &$word) {
+            $word = $whitespace[$key].$this->decodeContent($word);
         }
 
-        return implode(' ', $words);
+        return implode('', $words);
     }
 
     /**
@@ -468,6 +480,12 @@ class Font extends PDFObject
      */
     public function decodeContent(string $text, bool &$unicode = null): string
     {
+        // If this string begins with a UTF-16BE BOM, then decode it
+        // directly as Unicode
+        if (preg_match('/^\xFE\xFF/i', $text)) {
+            return $this->decodeUnicode($text);
+        }
+
         if ($this->has('ToUnicode')) {
             return $this->decodeContentByToUnicodeCMapOrDescendantFonts($text);
         }

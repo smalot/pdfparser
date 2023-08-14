@@ -52,12 +52,9 @@ class PDFObjectTest extends TestCase
         return new PDFObject($document);
     }
 
-    /**
-     * @group linux-only
-     */
     public function testGetCommandsText(): void
     {
-        $content = "/R14 30 Tf 0.999016 0 0 1 137.4
+        $content = "BT /R14 30 Tf 0.999016 0 0 1 137.4
 342.561 Tm
 [(A)-168.854( BC D)-220.905(\\(E\\))20.905<20>]
 TJ /R14 17.16 Tf <20> Tj
@@ -67,9 +64,20 @@ ET Q
 q -124.774 124.127 5.64213 5.67154 930.307 4436.95 cm
 BI";
 
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+
         $offset = 0;
-        $parts = $this->getPdfObjectInstance(new Document())->getCommandsText($content, $offset);
+        $parts = [];
+        foreach ($sections as $section) {
+            $parts[] = $this->getPdfObjectInstance(new Document())->getCommandsText($section)[0];
+        }
+
         $reference = [
+            [
+                self::TYPE => '',
+                self::OPERATOR => 'BT',
+                self::COMMAND => '',
+            ],
             [
                 self::TYPE => '/',
                 self::OPERATOR => 'Tf',
@@ -78,7 +86,7 @@ BI";
             [
                 self::TYPE => '',
                 self::OPERATOR => 'Tm',
-                self::COMMAND => "0.999016 0 0 1 137.4\n342.561",
+                self::COMMAND => '0.999016 0 0 1 137.4 342.561',
             ],
             [
                 self::TYPE => '[',
@@ -86,7 +94,7 @@ BI";
                 self::COMMAND => [
                     [
                         self::TYPE => '(',
-                        self::OPERATOR => '',
+                        self::OPERATOR => 'TJ',
                         self::COMMAND => 'A',
                     ],
                     [
@@ -96,7 +104,7 @@ BI";
                     ],
                     [
                         self::TYPE => '(',
-                        self::OPERATOR => '',
+                        self::OPERATOR => 'TJ',
                         self::COMMAND => ' BC D',
                     ],
                     [
@@ -106,7 +114,7 @@ BI";
                     ],
                     [
                         self::TYPE => '(',
-                        self::OPERATOR => '',
+                        self::OPERATOR => 'TJ',
                         self::COMMAND => '\\(E\\)',
                     ],
                     [
@@ -116,7 +124,7 @@ BI";
                     ],
                     [
                         self::TYPE => '<',
-                        self::OPERATOR => '',
+                        self::OPERATOR => 'TJ',
                         self::COMMAND => '20',
                     ],
                 ],
@@ -151,60 +159,82 @@ BI";
                 self::OPERATOR => 'Tf',
                 self::COMMAND => 'R14 20.04',
             ],
+            [
+                self::TYPE => '',
+                self::OPERATOR => 'ET',
+                self::COMMAND => '',
+            ],
+            [
+                self::TYPE => '',
+                self::OPERATOR => 'Q',
+                self::COMMAND => '',
+            ],
+            [
+                self::TYPE => '',
+                self::OPERATOR => 'q',
+                self::COMMAND => '',
+            ],
+            [
+                self::TYPE => '',
+                self::OPERATOR => 'cm',
+                self::COMMAND => '-124.774 124.127 5.64213 5.67154 930.307 4436.95',
+            ],
         ];
 
         $this->assertEquals($parts, $reference);
-        $this->assertEquals(172, $offset);
     }
 
     public function testCleanContent(): void
     {
-        $content = '/Shape <</MCID << /Font<8>>> BT >>BDC
+        $content = '/Shape <</MCID << /Font<8>>> BT >>BDC Q /CS0 cs 1 1 0  scn 1 i
+/GS0 gs BT /TT0 1 Tf 0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
+(Modificatio[ns] au \\(14\\) septembre 2009 ET 2010)Tj EMC (ABC) Tj
+[ (a)-4.5(b)6(c)8.8 ( fsdfsdfsdf[]sd) ] TJ ET /Shape <</MCID 2 >>BDC q 0.03 841';
+
+        $expected = '/Shape <</MCID << /Font<8>>> BT >>BDC
 Q
-/CS0 cs 1 1 0  scn
+/CS0 cs
+1 1 0 scn
 1 i
 /GS0 gs
 BT
 /TT0 1 Tf
-0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
+0.0007 Tc
+0.0018 Tw
+0 Ts
+100 Tz
+0 Tr
+24 0 0 24 51.3 639.26025 Tm
 (Modificatio[ns] au \\(14\\) septembre 2009 ET 2010)Tj
 EMC
 (ABC) Tj
-
-[ (a)-4.5(b)6(c)8.8 ( fsdfsdfsdf[]sd) ] TD
-
+[ (a)-4.5(b)6(c)8.8 ( fsdfsdfsdf[]sd) ] TJ
 ET
 /Shape <</MCID 2 >>BDC
 q
 0.03 841';
 
-        $expected = '_____________________________________
-Q
-/CS0 cs 1 1 0  scn
-1 i
-/GS0 gs
-BT
-/TT0 1 Tf
-0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
-(________________________________________________)Tj
-___
-(___) Tj
+        // Normalize line-endings
+        $expected = str_replace(["\r\n", "\n"], ["\n", "\r\n"], $expected);
 
-[_____________________________________] TD
+        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content);
 
-ET
-______________________
-q
-0.03 841';
+        $this->assertEquals($expected, $cleaned);
 
-        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content, '_');
+        // Test that a Name containing 'ET' doesn't close a 'BT' block
+        // See: https://github.com/smalot/pdfparser/issues/474
+        $content = 'BT
+/FTxkPETkkj 8 Tf
+1 0 0 1 535.55 627.4 Tm
+(Hello World)TJ
+ET';
 
-        $this->assertEquals($cleaned, $expected);
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+
+        $this->assertNotEquals('/FTxkP', $sections[0]);
+        $this->assertNotEquals('/FTxkP', $sections[1]);
     }
 
-    /**
-     * @group linux-only
-     */
     public function testGetSectionText(): void
     {
         $content = '/Shape <</MCID 1 >>BDC
@@ -229,16 +259,87 @@ q
         $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
 
         $this->assertEquals(
-            ['/TT0 1 Tf
-0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
-(Mod BT atio[ns] au \(14\) septembre 2009 ET 2010)Tj
-EMC
-(ABC) Tj
-
-[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD', '/TT1 1.5 Tf (BT )Tj
-q'],
+            [
+                '/Shape <</MCID 1 >>BDC',
+                'Q',
+                'BT',
+                '/TT0 1 Tf',
+                '0.0007 Tc',
+                '0.0018 Tw',
+                '0 Ts',
+                '100 Tz',
+                '0 Tr',
+                '24 0 0 24 51.3 639.26025 Tm',
+                '(Mod BT atio[ns] au \\(14\\) septembre 2009 ET 2010)Tj',
+                'EMC',
+                '(ABC) Tj',
+                '[ (a)-4.5(b) 6(c)8.8 ( fsdfsdfsdf[ sd) ] TD',
+                'ET',
+                '/Shape <</MCID [BT] >>BDC',
+                'BT',
+                '/TT1 1.5 Tf',
+                '(BT )Tj',
+                'ET',
+                'q',
+            ],
             $sections
         );
+    }
+
+    public function testParseDictionary(): void
+    {
+        $data = '<</ActualText(text)/XObject<</F2 6 0 R /F3 [/Sub /Array]>> /Array[/Parsed /Data/Actual]/Silent<>>>';
+
+        $dictionary = $this->getPdfObjectInstance(new Document())->parseDictionary($data);
+
+        $this->assertArrayHasKey('ActualText', $dictionary);
+        $this->assertArrayHasKey('XObject', $dictionary);
+        $this->assertArrayHasKey('Array', $dictionary);
+        $this->assertArrayHasKey('Silent', $dictionary);
+
+        $this->assertCount(3, $dictionary['Array']);
+
+        $this->assertEquals('<>', $dictionary['Silent']);
+    }
+
+    /**
+     * Tests that graphics position (cm) is taken into account when
+     * positioning text
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/608
+     */
+    public function testGraphicsPositioning(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue608.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        // The \n is not added if 'cm' commands are ignored
+        $this->assertStringContainsString("Heading 1 \nLorem ipsum", $pages[0]->getText());
+    }
+
+    /**
+     * Tests that ActualText text is printed for a block instead of the
+     * contents of the Tj or TJ commands in the block.
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/464
+     */
+    public function testActualText(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue608.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        // An ActualText command subs in the three literal characters
+        // 'ffi' for the single character ligature here
+        // In addition, if $last_written_position isn't used to store
+        // the position to insert, \n's would be erroniously inserted
+        // on either side of the 'ffi'
+        $this->assertStringContainsString('efficitur', $pages[0]->getText());
     }
 
     /**
@@ -254,7 +355,10 @@ q'],
         $document = $parser->parseFile($filename);
         $pages = $document->getPages();
 
-        $this->assertStringContainsString('שלומי טסט', $pages[0]->getText());
+        $pageText = $pages[0]->getText();
+
+        $this->assertStringContainsString('שלומי טסט', $pageText);
+        $this->assertStringContainsString('בנמל מספנות ישראל.', $pageText);
     }
 
     /**

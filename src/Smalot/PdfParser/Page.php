@@ -400,8 +400,6 @@ class Page extends PDFObject
             }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
-                $extractedData[] = ['t' => '', 'o' => 'BT', 'c' => ''];
-
                 $commandsText = $content->getCommandsText($sectionText);
                 foreach ($commandsText as $command) {
                     $extractedData[] = $command;
@@ -701,6 +699,11 @@ class Page extends PDFObject
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
         foreach ($dataCommands as $command) {
+            // If we've used up all the texts from getTextArray(), exit
+            // so we aren't accessing non-existent array indices
+            if (\count($extractedTexts) <= \count($extractedData)) {
+                break;
+            }
             $currentText = $extractedTexts[\count($extractedData)];
             switch ($command['o']) {
                 /*
@@ -723,8 +726,6 @@ class Page extends PDFObject
                     $Tl = $defaultTl;
                     $Tx = 0;
                     $Ty = 0;
-                    $fontId = $defaultFontId;
-                    $fontSize = $defaultFontSize;
                     break;
 
                     /*

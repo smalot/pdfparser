@@ -73,6 +73,11 @@ class PDFObject
      */
     protected $config;
 
+    /**
+     * @var bool
+     */
+    protected $addPositionWhitespace = false;
+
     public function __construct(
         Document $document,
         Header $header = null,
@@ -127,100 +132,183 @@ class PDFObject
         return $this->content;
     }
 
-    public function cleanContent(string $content, string $char = 'X')
+    public function cleanContent(?string $content): string
     {
-        $char = $char[0];
-        $content = str_replace(['\\\\', '\\)', '\\('], $char.$char, $content);
-
-        // Remove image bloc with binary content
-        preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
-        foreach ($matches[0] as $part) {
-            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        if (null == $content) {
+            return '';
         }
 
-        // Clean content in square brackets [.....]
-        preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, \PREG_OFFSET_CAPTURE);
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
-        }
+        // Find all strings () and replace them so they aren't affected
+        // by the next steps
+        $pdfstrings = [];
+        $attempt = '(';
+        while (preg_match('/'.preg_quote($attempt, '/').'.*?(?<![^\\\\]\\\\)\)/s', $content, $text)) {
+            // PDF strings can contain unescaped parentheses as long as
+            // they're balanced, so check for balanced parentheses
+            $left = preg_match_all('/(?<![^\\\\]\\\\)\(/', $text[0]);
+            $right = preg_match_all('/(?<![^\\\\]\\\\)\)/', $text[0]);
 
-        // Clean content in round brackets (.....)
-        preg_match_all('/\((.*?)\)/s', $content, $matches, \PREG_OFFSET_CAPTURE);
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
-        }
+            if ($left == $right) {
+                // Replace the string with a unique placeholder
+                $id = uniqid('STRING_', true);
+                $pdfstrings[$id] = $text[0];
+                $content = preg_replace(
+                    '/'.preg_quote($text[0], '/').'/',
+                    '@@@'.$id.'@@@',
+                    $content,
+                    1
+                );
 
-        // Clean structure
-        if ($parts = preg_split('/(<|>)/s', $content, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE)) {
-            $content = '';
-            $level = 0;
-            foreach ($parts as $part) {
-                if ('<' == $part) {
-                    ++$level;
-                }
-
-                $content .= (0 == $level ? $part : str_repeat($char, \strlen($part)));
-
-                if ('>' == $part) {
-                    --$level;
-                }
+                // Reset to search for the next string
+                $attempt = '(';
+            } else {
+                // We had unbalanced parentheses, so use the current
+                // match as a base to find a longer string
+                $attempt = $text[0];
             }
         }
 
-        // Clean BDC and EMC markup
-        preg_match_all(
-            '/(\/[A-Za-z0-9\_]*\s*'.preg_quote($char).'*BDC)/s',
-            $content,
-            $matches,
-            \PREG_OFFSET_CAPTURE
-        );
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        // Remove all carriage returns and line-feeds from the document stream
+        $content = str_replace(["\r", "\n"], ' ', trim($content));
+
+        // Find all dictionary << >> commands and replace them so they
+        // aren't affected by the next steps
+        $dictstore = [];
+        while (preg_match('/(<<.*?>> *)(BDC|BMC|DP|MP)/', $content, $dicttext)) {
+            $dictid = uniqid('DICT_', true);
+            $dictstore[$dictid] = $dicttext[1];
+            $content = preg_replace(
+                '/'.preg_quote($dicttext[0], '/').'/',
+                ' ###'.$dictid.'###'.$dicttext[2],
+                $content,
+                1
+            );
         }
 
-        preg_match_all('/\s(EMC)\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
-        foreach ($matches[1] as $part) {
-            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        // Normalize white-space in the document stream
+        $content = preg_replace('/\s{2,}/', ' ', $content);
+
+        // Find all valid PDF operators and add \r\n after each; this
+        // ensures there is just one command on every line
+        // Source: https://ia801001.us.archive.org/1/items/pdf1.7/pdf_reference_1-7.pdf - Appendix A
+        // Source: https://archive.org/download/pdf320002008/PDF32000_2008.pdf - Annex A
+        // Note: PDF Reference 1.7 lists 'I' and 'rI' as valid commands, while
+        //       PDF 32000:2008 lists them as 'i' and 'ri' respectively. Both versions
+        //       appear here in the list for completeness.
+        $operators = [
+          'b*', 'b', 'BDC', 'BMC', 'B*', 'BI', 'BT', 'BX', 'B', 'cm', 'cs', 'c', 'CS',
+          'd0', 'd1', 'd', 'Do', 'DP', 'EMC', 'EI', 'ET', 'EX', 'f*', 'f', 'F', 'gs',
+          'g', 'G',  'h', 'i', 'ID', 'I', 'j', 'J', 'k', 'K', 'l', 'm', 'MP', 'M', 'n',
+          'q', 'Q', 're', 'rg', 'ri', 'rI', 'RG', 'scn', 'sc', 'sh', 's', 'SCN', 'SC',
+          'S', 'T*', 'Tc', 'Td', 'TD', 'Tf', 'TJ', 'Tj', 'TL', 'Tm', 'Tr', 'Ts', 'Tw',
+          'Tz', 'v', 'w', 'W*', 'W', 'y', '\'', '"',
+        ];
+        foreach ($operators as $operator) {
+            $content = preg_replace(
+                '/(?<!\w|\/)'.preg_quote($operator, '/').'(?![\w10\*])/',
+                $operator."\r\n",
+                $content
+            );
         }
+
+        // Restore the original content of the dictionary << >> commands
+        $dictstore = array_reverse($dictstore, true);
+        foreach ($dictstore as $id => $dict) {
+            $content = str_replace('###'.$id.'###', $dict, $content);
+        }
+
+        // Restore the original string content
+        $pdfstrings = array_reverse($pdfstrings, true);
+        foreach ($pdfstrings as $id => $text) {
+            // Strings may contain escaped newlines, or literal newlines
+            // and we should clean these up before replacing the string
+            // back into the content stream; this ensures no strings are
+            // split between two lines (every command must be on one line)
+            $text = str_replace(
+                ["\\\r\n", "\\\r", "\\\n", "\r", "\n"],
+                ['', '', '', '\r', '\n'],
+                $text
+            );
+
+            $content = str_replace('@@@'.$id.'@@@', $text, $content);
+        }
+
+        $content = trim(preg_replace(['/(\r\n){2,}/', '/\r\n +/'], "\r\n", $content));
 
         return $content;
     }
 
+    /**
+     * getSectionsText() now takes an entire, unformatted document
+     * stream as a string, cleans it, then filters out commands that
+     * aren't needed for text positioning/extraction. It returns an
+     * array of unprocessed PDF commands, one command per element.
+     */
     public function getSectionsText(?string $content): array
     {
         $sections = [];
-        $content = ' '.$content.' ';
-        $textCleaned = $this->cleanContent($content, '_');
 
-        // Extract text blocks.
-        if (preg_match_all('/(\sQ)?\s+BT[\s|\(|\[]+(.*?)\s*ET(\sq)?/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
-            foreach ($matches[2] as $pos => $part) {
-                $text = $part[0];
-                if ('' === $text) {
-                    continue;
-                }
-                $offset = $part[1];
-                $section = substr($content, $offset, \strlen($text));
+        // A cleaned stream has one command on every line, so split the
+        // cleaned stream content on \r\n into an array
+        $textCleaned = preg_split(
+            '/(\r\n|\n|\r)/',
+            $this->cleanContent($content),
+            -1,
+            \PREG_SPLIT_NO_EMPTY
+        );
 
-                // Removes BDC and EMC markup.
-                $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section.' ');
+        $inTextBlock = false;
+        foreach ($textCleaned as $line) {
+            $line = trim($line);
 
-                // Add Q and q flags if detected around BT/ET.
-                // @see: https://github.com/smalot/pdfparser/issues/387
-                $section = trim((!empty($matches[1][$pos][0]) ? "Q\n" : '').$section).(!empty($matches[3][$pos][0]) ? "\nq" : '');
-
-                $sections[] = $section;
+            // Skip empty lines
+            if ('' === $line) {
+                continue;
             }
-        }
 
-        // Extract 'do' commands.
-        if (preg_match_all('/(\/[A-Za-z0-9\.\-_]+\s+Do)\s/s', $textCleaned, $matches, \PREG_OFFSET_CAPTURE)) {
-            foreach ($matches[1] as $part) {
-                $text = $part[0];
-                $offset = $part[1];
-                $section = substr($content, $offset, \strlen($text));
+            // If a 'BT' is encountered, set the $inTextBlock flag
+            if (preg_match('/BT$/', $line)) {
+                $inTextBlock = true;
+                $sections[] = $line;
 
-                $sections[] = $section;
+                // If an 'ET' is encountered, unset the $inTextBlock flag
+            } elseif ('ET' == $line) {
+                $inTextBlock = false;
+                $sections[] = $line;
+            } elseif ($inTextBlock) {
+                // If we are inside a BT ... ET text block, save all lines
+                $sections[] = trim($line);
+            } else {
+                // Otherwise, if we are outside of a text block, only
+                // save specific, necessary lines. Care should be taken
+                // to ensure a command being checked for *only* matches
+                // that command. For instance, a simple search for 'c'
+                // may also match the 'sc' command. See the command
+                // list in the cleanContent() method above.
+                // Add more commands to save here as you find them in
+                // weird PDFs!
+                if ('q' == $line[-1] || 'Q' == $line[-1]) {
+                    // Save and restore graphics state commands
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)B[DM]C$/', $line)) {
+                    // Begin marked content sequence
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)[DM]P$/', $line)) {
+                    // Marked content point
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)EMC$/', $line)) {
+                    // End marked content sequence
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)cm$/', $line)) {
+                    // Graphics position change commands
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)Tf$/', $line)) {
+                    // Font change commands
+                    $sections[] = $line;
+                } elseif (preg_match('/(?<!\w)Do$/', $line)) {
+                    // Invoke named XObject command
+                    $sections[] = $line;
+                }
             }
         }
 
@@ -248,10 +336,16 @@ class PDFObject
 
     /**
      * @param array<int,array<string,string|bool>> $command
+     * @param array<string,float> $textMatrix
      */
-    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+    private function getTJUsingFontFallback(
+        Font $font,
+        array $command,
+        array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1],
+        Page $page = null
+    ): string
     {
-        $orig_text = $font->decodeText($command);
+        $orig_text = $font->decodeText($command, $textMatrix);
         $text = $orig_text;
 
         // If we make this a Config option, we can add a check if it's
@@ -262,8 +356,8 @@ class PDFObject
             // If the decoded text contains UTF-8 control characters
             // then the font page being used is probably the wrong one.
             // Loop through the rest of the fonts to see if we can get
-            // a good decode.
-            while (preg_match('/[\x00-\x1f\x7f]/u', $text) || false !== strpos(bin2hex($text), '00')) {
+            // a good decode. Allow x09 to x0d which are whitespace.
+            while (preg_match('/[\x00-\x08\x0e-\x1f\x7f]/u', $text) || false !== strpos(bin2hex($text), '00')) {
                 // If we're out of font IDs, then give up and use the
                 // original string
                 if (0 == \count($font_ids)) {
@@ -272,7 +366,7 @@ class PDFObject
 
                 // Try the next font ID
                 $font = $page->getFont(array_shift($font_ids));
-                $text = $font->decodeText($command);
+                $text = $font->decodeText($command, $textMatrix);
             }
         }
 
@@ -282,63 +376,180 @@ class PDFObject
     /**
      * @throws \Exception
      */
+    public function parseDictionary(string $dictionary): array
+    {
+        // Normalize whitespace
+        $dictionary = preg_replace(['/\r/', '/\n/', '/\s{2,}/'], ' ', trim($dictionary));
+
+        if ('<<' != substr($dictionary, 0, 2)) {
+            throw new \Exception('Not a valid dictionary object.');
+        }
+
+        $parsed = [];
+        $stack = [];
+        $currentName = '';
+        $arrayTypeNumeric = false;
+
+        // Remove outer layer of dictionary, and split on tokens
+        $split = preg_split(
+            '/(<<|>>|\[|\]|\/[^\s\/\[\]\(\)<>]*)/',
+            trim(preg_replace('/^<<|>>$/', '', $dictionary)),
+            -1,
+            \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
+        );
+
+        foreach ($split as $token) {
+            $token = trim($token);
+            switch ($token) {
+                case '':
+                    break;
+
+                    // Open numeric array
+                case '[':
+                    $parsed[$currentName] = [];
+                    $arrayTypeNumeric = true;
+
+                    // Move up one level in the stack
+                    $stack[\count($stack)] = &$parsed;
+                    $parsed = &$parsed[$currentName];
+                    $currentName = '';
+                    break;
+
+                    // Open hashed array
+                case '<<':
+                    $parsed[$currentName] = [];
+                    $arrayTypeNumeric = false;
+
+                    // Move up one level in the stack
+                    $stack[\count($stack)] = &$parsed;
+                    $parsed = &$parsed[$currentName];
+                    $currentName = '';
+                    break;
+
+                    // Close numeric array
+                case ']':
+                    // Revert string type arrays back to a single element
+                    if (is_array($parsed) && 1 == \count($parsed) &&
+                        isset($parsed[0]) && is_string($parsed[0]) &&
+                        0 < strlen($parsed[0]) && '/' != $parsed[0][0]) {
+                        $parsed = '['.$parsed[0].']';
+                    }
+                    // Close hashed array
+                case '>>':
+                    $arrayTypeNumeric = false;
+
+                    // Move down one level in the stack
+                    $parsed = &$stack[\count($stack) - 1];
+                    unset($stack[\count($stack) - 1]);
+                    break;
+
+                default:
+                    // If value begins with a slash, then this is a name
+                    // Add it to the appropriate array
+                    if ('/' == substr($token, 0, 1)) {
+                        $currentName = substr($token, 1);
+                        if (true == $arrayTypeNumeric) {
+                            $parsed[] = $currentName;
+                            $currentName = '';
+                        }
+                    } else if ('' != $currentName) {
+                        if (false == $arrayTypeNumeric) {
+                            $parsed[$currentName] = $token;
+                        }
+                        $currentName = '';
+                    } else if ('' == $currentName) {
+                        $parsed[] = $token;
+                    }
+
+            }
+        }
+
+        return $parsed;
+    }
+
+    /**
+     * getText() leverages getTextArray() to get the content of the
+     * document, setting the addPositionWhitespace flag to true so
+     * whitespace is inserted in a logical way for reading by humans.
+     */
     public function getText(Page $page = null): string
     {
-        $result = '';
+        $this->addPositionWhitespace = true;
+        $result = $this->getTextArray($page);
+        $this->addPositionWhitespace = false;
+
+        return implode('', $result).' ';
+    }
+
+    /**
+     * getTextArray() returns the text objects of a document in an
+     * array. By default no whitespace is added to the output unless
+     * the addPositionWhitespace flag is set to true.
+     *
+     * @throws \Exception
+     */
+    public function getTextArray(Page $page = null): array
+    {
+        $result = [];
+        $text = [];
+
+        $marked_stack = [];
+        $last_written_position = false;
+
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
-        $clipped_font = $current_font;
 
-        $current_position_td = ['x' => false, 'y' => false];
-        $current_position_tm = ['x' => false, 'y' => false];
+        $current_position = ['x' => false, 'y' => false];
+        $current_position_tm = [
+            'a' => 1, 'b' => 0, 'c' => 0,
+            'i' => 0, 'j' => 1, 'k' => 0,
+            'x' => false, 'y' => false, 'z' => 1,
+        ];
+        $current_position_td = ['x' => 0, 'y' => 0];
+        $current_position_cm = [
+            'a' => 1, 'b' => 0, 'c' => 0,
+            'i' => 0, 'j' => 1, 'k' => 0,
+            'x' => 0, 'y' => 0, 'z' => 1,
+        ];
+
+        $clipped_font = [];
+        $clipped_position_cm = [];
 
         self::$recursionStack[] = $this->getUniqueId();
 
         foreach ($sections as $section) {
             $commands = $this->getCommandsText($section);
-            $reverse_text = false;
-            $text = '';
-
             foreach ($commands as $command) {
                 switch ($command[self::OPERATOR]) {
-                    case 'BMC':
-                        if ('ReversedChars' == $command[self::COMMAND]) {
-                            $reverse_text = true;
-                        }
+                    case 'BT':
+                        // Reset text positioning matrices
+                        $current_position_tm = [
+                            'a' => 1, 'b' => 0, 'c' => 0,
+                            'i' => 0, 'j' => 1, 'k' => 0,
+                            'x' => false, 'y' => false, 'z' => 1,
+                        ];
+                        $current_position_td = ['x' => 0, 'y' => 0];
+                        break;
+
+                    case 'ET':
                         break;
 
                         // set character spacing
                     case 'Tc':
                         break;
 
-                        // move text current point
-                    case 'Td':
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $y = array_pop($args);
-                        $x = array_pop($args);
-                        if (((float) $x <= 0)
-                            || (false !== $current_position_td['y'] && (float) $y < (float) $current_position_td['y'])
-                        ) {
-                            // vertical offset
-                            $text .= "\n";
-                        } elseif (false !== $current_position_td['x'] && (float) $x > (float)
-                            $current_position_td['x']
-                        ) {
-                            $text .= $this->config->getHorizontalOffset();
-                        }
-                        $current_position_td = ['x' => $x, 'y' => $y];
-                        break;
-
                         // move text current point and set leading
                     case 'TD':
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $y = array_pop($args);
-                        $x = array_pop($args);
-                        if ((float) $y < 0) {
-                            $text .= "\n";
-                        } elseif ((float) $x <= 0) {
-                            $text .= ' ';
-                        }
+                    case 'Td':
+                        // move text current point
+                        $args = preg_split('/\s+/s', $command[self::COMMAND]);
+                        $y = (float) array_pop($args);
+                        $x = (float) array_pop($args);
+
+                        $current_position_td = [
+                            'x' => $current_position_td['x'] + $x * $current_position_tm['a'] + $x * $current_position_tm['i'],
+                            'y' => $current_position_td['y'] + $y * $current_position_tm['b'] + $y * $current_position_tm['j'],
+                        ];
                         break;
 
                     case 'Tf':
@@ -357,50 +568,236 @@ class PDFObject
                         }
                         break;
 
-                    case 'Q':
-                        // Use clip: restore font.
-                        $current_font = $clipped_font;
+                        // Store current selected font and graphics matrix
+                    case 'q':
+                        $clipped_font[] = $current_font;
+                        $clipped_position_cm[] = $current_position_cm;
                         break;
 
-                    case 'q':
-                        // Use clip: save font.
-                        $clipped_font = $current_font;
+                        // Restore previous selected font and graphics matrix
+                    case 'Q':
+                        if (\count($clipped_font)) {
+                            $current_font = array_pop($clipped_font);
+                        } else {
+                            $current_font = $this->getDefaultFont($page);
+                        }
+                        if (\count($clipped_position_cm)) {
+                            $current_position_cm = array_pop($clipped_position_cm);
+                        } else {
+                            $current_position_cm = [
+                                'a' => 1, 'b' => 0, 'c' => 0,
+                                'i' => 0, 'j' => 1, 'k' => 0,
+                                'x' => 0, 'y' => 0, 'z' => 1,
+                            ];
+                        }
                         break;
+
+                    case 'DP':
+                    case 'MP':
+                        break;
+
+                        // Begin marked content sequence with property list
+                    case 'BDC':
+                        if (preg_match('/(<<.*>>)$/', $command[self::COMMAND], $match)) {
+                            $dict = $this->parseDictionary($match[1]);
+
+                            // Check for ActualText block
+                            if (isset($dict['ActualText']) && is_string($dict['ActualText']) && 0 < strlen($dict['ActualText'])) {
+                                if ('[' == $dict['ActualText'][0]) {
+                                    // Simulate a 'TJ' command on the stack
+                                    $marked_stack[] = [
+                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'TJ')[0]
+                                    ];
+                                } elseif ('<' == $dict['ActualText'][0] || '(' == $dict['ActualText'][0]) {
+                                    // Simulate a 'Tj' command on the stack
+                                    $marked_stack[] = [
+                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'Tj')[0]
+                                    ];
+                                }
+                            }
+                        }
+                        break;
+
+                        // Begin marked content sequence
+                    case 'BMC':
+                        if ('ReversedChars' == $command[self::COMMAND]) {
+                            // Upon encountering a ReversedChars command,
+                            // add the characters we've built up so far to
+                            // the result array
+                            $result = array_merge($result, $text);
+
+                            // Start a fresh $text array that will contain
+                            // reversed characters
+                            $text = [];
+
+                            // Add the reversed text flag to the stack
+                            $marked_stack[] = [ 'ReversedChars' => true ];
+                        }
+                        break;
+
+                        // End marked content sequence
+                    case 'EMC':
+                        $data = false;
+                        if (\count($marked_stack)) {
+                            $marked = array_pop($marked_stack);
+                            $action = key($marked);
+                            $data = $marked[$action];
+
+                            switch ($action) {
+                                // If we are in ReversedChars mode...
+                                 case 'ReversedChars':
+                                    // Reverse the characters we've built up so far
+                                    foreach ($text as $key => $t) {
+                                        $text[$key] = implode('', array_reverse(
+                                            mb_str_split($t, 1, mb_internal_encoding())
+                                        ));
+                                    }
+
+                                    // Add these characters to the result array
+                                    $result = array_merge($result, $text);
+
+                                    // Start a fresh $text array that will contain
+                                    // non-reversed characters
+                                    $text = [];
+                                    break;
+
+                                case 'ActualText':
+                                    // Use the content of the ActualText as a command
+                                    $command = $data;
+                                    break;
+
+                            }
+                        }
+
+                        // If this command has been transformed into a 'Tj' or 'TJ'
+                        // because of being ActualText, then bypass the break to
+                        // move on to the writing section below.
+                        if ('Tj' != $command[self::OPERATOR] && 'TJ' != $command[self::OPERATOR]) {
+                            break;
+                        }
 
                     case "'":
+                    case '"':
+                        if ("'" == $command[self::OPERATOR] || '"' == $command[self::OPERATOR]) {
+                            // Move to next line and write text
+                            $current_position['x'] = 0;
+                            $current_position_td['x'] = 0;
+                            $current_position_td['y'] += 10;
+                        }
+                        // no break
                     case 'Tj':
                         $command[self::COMMAND] = [$command];
                         // no break
                     case 'TJ':
-                        $text .= $this->getTJUsingFontFallback(
+                        // Check the marked content stack for flags
+                        $actual_text = false;
+                        $reverse_text = false;
+                        foreach ($marked_stack as $marked) {
+                            if (isset($marked['ActualText'])) {
+                                $actual_text = true;
+                            }
+                            if (isset($marked['ReversedChars'])) {
+                                $reverse_text = true;
+                            }
+                        }
+
+                        // Account for text position ONLY just before we write text
+                        if (is_array($last_written_position)) {
+                            // If $last_written_position is an array, that
+                            // means we have stored text position coordinates
+                            // for placing an ActualText
+                            $currentX = $last_written_position[0];
+                            $currentY = $last_written_position[1];
+                            $last_written_position = false;
+                        } else {
+                            $currentX = $current_position_cm['x'] + $current_position_tm['x'] + $current_position_td['x'];
+                            $currentY = $current_position_cm['y'] + $current_position_tm['y'] + $current_position_td['y'];
+                        }
+                        $whiteSpace = '';
+
+                        if (true === $this->addPositionWhitespace && false !== $current_position['x']) {
+                            if (abs($currentY - $current_position['y']) > 9) {
+                                $whiteSpace = "\n";
+                            } else {
+                                $curX = $currentX - $current_position['x'];
+                                $factorX = 10 * $current_position_tm['a'] + 10 * $current_position_tm['b'];
+                                if (true === $reverse_text) {
+                                    if ($curX < -abs($factorX * 8)) {
+                                        $whiteSpace = "\t";
+                                    } elseif ($curX < -abs($factorX)) {
+                                        $whiteSpace = ' ';
+                                    }
+                                } else {
+                                    if ($curX > ($factorX * 8)) {
+                                        $whiteSpace = "\t";
+                                    } elseif ($curX > $factorX) {
+                                        $whiteSpace = ' ';
+                                    }
+                                }
+                            }
+                        }
+
+                        $newtext = $this->getTJUsingFontFallback(
                             $current_font,
                             $command[self::COMMAND],
+                            $current_position_tm,
                             $page
                         );
+
+                        // If there is no ActualText for this block then write
+                        if (false === $actual_text) {
+                            if (false !== $reverse_text) {
+                                // If we are in ReversedChars mode, add the whitespace last
+                                $text[] = str_replace(["\r", "\n"], '', $newtext).$whiteSpace;
+                            } else {
+                                // Otherwise add the whitespace first
+                                $text[] = $whiteSpace.str_replace(["\r", "\n"], '', $newtext);
+                            }
+
+                            // Record the position of this inserted text for comparison
+                            // with the next text block.
+                            // Provide a 'fudge' factor guess on how wide this text block
+                            // is based on the number of characters. This helps limit the
+                            // number of tabs inserted, but isn't perfect.
+                            $factor = 6;
+                            if (true === $reverse_text) {
+                                $factor = -$factor;
+                            }
+                            $current_position = [
+                                'x' => $currentX + mb_strlen($newtext) * $factor,
+                                'y' => $currentY,
+                            ];
+                        } else if (false === $last_written_position) {
+                            // If there is an ActualText in the pipeline
+                            // store the position this undisplayed text
+                            // *would* have been written to, so the
+                            // ActualText is displayed in the right spot
+                            $last_written_position = [$currentX, $currentY];
+                        }
                         break;
 
                         // set leading
                     case 'TL':
-                        $text .= ' ';
                         break;
 
+                        // set graphics position matrix
+                    case 'cm':
+                        $args = preg_split('/\s+/s', $command[self::COMMAND]);
+                        $current_position_cm = [
+                            'a' => (float) $args[0], 'b' => (float) $args[1], 'c' => 0,
+                            'i' => (float) $args[2], 'j' => (float) $args[3], 'k' => 0,
+                            'x' => (float) $args[4], 'y' => (float) $args[5], 'z' => 1,
+                        ];
+                        break;
+
+                        // set text position matrix
                     case 'Tm':
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $y = array_pop($args);
-                        $x = array_pop($args);
-                        if (false !== $current_position_tm['x']) {
-                            $delta = abs((float) $x - (float) $current_position_tm['x']);
-                            if ($delta > 10) {
-                                $text .= "\t";
-                            }
-                        }
-                        if (false !== $current_position_tm['y']) {
-                            $delta = abs((float) $y - (float) $current_position_tm['y']);
-                            if ($delta > 10) {
-                                $text .= "\n";
-                            }
-                        }
-                        $current_position_tm = ['x' => $x, 'y' => $y];
+                        $args = preg_split('/\s+/s', $command[self::COMMAND]);
+                        $current_position_tm = [
+                            'a' => (float) $args[0], 'b' => (float) $args[1], 'c' => 0,
+                            'i' => (float) $args[2], 'j' => (float) $args[3], 'k' => 0,
+                            'x' => (float) $args[4], 'y' => (float) $args[5], 'z' => 1,
+                        ];
                         break;
 
                         // set super/subscripting text rise
@@ -413,12 +810,13 @@ class PDFObject
 
                         // set horizontal scaling
                     case 'Tz':
-                        $text .= "\n";
                         break;
 
                         // move to start of next line
                     case 'T*':
-                        $text .= "\n";
+                        $current_position['x'] = 0;
+                        $current_position_td['x'] = 0;
+                        $current_position_td['y'] += 10;
                         break;
 
                     case 'Da':
@@ -433,141 +831,6 @@ class PDFObject
                             // @todo $xobject could be a ElementXRef object, which would then throw an error
                             if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack)) {
                                 // Not a circular reference.
-                                $text .= $xobject->getText($page);
-                            }
-                        }
-                        break;
-
-                    case 'rg':
-                    case 'RG':
-                        break;
-
-                    case 're':
-                        break;
-
-                    case 'co':
-                        break;
-
-                    case 'cs':
-                        break;
-
-                    case 'gs':
-                        break;
-
-                    case 'en':
-                        break;
-
-                    case 'sc':
-                    case 'SC':
-                        break;
-
-                    case 'g':
-                    case 'G':
-                        break;
-
-                    case 'V':
-                        break;
-
-                    case 'vo':
-                    case 'Vo':
-                        break;
-
-                    default:
-                }
-            }
-
-            // Fix Hebrew and other reverse text oriented languages.
-            // @see: https://github.com/smalot/pdfparser/issues/398
-            if ($reverse_text) {
-                $chars = mb_str_split($text, 1, mb_internal_encoding());
-                $text = implode('', array_reverse($chars));
-            }
-
-            $result .= $text;
-        }
-
-        return $result.' ';
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function getTextArray(Page $page = null): array
-    {
-        $text = [];
-        $sections = $this->getSectionsText($this->content);
-        $current_font = new Font($this->document, null, null, $this->config);
-
-        foreach ($sections as $section) {
-            $commands = $this->getCommandsText($section);
-
-            foreach ($commands as $command) {
-                switch ($command[self::OPERATOR]) {
-                    // set character spacing
-                    case 'Tc':
-                        break;
-
-                        // move text current point
-                    case 'Td':
-                        break;
-
-                        // move text current point and set leading
-                    case 'TD':
-                        break;
-
-                    case 'Tf':
-                        if (null !== $page) {
-                            list($id) = preg_split('/\s/s', $command[self::COMMAND]);
-                            $id = trim($id, '/');
-                            $current_font = $page->getFont($id);
-                        }
-                        break;
-
-                    case "'":
-                    case 'Tj':
-                        $command[self::COMMAND] = [$command];
-                        // no break
-                    case 'TJ':
-                        $text[] = $this->getTJUsingFontFallback(
-                            $current_font,
-                            $command[self::COMMAND],
-                            $page
-                        );
-                        break;
-
-                        // set leading
-                    case 'TL':
-                        break;
-
-                    case 'Tm':
-                        break;
-
-                        // set super/subscripting text rise
-                    case 'Ts':
-                        break;
-
-                        // set word spacing
-                    case 'Tw':
-                        break;
-
-                        // set horizontal scaling
-                    case 'Tz':
-                        // $text .= "\n";
-                        break;
-
-                        // move to start of next line
-                    case 'T*':
-                        // $text .= "\n";
-                        break;
-
-                    case 'Da':
-                        break;
-
-                    case 'Do':
-                        if (null !== $page) {
-                            $args = preg_split('/\s/s', $command[self::COMMAND]);
-                            $id = trim(array_pop($args), '/ ');
-                            if ($xobject = $page->getXObject($id)) {
                                 $text[] = $xobject->getText($page);
                             }
                         }
@@ -612,197 +875,92 @@ class PDFObject
             }
         }
 
-        return $text;
+        $result = array_merge($result, $text);
+
+        return $result;
     }
 
-    public function getCommandsText(string $text_part, int &$offset = 0): array
+    /**
+     * getCommandsText() expects the content of $text_part to be an
+     * already formatted, single-line command from a document stream.
+     * The companion function getSectionsText() returns a document
+     * stream as an array of single commands for just this purpose.
+     */
+    public function getCommandsText(string $text_part): array
     {
         $commands = $matches = [];
 
-        while ($offset < \strlen($text_part)) {
-            $offset += strspn($text_part, "\x00\x09\x0a\x0c\x0d\x20", $offset);
-            $char = $text_part[$offset];
+        preg_match('/^(([\/\[\(<])?.*)(?<!\w)([a-z01\'\"*]+)$/i', $text_part, $matches);
 
-            $operator = '';
-            $type = '';
-            $command = false;
+        $type = $matches[2];
+        $operator = $matches[3];
+        $command = trim($matches[1]);
 
-            switch ($char) {
-                case '/':
-                    $type = $char;
-                    if (preg_match(
-                        '/\G\/([A-Z0-9\._,\+-]+\s+[0-9.\-]+)\s+([A-Z]+)\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $operator = $matches[2];
-                        $command = $matches[1];
-                        $offset += \strlen($matches[0]);
-                    } elseif (preg_match(
-                        '/\G\/([A-Z0-9\._,\+-]+)\s+([A-Z]+)\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $operator = $matches[2];
-                        $command = $matches[1];
-                        $offset += \strlen($matches[0]);
+        if ('TJ' == $operator) {
+            $subcommand = [];
+            $command = trim($command, '[]');
+            do {
+                $oldCommand = $command;
+
+                // Search for parentheses string () format
+                if (preg_match('/^ *\((.*?)(?<![^\\\\]\\\\)\) *(-?[\d.]+)?/', $command, $tjmatch)) {
+                    $subcommand[] = [
+                        self::TYPE => '(',
+                        self::OPERATOR => 'TJ',
+                        self::COMMAND => $tjmatch[1],
+                    ];
+                    if (isset($tjmatch[2]) && trim($tjmatch[2])) {
+                        $subcommand[] = [
+                            self::TYPE => 'n',
+                            self::OPERATOR => '',
+                            self::COMMAND => $tjmatch[2],
+                        ];
                     }
-                    break;
+                    $command = substr($command, \strlen($tjmatch[0]));
+                }
 
-                case '[':
-                case ']':
-                    // array object
-                    $type = $char;
-                    if ('[' == $char) {
-                        ++$offset;
-                        // get elements
-                        $command = $this->getCommandsText($text_part, $offset);
-
-                        if (preg_match(
-                            '/\G\s*[A-Z]{1,2}\s*/si',
-                            $text_part,
-                            $matches,
-                            0,
-                            $offset
-                        )
-                        ) {
-                            $operator = trim($matches[0]);
-                            $offset += \strlen($matches[0]);
-                        }
-                    } else {
-                        ++$offset;
-                        break;
+                // Search for hexadecimal <> format
+                if (preg_match('/^ *<([0-9a-f\s]*)> *(-?[\d.]+)?/i', $command, $tjmatch)) {
+                    $tjmatch[1] = preg_replace('/\s/', '', $tjmatch[1]);
+                    $subcommand[] = [
+                        self::TYPE => '<',
+                        self::OPERATOR => 'TJ',
+                        self::COMMAND => $tjmatch[1],
+                    ];
+                    if (isset($tjmatch[2]) && trim($tjmatch[2])) {
+                        $subcommand[] = [
+                            self::TYPE => 'n',
+                            self::OPERATOR => '',
+                            self::COMMAND => $tjmatch[2],
+                        ];
                     }
-                    break;
+                    $command = substr($command, \strlen($tjmatch[0]));
+                }
+            } while ($command != $oldCommand);
 
-                case '<':
-                case '>':
-                    // array object
-                    $type = $char;
-                    ++$offset;
-                    if ('<' == $char) {
-                        $strpos = strpos($text_part, '>', $offset);
-                        $command = substr($text_part, $offset, $strpos - $offset);
-                        $offset = $strpos + 1;
-                    }
-
-                    if (preg_match(
-                        '/\G\s*[A-Z]{1,2}\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $operator = trim($matches[0]);
-                        $offset += \strlen($matches[0]);
-                    }
-                    break;
-
-                case '(':
-                case ')':
-                    ++$offset;
-                    $type = $char;
-                    $strpos = $offset;
-                    if ('(' == $char) {
-                        $open_bracket = 1;
-                        while ($open_bracket > 0) {
-                            if (!isset($text_part[$strpos])) {
-                                break;
-                            }
-                            $ch = $text_part[$strpos];
-                            switch ($ch) {
-                                case '\\':
-                                    // REVERSE SOLIDUS (5Ch) (Backslash)
-                                    // skip next character
-                                    ++$strpos;
-                                    break;
-
-                                case '(':
-                                    // LEFT PARENHESIS (28h)
-                                    ++$open_bracket;
-                                    break;
-
-                                case ')':
-                                    // RIGHT PARENTHESIS (29h)
-                                    --$open_bracket;
-                                    break;
-                            }
-                            ++$strpos;
-                        }
-                        $command = substr($text_part, $offset, $strpos - $offset - 1);
-                        $offset = $strpos;
-
-                        if (preg_match(
-                            '/\G\s*([A-Z\']{1,2})\s*/si',
-                            $text_part,
-                            $matches,
-                            0,
-                            $offset
-                        )
-                        ) {
-                            $operator = $matches[1];
-                            $offset += \strlen($matches[0]);
-                        }
-                    }
-                    break;
-
-                default:
-                    if ('ET' == substr($text_part, $offset, 2)) {
-                        break;
-                    } elseif (preg_match(
-                        '/\G\s*(?P<data>([0-9\.\-]+\s*?)+)\s+(?P<id>[A-Z]{1,3})\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $operator = trim($matches['id']);
-                        $command = trim($matches['data']);
-                        $offset += \strlen($matches[0]);
-                    } elseif (preg_match(
-                        '/\G\s*([0-9\.\-]+\s*?)+\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $type = 'n';
-                        $command = trim($matches[0]);
-                        $offset += \strlen($matches[0]);
-                    } elseif (preg_match(
-                        '/\G\s*([A-Z\*]+)\s*/si',
-                        $text_part,
-                        $matches,
-                        0,
-                        $offset
-                    )
-                    ) {
-                        $type = '';
-                        $operator = $matches[1];
-                        $command = '';
-                        $offset += \strlen($matches[0]);
-                    }
+            $command = $subcommand;
+        } elseif ('Tj' == $operator || "'" == $operator || '"' == $operator) {
+            // Depending on the string type, trim the data of the
+            // appropriate delimiters
+            if ('(' == $type) {
+                // Don't use trim() here since a () string may end with
+                // a balanced or escaped right parentheses, and trim()
+                // will delete both. Both strings below are valid:
+                //   eg. (String())
+                //   eg. (String\))
+                $command = preg_replace('/^\(|\)$/', '', $command);
+            } elseif ('<' == $type) {
+                $command = trim($command, '<>');
             }
-
-            if (false !== $command) {
-                $commands[] = [
-                    self::TYPE => $type,
-                    self::OPERATOR => $operator,
-                    self::COMMAND => $command,
-                ];
-            } else {
-                break;
-            }
+        } elseif ('/' == $type) {
+            $command = substr($command, 1);
         }
+
+        $commands[] = [
+            self::TYPE => $type,
+            self::OPERATOR => $operator,
+            self::COMMAND => $command,
+        ];
 
         return $commands;
     }
