@@ -20,7 +20,7 @@
 * [ ] Please run **PHP-CS-Fixer** before committing, to confirm with our coding styles. See https://github.com/smalot/pdfparser/blob/master/.php-cs-fixer.php for more information about our coding styles.
 * [ ] In case you **fix an existing issue**, please do one of the following:
   * [ ] Write in this text something like `fixes #1234` to outline that you are providing a fix for the issue `#1234`.
-  * [ ] On the right side in section **Development**, you can also select issues that will be closed after your pull request gets merged. Both ways lead to the same result.
+  * [ ] After the pull request was created, you will find on the right side a section called **Development**. There issues can be selected which will be closed after the your pull request got merged.
 * [ ] In case you changed internal behavior or functionality, please check our documentation to make sure these changes are **documented properly**: https://github.com/smalot/pdfparser/tree/master/doc
 * [ ] In case you wanna discuss new ideas/changes and you are not sure, just create a pull request and mark it as **a draft**
       (see [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) for more information).
