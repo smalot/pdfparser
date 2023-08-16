@@ -14,7 +14,7 @@
 *In case you changed the code/configuration, please read each of the following checkboxes as they contain valuable information:*
 
 * [ ] Please add at least **one test case** (unit test, system test, ...) to demonstrate that the change is working. If existing code was changed, your tests cover these code parts as well.
-     By the way, you don't have to provide a full fledged PDF file to demonstrate a fix. Instead a unit test is sufficient,
+     By the way, you don't have to provide a full fledged PDF file to demonstrate a fix. Instead a unit test may sufficient sometimes,
      please have a look at [FontTest](https://github.com/smalot/pdfparser/blob/master/tests/PHPUnit/Unit/FontTest.php#L40) for example code.
      Code changes without any tests are likely to be rejected. If you dont know how to write tests, no problem, tell us upfront and we may add them ourselves or discuss other ways.
 * [ ] Please run **PHP-CS-Fixer** before committing, to confirm with our coding styles. See https://github.com/smalot/pdfparser/blob/master/.php-cs-fixer.php for more information about our coding styles.
