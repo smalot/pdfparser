@@ -421,8 +421,7 @@ class Font extends PDFObject
     public function decodeText(
         array $commands,
         array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1]
-    ): string
-    {
+    ): string {
         $word_position = 0;
         $words = [];
 

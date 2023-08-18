@@ -348,15 +348,14 @@ class PDFObject
 
     /**
      * @param array<int,array<string,string|bool>> $command
-     * @param array<string,float> $textMatrix
+     * @param array<string,float>                  $textMatrix
      */
     private function getTJUsingFontFallback(
         Font $font,
         array $command,
         array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1],
         Page $page = null
-    ): string
-    {
+    ): string {
         $orig_text = $font->decodeText($command, $textMatrix);
         $text = $orig_text;
 
@@ -441,13 +440,13 @@ class PDFObject
                     // Close numeric array
                 case ']':
                     // Revert string type arrays back to a single element
-                    if (is_array($parsed) && 1 == \count($parsed) &&
-                        isset($parsed[0]) && is_string($parsed[0]) &&
-                        0 < strlen($parsed[0]) && '/' != $parsed[0][0]) {
+                    if (\is_array($parsed) && 1 == \count($parsed)
+                        && isset($parsed[0]) && \is_string($parsed[0])
+                        && '' !== $parsed[0] && '/' != $parsed[0][0]) {
                         $parsed = '['.$parsed[0].']';
                     }
-                    // no break
                     // Close hashed array
+                    // no break
                 case '>>':
                     $arrayTypeNumeric = false;
 
@@ -465,15 +464,14 @@ class PDFObject
                             $parsed[] = $currentName;
                             $currentName = '';
                         }
-                    } else if ('' != $currentName) {
+                    } elseif ('' != $currentName) {
                         if (false == $arrayTypeNumeric) {
                             $parsed[$currentName] = $token;
                         }
                         $currentName = '';
-                    } else if ('' == $currentName) {
+                    } elseif ('' == $currentName) {
                         $parsed[] = $token;
                     }
-
             }
         }
 
@@ -603,16 +601,16 @@ class PDFObject
                             $dict = $this->parseDictionary($match[1]);
 
                             // Check for ActualText block
-                            if (isset($dict['ActualText']) && is_string($dict['ActualText']) && 0 < strlen($dict['ActualText'])) {
+                            if (isset($dict['ActualText']) && \is_string($dict['ActualText']) && '' !== $dict['ActualText']) {
                                 if ('[' == $dict['ActualText'][0]) {
                                     // Simulate a 'TJ' command on the stack
                                     $marked_stack[] = [
-                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'TJ')[0]
+                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'TJ')[0],
                                     ];
                                 } elseif ('<' == $dict['ActualText'][0] || '(' == $dict['ActualText'][0]) {
                                     // Simulate a 'Tj' command on the stack
                                     $marked_stack[] = [
-                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'Tj')[0]
+                                        'ActualText' => $this->getCommandsText($dict['ActualText'].'Tj')[0],
                                     ];
                                 }
                             }
@@ -632,7 +630,7 @@ class PDFObject
                             $text = [];
 
                             // Add the reversed text flag to the stack
-                            $marked_stack[] = [ 'ReversedChars' => true ];
+                            $marked_stack[] = ['ReversedChars' => true];
                         }
                         break;
 
@@ -646,7 +644,7 @@ class PDFObject
 
                             switch ($action) {
                                 // If we are in ReversedChars mode...
-                                 case 'ReversedChars':
+                                case 'ReversedChars':
                                     // Reverse the characters we've built up so far
                                     foreach ($text as $key => $t) {
                                         $text[$key] = implode('', array_reverse(
@@ -666,7 +664,6 @@ class PDFObject
                                     // Use the content of the ActualText as a command
                                     $command = $data;
                                     break;
-
                             }
                         }
 
@@ -677,6 +674,7 @@ class PDFObject
                             break;
                         }
 
+                        // no break
                     case "'":
                     case '"':
                         if ("'" == $command[self::OPERATOR] || '"' == $command[self::OPERATOR]) {
@@ -703,7 +701,7 @@ class PDFObject
                         }
 
                         // Account for text position ONLY just before we write text
-                        if (false === $actual_text && is_array($last_written_position)) {
+                        if (false === $actual_text && \is_array($last_written_position)) {
                             // If $last_written_position is an array, that
                             // means we have stored text position coordinates
                             // for placing an ActualText
@@ -768,7 +766,7 @@ class PDFObject
                                 'x' => $currentX + mb_strlen($newtext) * $factor,
                                 'y' => $currentY,
                             ];
-                        } else if (false === $last_written_position) {
+                        } elseif (false === $last_written_position) {
                             // If there is an ActualText in the pipeline
                             // store the position this undisplayed text
                             // *would* have been written to, so the
