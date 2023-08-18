@@ -701,6 +701,7 @@ class Page extends PDFObject
         foreach ($dataCommands as $command) {
             // If we've used up all the texts from getTextArray(), exit
             // so we aren't accessing non-existent array indices
+            // Fixes 'undefined array key' errors in Issues #575, #576
             if (\count($extractedTexts) <= \count($extractedData)) {
                 break;
             }

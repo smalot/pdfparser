@@ -446,6 +446,7 @@ class PDFObject
                         0 < strlen($parsed[0]) && '/' != $parsed[0][0]) {
                         $parsed = '['.$parsed[0].']';
                     }
+                    // no break
                     // Close hashed array
                 case '>>':
                     $arrayTypeNumeric = false;
@@ -495,8 +496,8 @@ class PDFObject
 
     /**
      * getTextArray() returns the text objects of a document in an
-     * array. By default no whitespace is added to the output unless
-     * the addPositionWhitespace flag is set to true.
+     * array. By default no positioning whitespace is added to the
+     * output unless the addPositionWhitespace flag is set to true.
      *
      * @throws \Exception
      */
@@ -588,20 +589,8 @@ class PDFObject
 
                         // Restore previous selected font and graphics matrix
                     case 'Q':
-                        if (\count($clipped_font)) {
-                            $current_font = array_pop($clipped_font);
-                        } else {
-                            $current_font = $this->getDefaultFont($page);
-                        }
-                        if (\count($clipped_position_cm)) {
-                            $current_position_cm = array_pop($clipped_position_cm);
-                        } else {
-                            $current_position_cm = [
-                                'a' => 1, 'b' => 0, 'c' => 0,
-                                'i' => 0, 'j' => 1, 'k' => 0,
-                                'x' => 0, 'y' => 0, 'z' => 1,
-                            ];
-                        }
+                        $current_font = array_pop($clipped_font);
+                        $current_position_cm = array_pop($clipped_position_cm);
                         break;
 
                     case 'DP':
@@ -681,9 +670,9 @@ class PDFObject
                             }
                         }
 
-                        // If this command has been transformed into a 'Tj' or 'TJ'
-                        // because of being ActualText, then bypass the break to
-                        // move on to the writing section below.
+                        // If this EMC command has been transformed into a 'Tj'
+                        // or 'TJ' command because of being ActualText, then bypass
+                        // the break to proceed to the writing section below.
                         if ('Tj' != $command[self::OPERATOR] && 'TJ' != $command[self::OPERATOR]) {
                             break;
                         }
@@ -714,7 +703,7 @@ class PDFObject
                         }
 
                         // Account for text position ONLY just before we write text
-                        if (is_array($last_written_position)) {
+                        if (false === $actual_text && is_array($last_written_position)) {
                             // If $last_written_position is an array, that
                             // means we have stored text position coordinates
                             // for placing an ActualText
@@ -756,7 +745,7 @@ class PDFObject
                             $page
                         );
 
-                        // If there is no ActualText for this block then write
+                        // If there is no ActualText pending then write
                         if (false === $actual_text) {
                             if (false !== $reverse_text) {
                                 // If we are in ReversedChars mode, add the whitespace last
@@ -897,6 +886,9 @@ class PDFObject
      * already formatted, single-line command from a document stream.
      * The companion function getSectionsText() returns a document
      * stream as an array of single commands for just this purpose.
+     *
+     * A better name for this function would be getCommandText()
+     * since it now always works on just one command.
      */
     public function getCommandsText(string $text_part): array
     {
