@@ -294,9 +294,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assertEquals('AB', Font::decodeUnicode("\xFE\xFF\x00A\x00B"));
     }
 
-    /**
-     * @group linux-only
-     */
     public function testDecodeText(): void
     {
         $filename = $this->rootDir.'/samples/Document1_pdfcreator_nocompressed.pdf';

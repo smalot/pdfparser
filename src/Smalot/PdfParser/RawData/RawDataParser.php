@@ -901,8 +901,15 @@ class RawDataParser
             // Cross-Reference
             $xref = $this->decodeXref($pdfData, $startxref, $xref);
         } else {
-            // Cross-Reference Stream
-            $xref = $this->decodeXrefStream($pdfData, $startxref, $xref);
+            // Check if the $pdfData might have the wrong line-endings
+            $pdfDataUnix = str_replace("\r\n", "\n", $pdfData);
+            if ($startxref < \strlen($pdfDataUnix) && strpos($pdfDataUnix, 'xref', $startxref) == $startxref) {
+                // Return Unix-line-ending flag
+                $xref = ['Unix' => true];
+            } else {
+                // Cross-Reference Stream
+                $xref = $this->decodeXrefStream($pdfData, $startxref, $xref);
+            }
         }
         if (empty($xref)) {
             throw new \Exception('Unable to find xref');
@@ -936,6 +943,12 @@ class RawDataParser
 
         // get xref and trailer data
         $xref = $this->getXrefData($pdfData);
+
+        // If we found Unix line-endings
+        if (isset($xref['Unix'])) {
+            $pdfData = str_replace("\r\n", "\n", $pdfData);
+            $xref = $this->getXrefData($pdfData);
+        }
 
         // parse all document objects
         $objects = [];
