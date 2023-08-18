@@ -185,6 +185,18 @@ class PDFObject
             );
         }
 
+        // Now that all strings and dictionaries are hidden, the only
+        // PDF commands left should all be plain text.
+        // Detect MIME-type of the current string and prevent reading
+        // content streams that are images, etc. This prevents PHP
+        // error messages when JPEG content is sent to this function
+        // by the sample file '12249.pdf' from:
+        // https://github.com/smalot/pdfparser/issues/458
+        $finfo = new \finfo(\FILEINFO_MIME);
+        if (false === strpos($finfo->buffer($content), 'text/plain')) {
+            return '';
+        }
+
         // Normalize white-space in the document stream
         $content = preg_replace('/\s{2,}/', ' ', $content);
 

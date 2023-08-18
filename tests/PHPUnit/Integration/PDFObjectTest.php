@@ -343,6 +343,23 @@ q
     }
 
     /**
+     * Tests for the correct decoding of an Em-dash character in
+     * certain font contexts
+     *
+     * See: https://github.com/smalot/pdfparser/issues/585
+     */
+    public function testDecodeEmDash(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue585.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertStringContainsString('слева по ходу — веревка', $pages[0]->getText());
+    }
+
+    /**
      * Tests behavior with reversed chars instruction.
      *
      * @see: https://github.com/smalot/pdfparser/issues/398

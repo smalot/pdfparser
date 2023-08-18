@@ -436,9 +436,6 @@ class Font extends PDFObject
                     $offset = (float) trim($command[PDFObject::COMMAND]);
                     if (abs($offset) > abs((float) $font_space)) {
                         $word_position = \count($words);
-                        $whitespace[$word_position] = ' ';
-                    } elseif (empty($whitespace[$word_position])) {
-                        $whitespace[$word_position] = '';
                     }
                     continue 2;
                 case '<':
@@ -467,10 +464,10 @@ class Font extends PDFObject
         }
 
         foreach ($words as $key => &$word) {
-            $word = $whitespace[$key].$this->decodeContent($word);
+            $word = $this->decodeContent($word);
         }
 
-        return implode('', $words);
+        return implode(' ', $words);
     }
 
     /**
