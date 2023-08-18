@@ -425,7 +425,6 @@ class Font extends PDFObject
     {
         $word_position = 0;
         $words = [];
-        $whitespace = [''];
 
         $font_space = $this->getFontSpaceLimit();
         $font_space = $font_space * $textMatrix['a'] + $font_space * $textMatrix['b'];
