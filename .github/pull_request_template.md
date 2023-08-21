@@ -26,5 +26,7 @@
       (see [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) for more information).
       This will tell us, that it is not ready for merge, but you want to discuss certain issues.
 
+<!--
 Pull requests will be declined/rejected if one part of the continous integration pipeline fails. 
 We use the pipeline to make sure no regressions are introduced and existing code still runs as expected.
+-->
