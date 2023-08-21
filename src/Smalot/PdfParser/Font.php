@@ -442,17 +442,17 @@ class Font extends PDFObject
         $words = [];
 
         // Ensure we have a valid $textMatrix
-        // Values 'a' and 'b' come from the top row of the text matrix
+        // Values 'a' and 'i' come from the first column of the text matrix
         // and determine the amount of horizontal (x-axis) scaling. Since
-        // we are only dealing with one line here, we can ignore the 'i'
+        // we are only dealing with one line here, we can ignore the 'b'
         // and 'j' values for vertical (y-axis) scaling, but they are
         // included here for clarity.
-        if (false === is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['b'])) {
+        if (false === is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['i'])) {
             $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1];
         }
 
         $font_space = $this->getFontSpaceLimit();
-        $font_space = $font_space * (float) $textMatrix['a'] + $font_space * (float) $textMatrix['b'];
+        $font_space = $font_space * (float) $textMatrix['a'] + $font_space * (float) $textMatrix['i'];
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {

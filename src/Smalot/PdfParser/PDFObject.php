@@ -347,6 +347,11 @@ class PDFObject
     }
 
     /**
+     * Decode a '[]TJ' command and attempt to use alternate fonts if
+     * the current font results in output that contains Unicode control
+     * characters. See Font::decodeText for a full description of
+     * $textMatrix
+     *
      * @param array<int,array<string,string|bool>> $command
      * @param array<string,float>                  $textMatrix
      */
@@ -719,7 +724,7 @@ class PDFObject
                                 $whiteSpace = "\n";
                             } else {
                                 $curX = $currentX - $current_position['x'];
-                                $factorX = 10 * $current_position_tm['a'] + 10 * $current_position_tm['b'];
+                                $factorX = 10 * $current_position_tm['a'] + 10 * $current_position_tm['i'];
                                 if (true === $reverse_text) {
                                     if ($curX < -abs($factorX * 8)) {
                                         $whiteSpace = "\t";
