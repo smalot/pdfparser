@@ -7,7 +7,7 @@
 
 # About
 
-*Please describe with a few words what this pull request is about*
+<!-- Please describe with a few words what this pull request is about -->
 
 # Checklist for code/confirmation changes
 
