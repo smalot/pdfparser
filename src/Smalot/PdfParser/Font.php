@@ -391,7 +391,7 @@ class Font extends PDFObject
      */
     public static function decodeUnicode(string $text): string
     {
-        if (preg_match('/^\xFE\xFF/i', $text)) {
+        if ("\xFE\xFF" === substr($text, 0, 2)) {
             // Strip U+FEFF byte order marker.
             $decode = substr($text, 2);
             $text = '';
@@ -416,7 +416,23 @@ class Font extends PDFObject
     /**
      * Decode text by commands array. decodeText now inserts the proper
      * whitespace by examining the scaling of the current text matrix.
-     * Supply the identity matrix '1 0 0 1' by default.
+     * Supply the identity matrix '1 0 0 1' by default. The six numerical
+     * values of a text matrix (Tm) command are as follows:
+     * a b i j x y Tm
+     * they get placed into a 3x3 text matrix like so:
+     * | a, b, 0 |
+     * | i, j, 0 |
+     * | x, y, 1 |
+     * An "identity matrix" is a matrix that, when you multiply it with
+     * another matrix, just gives you the same matrix. It looks like so:
+     * | 1, 0, 0 |
+     * | 0, 1, 0 |
+     * | 0, 0, 1 |
+     * Therefore, supplying the identity matrix by default is the same
+     * as multiplying the 'scaling' value by one (1) leaving it
+     * unchanged.
+     * Source: https://ia801001.us.archive.org/1/items/pdf1.7/pdf_reference_1-7.pdf
+     *   - Section 5.3.1, Test-Positioning Operators
      */
     public function decodeText(
         array $commands,
@@ -425,8 +441,18 @@ class Font extends PDFObject
         $word_position = 0;
         $words = [];
 
+        // Ensure we have a valid $textMatrix
+        // Values 'a' and 'b' come from the top row of the text matrix
+        // and determine the amount of horizontal (x-axis) scaling. Since
+        // we are only dealing with one line here, we can ignore the 'i'
+        // and 'j' values for vertical (y-axis) scaling, but they are
+        // included here for clarity.
+        if (false === is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['b'])) {
+            $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1];
+        }
+
         $font_space = $this->getFontSpaceLimit();
-        $font_space = $font_space * $textMatrix['a'] + $font_space * $textMatrix['b'];
+        $font_space = $font_space * (float) $textMatrix['a'] + $font_space * (float) $textMatrix['b'];
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
@@ -477,7 +503,7 @@ class Font extends PDFObject
     {
         // If this string begins with a UTF-16BE BOM, then decode it
         // directly as Unicode
-        if (preg_match('/^\xFE\xFF/i', $text)) {
+        if ("\xFE\xFF" === substr($text, 0, 2)) {
             return $this->decodeUnicode($text);
         }
 

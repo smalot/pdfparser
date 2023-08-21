@@ -134,7 +134,7 @@ class PDFObject
 
     public function cleanContent(?string $content): string
     {
-        if (null == $content) {
+        if (null === $content) {
             return '';
         }
 
