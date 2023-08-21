@@ -9,7 +9,7 @@
 
 <!-- Please describe with a few words what this pull request is about -->
 
-# Checklist for code/confirmation changes
+# Checklist for code / configuration changes
 
 *In case you changed the code/configuration, please read each of the following checkboxes as they contain valuable information:*
 
