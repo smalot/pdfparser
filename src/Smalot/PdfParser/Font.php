@@ -447,7 +447,7 @@ class Font extends PDFObject
         // we are only dealing with one line here, we can ignore the 'b'
         // and 'j' values for vertical (y-axis) scaling, but they are
         // included here for clarity.
-        if (false === is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['i'])) {
+        if (false === \is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['i'])) {
             $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1];
         }
 
