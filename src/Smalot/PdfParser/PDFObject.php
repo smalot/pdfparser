@@ -536,6 +536,7 @@ class PDFObject
             $commands = $this->getCommandsText($section);
             foreach ($commands as $command) {
                 switch ($command[self::OPERATOR]) {
+                    // Begin text object
                     case 'BT':
                         // Reset text positioning matrices
                         $current_position_tm = [
@@ -544,59 +545,6 @@ class PDFObject
                             'x' => false, 'y' => false, 'z' => 1,
                         ];
                         $current_position_td = ['x' => 0, 'y' => 0];
-                        break;
-
-                    case 'ET':
-                        break;
-
-                        // set character spacing
-                    case 'Tc':
-                        break;
-
-                        // move text current point and set leading
-                    case 'TD':
-                    case 'Td':
-                        // move text current point
-                        $args = preg_split('/\s+/s', $command[self::COMMAND]);
-                        $y = (float) array_pop($args);
-                        $x = (float) array_pop($args);
-
-                        $current_position_td = [
-                            'x' => $current_position_td['x'] + $x * $current_position_tm['a'] + $x * $current_position_tm['i'],
-                            'y' => $current_position_td['y'] + $y * $current_position_tm['b'] + $y * $current_position_tm['j'],
-                        ];
-                        break;
-
-                    case 'Tf':
-                        list($id) = preg_split('/\s/s', $command[self::COMMAND]);
-                        $id = trim($id, '/');
-                        if (null !== $page) {
-                            $new_font = $page->getFont($id);
-                            // If an invalid font ID is given, do not update the font.
-                            // This should theoretically never happen, as the PDF spec states for the Tf operator:
-                            // "The specified font value shall match a resource name in the Font entry of the default resource dictionary"
-                            // (https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf, page 435)
-                            // But we want to make sure that malformed PDFs do not simply crash.
-                            if (null !== $new_font) {
-                                $current_font = $new_font;
-                            }
-                        }
-                        break;
-
-                        // Store current selected font and graphics matrix
-                    case 'q':
-                        $clipped_font[] = $current_font;
-                        $clipped_position_cm[] = $current_position_cm;
-                        break;
-
-                        // Restore previous selected font and graphics matrix
-                    case 'Q':
-                        $current_font = array_pop($clipped_font);
-                        $current_position_cm = array_pop($clipped_position_cm);
-                        break;
-
-                    case 'DP':
-                    case 'MP':
                         break;
 
                         // Begin marked content sequence with property list
@@ -636,6 +584,51 @@ class PDFObject
                             // Add the reversed text flag to the stack
                             $marked_stack[] = ['ReversedChars' => true];
                         }
+                        break;
+
+                        // set graphics position matrix
+                    case 'cm':
+                        $args = preg_split('/\s+/s', $command[self::COMMAND]);
+                        $current_position_cm = [
+                            'a' => (float) $args[0], 'b' => (float) $args[1], 'c' => 0,
+                            'i' => (float) $args[2], 'j' => (float) $args[3], 'k' => 0,
+                            'x' => (float) $args[4], 'y' => (float) $args[5], 'z' => 1,
+                        ];
+                        break;
+
+                    case 'Do':
+                        if (null !== $page) {
+                            $args = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id = trim(array_pop($args), '/ ');
+                            $xobject = $page->getXObject($id);
+
+                            // @todo $xobject could be a ElementXRef object, which would then throw an error
+                            if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack)) {
+                                // Not a circular reference.
+                                $text[] = $xobject->getText($page);
+                            }
+                        }
+                        break;
+
+                        // Marked content point with (DP) & without (MP) property list
+                    case 'DP':
+                    case 'MP':
+                        break;
+
+                        // End text object
+                    case 'ET':
+                        break;
+
+                        // Store current selected font and graphics matrix
+                    case 'q':
+                        $clipped_font[] = $current_font;
+                        $clipped_position_cm[] = $current_position_cm;
+                        break;
+
+                        // Restore previous selected font and graphics matrix
+                    case 'Q':
+                        $current_font = array_pop($clipped_font);
+                        $current_position_cm = array_pop($clipped_position_cm);
                         break;
 
                         // End marked content sequence
@@ -779,18 +772,49 @@ class PDFObject
                         }
                         break;
 
-                        // set leading
-                    case 'TL':
+                        // move to start of next line
+                    case 'T*':
+                        $current_position['x'] = 0;
+                        $current_position_td['x'] = 0;
+                        $current_position_td['y'] += 10;
                         break;
 
-                        // set graphics position matrix
-                    case 'cm':
+                        // set character spacing
+                    case 'Tc':
+                        break;
+
+                        // move text current point and set leading
+                    case 'Td':
+                    case 'TD':
+                        // move text current point
                         $args = preg_split('/\s+/s', $command[self::COMMAND]);
-                        $current_position_cm = [
-                            'a' => (float) $args[0], 'b' => (float) $args[1], 'c' => 0,
-                            'i' => (float) $args[2], 'j' => (float) $args[3], 'k' => 0,
-                            'x' => (float) $args[4], 'y' => (float) $args[5], 'z' => 1,
+                        $y = (float) array_pop($args);
+                        $x = (float) array_pop($args);
+
+                        $current_position_td = [
+                            'x' => $current_position_td['x'] + $x * $current_position_tm['a'] + $x * $current_position_tm['i'],
+                            'y' => $current_position_td['y'] + $y * $current_position_tm['b'] + $y * $current_position_tm['j'],
                         ];
+                        break;
+
+                    case 'Tf':
+                        list($id) = preg_split('/\s/s', $command[self::COMMAND]);
+                        $id = trim($id, '/');
+                        if (null !== $page) {
+                            $new_font = $page->getFont($id);
+                            // If an invalid font ID is given, do not update the font.
+                            // This should theoretically never happen, as the PDF spec states for the Tf operator:
+                            // "The specified font value shall match a resource name in the Font entry of the default resource dictionary"
+                            // (https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf, page 435)
+                            // But we want to make sure that malformed PDFs do not simply crash.
+                            if (null !== $new_font) {
+                                $current_font = $new_font;
+                            }
+                        }
+                        break;
+
+                        // set leading
+                    case 'TL':
                         break;
 
                         // set text position matrix
@@ -803,6 +827,10 @@ class PDFObject
                         ];
                         break;
 
+                        // set text rendering mode
+                    case 'Ts':
+                        break;
+
                         // set super/subscripting text rise
                     case 'Ts':
                         break;
@@ -813,64 +841,6 @@ class PDFObject
 
                         // set horizontal scaling
                     case 'Tz':
-                        break;
-
-                        // move to start of next line
-                    case 'T*':
-                        $current_position['x'] = 0;
-                        $current_position_td['x'] = 0;
-                        $current_position_td['y'] += 10;
-                        break;
-
-                    case 'Da':
-                        break;
-
-                    case 'Do':
-                        if (null !== $page) {
-                            $args = preg_split('/\s/s', $command[self::COMMAND]);
-                            $id = trim(array_pop($args), '/ ');
-                            $xobject = $page->getXObject($id);
-
-                            // @todo $xobject could be a ElementXRef object, which would then throw an error
-                            if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack)) {
-                                // Not a circular reference.
-                                $text[] = $xobject->getText($page);
-                            }
-                        }
-                        break;
-
-                    case 'rg':
-                    case 'RG':
-                        break;
-
-                    case 're':
-                        break;
-
-                    case 'co':
-                        break;
-
-                    case 'cs':
-                        break;
-
-                    case 'gs':
-                        break;
-
-                    case 'en':
-                        break;
-
-                    case 'sc':
-                    case 'SC':
-                        break;
-
-                    case 'g':
-                    case 'G':
-                        break;
-
-                    case 'V':
-                        break;
-
-                    case 'vo':
-                    case 'Vo':
                         break;
 
                     default:
