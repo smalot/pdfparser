@@ -77,6 +77,7 @@ class Parser
     public function parseFile(string $filename): Document
     {
         $content = file_get_contents($filename);
+
         /*
          * 2018/06/20 @doganoo as multiple times a
          * users have complained that the parseFile()
