@@ -720,13 +720,9 @@ class Page extends PDFObject
 
                     /*
                      * ET
-                     * End a text object, discarding the text matrix
+                     * End a text object
                      */
                 case 'ET':
-                    $Tm = $defaultTm;
-                    $Tl = $defaultTl;
-                    $Tx = 0;
-                    $Ty = 0;
                     break;
 
                     /*
@@ -741,7 +737,7 @@ class Page extends PDFObject
 
                     /*
                      * tx ty Td
-                     * Move to the start of the next line, offset form the start of the
+                     * Move to the start of the next line, offset from the start of the
                      * current line by tx, ty.
                      */
                 case 'Td':

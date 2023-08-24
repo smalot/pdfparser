@@ -432,7 +432,7 @@ class Font extends PDFObject
      * as multiplying the 'scaling' value by one (1) leaving it
      * unchanged.
      * Source: https://ia801001.us.archive.org/1/items/pdf1.7/pdf_reference_1-7.pdf
-     *   - Section 5.3.1, Test-Positioning Operators
+     *   - Section 5.3.1, Text-Positioning Operators
      */
     public function decodeText(
         array $commands,

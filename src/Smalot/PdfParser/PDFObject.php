@@ -132,6 +132,14 @@ class PDFObject
         return $this->content;
     }
 
+    /**
+     * Takes a string of PDF document stream text and formats it into
+     * a multi-line string with one PDF command on each line, separated
+     * by \r\n. If the given string is null, or binary data is detected
+     * instead of a document stream then return an empty string.
+     *
+     * @internal For internal use only, not part of the public API
+     */
     public function cleanContent(?string $content): string
     {
         if (null === $content) {
@@ -389,6 +397,9 @@ class PDFObject
     }
 
     /**
+     * Expects a string that is a full PDF dictionary object, including
+     * the outer enclosing << >> angle brackets.
+     *
      * @throws \Exception
      */
     public function parseDictionary(string $dictionary): array

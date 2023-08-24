@@ -343,6 +343,56 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));
+
+        // Array of text commands with large offsets between each
+        $commands = [
+            [
+                't' => '(',
+                'c' => 'H',
+            ],
+            [
+                't' => 'n',
+                'c' => '75',
+            ],
+            [
+                't' => '(',
+                'c' => 'e',
+            ],
+            [
+                't' => 'n',
+                'c' => '75',
+            ],
+            [
+                't' => '(',
+                'c' => 'l',
+            ],
+            [
+                't' => 'n',
+                'c' => '75',
+            ],
+            [
+                't' => '(',
+                'c' => 'l',
+            ],
+            [
+                't' => 'n',
+                'c' => '75',
+            ],
+            [
+                't' => '(',
+                'c' => 'o',
+            ],
+        ];
+
+        // Decode using default identity matrix
+        $this->assertEquals('H e l l o', $font->decodeText($commands));
+
+        // Decode using a text-matrix with a large scale
+        // This means large offsets have smaller positioning power
+        $this->assertEquals('Hello', $font->decodeText(
+            $commands,
+            ['a' => 5, 'b' => 0, 'i' => 0, 'j' => 5]
+        ));
     }
 
     /**
@@ -435,6 +485,21 @@ TEXT;
         $width = $fonts['9_0']->calculateTextWidth('Calibri', $missing);
         $this->assertEquals(2573, $width);
         $this->assertEquals([], $missing);
+    }
+
+    public function testDecodeContent(): void
+    {
+        /*
+         * we do this to get into the branch with private method "decodeContentByEncodingElement" in Font.php
+         */
+        $encoding = $this->createMock(Element::class);
+        $encoding->method('getContent')->willReturn('WinAnsiEncoding');
+        $header = new Header(['Encoding' => $encoding]);
+
+        $font = new Font($this->createMock(Document::class), $header);
+
+        // Check that a string with UTF-16BE BOM is decoded directly
+        $this->assertEquals('ABC', $font->decodeContent("\xFE\xFF\x00\x41\x00\x42\x00\x43"));
     }
 
     /**

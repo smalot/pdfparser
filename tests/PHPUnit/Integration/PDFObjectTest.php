@@ -221,21 +221,15 @@ q
 
         $this->assertEquals($expected, $cleaned);
 
-        // Test that a Name containing 'ET' doesn't close a 'BT' block
-        // See: https://github.com/smalot/pdfparser/issues/474
-        $content = 'BT
-/FTxkPETkkj 8 Tf
-1 0 0 1 535.55 627.4 Tm
-(Hello World)TJ
-ET';
+        // Check that binary data is rejected
+        $content = hex2bin('a670c89d4a324e47');
 
-        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content);
 
-        $this->assertNotEquals('/FTxkP', $sections[0]);
-        $this->assertNotEquals('/FTxkP', $sections[1]);
+        $this->assertEquals('', $cleaned);
     }
 
-    public function testGetSectionText(): void
+    public function testGetSectionsText(): void
     {
         $content = '/Shape <</MCID 1 >>BDC
 Q
@@ -284,6 +278,19 @@ q
             ],
             $sections
         );
+
+        // Test that a Name containing 'ET' doesn't close a 'BT' block
+        // See: https://github.com/smalot/pdfparser/issues/474
+        $content = 'BT
+/FTxkPETkkj 8 Tf
+1 0 0 1 535.55 627.4 Tm
+(Hello World)TJ
+ET';
+
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+
+        $this->assertNotEquals('/FTxkP', $sections[0]);
+        $this->assertNotEquals('/FTxkP', $sections[1]);
     }
 
     public function testParseDictionary(): void
