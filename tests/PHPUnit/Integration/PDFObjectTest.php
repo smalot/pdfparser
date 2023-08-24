@@ -186,6 +186,51 @@ BI";
 
     public function testCleanContent(): void
     {
+        $content = '/Shape <</MCID << /Font<8>>> BT >>BDC
+Q
+/CS0 cs 1 1 0  scn
+1 i
+/GS0 gs
+BT
+/TT0 1 Tf
+0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
+(Modificatio[ns] au \\(14\\) septembre 2009 ET 2010)Tj
+EMC
+(ABC) Tj
+
+[ (a)-4.5(b)6(c)8.8 ( fsdfsdfsdf[]sd) ] TD
+
+ET
+/Shape <</MCID 2 >>BDC
+q
+0.03 841';
+
+        $expected = '_____________________________________
+Q
+/CS0 cs 1 1 0  scn
+1 i
+/GS0 gs
+BT
+/TT0 1 Tf
+0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
+(________________________________________________)Tj
+___
+(___) Tj
+
+[_____________________________________] TD
+
+ET
+______________________
+q
+0.03 841';
+
+        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content, '_');
+
+        $this->assertEquals($cleaned, $expected);
+    }
+
+    public function testFormatContent(): void
+    {
         $content = '/Shape <</MCID << /Font<8>>> BT >>BDC Q /CS0 cs 1 1 0  scn 1 i
 /GS0 gs BT /TT0 1 Tf 0.0007 Tc 0.0018 Tw 0  Ts 100  Tz 0 Tr 24 0 0 24 51.3 639.26025 Tm
 (Modificatio[ns] au \\(14\\) septembre 2009 ET 2010)Tj EMC (ABC) Tj
@@ -217,14 +262,14 @@ q
         // Normalize line-endings
         $expected = str_replace(["\r\n", "\n"], ["\n", "\r\n"], $expected);
 
-        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content);
+        $cleaned = $this->getPdfObjectInstance(new Document())->formatContent($content);
 
         $this->assertEquals($expected, $cleaned);
 
         // Check that binary data is rejected
         $content = hex2bin('a670c89d4a324e47');
 
-        $cleaned = $this->getPdfObjectInstance(new Document())->cleanContent($content);
+        $cleaned = $this->getPdfObjectInstance(new Document())->formatContent($content);
 
         $this->assertEquals('', $cleaned);
     }

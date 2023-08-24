@@ -133,14 +133,81 @@ class PDFObject
     }
 
     /**
+     * Creates a duplicate of the document stream with strings and other
+     * items replaced by $char. Formerly getSectionsText() used this
+     * output to more easily gather offset values to extract text from
+     * the *actual* document stream. As getSectionsText() now uses
+     * formatContent() instead, this function is no longer used, and
+     * could be deleted in a future version of PDFParser.
+     *
+     * @internal For internal use only, not part of the public API
+     */
+    public function cleanContent(string $content, string $char = 'X')
+    {
+        $char = $char[0];
+        $content = str_replace(['\\\\', '\\)', '\\('], $char.$char, $content);
+
+        // Remove image bloc with binary content
+        preg_match_all('/\s(BI\s.*?(\sID\s).*?(\sEI))\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
+        foreach ($matches[0] as $part) {
+            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        }
+
+        // Clean content in square brackets [.....]
+        preg_match_all('/\[((\(.*?\)|[0-9\.\-\s]*)*)\]/s', $content, $matches, \PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        }
+
+        // Clean content in round brackets (.....)
+        preg_match_all('/\((.*?)\)/s', $content, $matches, \PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        }
+
+        // Clean structure
+        if ($parts = preg_split('/(<|>)/s', $content, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE)) {
+            $content = '';
+            $level = 0;
+            foreach ($parts as $part) {
+                if ('<' == $part) {
+                    ++$level;
+                }
+
+                $content .= (0 == $level ? $part : str_repeat($char, \strlen($part)));
+
+                if ('>' == $part) {
+                    --$level;
+                }
+            }
+        }
+
+        // Clean BDC and EMC markup
+        preg_match_all(
+            '/(\/[A-Za-z0-9\_]*\s*'.preg_quote($char).'*BDC)/s',
+            $content,
+            $matches,
+            \PREG_OFFSET_CAPTURE
+        );
+        foreach ($matches[1] as $part) {
+            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        }
+
+        preg_match_all('/\s(EMC)\s/s', $content, $matches, \PREG_OFFSET_CAPTURE);
+        foreach ($matches[1] as $part) {
+            $content = substr_replace($content, str_repeat($char, \strlen($part[0])), $part[1], \strlen($part[0]));
+        }
+
+        return $content;
+    }
+
+    /**
      * Takes a string of PDF document stream text and formats it into
      * a multi-line string with one PDF command on each line, separated
      * by \r\n. If the given string is null, or binary data is detected
      * instead of a document stream then return an empty string.
-     *
-     * @internal For internal use only, not part of the public API
      */
-    public function cleanContent(?string $content): string
+    public function formatContent(?string $content): string
     {
         if (null === $content) {
             return '';
@@ -271,7 +338,7 @@ class PDFObject
         // cleaned stream content on \r\n into an array
         $textCleaned = preg_split(
             '/(\r\n|\n|\r)/',
-            $this->cleanContent($content),
+            $this->formatContent($content),
             -1,
             \PREG_SPLIT_NO_EMPTY
         );
@@ -303,7 +370,7 @@ class PDFObject
                 // to ensure a command being checked for *only* matches
                 // that command. For instance, a simple search for 'c'
                 // may also match the 'sc' command. See the command
-                // list in the cleanContent() method above.
+                // list in the formatContent() method above.
                 // Add more commands to save here as you find them in
                 // weird PDFs!
                 if ('q' == $line[-1] || 'Q' == $line[-1]) {
