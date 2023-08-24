@@ -376,7 +376,7 @@ class ParserTest extends TestCase
         }
 
         $usedMemory = memory_get_usage(true);
-        $this->assertTrue($usedMemory > ($baselineMemory * 1.5), 'Memory is only '.$usedMemory);
+        $this->assertGreaterThan($baselineMemory + 180000000, $usedMemory, 'Memory is only '.$usedMemory);
         $this->assertTrue(null != $document && '' !== $document->getText());
 
         // force garbage collection
@@ -400,7 +400,7 @@ class ParserTest extends TestCase
          * note: the following memory value is set manually and may differ from system to system.
          *       it must be high enough to not produce a false negative though.
          */
-        $this->assertTrue($usedMemory < ($baselineMemory * 1.05), 'Memory is '.$usedMemory);
+        $this->assertLessThan($baselineMemory * 1.05, $usedMemory, 'Memory is '.$usedMemory);
         $this->assertTrue('' !== $document->getText());
     }
 }
