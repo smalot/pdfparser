@@ -298,4 +298,58 @@ class DocumentTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+
+    /**
+     * Test getText result.
+     *
+     * PDF generated with Chromium 116 via SaveAs-dialog.
+     */
+    public function testGetTextPull634Chromium(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/R2RML-Spec_Generated_via_Chromium-SaveAs-PDF.pdf');
+
+        // PROBLEM:                       ,---- too many whitespaces between characters!
+        self::assertStringContainsString('R 2R M L: R D B  to R D F  M apping Language', $document->getText());
+    }
+
+    /**
+     * Test getText result.
+     *
+     * PDF (1.4) generated with LibreOffice Writer (6.4).
+     *
+     * @see https://help.libreoffice.org/6.4/en-US/text/shared/01/ref_pdf_export.html
+     */
+    public function testGetTextPull634LibreOffice(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/RichDocument_Generated_via_Libreoffice-6.4_PDF-v1.4.pdf');
+
+        self::assertStringContainsString(
+            'Some currency symbols: £, €, ¥'."\n".'German characters: ÄÖÜß',
+            $document->getText()
+        );
+    }
+
+    /**
+     * Test getText result.
+     *
+     * PDF (v 1.4) generated with Inkscape 0.92.
+     */
+    public function testGetTextPull634InkscapePDF1_4(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.4.pdf');
+
+        self::assertEquals('TEST', $document->getText());
+    }
+
+    /**
+     * Test getText result.
+     *
+     * PDF (v 1.5) generated with Inkscape 0.92.
+     */
+    public function testGetTextPull634InkscapePDF1_5(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.5.pdf');
+
+        self::assertEquals('TEST', $document->getText());
+    }
 }
