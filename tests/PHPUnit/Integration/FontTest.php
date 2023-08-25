@@ -343,56 +343,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
             ],
         ];
         $this->assertEquals('æöü', $font->decodeText($commands));
-
-        // Array of text commands with large offsets between each
-        $commands = [
-            [
-                't' => '(',
-                'c' => 'H',
-            ],
-            [
-                't' => 'n',
-                'c' => '75',
-            ],
-            [
-                't' => '(',
-                'c' => 'e',
-            ],
-            [
-                't' => 'n',
-                'c' => '75',
-            ],
-            [
-                't' => '(',
-                'c' => 'l',
-            ],
-            [
-                't' => 'n',
-                'c' => '75',
-            ],
-            [
-                't' => '(',
-                'c' => 'l',
-            ],
-            [
-                't' => 'n',
-                'c' => '75',
-            ],
-            [
-                't' => '(',
-                'c' => 'o',
-            ],
-        ];
-
-        // Decode using default identity matrix
-        $this->assertEquals('H e l l o', $font->decodeText($commands));
-
-        // Decode using a text-matrix with a large scale
-        // This means large offsets have smaller positioning power
-        $this->assertEquals('Hello', $font->decodeText(
-            $commands,
-            ['a' => 5, 'b' => 0, 'i' => 0, 'j' => 5]
-        ));
     }
 
     /**

@@ -414,51 +414,19 @@ class Font extends PDFObject
     }
 
     /**
-     * Decode text by commands array. decodeText now inserts the proper
-     * whitespace by examining the scaling of the current text matrix.
-     * Supply the identity matrix '1 0 0 1' by default. The six numerical
-     * values of a text matrix (Tm) command are as follows:
-     * a b i j x y Tm
-     * they get placed into a 3x3 text matrix like so:
-     * | a, b, 0 |
-     * | i, j, 0 |
-     * | x, y, 1 |
-     * An "identity matrix" is a matrix that, when you multiply it with
-     * another matrix, just gives you the same matrix. It looks like so:
-     * | 1, 0, 0 |
-     * | 0, 1, 0 |
-     * | 0, 0, 1 |
-     * Therefore, supplying the identity matrix by default is the same
-     * as multiplying the 'scaling' value by one (1) leaving it
-     * unchanged.
-     * Source: https://ia801001.us.archive.org/1/items/pdf1.7/pdf_reference_1-7.pdf
-     *   - Section 5.3.1, Text-Positioning Operators
+     * Decode text by commands array.
      */
-    public function decodeText(
-        array $commands,
-        array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1]
-    ): string {
+    public function decodeText(array $commands): string
+    {
         $word_position = 0;
         $words = [];
-
-        // Ensure we have a valid $textMatrix
-        // Values 'a' and 'i' come from the first column of the text matrix
-        // and determine the amount of horizontal (x-axis) scaling. Since
-        // we are only dealing with one line here, we can ignore the 'b'
-        // and 'j' values for vertical (y-axis) scaling, but they are
-        // included here for clarity.
-        if (false === \is_array($textMatrix) || false === isset($textMatrix['a']) || false === isset($textMatrix['i'])) {
-            $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1];
-        }
-
         $font_space = $this->getFontSpaceLimit();
-        $font_space = $font_space * (float) $textMatrix['a'] + $font_space * (float) $textMatrix['i'];
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
                     $offset = (float) trim($command[PDFObject::COMMAND]);
-                    if (abs($offset) > abs((float) $font_space)) {
+                    if ($offset - (float) $font_space < 0) {
                         $word_position = \count($words);
                     }
                     continue 2;
@@ -490,6 +458,17 @@ class Font extends PDFObject
         foreach ($words as &$word) {
             $word = $this->decodeContent($word);
         }
+
+        // Remove internal "words" that are just spaces, but leave them
+        // if they are at either end of the array of words. This fixes,
+        // for   example,   lines   that   are   justified   to   fill
+        // a whole row.
+        for ($x = \count($words) - 2; $x >= 1; --$x) {
+            if ('' === trim($words[$x], ' ')) {
+                unset($words[$x]);
+            }
+        }
+        $words = array_values($words);
 
         return implode(' ', $words);
     }

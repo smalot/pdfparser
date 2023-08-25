@@ -427,15 +427,10 @@ class PDFObject
      * $textMatrix
      *
      * @param array<int,array<string,string|bool>> $command
-     * @param array<string,float>                  $textMatrix
      */
-    private function getTJUsingFontFallback(
-        Font $font,
-        array $command,
-        array $textMatrix = ['a' => 1, 'b' => 0, 'i' => 0, 'j' => 1],
-        Page $page = null
-    ): string {
-        $orig_text = $font->decodeText($command, $textMatrix);
+    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+    {
+        $orig_text = $font->decodeText($command);
         $text = $orig_text;
 
         // If we make this a Config option, we can add a check if it's
@@ -456,7 +451,7 @@ class PDFObject
 
                 // Try the next font ID
                 $font = $page->getFont(array_shift($font_ids));
-                $text = $font->decodeText($command, $textMatrix);
+                $text = $font->decodeText($command);
             }
         }
 
@@ -591,6 +586,7 @@ class PDFObject
 
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
+        $current_font_size = 1;
 
         $current_position = ['x' => false, 'y' => false];
         $current_position_tm = [
@@ -699,13 +695,13 @@ class PDFObject
 
                         // Store current selected font and graphics matrix
                     case 'q':
-                        $clipped_font[] = $current_font;
+                        $clipped_font[] = [$current_font, $current_font_size];
                         $clipped_position_cm[] = $current_position_cm;
                         break;
 
                         // Restore previous selected font and graphics matrix
                     case 'Q':
-                        $current_font = array_pop($clipped_font);
+                        list($current_font, $current_font_size) = array_pop($clipped_font);
                         $current_position_cm = array_pop($clipped_position_cm);
                         break;
 
@@ -794,7 +790,7 @@ class PDFObject
                                 $whiteSpace = "\n";
                             } else {
                                 $curX = $currentX - $current_position['x'];
-                                $factorX = 10 * $current_position_tm['a'] + 10 * $current_position_tm['i'];
+                                $factorX = 24 * $current_position_tm['a'] + 24 * $current_position_tm['i'];
                                 if (true === $reverse_text) {
                                     if ($curX < -abs($factorX * 8)) {
                                         $whiteSpace = "\t";
@@ -814,7 +810,6 @@ class PDFObject
                         $newtext = $this->getTJUsingFontFallback(
                             $current_font,
                             $command[self::COMMAND],
-                            $current_position_tm,
                             $page
                         );
 
@@ -833,10 +828,7 @@ class PDFObject
                             // Provide a 'fudge' factor guess on how wide this text block
                             // is based on the number of characters. This helps limit the
                             // number of tabs inserted, but isn't perfect.
-                            $factor = 6;
-                            if (true === $reverse_text) {
-                                $factor = -$factor;
-                            }
+                            $factor = $current_font_size;
                             $current_position = [
                                 'x' => $currentX + mb_strlen($newtext) * $factor,
                                 'y' => $currentY,
@@ -847,6 +839,7 @@ class PDFObject
                             // *would* have been written to, so the
                             // ActualText is displayed in the right spot
                             $last_written_position = [$currentX, $currentY];
+                            $current_position['x'] = $currentX;
                         }
                         break;
 
@@ -876,8 +869,9 @@ class PDFObject
                         break;
 
                     case 'Tf':
-                        list($id) = preg_split('/\s/s', $command[self::COMMAND]);
-                        $id = trim($id, '/');
+                        $args = preg_split('/\s/s', $command[self::COMMAND]);
+                        $size = (float) array_pop($args);
+                        $id = trim(array_pop($args), '/');
                         if (null !== $page) {
                             $new_font = $page->getFont($id);
                             // If an invalid font ID is given, do not update the font.
@@ -887,6 +881,7 @@ class PDFObject
                             // But we want to make sure that malformed PDFs do not simply crash.
                             if (null !== $new_font) {
                                 $current_font = $new_font;
+                                $current_font_size = $size;
                             }
                         }
                         break;

@@ -308,8 +308,7 @@ class DocumentTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/R2RML-Spec_Generated_via_Chromium-SaveAs-PDF.pdf');
 
-        // PROBLEM:                       ,---- too many whitespaces between characters!
-        self::assertStringContainsString('R 2R M L: R D B  to R D F  M apping Language', $document->getText());
+        self::assertStringContainsString('R2RML: RDB to RDF Mapping Language', $document->getText());
     }
 
     /**
@@ -351,5 +350,25 @@ class DocumentTest extends TestCase
         $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.5.pdf');
 
         self::assertEquals('TEST', $document->getText());
+    }
+
+    /**
+     * Test getText result.
+     *
+     * PDF (v 1.7) generated with Microsoft Print-to-PDF via Firefox.
+     */
+    public function testGetTextPull634MicrosoftPDF17(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/Wikipedia-PDF_Generated_by_Microsoft_Print-to-PDF.pdf');
+
+        self::assertStringContainsString(
+            'Adobe PDF icon'."\n".'Filename'."\n".'extension',
+            $document->getText()
+        );
+
+        self::assertStringContainsString(
+            'are necessary to make, use, sell, and distribute PDF-compliant',
+            $document->getText()
+        );
     }
 }
