@@ -334,7 +334,7 @@ class DocumentTest extends TestCase
      *
      * PDF (v 1.4) generated with Inkscape 0.92.
      */
-    public function testGetTextPull634InkscapePDF1_4(): void
+    public function testGetTextPull634InkscapePDF14(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.4.pdf');
 
@@ -346,7 +346,7 @@ class DocumentTest extends TestCase
      *
      * PDF (v 1.5) generated with Inkscape 0.92.
      */
-    public function testGetTextPull634InkscapePDF1_5(): void
+    public function testGetTextPull634InkscapePDF15(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.5.pdf');
 
