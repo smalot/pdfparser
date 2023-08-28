@@ -359,14 +359,12 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $pages = $document->getPages();
         $page1 = reset($pages);
         $page1Text = $page1->getText();
-        $expectedText = <<<TEXT
-Export\u{a0}transakční\u{a0}historie
-Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi
-Číslo\u{a0}účtu:\u{a0}0000000000/0000
-Počáteční\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč
-Konečný\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč
-Cena\u{a0}za\u{a0}služby
-TEXT;
+        $expectedText = "Export\u{a0}transakční\u{a0}historie\n";
+        $expectedText .= "Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi\n";
+        $expectedText .= "Číslo\u{a0}účtu:\u{a0}0000000000/0000\n";
+        $expectedText .= "Počáteční\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč\n";
+        $expectedText .= "Konečný\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč\n";
+        $expectedText .= "Cena\u{a0}za\u{a0}služby";
 
         $this->assertEquals($expectedText, trim($page1Text));
     }
