@@ -587,6 +587,7 @@ class PDFObject
         $sections = $this->getSectionsText($this->content);
         $current_font = $this->getDefaultFont($page);
         $current_font_size = 1;
+        $current_text_leading = 9;
 
         $current_position = ['x' => false, 'y' => false];
         $current_position_tm = [
@@ -619,6 +620,7 @@ class PDFObject
                             'x' => false, 'y' => false, 'z' => 1,
                         ];
                         $current_position_td = ['x' => 0, 'y' => 0];
+                        $current_text_leading = 9;
                         break;
 
                         // Begin marked content sequence with property list
@@ -752,7 +754,7 @@ class PDFObject
                             // Move to next line and write text
                             $current_position['x'] = 0;
                             $current_position_td['x'] = 0;
-                            $current_position_td['y'] += 10;
+                            $current_position_td['y'] += $current_text_leading;
                         }
                         // no break
                     case 'Tj':
@@ -786,11 +788,17 @@ class PDFObject
                         $whiteSpace = '';
 
                         if (true === $this->addPositionWhitespace && false !== $current_position['x']) {
-                            if (abs($currentY - $current_position['y']) > 9) {
+                            if (abs($currentY - $current_position['y']) >= abs($current_text_leading)) {
                                 $whiteSpace = "\n";
                             } else {
                                 $curX = $currentX - $current_position['x'];
-                                $factorX = 24 * $current_position_tm['a'] + 24 * $current_position_tm['i'];
+                                $factorX = $current_font_size * $current_position_tm['a'] + $current_font_size * $current_position_tm['i'];
+
+                                // In abs($factorX * 8) below, the 8 is chosen arbitrarily
+                                // as the number of apparent "spaces" in a document we
+                                // would need before considering them a "tab". In the
+                                // future, we might offer this value to users as a config
+                                // option.
                                 if (true === $reverse_text) {
                                     if ($curX < -abs($factorX * 8)) {
                                         $whiteSpace = "\t";
@@ -815,12 +823,13 @@ class PDFObject
 
                         // If there is no ActualText pending then write
                         if (false === $actual_text) {
+                            $newtext = str_replace(["\r", "\n"], '', $newtext);
                             if (false !== $reverse_text) {
                                 // If we are in ReversedChars mode, add the whitespace last
-                                $text[] = str_replace(["\r", "\n"], '', $newtext).$whiteSpace;
+                                $text[] = preg_replace('/  $/', ' ', $newtext.$whiteSpace);
                             } else {
                                 // Otherwise add the whitespace first
-                                $text[] = $whiteSpace.str_replace(["\r", "\n"], '', $newtext);
+                                $text[] = preg_replace('/^  /', ' ', $whiteSpace.$newtext);
                             }
 
                             // Record the position of this inserted text for comparison
@@ -828,7 +837,7 @@ class PDFObject
                             // Provide a 'fudge' factor guess on how wide this text block
                             // is based on the number of characters. This helps limit the
                             // number of tabs inserted, but isn't perfect.
-                            $factor = $current_font_size;
+                            $factor = 4;
                             $current_position = [
                                 'x' => $currentX + mb_strlen($newtext) * $factor,
                                 'y' => $currentY,
@@ -847,7 +856,7 @@ class PDFObject
                     case 'T*':
                         $current_position['x'] = 0;
                         $current_position_td['x'] = 0;
-                        $current_position_td['y'] += 10;
+                        $current_position_td['y'] += $current_text_leading;
                         break;
 
                         // set character spacing
@@ -862,8 +871,12 @@ class PDFObject
                         $y = (float) array_pop($args);
                         $x = (float) array_pop($args);
 
+                        if ('TD' == $command[self::OPERATOR]) {
+                            $current_text_leading = $y * $current_position_tm['b'] + $y * $current_position_tm['j'];
+                        }
+
                         $current_position_td = [
-                            'x' => $current_position_td['x'] + $x * $current_position_tm['a'] + $x * $current_position_tm['i'],
+                            'x' => $x * $current_position_tm['a'] + $x * $current_position_tm['i'],
                             'y' => $current_position_td['y'] + $y * $current_position_tm['b'] + $y * $current_position_tm['j'],
                         ];
                         break;
@@ -888,6 +901,8 @@ class PDFObject
 
                         // set leading
                     case 'TL':
+                        $y = (float) $command[self::COMMAND];
+                        $current_text_leading = $y * $current_position_tm['b'] + $y * $current_position_tm['j'];
                         break;
 
                         // set text position matrix

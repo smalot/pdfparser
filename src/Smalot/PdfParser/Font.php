@@ -470,7 +470,18 @@ class Font extends PDFObject
         }
         $words = array_values($words);
 
-        return implode(' ', $words);
+        // Cut down on the number of unnecessary internal spaces by
+        // imploding the string on the null byte, and checking if the
+        // text includes extra spaces on either side. If so, merge
+        // where appropriate.
+        $words = implode("\x00", $words);
+        $words = str_replace(
+            [" \x00 ", "\x00 ", " \x00", "\x00"],
+            ['  ', ' ', '  ', ' '],
+            $words
+        );
+
+        return $words;
     }
 
     /**
