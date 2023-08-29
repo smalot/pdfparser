@@ -166,7 +166,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('KRANT', $text);
         $this->assertStringContainsString('DINSDAG', $text);
         $this->assertStringContainsString('Snelfilterkoffie', $text);
-        $this->assertStringContainsString('AardappelenZak', $text);
+        $this->assertStringContainsString('Aardappelen'."\n".'Zak', $text);
         $this->assertStringContainsString('ALL', $text);
     }
 

@@ -474,10 +474,10 @@ class Font extends PDFObject
         // imploding the string on the null byte, and checking if the
         // text includes extra spaces on either side. If so, merge
         // where appropriate.
-        $words = implode("\x00", $words);
+        $words = implode("\x00\x00", $words);
         $words = str_replace(
-            [" \x00 ", "\x00 ", " \x00", "\x00"],
-            ['  ', ' ', '  ', ' '],
+            [" \x00\x00 ", "\x00\x00 ", " \x00\x00", "\x00\x00"],
+            ['  ', ' ', ' ', ' '],
             $words
         );
 
