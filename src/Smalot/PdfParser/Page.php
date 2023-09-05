@@ -701,6 +701,11 @@ class Page extends PDFObject
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
         foreach ($dataCommands as $command) {
+
+            if(!isset($extractedTexts[\count($extractedData)])){
+                continue;
+            }
+
             $currentText = $extractedTexts[\count($extractedData)];
             switch ($command['o']) {
                 /*
