@@ -702,7 +702,7 @@ class Page extends PDFObject
         $extractedData = [];
         foreach ($dataCommands as $command) {
 
-            if(!isset($extractedTexts[\count($extractedData)])){
+            if (!isset($extractedTexts[\count($extractedData)])) {
                 continue;
             }
 
