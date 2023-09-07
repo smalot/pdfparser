@@ -361,14 +361,46 @@ class DocumentTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/Wikipedia-PDF_Generated_by_Microsoft_Print-to-PDF.pdf');
 
+        $outputText = $document->getText();
+
         self::assertStringContainsString(
             'Adobe PDF icon'."\n".'Filename'."\n".'extension',
-            $document->getText()
+            $outputText
         );
 
         self::assertStringContainsString(
             'are necessary to make, use, sell, and distribute PDF-compliant',
-            $document->getText()
+            $outputText
+        );
+    }
+
+    /**
+     * Test getText result.
+     *
+     * PDF generated from .docx with SmallPDF (https://smallpdf.com)
+     */
+    public function testGetTextPull634SmallPDF(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/Document_Generated_by_SmallPDF.pdf');
+
+        $outputText = $document->getText();
+
+        // Actual encoded spaces in the document are preserved
+        self::assertStringContainsString(
+            'SmallPDF                       SMALLPDF                             SmallPDF',
+            $outputText
+        );
+
+        // Hebrew text
+        self::assertStringContainsString(
+            'Hebrew Keyboard - תדלקמ תירבעב - Type Hebrew Online',
+            $outputText
+        );
+
+        // Russian text
+        self::assertStringContainsString(
+            'Russian Keyboard - русская клавиатура - Type Russian',
+            $outputText
         );
     }
 }
