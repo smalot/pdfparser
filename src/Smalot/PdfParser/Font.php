@@ -416,11 +416,11 @@ class Font extends PDFObject
     /**
      * Decode text by commands array.
      */
-    public function decodeText(array $commands): string
+    public function decodeText(array $commands, float $fontFactor = 4): string
     {
         $word_position = 0;
         $words = [];
-        $font_space = $this->getFontSpaceLimit();
+        $font_space = $this->getFontSpaceLimit() * abs($fontFactor) / 4;
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
@@ -457,6 +457,7 @@ class Font extends PDFObject
 
         foreach ($words as &$word) {
             $word = $this->decodeContent($word);
+            $word = str_replace("\t", ' ', $word);
         }
 
         // Remove internal "words" that are just spaces, but leave them

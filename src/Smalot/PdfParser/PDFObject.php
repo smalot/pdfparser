@@ -428,9 +428,9 @@ class PDFObject
      *
      * @param array<int,array<string,string|bool>> $command
      */
-    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null): string
+    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null, float $fontFactor = 4): string
     {
-        $orig_text = $font->decodeText($command);
+        $orig_text = $font->decodeText($command, $fontFactor);
         $text = $orig_text;
 
         // If we make this a Config option, we can add a check if it's
@@ -451,7 +451,7 @@ class PDFObject
 
                 // Try the next font ID
                 $font = $page->getFont(array_shift($font_ids));
-                $text = $font->decodeText($command);
+                $text = $font->decodeText($command, $fontFactor);
             }
         }
 
@@ -787,10 +787,12 @@ class PDFObject
                         }
                         $whiteSpace = '';
 
+                        $factorX = -$current_font_size * $current_position_tm['a'] - $current_font_size * $current_position_tm['i'];
+                        $factorY = $current_font_size * $current_position_tm['b'] + $current_font_size * $current_position_tm['j'];
+
                         if (true === $this->addPositionWhitespace && false !== $current_position['x']) {
                             $curY = $currentY - $current_position['y'];
-                            $factorY = $current_font_size * $current_position_tm['b'] + $current_font_size * $current_position_tm['j'];
-                            if (abs($curY) >= abs($factorY)) {
+                            if (abs($curY) >= abs($factorY) / 4) {
                                 $whiteSpace = "\n";
                             } else {
                                 if (true === $reverse_text) {
@@ -798,7 +800,6 @@ class PDFObject
                                 } else {
                                     $curX = $currentX - $current_position['x'];
                                 }
-                                $factorX = -$current_font_size * $current_position_tm['a'] - $current_font_size * $current_position_tm['i'];
 
                                 // In abs($factorX * 7) below, the 7 is chosen arbitrarily
                                 // as the number of apparent "spaces" in a document we
@@ -816,7 +817,8 @@ class PDFObject
                         $newtext = $this->getTJUsingFontFallback(
                             $current_font,
                             $command[self::COMMAND],
-                            $page
+                            $page,
+                            $factorX
                         );
 
                         // If there is no ActualText pending then write
