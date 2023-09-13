@@ -949,11 +949,13 @@ class PDFObject
      * already formatted, single-line command from a document stream.
      * The companion function getSectionsText() returns a document
      * stream as an array of single commands for just this purpose.
+     * Because of this, the argument $offset is no longer used, and
+     * may be removed in a future PdfParser release.
      *
      * A better name for this function would be getCommandText()
      * since it now always works on just one command.
      */
-    public function getCommandsText(string $text_part): array
+    public function getCommandsText(string $text_part, int &$offset = 0): array
     {
         $commands = $matches = [];
 
