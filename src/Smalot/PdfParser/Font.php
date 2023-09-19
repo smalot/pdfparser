@@ -349,16 +349,20 @@ class Font extends PDFObject
      */
     public static function decodeOctal(string $text): string
     {
-        $parts = preg_split('/(?<!\\\\)(\\\\[0-7]{1,3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
-        $text = '';
+        // Replace all double backslashes \\ with a special string
+        $text = strtr($text, ['\\\\' => '[**pdfparserdblslsh**]']);
 
-        foreach ($parts as $part) {
-            if (preg_match('/^\\\\[0-7]{1,3}$/', $part)) {
-                $text .= \chr(octdec(trim($part, '\\')));
-            } else {
-                $text .= str_replace(['\\\\', '\\(', '\\)'], ['\\', '(', ')'], $part);
-            }
-        }
+        // Now we can replace all octal codes without worrying about
+        // escaped backslashes
+        $text = preg_replace_callback('/\\\\([0-7]{1,3})/', function ($m) {
+            return \chr(octdec($m[1]));
+        }, $text);
+
+        // Replace instances of the special string with a single backslash
+        $text = str_replace('[**pdfparserdblslsh**]', '\\', $text);
+
+        // Unescape any parentheses
+        $text = str_replace(['\\(', '\\)'], ['(', ')'], $text);
 
         return $text;
     }
@@ -368,16 +372,9 @@ class Font extends PDFObject
      */
     public static function decodeEntities(string $text): string
     {
-        $parts = preg_split('/(#\d{2})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
-        $text = '';
-
-        foreach ($parts as $part) {
-            if (preg_match('/^#\d{2}$/', $part)) {
-                $text .= \chr(hexdec(trim($part, '#')));
-            } else {
-                $text .= $part;
-            }
-        }
+        $text = preg_replace_callback('/#([0-9a-f]{2})/i', function ($m) {
+            return \chr(hexdec($m[1]));
+        }, $text);
 
         return $text;
     }
