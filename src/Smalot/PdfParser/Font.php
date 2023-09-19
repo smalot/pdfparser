@@ -358,11 +358,11 @@ class Font extends PDFObject
             return \chr(octdec($m[1]));
         }, $text);
 
-        // Replace instances of the special string with a single backslash
-        $text = str_replace('[**pdfparserdblslsh**]', '\\', $text);
-
         // Unescape any parentheses
         $text = str_replace(['\\(', '\\)'], ['(', ')'], $text);
+
+        // Replace instances of the special string with a single backslash
+        $text = str_replace('[**pdfparserdblslsh**]', '\\', $text);
 
         return $text;
     }

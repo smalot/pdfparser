@@ -290,6 +290,13 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assertEquals('\\\\-', Font::decodeOctal('\\\\\\\\\\055')); // \\\\\055
         $this->assertEquals('\\\\\\055', Font::decodeOctal('\\\\\\\\\\\\055')); // \\\\\\055
         $this->assertEquals('\\\\\\-', Font::decodeOctal('\\\\\\\\\\\\\\055')); // \\\\\\\055
+
+        // Make sure we're unescaping ( and ) before returning the escaped
+        // backslashes to the string
+        $this->assertEquals('\\(', Font::decodeOctal('\\\\(')); // \\( - nothing to unescape
+        $this->assertEquals('\\(', Font::decodeOctal('\\\\\\(')); // \\\( - parenthesis unescaped
+        $this->assertEquals('\\\\(', Font::decodeOctal('\\\\\\\\(')); // \\\\( - nothing to unescape
+        $this->assertEquals('\\\\(', Font::decodeOctal('\\\\\\\\\\(')); // \\\\\( - parenthesis unescaped
     }
 
     public function testDecodeEntities(): void
