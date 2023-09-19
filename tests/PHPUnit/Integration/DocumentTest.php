@@ -279,7 +279,7 @@ class DocumentTest extends TestCase
      */
     public function testPDFDocEncodingDecode(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/Issue609.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/Issue609.pdf');
 
         $details = $document->getDetails();
 
@@ -306,7 +306,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634Chromium(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/R2RML-Spec_Generated_via_Chromium-SaveAs-PDF.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/R2RML-Spec_Generated_by_Chromium-SaveAs-PDF.pdf');
 
         self::assertStringContainsString('R2RML: RDB to RDF Mapping Language', $document->getText());
     }
@@ -320,7 +320,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634LibreOffice(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/RichDocument_Generated_via_Libreoffice-6.4_PDF-v1.4.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/RichDocument_Generated_by_Libreoffice-6.4_PDF-v1.4.pdf');
 
         self::assertStringContainsString(
             'Some currency symbols: £, €, ¥'."\n".'German characters: ÄÖÜß',
@@ -335,7 +335,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634InkscapePDF14(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.4.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/SimpleImage_Generated_by_Inkscape-0.92_PDF-v1.4.pdf');
 
         self::assertEquals('TEST', $document->getText());
     }
@@ -347,7 +347,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634InkscapePDF15(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/SimpleImage_Generated_via_Inkscape-0.92_PDF-v1.5.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/SimpleImage_Generated_by_Inkscape-0.92_PDF-v1.5.pdf');
 
         self::assertEquals('TEST', $document->getText());
     }
@@ -359,7 +359,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634MicrosoftPDF17(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/Wikipedia-PDF_Generated_by_Microsoft_Print-to-PDF.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/Wikipedia-PDF_Generated_by_Microsoft_Print-to-PDF.pdf');
 
         $outputText = $document->getText();
 
@@ -381,7 +381,7 @@ class DocumentTest extends TestCase
      */
     public function testGetTextPull634SmallPDF(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/Document_Generated_by_SmallPDF.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/grouped-by-generator/Document_Generated_by_SmallPDF.pdf');
 
         $outputText = $document->getText();
 
