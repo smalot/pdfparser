@@ -135,12 +135,6 @@ class DocumentGeneratorFocusTest extends TestCase
             'Zinszahlung: 19. Oktober gzj., Zinslaufbeginn 15. Juni 2023',
             $outputText
         );
-
-        // get the two images at the top of the PDF
-        $images = $document->getObjectsByType('Image');
-        self::assertCount(2, $images);
-        // I am not sure if your changes are related to images too, thats why I added this failing test
-        // so you have an example for further investigation. If your code is unrelated, just remove it.
     }
 
     /**
@@ -216,20 +210,16 @@ class DocumentGeneratorFocusTest extends TestCase
             $outputText
         );
 
-        // white spaces and tabs are preserved
+        // Unnecessary tabs are not inserted due to font-size being 1,
+        // but the text-matrix scale is 9 or 10
         self::assertStringContainsString(
-            //                  ,--- tab
-            'dikkate alınmasına 	devam edilecektir.',
+            'dikkate alınmasına devam edilecektir.',
             $outputText
         );
 
-        // I assume it fails because of a wrongly de/encoded character after Say000
-        self::assertStringContainsString('Say000�: 20 23-34', $outputText);
-
-        // get the image at the top of the PDF
-        $images = $document->getObjectsByType('Image');
-        self::assertCount(2, $images);
-        // I am not sure if your changes are related to images too, thats why I added this failing test
-        // so you have an example for further investigation. If your code is unrelated, just remove it.
+        // This encoded segment contains an escaped backslash right
+        // before an octal code: \\\000. Account for this in
+        // Font::decodeOctal()
+        self::assertStringContainsString('Sayı: 2023-34', $outputText);
     }
 }

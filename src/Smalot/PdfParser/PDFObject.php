@@ -840,9 +840,9 @@ class PDFObject
                             // Provide a 'fudge' factor guess on how wide this text block
                             // is based on the number of characters. This helps limit the
                             // number of tabs inserted, but isn't perfect.
-                            $factor = $current_font_size / 2;
+                            $factor = $factorX / 2;
                             $current_position = [
-                                'x' => $currentX + mb_strlen($newtext) * $factor,
+                                'x' => $currentX - mb_strlen($newtext) * $factor,
                                 'y' => $currentY,
                             ];
                         } elseif (false === $last_written_position) {
