@@ -296,7 +296,7 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
     {
         $this->assertEquals('File Type', Font::decodeEntities('File#20Type'));
         $this->assertEquals('File# Ty#pe', Font::decodeEntities('File##20Ty#pe'));
-        $this->assertEquals('Fi#le# Ty#p#e ', Font::decodeEntities('Fi#23le##20Ty#p#e '));
+        $this->assertEquals('Fi#le#-Ty#p#e ', Font::decodeEntities('Fi#23le##2DTy#p#e '));
     }
 
     public function testDecodeUnicode(): void
