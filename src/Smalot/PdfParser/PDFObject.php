@@ -133,14 +133,13 @@ class PDFObject
     }
 
     /**
-     * Creates a duplicate of the document stream with strings and other
-     * items replaced by $char. Formerly getSectionsText() used this
-     * output to more easily gather offset values to extract text from
-     * the *actual* document stream. As getSectionsText() now uses
-     * formatContent() instead, this function is no longer used, and
-     * could be deleted in a future version of PDFParser.
+     * This function is no longer used, and could be deleted in a
+     * future version of PDFParser.
      *
-     * @internal For internal use only, not part of the public API
+     * @internal Creates a duplicate of the document stream with
+     * strings and other items replaced by $char. Formerly
+     * getSectionsText() used this output to more easily gather offset
+     * values to extract text from the *actual* document stream.
      */
     public function cleanContent(string $content, string $char = 'X')
     {
@@ -202,12 +201,11 @@ class PDFObject
     }
 
     /**
-     * Takes a string of PDF document stream text and formats it into
-     * a multi-line string with one PDF command on each line, separated
-     * by \r\n. If the given string is null, or binary data is detected
-     * instead of a document stream then return an empty string.
-     *
-     * @internal Not part of the public API
+     * @internal Takes a string of PDF document stream text and formats
+     * it into a multi-line string with one PDF command on each line,
+     * separated by \r\n. If the given string is null, or binary data
+     * is detected instead of a document stream then return an empty
+     * string.
      */
     public function formatContent(?string $content): string
     {
@@ -327,10 +325,11 @@ class PDFObject
     }
 
     /**
-     * getSectionsText() now takes an entire, unformatted document
-     * stream as a string, cleans it, then filters out commands that
-     * aren't needed for text positioning/extraction. It returns an
-     * array of unprocessed PDF commands, one command per element.
+     * @internal getSectionsText() now takes an entire, unformatted
+     * document stream as a string, cleans it, then filters out
+     * commands that aren't needed for text positioning/extraction. It
+     * returns an array of unprocessed PDF commands, one command per
+     * element.
      */
     public function getSectionsText(?string $content): array
     {
@@ -423,10 +422,9 @@ class PDFObject
     }
 
     /**
-     * Decode a '[]TJ' command and attempt to use alternate fonts if
-     * the current font results in output that contains Unicode control
-     * characters. See Font::decodeText for a full description of
-     * $textMatrix
+     * @internal decode a '[]TJ' command and attempt to use alternate
+     * fonts if the current font results in output that contains
+     * Unicode control characters
      *
      * @param array<int,array<string,string|bool>> $command
      */
@@ -461,11 +459,10 @@ class PDFObject
     }
 
     /**
-     * Expects a string that is a full PDF dictionary object, including
-     * the outer enclosing << >> angle brackets.
+     * @internal expects a string that is a full PDF dictionary object,
+     * including the outer enclosing << >> angle brackets
      *
      * @throws \Exception
-     * @internal Not part of the public API
      */
     public function parseDictionary(string $dictionary): array
     {
@@ -559,9 +556,13 @@ class PDFObject
     }
 
     /**
-     * getText() leverages getTextArray() to get the content of the
-     * document, setting the addPositionWhitespace flag to true so
-     * whitespace is inserted in a logical way for reading by humans.
+     * Returns the text content of a PDF as a string. Attempts to add
+     * whitespace for spacing and line-breaks where appropriate.
+     *
+     * @internal getText() leverages getTextArray() to get the content
+     * of the document, setting the addPositionWhitespace flag to true
+     * so whitespace is inserted in a logical way for reading by
+     * humans
      */
     public function getText(Page $page = null): string
     {
@@ -573,9 +574,9 @@ class PDFObject
     }
 
     /**
-     * getTextArray() returns the text objects of a document in an
-     * array. By default no positioning whitespace is added to the
-     * output unless the addPositionWhitespace flag is set to true.
+     * Returns the text content of a PDF as an array of strings. No
+     * extra whitespace is inserted besides what is actually encoded in
+     * the PDF text.
      *
      * @throws \Exception
      */
