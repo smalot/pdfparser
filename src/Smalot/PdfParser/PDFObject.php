@@ -206,6 +206,8 @@ class PDFObject
      * a multi-line string with one PDF command on each line, separated
      * by \r\n. If the given string is null, or binary data is detected
      * instead of a document stream then return an empty string.
+     *
+     * @internal Not part of the public API
      */
     public function formatContent(?string $content): string
     {
@@ -463,6 +465,7 @@ class PDFObject
      * the outer enclosing << >> angle brackets.
      *
      * @throws \Exception
+     * @internal Not part of the public API
      */
     public function parseDictionary(string $dictionary): array
     {

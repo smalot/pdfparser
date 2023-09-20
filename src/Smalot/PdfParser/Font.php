@@ -349,7 +349,7 @@ class Font extends PDFObject
      */
     public static function decodeOctal(string $text): string
     {
-        $parts = preg_split('/(?<![^\\\\]\\\\)(\\\\[0-7]{1,3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split('/(?<!\\\\)(\\\\[0-7]{1,3})/s', $text, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
         $text = '';
 
         foreach ($parts as $part) {
