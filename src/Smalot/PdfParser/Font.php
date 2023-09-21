@@ -362,9 +362,7 @@ class Font extends PDFObject
         $text = str_replace(['\\(', '\\)'], ['(', ')'], $text);
 
         // Replace instances of the special string with a single backslash
-        $text = str_replace('[**pdfparserdblslsh**]', '\\', $text);
-
-        return $text;
+        return str_replace('[**pdfparserdblslsh**]', '\\', $text);
     }
 
     /**
@@ -372,11 +370,9 @@ class Font extends PDFObject
      */
     public static function decodeEntities(string $text): string
     {
-        $text = preg_replace_callback('/#([0-9a-f]{2})/i', function ($m) {
+        return preg_replace_callback('/#([0-9a-f]{2})/i', function ($m) {
             return \chr(hexdec($m[1]));
         }, $text);
-
-        return $text;
     }
 
     /**
