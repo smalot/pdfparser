@@ -133,13 +133,13 @@ class PDFObject
     }
 
     /**
-     * This function is no longer used, and could be deleted in a
-     * future version of PDFParser.
-     *
-     * @internal Creates a duplicate of the document stream with
+     * Creates a duplicate of the document stream with
      * strings and other items replaced by $char. Formerly
      * getSectionsText() used this output to more easily gather offset
      * values to extract text from the *actual* document stream.
+     *
+     * @deprecated Function is no longer used and will be removed in a future release.
+     * @internal
      */
     public function cleanContent(string $content, string $char = 'X')
     {
@@ -201,11 +201,13 @@ class PDFObject
     }
 
     /**
-     * @internal Takes a string of PDF document stream text and formats
+     * Takes a string of PDF document stream text and formats
      * it into a multi-line string with one PDF command on each line,
      * separated by \r\n. If the given string is null, or binary data
      * is detected instead of a document stream then return an empty
      * string.
+     *
+     * @internal
      */
     public function formatContent(?string $content): string
     {
@@ -325,11 +327,13 @@ class PDFObject
     }
 
     /**
-     * @internal getSectionsText() now takes an entire, unformatted
+     * getSectionsText() now takes an entire, unformatted
      * document stream as a string, cleans it, then filters out
      * commands that aren't needed for text positioning/extraction. It
      * returns an array of unprocessed PDF commands, one command per
      * element.
+     *
+     * @internal
      */
     public function getSectionsText(?string $content): array
     {
@@ -422,10 +426,11 @@ class PDFObject
     }
 
     /**
-     * @internal decode a '[]TJ' command and attempt to use alternate
+     * Decode a '[]TJ' command and attempt to use alternate
      * fonts if the current font results in output that contains
-     * Unicode control characters
+     * Unicode control characters.
      *
+     * @internal
      * @param array<int,array<string,string|bool>> $command
      */
     private function getTJUsingFontFallback(Font $font, array $command, Page $page = null, float $fontFactor = 4): string
@@ -459,9 +464,10 @@ class PDFObject
     }
 
     /**
-     * @internal expects a string that is a full PDF dictionary object,
+     * Expects a string that is a full PDF dictionary object,
      * including the outer enclosing << >> angle brackets
      *
+     * @internal
      * @throws \Exception
      */
     public function parseDictionary(string $dictionary): array
@@ -559,10 +565,10 @@ class PDFObject
      * Returns the text content of a PDF as a string. Attempts to add
      * whitespace for spacing and line-breaks where appropriate.
      *
-     * @internal getText() leverages getTextArray() to get the content
+     * getText() leverages getTextArray() to get the content
      * of the document, setting the addPositionWhitespace flag to true
      * so whitespace is inserted in a logical way for reading by
-     * humans
+     * humans.
      */
     public function getText(Page $page = null): string
     {
