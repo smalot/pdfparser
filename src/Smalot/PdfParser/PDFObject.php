@@ -138,7 +138,8 @@ class PDFObject
      * getSectionsText() used this output to more easily gather offset
      * values to extract text from the *actual* document stream.
      *
-     * @deprecated Function is no longer used and will be removed in a future release.
+     * @deprecated function is no longer used and will be removed in a future release
+     *
      * @internal
      */
     public function cleanContent(string $content, string $char = 'X')
@@ -431,6 +432,7 @@ class PDFObject
      * Unicode control characters.
      *
      * @internal
+     *
      * @param array<int,array<string,string|bool>> $command
      */
     private function getTJUsingFontFallback(Font $font, array $command, Page $page = null, float $fontFactor = 4): string
@@ -468,6 +470,7 @@ class PDFObject
      * including the outer enclosing << >> angle brackets
      *
      * @internal
+     *
      * @throws \Exception
      */
     public function parseDictionary(string $dictionary): array
