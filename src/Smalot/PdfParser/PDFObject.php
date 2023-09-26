@@ -974,6 +974,11 @@ class PDFObject
 
         preg_match('/^(([\/\[\(<])?.*)(?<!\w)([a-z01\'\"*]+)$/i', $text_part, $matches);
 
+        // If no valid command is detected, return an empty array
+        if (!isset($matches[1]) || !isset($matches[2]) || !isset($matches[3])) {
+            return [];
+        }
+
         $type = $matches[2];
         $operator = $matches[3];
         $command = trim($matches[1]);

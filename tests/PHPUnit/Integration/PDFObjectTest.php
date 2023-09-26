@@ -463,4 +463,23 @@ ET';
         $this->assertEquals('Tf', $fontCommandHyphen[0]['o']);
         $this->assertEquals('FID-01 15.00', $fontCommandHyphen[0]['c']);
     }
+
+    /**
+     * Tests that an invalid command does not cause an error, but just
+     * returns an empty array
+     */
+    public function testInvalidCommand(): void
+    {
+        $pdfObject = $this->getPdfObjectInstance(new Document());
+
+        $validCommand = $pdfObject->getCommandsText('75 rg');
+
+        $this->assertEquals('', $validCommand[0]['t']);
+        $this->assertEquals('rg', $validCommand[0]['o']);
+        $this->assertEquals('75', $validCommand[0]['c']);
+
+        $invalidCommand = $pdfObject->getCommandsText('75');
+
+        $this->assertEquals([], $invalidCommand);
+    }
 }
