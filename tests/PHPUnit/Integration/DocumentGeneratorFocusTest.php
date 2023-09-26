@@ -217,10 +217,9 @@ class DocumentGeneratorFocusTest extends TestCase
             $outputText
         );
 
-        // This encoded segment contains an escaped backslash right
-        // before an octal code: \\\000. Account for this in
-        // Font::decodeOctal()
-        // Disable this test until PR #640 is merged
-        // self::assertStringContainsString('Sayı: 2023-34', $outputText);
+        // This encoded segment contains an escaped backslash right before
+        // an octal code: \\\000. Account for this in Font::decodeOctal()
+        // See: https://github.com/smalot/pdfparser/pull/640
+        self::assertStringContainsString('Sayı: 2023-34', $outputText);
     }
 }
