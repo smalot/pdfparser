@@ -281,12 +281,29 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assertEquals('AB C', Font::decodeOctal('\\101\\102\\040\\103'));
         $this->assertEquals('AB CD', Font::decodeOctal('\\101\\102\\040\\103D'));
         $this->assertEquals('AB \199', Font::decodeOctal('\\101\\102\\040\\\\199'));
+
+        // Test that series of backslashes of arbitrary length are decoded properly
+        $this->assertEquals('-', Font::decodeOctal('\\055')); // \055
+        $this->assertEquals('\\055', Font::decodeOctal('\\\\055')); // \\055
+        $this->assertEquals('\\-', Font::decodeOctal('\\\\\\055')); // \\\055
+        $this->assertEquals('\\\\055', Font::decodeOctal('\\\\\\\\055')); // \\\\055
+        $this->assertEquals('\\\\-', Font::decodeOctal('\\\\\\\\\\055')); // \\\\\055
+        $this->assertEquals('\\\\\\055', Font::decodeOctal('\\\\\\\\\\\\055')); // \\\\\\055
+        $this->assertEquals('\\\\\\-', Font::decodeOctal('\\\\\\\\\\\\\\055')); // \\\\\\\055
+
+        // Make sure we're unescaping ( and ) before returning the escaped
+        // backslashes to the string
+        $this->assertEquals('\\(', Font::decodeOctal('\\\\(')); // \\( - nothing to unescape
+        $this->assertEquals('\\(', Font::decodeOctal('\\\\\\(')); // \\\( - parenthesis unescaped
+        $this->assertEquals('\\\\(', Font::decodeOctal('\\\\\\\\(')); // \\\\( - nothing to unescape
+        $this->assertEquals('\\\\(', Font::decodeOctal('\\\\\\\\\\(')); // \\\\\( - parenthesis unescaped
     }
 
     public function testDecodeEntities(): void
     {
         $this->assertEquals('File Type', Font::decodeEntities('File#20Type'));
         $this->assertEquals('File# Ty#pe', Font::decodeEntities('File##20Ty#pe'));
+        $this->assertEquals('Fi#le#-Ty#p#e ', Font::decodeEntities('Fi#23le##2DTy#p#e '));
     }
 
     public function testDecodeUnicode(): void
