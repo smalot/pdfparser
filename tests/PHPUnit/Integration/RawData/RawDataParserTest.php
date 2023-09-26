@@ -87,6 +87,25 @@ class RawDataParserTest extends TestCase
             ],
             $result
         );
+
+        // Test that spaces after a 'stream' declaration are absorbed
+        // See: https://github.com/smalot/pdfparser/issues/641
+        $data = 'stream '."\n";
+        $data .= 'streamdata'."\n";
+        $data .= 'endstream'."\n";
+        $data .= 'endobj';
+
+        $result = $this->fixture->exposeGetRawObject($data);
+
+        // Value 'streamdata'."\n" would be empty string without the fix
+        $this->assertEquals(
+            [
+                'stream',
+                'streamdata'."\n",
+                19,
+            ],
+            $result
+        );
     }
 
     /**
