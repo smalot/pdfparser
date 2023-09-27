@@ -262,14 +262,16 @@ q
         // Normalize line-endings
         $expected = str_replace(["\r\n", "\n"], ["\n", "\r\n"], $expected);
 
-        $cleaned = $this->getPdfObjectInstance(new Document())->formatContent($content);
+        $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
+        $formatContent->setAccessible(true);
+        $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
 
         $this->assertEquals($expected, $cleaned);
 
         // Check that binary data is rejected
         $content = hex2bin('a670c89d4a324e47');
 
-        $cleaned = $this->getPdfObjectInstance(new Document())->formatContent($content);
+        $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
 
         $this->assertEquals('', $cleaned);
     }

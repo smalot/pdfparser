@@ -207,10 +207,8 @@ class PDFObject
      * separated by \r\n. If the given string is null, or binary data
      * is detected instead of a document stream then return an empty
      * string.
-     *
-     * @internal
      */
-    public function formatContent(?string $content): string
+    private function formatContent(?string $content): string
     {
         if (null === $content) {
             return '';
