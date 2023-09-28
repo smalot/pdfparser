@@ -756,7 +756,7 @@ class RawDataParser
                     // start stream object
                     $objtype = 'stream';
                     $offset += 6;
-                    if (1 == preg_match('/^([\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
+                    if (1 == preg_match('/^( *[\r]?[\n])/isU', substr($pdfData, $offset, 4), $matches)) {
                         $offset += \strlen($matches[0]);
 
                         // we get stream length here to later help preg_match test less data
