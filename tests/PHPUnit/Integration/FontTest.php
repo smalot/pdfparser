@@ -455,6 +455,29 @@ TEXT;
     }
 
     /**
+     * Check behavior if getDetails() does return an array without a Widths-key.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/619
+     */
+    public function testCalculateTextWidthNoWidthsKey(): void
+    {
+        $document = $this->createMock(Document::class);
+
+        $header = $this->createMock(Header::class);
+        $header->method('getDetails')->willReturn([
+            'FirstChar' => '',
+            'LastChar' => '',
+            // 'Widths' key is not set, so without the fix in Font.php a warning would be thrown.
+        ]);
+
+        $font = new Font($document, $header);
+        $font->setTable([]);
+        $width = $font->calculateTextWidth('foo');
+
+        $this->assertNull($width);
+    }
+
+    /**
      * Check behavior if iconv function gets input which contains illegal characters.
      *
      * In this test we create a CP1252-encoded string, which contains a character that has no counterpart in UTF-8.
