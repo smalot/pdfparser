@@ -205,8 +205,9 @@ Characters without width are added to `$missing` array in second parameter.
 ```php
 $parser = new \Smalot\PdfParser\Parser();
 $pdf = $parser->parseFile('document.pdf');
+$fonts = $pdf->getFonts();
 // get first font (we assume here there is at least one)
-$font = reset($pdf->getFonts());
+$font = reset($fonts);
 // get width
 $width = $font->calculateTextWidth('Some text', $missing);
 ```
