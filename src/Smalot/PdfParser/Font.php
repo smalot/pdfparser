@@ -284,7 +284,7 @@ class Font extends PDFObject
         $index_map = array_flip($this->table);
         $details = $this->getDetails();
 
-        // TODO: Temporary fix, in the rare case the Widths-key is not set in $details array.
+        // Usually, Widths key is set in $details array, but if it isn't use an empty array instead.
         $widths = $details['Widths'] ?? [];
 
         // Widths array is zero indexed but table is not. We must map them based on FirstChar and LastChar
