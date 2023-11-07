@@ -400,8 +400,6 @@ class Page extends PDFObject
             }
             $sectionsText = $content->getSectionsText($content->getContent());
             foreach ($sectionsText as $sectionText) {
-                $extractedData[] = ['t' => '', 'o' => 'BT', 'c' => ''];
-
                 $commandsText = $content->getCommandsText($sectionText);
                 foreach ($commandsText as $command) {
                     $extractedData[] = $command;
@@ -701,6 +699,12 @@ class Page extends PDFObject
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
         foreach ($dataCommands as $command) {
+            // If we've used up all the texts from getTextArray(), exit
+            // so we aren't accessing non-existent array indices
+            // Fixes 'undefined array key' errors in Issues #575, #576
+            if (\count($extractedTexts) <= \count($extractedData)) {
+                break;
+            }
             $currentText = $extractedTexts[\count($extractedData)];
             switch ($command['o']) {
                 /*
@@ -716,15 +720,9 @@ class Page extends PDFObject
 
                     /*
                      * ET
-                     * End a text object, discarding the text matrix
+                     * End a text object
                      */
                 case 'ET':
-                    $Tm = $defaultTm;
-                    $Tl = $defaultTl;
-                    $Tx = 0;
-                    $Ty = 0;
-                    $fontId = $defaultFontId;
-                    $fontSize = $defaultFontSize;
                     break;
 
                     /*
@@ -739,7 +737,7 @@ class Page extends PDFObject
 
                     /*
                      * tx ty Td
-                     * Move to the start of the next line, offset form the start of the
+                     * Move to the start of the next line, offset from the start of the
                      * current line by tx, ty.
                      */
                 case 'Td':

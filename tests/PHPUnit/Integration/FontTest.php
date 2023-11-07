@@ -367,8 +367,6 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
      * which would be instance of PDFObject class (but not Encoding or ElementString).
      *
      * @see https://github.com/smalot/pdfparser/pull/500
-     *
-     * @group linux-only
      */
     public function testDecodeTextForFontWithIndirectEncodingWithoutTypeEncoding(): void
     {
@@ -378,14 +376,12 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $pages = $document->getPages();
         $page1 = reset($pages);
         $page1Text = $page1->getText();
-        $expectedText = <<<TEXT
-Export\u{a0}transakční\u{a0}historie
-Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi
-Číslo\u{a0}účtu:\u{a0}0000000000/0000
-Počáteční\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
-Konečný\u{a0}zůstatek: 000\u{a0}000,00\u{a0}Kč
-Cena\u{a0}za\u{a0}služby
-TEXT;
+        $expectedText = "Export\u{a0}transakční\u{a0}historie\n";
+        $expectedText .= "Typ\u{a0}produktu:\u{a0}Podnikatelský\u{a0}účet\u{a0}Maxi\n";
+        $expectedText .= "Číslo\u{a0}účtu:\u{a0}0000000000/0000\n";
+        $expectedText .= "Počáteční\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč\n";
+        $expectedText .= "Konečný\u{a0}zůstatek:\t000\u{a0}000,00\u{a0}Kč\n";
+        $expectedText .= "Cena\u{a0}za\u{a0}služby";
 
         $this->assertEquals($expectedText, trim($page1Text));
     }
@@ -452,6 +448,21 @@ TEXT;
         $width = $fonts['9_0']->calculateTextWidth('Calibri', $missing);
         $this->assertEquals(2573, $width);
         $this->assertEquals([], $missing);
+    }
+
+    public function testDecodeContent(): void
+    {
+        /*
+         * we do this to get into the branch with private method "decodeContentByEncodingElement" in Font.php
+         */
+        $encoding = $this->createMock(Element::class);
+        $encoding->method('getContent')->willReturn('WinAnsiEncoding');
+        $header = new Header(['Encoding' => $encoding]);
+
+        $font = new Font($this->createMock(Document::class), $header);
+
+        // Check that a string with UTF-16BE BOM is decoded directly
+        $this->assertEquals('ABC', $font->decodeContent("\xFE\xFF\x00\x41\x00\x42\x00\x43"));
     }
 
     /**

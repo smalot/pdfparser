@@ -166,7 +166,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('KRANT', $text);
         $this->assertStringContainsString('DINSDAG', $text);
         $this->assertStringContainsString('Snelfilterkoffie', $text);
-        $this->assertStringContainsString('AardappelenZak', $text);
+        $this->assertStringContainsString('Aardappelen'."\n".'Zak', $text);
         $this->assertStringContainsString('ALL', $text);
     }
 
@@ -180,7 +180,7 @@ class PageTest extends TestCase
         $page = $pages[0];
         $extractedRawData = $page->extractRawData();
 
-        $btItem = $extractedRawData[0];
+        $btItem = $extractedRawData[4];
         $this->assertCount(3, $btItem);
         $this->assertArrayHasKey('t', $btItem);
         $this->assertArrayHasKey('o', $btItem);
@@ -188,9 +188,9 @@ class PageTest extends TestCase
 
         $this->assertEquals('BT', $btItem['o']);
 
-        $tmItem = $extractedRawData[2];
+        $tmItem = $extractedRawData[6];
 
-        $this->assertcount(174, $extractedRawData);
+        $this->assertcount(185, $extractedRawData);
         $this->assertCount(3, $tmItem);
 
         $this->assertArrayHasKey('t', $tmItem);
@@ -210,8 +210,8 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $extractedDecodedRawData = $page->extractDecodedRawData();
-        $tmItem = $extractedDecodedRawData[2];
-        $this->assertCount(174, $extractedDecodedRawData);
+        $tmItem = $extractedDecodedRawData[6];
+        $this->assertCount(185, $extractedDecodedRawData);
         $this->assertCount(3, $tmItem);
 
         $this->assertArrayHasKey('t', $tmItem);
@@ -226,7 +226,7 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('o', $tmItem);
         $this->assertArrayHasKey('c', $tmItem);
 
-        $tjItem = $extractedDecodedRawData[3];
+        $tjItem = $extractedDecodedRawData[7];
         $this->assertStringContainsString('TJ', $tjItem['o']);
         $this->assertStringContainsString('(', $tjItem['c'][0]['t']);
         $this->assertStringContainsString('D', $tjItem['c'][0]['c']);
@@ -256,7 +256,7 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $dataCommands = $page->getDataCommands();
-        $this->assertCount(174, $dataCommands);
+        $this->assertCount(176, $dataCommands);
 
         $tmItem = $dataCommands[2];
         $this->assertCount(3, $tmItem);

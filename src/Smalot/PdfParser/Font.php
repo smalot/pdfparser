@@ -386,7 +386,7 @@ class Font extends PDFObject
      */
     public static function decodeUnicode(string $text): string
     {
-        if (preg_match('/^\xFE\xFF/i', $text)) {
+        if ("\xFE\xFF" === substr($text, 0, 2)) {
             // Strip U+FEFF byte order marker.
             $decode = substr($text, 2);
             $text = '';
@@ -411,16 +411,17 @@ class Font extends PDFObject
     /**
      * Decode text by commands array.
      */
-    public function decodeText(array $commands): string
+    public function decodeText(array $commands, float $fontFactor = 4): string
     {
         $word_position = 0;
         $words = [];
-        $font_space = $this->getFontSpaceLimit();
+        $font_space = $this->getFontSpaceLimit() * abs($fontFactor) / 4;
 
         foreach ($commands as $command) {
             switch ($command[PDFObject::TYPE]) {
                 case 'n':
-                    if ((float) trim($command[PDFObject::COMMAND]) < $font_space) {
+                    $offset = (float) trim($command[PDFObject::COMMAND]);
+                    if ($offset - (float) $font_space < 0) {
                         $word_position = \count($words);
                     }
                     continue 2;
@@ -451,9 +452,32 @@ class Font extends PDFObject
 
         foreach ($words as &$word) {
             $word = $this->decodeContent($word);
+            $word = str_replace("\t", ' ', $word);
         }
 
-        return implode(' ', $words);
+        // Remove internal "words" that are just spaces, but leave them
+        // if they are at either end of the array of words. This fixes,
+        // for   example,   lines   that   are   justified   to   fill
+        // a whole row.
+        for ($x = \count($words) - 2; $x >= 1; --$x) {
+            if ('' === trim($words[$x], ' ')) {
+                unset($words[$x]);
+            }
+        }
+        $words = array_values($words);
+
+        // Cut down on the number of unnecessary internal spaces by
+        // imploding the string on the null byte, and checking if the
+        // text includes extra spaces on either side. If so, merge
+        // where appropriate.
+        $words = implode("\x00\x00", $words);
+        $words = str_replace(
+            [" \x00\x00 ", "\x00\x00 ", " \x00\x00", "\x00\x00"],
+            ['  ', ' ', ' ', ' '],
+            $words
+        );
+
+        return $words;
     }
 
     /**
@@ -463,6 +487,12 @@ class Font extends PDFObject
      */
     public function decodeContent(string $text, bool &$unicode = null): string
     {
+        // If this string begins with a UTF-16BE BOM, then decode it
+        // directly as Unicode
+        if ("\xFE\xFF" === substr($text, 0, 2)) {
+            return $this->decodeUnicode($text);
+        }
+
         if ($this->has('ToUnicode')) {
             return $this->decodeContentByToUnicodeCMapOrDescendantFonts($text);
         }
