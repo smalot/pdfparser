@@ -230,16 +230,13 @@ foreach ($pages as $page) {
 }
 ```
 
-## Ignoring PDF encryption
+## PDF encryption
 
-In some cases PDF files may be internally marked as encrypted even though the content is not encrypted and can be read.
-This can be caused by the PDF being created by a tool that does not properly set the encryption flag.
-If you are sure that the PDF is not encrypted, you can ignore the encryption flag by setting the `ignoreEncryption` flag to `true` in the `Config` object.
-
-```php
-$config = new \Smalot\PdfParser\Config();
-$config->setIgnoreEncryption(true);
-
-$parser = new \Smalot\PdfParser\Parser([], $config);
-$pdf = $parser->parseFile('document.pdf');
+This library cannot currently read encrypted PDF files, i.e. those with
+a read password.  Attempting to do so produces this error:
 ```
+Exception: Secured pdf file are currently not supported.
+```
+
+See `setIgnoreEncryption` option in [CustomConfig.md](CustomConfig.md)
+for how to override the check in specific cases.
