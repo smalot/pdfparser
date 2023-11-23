@@ -166,7 +166,7 @@ class Config
 
     /**
      * @warning This is a workaround, don't rely on it, may change in the
-     * future. Further information is in the following PR: 
+     * future. Further information is in the following PR:
      * https://github.com/smalot/pdfparser/pull/653
      */
     public function setIgnoreEncryption(bool $ignoreEncryption): void
