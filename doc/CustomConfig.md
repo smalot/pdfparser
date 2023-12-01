@@ -21,6 +21,7 @@ The `Config` class has the following options:
 |--------------------------|---------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `setDecodeMemoryLimit`   | Integer | `0`             | If parsing fails because of memory exhaustion, you can set a lower memory limit for decoding operations.                                             |
 | `setFontSpaceLimit`      | Integer | `-50`           | Changing font space limit can be helpful when `Parser::getText()` returns a text with too many spaces.                                               |
+| `setIgnoreEncryption`    | Boolean | `false`         | Read PDFs that are not encrypted but have the encryption flag set. This is a temporary workaround, don't rely on it.                                 |
 | `setHorizontalOffset`    | String  | ` `             | When words are broken up or when the structure of a table is not preserved, you may get better results when adapting `setHorizontalOffset`.          |
 | `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |                                                                                                                                                      |
 | `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |                                                                                                                                                      |
@@ -60,6 +61,20 @@ Changing font space limit can be helpful when `getText()` returns a text with to
 ```php
 $config = new \Smalot\PdfParser\Config();
 $config->setFontSpaceLimit(-60);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+$pdf = $parser->parseFile('document.pdf');
+```
+
+## option setIgnoreEncryption
+
+In some cases PDF files may be internally marked as encrypted even though the content is not encrypted and can be read.
+This can be caused by the PDF being created by a tool that does not properly set the encryption flag.
+If you are sure that the PDF is not encrypted, you can ignore the encryption flag by setting the `ignoreEncryption` flag to `true` in a custom `Config` instance.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+$config->setIgnoreEncryption(true);
+
 $parser = new \Smalot\PdfParser\Parser([], $config);
 $pdf = $parser->parseFile('document.pdf');
 ```

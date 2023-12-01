@@ -82,6 +82,13 @@ class Config
      */
     private $dataTmFontInfoHasToBeIncluded = false;
 
+    /**
+     * Whether to attempt to read PDFs even if they are marked as encrypted.
+     *
+     * @var bool
+     */
+    private $ignoreEncryption = false;
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -150,5 +157,19 @@ class Config
     public function setDataTmFontInfoHasToBeIncluded(bool $dataTmFontInfoHasToBeIncluded): void
     {
         $this->dataTmFontInfoHasToBeIncluded = $dataTmFontInfoHasToBeIncluded;
+    }
+
+    public function getIgnoreEncryption(): bool
+    {
+        return $this->ignoreEncryption;
+    }
+
+    /**
+     * @deprecated this is a temporary workaround, don't rely on it
+     * @see https://github.com/smalot/pdfparser/pull/653
+     */
+    public function setIgnoreEncryption(bool $ignoreEncryption): void
+    {
+        $this->ignoreEncryption = $ignoreEncryption;
     }
 }

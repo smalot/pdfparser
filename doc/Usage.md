@@ -230,3 +230,14 @@ foreach ($pages as $page) {
     ];
 }
 ```
+
+## PDF encryption
+
+This library cannot currently read encrypted PDF files, i.e. those with
+a read password.  Attempting to do so produces this error:
+```
+Exception: Secured pdf file are currently not supported.
+```
+
+See `setIgnoreEncryption` option in [CustomConfig.md](CustomConfig.md)
+for how to override the check in specific cases.
