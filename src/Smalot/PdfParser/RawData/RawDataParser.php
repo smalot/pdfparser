@@ -63,6 +63,14 @@ class RawDataParser
 
     protected $filterHelper;
     protected $objects;
+    /**
+     * @var \Smalot\PdfParser\Encryption\Info or null
+     */
+    protected $encryptionInfo = null;
+    /**
+     * @var \Smalot\PdfParser\Encryption\Stream or null
+     */
+    protected $decryptionHelper = null;
 
     /**
      * @param array $cfg Configuration array, default is []
@@ -119,6 +127,15 @@ class RawDataParser
                         }
                     }
                 }
+            }
+        }
+
+        if (!is_null($this->decryptionHelper)) {
+            if (!is_null($objRefArr)) {
+                list($num, $gen) = $objRefArr;
+                $stream = $this->decryptionHelper->decrypt($stream, $num, $gen);
+            } else {
+                throw new \Exception('Logic error: $objRefArr not passed to decodeStream()');
             }
         }
 
@@ -967,6 +984,50 @@ class RawDataParser
     }
 
     /**
+     *
+     * @param string $pdfData     PDF data
+     * @param array  $xref        xref array
+     * @param string $encryptRef  Object number and generation number separated by underscore character
+     *
+     * @return \Smalot\PdfParser\Encryption\Info
+     *
+     * @throws \Exception if invalid object reference found
+     */
+    protected function setupDecryption(string $pdfData, array $xref, string $encryptRef)
+    {
+        $this->encryptionInfo = $this->parseEncryptionInfo($pdfData, $xref, $encryptRef);
+        //# $ownerPassword, $userPassword
+        $fileKey = \Smalot\PdfParser\Encryption\FileKey::generate($this->encryptionInfo);
+
+        $this->decryptionHelper = \Smalot\PdfParser\Encryption\Stream::make(
+            $this->encryptionInfo->getEncAlgorithm(), $fileKey);
+    }
+
+    /**
+     * Get content of encryption metadata.
+     *
+     * @param string $pdfData  PDF data
+     * @param array  $xref     xref array
+     * @param string $objRef   Object number and generation number separated by underscore character
+     *
+     * @return \Smalot\PdfParser\Encryption\Info
+     *
+     * @throws \Exception if invalid object reference found
+     */
+    protected function parseEncryptionInfo(string $pdfData, array $xref, string $objRef): \Smalot\PdfParser\Encryption\Info
+    {
+        if (isset($xref['trailer']['id'])) {
+            $fileIdArr = $xref['trailer']['id'];
+        } else {
+            $fileIdArr = [];
+        }
+        $offset = $xref['xref'][$objRef];
+        $encryptArr = $this->getIndirectObject($pdfData, $xref, $objRef, $offset, true);
+
+        return new \Smalot\PdfParser\Encryption\Info($encryptArr, $fileIdArr);
+    }
+
+    /**
      * Parses PDF data and returns extracted data as array.
      *
      * @param string $data PDF data to parse
@@ -996,6 +1057,14 @@ class RawDataParser
         if (isset($xref['Unix'])) {
             $pdfData = str_replace("\r\n", "\n", $pdfData);
             $xref = $this->getXrefData($pdfData);
+        }
+
+        // Pre-parse encryption object
+        if (isset($xref['trailer']['encrypt'])) {
+            $encryptRef = $xref['trailer']['encrypt'];
+            if (isset($xref['xref'][$encryptRef])) {
+                $this->setupDecryption($pdfData, $xref, $encryptRef);
+            }
         }
 
         // parse all document objects
