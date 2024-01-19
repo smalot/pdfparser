@@ -54,6 +54,13 @@ class Page extends PDFObject
      */
     protected $dataTm;
 
+    public function setFonts($fonts)
+    {
+        if (empty($this->fonts)) {
+            $this->fonts = $fonts;
+        }
+    }
+
     /**
      * @return Font[]
      */

@@ -40,6 +40,11 @@ use Smalot\PdfParser\Element\ElementArray;
 class Pages extends PDFObject
 {
     /**
+     * @var Font[]
+     */
+    protected $fonts;
+
+    /**
      * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
      *
      * @see https://github.com/smalot/pdfparser/issues/331
@@ -57,6 +62,9 @@ class Pages extends PDFObject
             return $kidsElement->getContent();
         }
 
+        // Prepare to apply the Pages' object's fonts to each page
+        $fonts = $this->getFonts();
+
         $kids = $kidsElement->getContent();
         $pages = [];
 
@@ -64,10 +72,55 @@ class Pages extends PDFObject
             if ($kid instanceof self) {
                 $pages = array_merge($pages, $kid->getPages(true));
             } elseif ($kid instanceof Page) {
+                if (!empty($this->fonts)) {
+                    $kid->setFonts($fonts);
+                }
                 $pages[] = $kid;
             }
         }
 
         return $pages;
+    }
+
+    /**
+     * @return Font[]
+     */
+    public function getFonts()
+    {
+        if (null !== $this->fonts) {
+            return $this->fonts;
+        }
+
+        $resources = $this->get('Resources');
+
+        if (method_exists($resources, 'has') && $resources->has('Font')) {
+            if ($resources->get('Font') instanceof ElementMissing) {
+                return [];
+            }
+
+            if ($resources->get('Font') instanceof Header) {
+                $fonts = $resources->get('Font')->getElements();
+            } else {
+                $fonts = $resources->get('Font')->getHeader()->getElements();
+            }
+
+            $table = [];
+
+            foreach ($fonts as $id => $font) {
+                if ($font instanceof Font) {
+                    $table[$id] = $font;
+
+                    // Store too on cleaned id value (only numeric)
+                    $id = preg_replace('/[^0-9\.\-_]/', '', $id);
+                    if ('' != $id) {
+                        $table[$id] = $font;
+                    }
+                }
+            }
+
+            return $this->fonts = $table;
+        }
+
+        return [];
     }
 }
