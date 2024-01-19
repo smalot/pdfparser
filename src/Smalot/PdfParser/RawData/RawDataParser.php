@@ -87,7 +87,7 @@ class RawDataParser
      *
      * @throws \Exception
      */
-    protected function decodeStream(string $pdfData, array $xref, array $sdic, string $stream): array
+    protected function decodeStream(string $pdfData, array $xref, array $sdic, string $stream, array $objRefArr = null): array
     {
         // get stream length and filters
         $slength = \strlen($stream);
@@ -524,10 +524,7 @@ class RawDataParser
          * build indirect object header
          */
         // $objHeader = "[object number] [generation number] obj"
-        $objRefArr = explode('_', $objRef);
-        if (2 !== \count($objRefArr)) {
-            throw new \Exception('Invalid object reference for $obj.');
-        }
+        $objRefArr = DataHelper::decodeRef($objRef);
 
         $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
 
@@ -558,7 +555,7 @@ class RawDataParser
             $offset = $element[2];
             // decode stream using stream's dictionary information
             if ($decoding && ('stream' === $element[0]) && null != $header) {
-                $element[3] = $this->decodeStream($pdfData, $xref, $header[1], $element[1]);
+                $element[3] = $this->decodeStream($pdfData, $xref, $header[1], $element[1], $objRefArr);
             }
             $objContentArr[$i] = $element;
             $header = isset($element[0]) && '<<' === $element[0] ? $element : null;
@@ -760,8 +757,8 @@ class RawDataParser
                         $offset += \strlen($matches[0]);
 
                         // we get stream length here to later help preg_match test less data
-                        $streamLen = (int) $this->getHeaderValue($headerDic, 'Length', 'numeric', 0);
-                        $skip = false === $this->config->getRetainImageContent() && 'XObject' == $this->getHeaderValue($headerDic, 'Type', '/') && 'Image' == $this->getHeaderValue($headerDic, 'Subtype', '/');
+                        $streamLen = (int) self::getHeaderValue($headerDic, 'Length', 'numeric', 0);
+                        $skip = false === $this->config->getRetainImageContent() && 'XObject' == self::getHeaderValue($headerDic, 'Type', '/') && 'Image' == self::getHeaderValue($headerDic, 'Subtype', '/');
 
                         $pregResult = preg_match(
                             '/(endstream)[\x09\x0a\x0c\x0d\x20]/isU',
@@ -814,7 +811,7 @@ class RawDataParser
      *
      * @return string|array|null value of obj header's section, or default value if none found, or its type doesn't match $type param
      */
-    private function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
+    public static function getHeaderValue(?array $headerDic, string $key, string $type, $default = '')
     {
         if (false === \is_array($headerDic)) {
             return $default;
