@@ -647,28 +647,79 @@ class RawDataParser
                 $strpos = $offset;
                 if ('(' == $char) {
                     $open_bracket = 1;
+                    $quoting = false;
+                    $objval = "";
+                    //* @var number of characters to skip; if -1, conditional on \n
+                    $skip = 0; // If -1
                     while ($open_bracket > 0) {
                         if (!isset($pdfData[$strpos])) {
                             break;
                         }
                         $ch = $pdfData[$strpos];
-                        switch ($ch) {
-                            case '\\':  // REVERSE SOLIDUS (5Ch) (Backslash)
-                                // skip next character
-                                ++$strpos;
-                                break;
+                        // Reset skip
+                        if ($skip == -1 && $ch == "\n") {
+                            $skip = 1;
+                        } else {
+                            $skip = 0;
+                        }
 
-                            case '(':  // LEFT PARENHESIS (28h)
-                                ++$open_bracket;
-                                break;
+                        if (!$quoting) {
+                            switch ($ch) {
+                                case '\\':  // REVERSE SOLIDUS (5Ch) (Backslash)
+                                    $quoting = true;
+                                    $skip = 1;
+                                    break;
 
-                            case ')':  // RIGHT PARENTHESIS (29h)
-                                --$open_bracket;
-                                break;
+                                case '(':  // LEFT PARENHESIS (28h)
+                                    ++$open_bracket;
+                                    break;
+
+                                case ')':  // RIGHT PARENTHESIS (29h)
+                                    --$open_bracket;
+                                    if (0 === $open_bracket) {
+                                        // End of string; while loop will end
+                                        $skip = 1;
+                                    }
+                                    break;
+                            }
+                        } else {
+                            // Decode quoted
+                            $quoting = false;
+                            switch ($ch) {
+                                // Second half of backslash-quoted string
+                                case "b": // results in 0x08
+                                    $ch = "\x08";
+                                    break;
+                                case "t": // results in 0x09
+                                    $ch = "\t";
+                                    break;
+                                case "n": // results in 0x0a
+                                    $ch = "\n";
+                                    break;
+                                case "f": // results in 0x0c
+                                    $ch = "\f";
+                                    break;
+                                case "r": // results in 0x0d
+                                    $ch = "\r";
+                                    break;
+
+                                // Quoted control characters
+                                case "\n": // 0x0a
+                                    $skip = 1;
+                                    break;
+
+                                case "\r": // 0x0d
+                                    // variable skip; also skip \n if present
+                                    $skip = -1;
+                                    break;
+                            }
+                        }
+
+                        if ($skip == 0) {
+                            $objval .= $ch;
                         }
                         ++$strpos;
                     }
-                    $objval = substr($pdfData, $offset, $strpos - $offset - 1);
                     $offset = $strpos;
                 }
                 break;
