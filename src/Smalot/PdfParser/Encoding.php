@@ -147,7 +147,9 @@ class Encoding extends PDFObject
         $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
 
         // Check for empty BaseEncoding field value
-        if ('' == $baseEncoding) $baseEncoding = 'StandardEncoding';
+        if ('' == $baseEncoding) {
+            $baseEncoding = 'StandardEncoding';
+        }
 
         $className = '\\Smalot\\PdfParser\\Encoding\\'.$baseEncoding;
 

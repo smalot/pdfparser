@@ -37,12 +37,12 @@ namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Document;
-use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Encoding\StandardEncoding;
 use Smalot\PdfParser\Exception\EncodingNotFoundException;
 use Smalot\PdfParser\Header;
+use Smalot\PdfParser\Parser;
 
 class EncodingTest extends TestCase
 {
@@ -124,7 +124,7 @@ class EncodingTest extends TestCase
         $document = $this->fixture->parseFile($filename);
         $objects = $document->getObjects();
 
-        $this->assertEquals(25, count($objects));
+        $this->assertEquals(25, \count($objects));
         $this->assertArrayHasKey('3_0', $objects);
     }
 }
