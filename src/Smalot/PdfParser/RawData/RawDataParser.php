@@ -47,7 +47,7 @@ use Smalot\PdfParser\Config;
 class RawDataParser
 {
     /**
-     * @var \Smalot\PdfParser\Config
+     * @var Config
      */
     private $config;
 
@@ -402,7 +402,7 @@ class RawDataParser
                     }
                     $prev_row = $ddata[$k];
                 } // end for each row
-                // complete decoding
+            // complete decoding
             } else {
                 // number of bytes in a row
                 $rowlen = array_sum($wb);
