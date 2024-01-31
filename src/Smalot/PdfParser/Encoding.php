@@ -147,7 +147,7 @@ class Encoding extends PDFObject
         $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
 
         // Check for empty BaseEncoding field value
-        if ('' == $baseEncoding) {
+        if (!\is_string($baseEncoding) || 0 == \strlen($baseEncoding)) {
             $baseEncoding = 'StandardEncoding';
         }
 
