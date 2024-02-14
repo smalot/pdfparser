@@ -220,8 +220,7 @@ class PDFObject
         // indicates the beginning of a string. Then test what remains
         // for valid UTF-8. If it's not UTF-8, return an empty string
         // as this $content is most likely binary.
-        $testBinary = preg_replace('/\(.*$/s', '', $content);
-        if (!mb_check_encoding($testBinary, 'UTF-8')) {
+        if (!mb_check_encoding(preg_replace('/\(.*$/s', '', $content), 'UTF-8')) {
             return '';
         }
 
