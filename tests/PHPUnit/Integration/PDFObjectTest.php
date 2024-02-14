@@ -274,6 +274,16 @@ q
         $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
 
         $this->assertEquals('', $cleaned);
+
+        // See: https://github.com/smalot/pdfparser/issues/668
+        $filename = $this->rootDir.'/samples/bugs/Issue668.pdf';
+
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+
+        // Binary check is done before a regexp that causes an error
+        $this->assertStringContainsString('Marko Nestorović PR', $pages[0]->getText());
     }
 
     public function testGetSectionsText(): void
