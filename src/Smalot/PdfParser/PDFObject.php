@@ -360,7 +360,7 @@ class PDFObject
                 $inTextBlock = true;
                 $sections[] = $line;
 
-                // If an 'ET' is encountered, unset the $inTextBlock flag
+            // If an 'ET' is encountered, unset the $inTextBlock flag
             } elseif ('ET' == $line) {
                 $inTextBlock = false;
                 $sections[] = $line;
