@@ -58,7 +58,7 @@ class ElementNull extends Element
     /**
      * @return bool|ElementNull
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(null)/s', $content, $match)) {
             $offset += strpos($content, 'null') + \strlen('null');

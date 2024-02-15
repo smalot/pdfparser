@@ -60,7 +60,7 @@ class Parser
 
     protected $rawDataParser;
 
-    public function __construct($cfg = [], Config $config = null)
+    public function __construct($cfg = [], ?Config $config = null)
     {
         $this->config = $config ?: new Config();
         $this->rawDataParser = new RawDataParser($cfg, $this->config);

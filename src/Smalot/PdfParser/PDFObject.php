@@ -54,7 +54,7 @@ class PDFObject
     public static $recursionStack = [];
 
     /**
-     * @var Document
+     * @var Document|null
      */
     protected $document;
 
@@ -69,7 +69,7 @@ class PDFObject
     protected $content;
 
     /**
-     * @var Config
+     * @var Config|null
      */
     protected $config;
 
@@ -80,9 +80,9 @@ class PDFObject
 
     public function __construct(
         Document $document,
-        Header $header = null,
-        string $content = null,
-        Config $config = null
+        ?Header $header = null,
+        ?string $content = null,
+        ?Config $config = null
     ) {
         $this->document = $document;
         $this->header = $header ?? new Header();
@@ -405,7 +405,7 @@ class PDFObject
         return $sections;
     }
 
-    private function getDefaultFont(Page $page = null): Font
+    private function getDefaultFont(?Page $page = null): Font
     {
         $fonts = [];
         if (null !== $page) {
@@ -433,7 +433,7 @@ class PDFObject
      *
      * @param array<int,array<string,string|bool>> $command
      */
-    private function getTJUsingFontFallback(Font $font, array $command, Page $page = null, float $fontFactor = 4): string
+    private function getTJUsingFontFallback(Font $font, array $command, ?Page $page = null, float $fontFactor = 4): string
     {
         $orig_text = $font->decodeText($command, $fontFactor);
         $text = $orig_text;
@@ -571,7 +571,7 @@ class PDFObject
      * so whitespace is inserted in a logical way for reading by
      * humans.
      */
-    public function getText(Page $page = null): string
+    public function getText(?Page $page = null): string
     {
         $this->addPositionWhitespace = true;
         $result = $this->getTextArray($page);
@@ -587,7 +587,7 @@ class PDFObject
      *
      * @throws \Exception
      */
-    public function getTextArray(Page $page = null): array
+    public function getTextArray(?Page $page = null): array
     {
         $result = [];
         $text = [];
@@ -1054,7 +1054,7 @@ class PDFObject
         Document $document,
         Header $header,
         ?string $content,
-        Config $config = null
+        ?Config $config = null
     ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':

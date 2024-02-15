@@ -48,7 +48,7 @@ class ElementNumeric extends Element
     /**
      * @return bool|ElementNumeric
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(?P<value>\-?[0-9\.]+)/s', $content, $match)) {
             $value = $match['value'];
