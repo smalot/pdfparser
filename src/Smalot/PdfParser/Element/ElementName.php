@@ -54,7 +54,7 @@ class ElementName extends Element
     /**
      * @return bool|ElementName
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\/([A-Z0-9\-\+,#\.]+)/is', $content, $match)) {
             $name = $match[1];

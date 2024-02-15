@@ -279,7 +279,7 @@ class Font extends PDFObject
     /**
      * Calculate text width with data from header 'Widths'. If width of character is not found then character is added to missing array.
      */
-    public function calculateTextWidth(string $text, array &$missing = null): ?float
+    public function calculateTextWidth(string $text, ?array &$missing = null): ?float
     {
         $index_map = array_flip($this->table);
         $details = $this->getDetails();
@@ -485,7 +485,7 @@ class Font extends PDFObject
      *
      * @param bool $unicode This parameter is deprecated and might be removed in a future release
      */
-    public function decodeContent(string $text, bool &$unicode = null): string
+    public function decodeContent(string $text, ?bool &$unicode = null): string
     {
         // If this string begins with a UTF-16BE BOM, then decode it
         // directly as Unicode

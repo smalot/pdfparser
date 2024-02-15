@@ -67,7 +67,7 @@ abstract class TestCase extends PHPTestCase
         return new Element($value);
     }
 
-    protected function getParserInstance(Config $config = null): Parser
+    protected function getParserInstance(?Config $config = null): Parser
     {
         return new Parser([], $config);
     }

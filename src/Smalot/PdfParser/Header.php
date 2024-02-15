@@ -43,7 +43,7 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Header
 {
     /**
-     * @var Document
+     * @var Document|null
      */
     protected $document;
 
@@ -56,7 +56,7 @@ class Header
      * @param Element[] $elements list of elements
      * @param Document  $document document
      */
-    public function __construct(array $elements = [], Document $document = null)
+    public function __construct(array $elements = [], ?Document $document = null)
     {
         $this->elements = $elements;
         $this->document = $document;
