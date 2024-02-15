@@ -42,7 +42,7 @@ class ElementHexa extends ElementString
     /**
      * @return bool|ElementHexa|ElementDate
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\<(?P<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name = $match['name'];

@@ -336,12 +336,12 @@ class Document
         return null;
     }
 
-    public function hasObjectsByType(string $type, string $subtype = null): bool
+    public function hasObjectsByType(string $type, ?string $subtype = null): bool
     {
         return 0 < \count($this->getObjectsByType($type, $subtype));
     }
 
-    public function getObjectsByType(string $type, string $subtype = null): array
+    public function getObjectsByType(string $type, ?string $subtype = null): array
     {
         if (!isset($this->dictionary[$type])) {
             return [];
@@ -418,7 +418,7 @@ class Document
         throw new \Exception('Missing catalog.');
     }
 
-    public function getText(int $pageLimit = null): string
+    public function getText(?int $pageLimit = null): string
     {
         $texts = [];
         $pages = $this->getPages();

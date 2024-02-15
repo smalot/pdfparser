@@ -42,7 +42,7 @@ use Smalot\PdfParser\PDFObject;
  */
 class ElementArray extends Element
 {
-    public function __construct($value, Document $document = null)
+    public function __construct($value, ?Document $document = null)
     {
         parent::__construct($value, $document);
     }
@@ -107,7 +107,7 @@ class ElementArray extends Element
      *
      * @return bool|ElementArray
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\[(?P<array>.*)/is', $content, $match)) {
             preg_match_all('/(.*?)(\[|\])/s', trim($content), $matches);
