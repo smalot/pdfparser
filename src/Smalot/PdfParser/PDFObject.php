@@ -575,7 +575,7 @@ class PDFObject
     {
         $this->addPositionWhitespace = true;
         $result = $this->getTextArray($page);
-        $this->addPositionWhitespace = false;
+        $this->addPositionWhitespace = true;
 
         return implode('', $result).' ';
     }
