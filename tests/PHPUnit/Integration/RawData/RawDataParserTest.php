@@ -119,8 +119,6 @@ class RawDataParserTest extends TestCase
      * @see https://github.com/smalot/pdfparser/issues/373
      * @see https://github.com/smalot/pdfparser/issues/392
      * @see https://github.com/smalot/pdfparser/issues/397
-     *
-     * @group memory-heavy
      */
     public function testDecodeXrefStreamIssue356(): void
     {
