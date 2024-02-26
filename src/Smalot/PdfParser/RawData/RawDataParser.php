@@ -53,6 +53,8 @@ class RawDataParser
 
     /**
      * Configuration array.
+     *
+     * @var array<string,bool>
      */
     protected $cfg = [
         // if `true` ignore filter decoding errors
@@ -67,7 +69,7 @@ class RawDataParser
     /**
      * @param array $cfg Configuration array, default is []
      */
-    public function __construct($cfg = [], Config $config = null)
+    public function __construct($cfg = [], ?Config $config = null)
     {
         // merge given array with default values
         $this->cfg = array_merge($this->cfg, $cfg);
@@ -609,7 +611,7 @@ class RawDataParser
      *
      * @return array containing object type, raw value and offset to next object
      */
-    protected function getRawObject(string $pdfData, int $offset = 0, array $headerDic = null): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned

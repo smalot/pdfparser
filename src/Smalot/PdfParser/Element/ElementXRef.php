@@ -83,7 +83,7 @@ class ElementXRef extends Element
     /**
      * @return bool|ElementXRef
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*(?P<id>[0-9]+\s+[0-9]+\s+R)/s', $content, $match)) {
             $id = $match['id'];

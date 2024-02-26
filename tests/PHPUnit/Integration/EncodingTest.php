@@ -42,9 +42,17 @@ use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Encoding\StandardEncoding;
 use Smalot\PdfParser\Exception\EncodingNotFoundException;
 use Smalot\PdfParser\Header;
+use Smalot\PdfParser\Parser;
 
 class EncodingTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->fixture = new Parser();
+    }
+
     public function testGetEncodingClass(): void
     {
         $header = new Header(['BaseEncoding' => new Element('StandardEncoding')]);
@@ -102,5 +110,21 @@ class EncodingTest extends TestCase
 
             $encoding->__toString();
         }
+    }
+
+    /**
+     * Fall back to 'StandardEncoding' when the document has none
+     *
+     * @see https://github.com/smalot/pdfparser/issues/665
+     */
+    public function testEmptyBaseEncodingFallback(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue665.pdf';
+
+        $document = $this->fixture->parseFile($filename);
+        $objects = $document->getObjects();
+
+        $this->assertEquals(25, \count($objects));
+        $this->assertArrayHasKey('3_0', $objects);
     }
 }

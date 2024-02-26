@@ -40,7 +40,7 @@ use Smalot\PdfParser\Document;
 class ElementDate extends ElementString
 {
     /**
-     * @var array
+     * @var array<int,string>
      */
     protected static $formats = [
         4 => 'Y',
@@ -98,7 +98,7 @@ class ElementDate extends ElementString
     /**
      * @return bool|ElementDate
      */
-    public static function parse(string $content, Document $document = null, int &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\(D\:(?P<name>.*?)\)/s', $content, $match)) {
             $name = $match['name'];

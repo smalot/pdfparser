@@ -49,13 +49,13 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Element
 {
     /**
-     * @var Document
+     * @var Document|null
      */
     protected $document;
 
     protected $value;
 
-    public function __construct($value, Document $document = null)
+    public function __construct($value, ?Document $document = null)
     {
         $this->value = $value;
         $this->document = $document;
@@ -96,7 +96,7 @@ class Element
         return (string) $this->value;
     }
 
-    public static function parse(string $content, Document $document = null, int &$position = 0)
+    public static function parse(string $content, ?Document $document = null, int &$position = 0)
     {
         $args = \func_get_args();
         $only_values = isset($args[3]) ? $args[3] : false;
