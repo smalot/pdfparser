@@ -5,14 +5,10 @@ build:
                 override:
                     - php-scrutinizer-run
                     -
-                        # Forces a certain PHPUnit version (=7.5.x), otherwise some tests fail due
-                        # to not enough memory.
-                        # @https://github.com/smalot/pdfparser/issues/410
-                        # @https://github.com/smalot/pdfparser/pull/412
-                        command: make prepare-for-scrutinizer && make install-dev-tools && make run-phpunit ARGS="--exclude-group memory-heavy --coverage-clover coverage/clover.xml"
+                        command: make install-dev-tools && make run-phpunit ARGS="--exclude-group memory-heavy --coverage-clover coverage/clover.xml"
                         coverage:
                             file: coverage/clover.xml
                             format: clover
             environment:
                 php:
-                    version: 7.4
+                    version: 8.2
