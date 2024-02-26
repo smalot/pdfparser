@@ -214,6 +214,16 @@ class PDFObject
             return '';
         }
 
+        // Outside of (String) content in PDF document streams, all
+        // text should conform to UTF-8. Test for binary content by
+        // deleting everything after the first open-parenthesis ( which
+        // indicates the beginning of a string. Then test what remains
+        // for valid UTF-8. If it's not UTF-8, return an empty string
+        // as this $content is most likely binary.
+        if (false === mb_check_encoding(preg_replace('/\(.*$/s', '', $content), 'UTF-8')) {
+            return '';
+        }
+
         // Find all strings () and replace them so they aren't affected
         // by the next steps
         $pdfstrings = [];
@@ -259,17 +269,6 @@ class PDFObject
                 $content,
                 1
             );
-        }
-
-        // Now that all strings and dictionaries are hidden, the only
-        // PDF commands left should all be plain text.
-        // Detect text encoding of the current string to prevent reading
-        // content streams that are images, etc. This prevents PHP
-        // error messages when JPEG content is sent to this function
-        // by the sample file '12249.pdf' from:
-        // https://github.com/smalot/pdfparser/issues/458
-        if (false === mb_detect_encoding($content, null, true)) {
-            return '';
         }
 
         // Normalize white-space in the document stream
