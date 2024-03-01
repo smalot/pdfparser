@@ -689,7 +689,7 @@ class PDFObject
                             $xobject = $page->getXObject($id);
 
                             // @todo $xobject could be a ElementXRef object, which would then throw an error
-                            if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack)) {
+                            if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
                                 // Not a circular reference.
                                 $text[] = $xobject->getText($page);
                             }

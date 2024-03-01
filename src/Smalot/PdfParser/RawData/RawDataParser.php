@@ -127,7 +127,7 @@ class RawDataParser
         // decode the stream
         $remaining_filters = [];
         foreach ($filters as $filter) {
-            if (\in_array($filter, $this->filterHelper->getAvailableFilters())) {
+            if (\in_array($filter, $this->filterHelper->getAvailableFilters(), true)) {
                 try {
                     $stream = $this->filterHelper->decodeFilter($filter, $stream, $this->config->getDecodeMemoryLimit());
                 } catch (\Exception $e) {
