@@ -64,6 +64,10 @@ class ElementHexa extends ElementString
     public static function decode(string $value): string
     {
         $text = '';
+
+        // Filter $value of non-hexadecimal characters and BOM
+        $value = preg_replace(['/[^0-9a-f]/i', '/^feff/i'], '', $value);
+
         $length = \strlen($value);
 
         if ('00' === substr($value, 0, 2)) {
