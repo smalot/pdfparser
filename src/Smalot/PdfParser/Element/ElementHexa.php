@@ -65,18 +65,20 @@ class ElementHexa extends ElementString
     {
         $text = '';
 
-        // Filter $value of non-hexadecimal characters and BOM
-        $value = preg_replace(['/[^0-9a-f]/i', '/^feff/i'], '', $value);
+        // Filter $value of non-hexadecimal characters
+        $value = preg_replace('/[^0-9a-f]/i', '', $value);
 
-        $length = \strlen($value);
-
-        if ('00' === substr($value, 0, 2)) {
-            for ($i = 0; $i < $length; $i += 4) {
+        // Check for leading zeros (4-byte hexadecimal indicator), or
+        // the BE BOM
+        if ('00' === substr($value, 0, 2) || 'feff' === strtolower(substr($value, 0, 4))) {
+            $value = preg_replace('/^feff/i', '', $value);
+            for ($i = 0, $length = \strlen($value); $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
                 $text .= '&#'.str_pad(hexdec($hex), 4, '0', \STR_PAD_LEFT).';';
             }
         } else {
-            for ($i = 0; $i < $length; $i += 2) {
+            // Otherwise decode this as 2-byte hexadecimal
+            for ($i = 0, $length = \strlen($value); $i < $length; $i += 2) {
                 $hex = substr($value, $i, 2);
                 $text .= \chr(hexdec($hex));
             }
