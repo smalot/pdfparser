@@ -66,12 +66,12 @@ class ElementHexa extends ElementString
         $text = '';
 
         // Filter $value of non-hexadecimal characters
-        $value = preg_replace('/[^0-9a-f]/i', '', $value);
+        $value = (string) preg_replace('/[^0-9a-f]/i', '', $value);
 
         // Check for leading zeros (4-byte hexadecimal indicator), or
         // the BE BOM
         if ('00' === substr($value, 0, 2) || 'feff' === strtolower(substr($value, 0, 4))) {
-            $value = preg_replace('/^feff/i', '', $value);
+            $value = (string) preg_replace('/^feff/i', '', $value);
             for ($i = 0, $length = \strlen($value); $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
                 $text .= '&#'.str_pad(hexdec($hex), 4, '0', \STR_PAD_LEFT).';';
