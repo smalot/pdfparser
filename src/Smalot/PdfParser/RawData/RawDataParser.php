@@ -408,10 +408,15 @@ class RawDataParser
             } else {
                 // number of bytes in a row
                 $rowlen = array_sum($wb);
-                // convert the stream into an array of integers
-                $sdata = unpack('C*', $xrefcrs[1][3][0]);
-                // split the rows
-                $ddata = array_chunk($sdata, $rowlen);
+                if (0 < $rowlen) {
+                    // convert the stream into an array of integers
+                    $sdata = unpack('C*', $xrefcrs[1][3][0]);
+                    // split the rows
+                    $ddata = array_chunk($sdata, $rowlen);
+                } else {
+                    // if the row length is zero, $ddata should be an empty array as well
+                    $ddata = [];
+                }
             }
 
             $sdata = [];
