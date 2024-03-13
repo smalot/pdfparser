@@ -142,6 +142,29 @@ class FilterHelperTest extends TestCase
     }
 
     /**
+     * Check if function runs into a "gzuncompress(): data error".
+     *
+     * @see https://github.com/smalot/pdfparser/issues/659
+     */
+    public function testDecodeFilterFlateDecodeGzUncompressDataErrorIssue659(): void
+    {
+        $data = '�s��8�S4z�2A�ٮ�������n�O��)q,�ӕ�ik�7l�B:��<Lgz?��C�/�UL�"XZ�@���ui~-�����٥~�&K��"&8_�E����A�f
+
+        ***@***.***�Kj��s����!3�Q�<�������#
+
+        ŀ>�����3�|�L';
+
+        $subjectUnderTest = new FilterHelper();
+
+        //                 ,--- currently throws exception: decodeFilterFlateDecode: invalid data
+        //                 ,
+        //                 ,
+        $subjectUnderTest->decodeFilter('FlateDecode', $data, 1000000);
+
+        // we expect an error with "gzuncompress(): data error" here
+    }
+
+    /**
      * How does function behave if an unknown filter name was given.
      */
     public function testDecodeFilterUnknownFilter(): void
