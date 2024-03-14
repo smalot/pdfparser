@@ -864,39 +864,39 @@ class RawDataParser
      */
     protected function getXrefData(string $pdfData, int $offset = 0, array $xref = []): array
     {
-        $startxrefPreg = preg_match(
-            '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
+        // If the $offset is currently pointed at whitespace, bump it
+        // forward until it isn't; affects loosely targetted offsets
+        // for the 'xref' keyword
+        // See: https://github.com/smalot/pdfparser/issues/673
+        $bumpOffset = $offset;
+        while (preg_match('/\s/', substr($pdfData, $bumpOffset, 1))) {
+            ++$bumpOffset;
+        }
+
+        // Find all startxref tables from this $offset forward
+        $startxrefPreg = preg_match_all(
+            '/(?<=[\r\n])startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
             $pdfData,
-            $matches,
-            \PREG_OFFSET_CAPTURE,
+            $startxrefMatches,
+            \PREG_SET_ORDER,
             $offset
         );
 
-        if (0 == $offset) {
-            // find last startxref
-            $pregResult = preg_match_all(
-                '/[\r\n]startxref[\s]*[\r\n]+([0-9]+)[\s]*[\r\n]+%%EOF/i',
-                $pdfData,
-                $matches,
-                \PREG_SET_ORDER,
-                $offset
-            );
-            if (0 == $pregResult) {
-                throw new \Exception('Unable to find startxref');
-            }
-            $matches = array_pop($matches);
-            $startxref = $matches[1];
-        } elseif (strpos($pdfData, 'xref', $offset) == $offset) {
-            // Already pointing at the xref table
-            $startxref = $offset;
-        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset)) {
-            // Cross-Reference Stream object
-            $startxref = $offset;
-        } elseif ($startxrefPreg) {
-            // startxref found
-            $startxref = $matches[1][0];
-        } else {
+        if (0 == $startxrefPreg) {
+            // No startxref tables were found
             throw new \Exception('Unable to find startxref');
+        } elseif (0 == $offset) {
+            // Use the last startxref in the document
+            $startxref = (int) $startxrefMatches[\count($startxrefMatches) - 1][1];
+        } elseif (strpos($pdfData, 'xref', $bumpOffset) == $bumpOffset) {
+            // Already pointing at the xref table
+            $startxref = $bumpOffset;
+        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $bumpOffset)) {
+            // Cross-Reference Stream object
+            $startxref = $bumpOffset;
+        } else {
+            // Use the next startxref from this $offset
+            $startxref = (int) $startxrefMatches[0][1];
         }
 
         if ($startxref > \strlen($pdfData)) {
