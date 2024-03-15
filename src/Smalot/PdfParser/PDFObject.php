@@ -214,6 +214,20 @@ class PDFObject
             return '';
         }
 
+        // Find all inline image content and replace them so they aren't
+        // affected by the next steps
+        $pdfInlineImages = [];
+        while (preg_match('/\sID\s(.+?)\sEI(?=\s|$)/', $content, $text)) {
+            $id = uniqid('IMAGE_', true);
+            $pdfInlineImages[$id] = $text[1];
+            $content = preg_replace(
+                '/'.preg_quote($text[0], '/').'/',
+                '^^^'.$id.'^^^',
+                $content,
+                1
+            );
+        }
+
         // Outside of (String) content in PDF document streams, all
         // text should conform to UTF-8. Test for binary content by
         // deleting everything after the first open-parenthesis ( which
@@ -317,6 +331,16 @@ class PDFObject
             );
 
             $content = str_replace('@@@'.$id.'@@@', $text, $content);
+        }
+
+        // Restore the original content of any inline images
+        $pdfInlineImages = array_reverse($pdfInlineImages, true);
+        foreach ($pdfInlineImages as $id => $image) {
+            $content = str_replace(
+                '^^^'.$id.'^^^',
+                "\r\nID\r\n".$image."\r\nEI\r\n",
+                $content
+            );
         }
 
         $content = trim(preg_replace(['/(\r\n){2,}/', '/\r\n +/'], "\r\n", $content));
