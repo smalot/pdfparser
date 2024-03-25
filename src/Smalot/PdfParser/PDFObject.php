@@ -224,6 +224,20 @@ class PDFObject
             return '';
         }
 
+        // Find all inline image content and replace them so they aren't
+        // affected by the next steps
+        $pdfInlineImages = [];
+        while (preg_match('/\sBI\s(.+?)\sID\s(.+?)\sEI(?=\s|$)/s', $content, $text)) {
+            $id = uniqid('IMAGE_', true);
+            $pdfInlineImages[$id] = [$text[1], $text[2]];
+            $content = preg_replace(
+                '/'.preg_quote($text[0], '/').'/',
+                '^^^'.$id.'^^^',
+                $content,
+                1
+            );
+        }
+
         // Find all strings () and replace them so they aren't affected
         // by the next steps
         $pdfstrings = [];
@@ -254,27 +268,13 @@ class PDFObject
             }
         }
 
-        // Find all inline image content and replace them so they aren't
-        // affected by the next steps
-        $pdfInlineImages = [];
-        while (preg_match('/\sBI(.+?)\sID\s(.+?)\sEI(?=\s|$)/', $content, $text)) {
-            $id = uniqid('IMAGE_', true);
-            $pdfInlineImages[$id] = [$text[1], $text[2]];
-            $content = preg_replace(
-                '/'.preg_quote($text[0], '/').'/',
-                '^^^'.$id.'^^^',
-                $content,
-                1
-            );
-        }
-
         // Remove all carriage returns and line-feeds from the document stream
         $content = str_replace(["\r", "\n"], ' ', trim($content));
 
         // Find all dictionary << >> commands and replace them so they
         // aren't affected by the next steps
         $dictstore = [];
-        while (preg_match('/(<<.*?>> *)(BDC|BMC|DP|MP)/', $content, $dicttext)) {
+        while (preg_match('/(<<.*?>> *)(BDC|BMC|DP|MP)/s', $content, $dicttext)) {
             $dictid = uniqid('DICT_', true);
             $dictstore[$dictid] = $dicttext[1];
             $content = preg_replace(
@@ -317,16 +317,6 @@ class PDFObject
             $content = str_replace('###'.$id.'###', $dict, $content);
         }
 
-        // Restore the original content of any inline images
-        $pdfInlineImages = array_reverse($pdfInlineImages, true);
-        foreach ($pdfInlineImages as $id => $image) {
-            $content = str_replace(
-                '^^^'.$id.'^^^',
-                "\r\nBI\r\n".$image[0]."\r\nID\r\n".$image[1]."\r\nEI\r\n",
-                $content
-            );
-        }
-
         // Restore the original string content
         $pdfstrings = array_reverse($pdfstrings, true);
         foreach ($pdfstrings as $id => $text) {
@@ -341,6 +331,16 @@ class PDFObject
             );
 
             $content = str_replace('@@@'.$id.'@@@', $text, $content);
+        }
+
+        // Restore the original content of any inline images
+        $pdfInlineImages = array_reverse($pdfInlineImages, true);
+        foreach ($pdfInlineImages as $id => $image) {
+            $content = str_replace(
+                '^^^'.$id.'^^^',
+                "\r\nBI\r\n".$image[0]."\r\nID\r\n".$image[1]."\r\nEI\r\n",
+                $content
+            );
         }
 
         $content = trim(preg_replace(['/(\r\n){2,}/', '/\r\n +/'], "\r\n", $content));

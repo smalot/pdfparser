@@ -284,12 +284,22 @@ q
 
         // Binary check is done before a regexp that causes an error
         $this->assertStringContainsString('Marko Nestorović PR', $pages[0]->getText());
+    }
 
-        // Check that inline image data does not corrupt the stream
-        // See: https://github.com/smalot/pdfparser/issues/691
+    /**
+     * Check that inline image data does not corrupt the stream
+     *
+     * @see: https://github.com/smalot/pdfparser/issues/691
+     */
+    public function testFormatContentInlineImages(): void
+    {
+        $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
+        $formatContent->setAccessible(true);
+
         $cleaned = $formatContent->invoke(
             $this->getPdfObjectInstance(new Document()),
-            'q 65.30 0 0 18.00 412 707 cm BI /W 544 /H 150 /BPC 1 /IM true /F [/A85 /Fl] ID Gb"0F_$L6!$j/a\$:ma&h\'JnJJ9S?O_EA-W+%D^ClCH=FP3s5M-gStQm\'5/hc`C?<Q)riWgtEe:Po0dY_-er6$jM@#?n`E+#(sa"0Gk3&K>CqL(^pV$_-er6Ik`"-1]Q ;~> EI Q /F002 10.00 Tf 0.00 Tw 0 g'
+            'q 65.30 0 0 18.00 412 707 cm BI /W 544 /H 150
+/BPC 1 /IM true /F [/A85 /Fl] ID Gb"0F_$L6!$j/a\$:ma&h\'JnJJ9S?O_EA-W+%D^ClCH=FP3s5M-gStQm\'5/hc`C?<Q)riWgtEe:Po0dY_-er6$jM@#?n`E+#(sa"0Gk3&K>CqL(^pV$_-er6Ik`"-1]Q ;~> EI Q /F002 10.00 Tf 0.00 Tw 0 g'
         );
 
         // PdfParser should not be fooled by Q's in inline image data;
