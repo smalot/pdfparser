@@ -227,15 +227,54 @@ class PDFObject
         // Find all inline image content and replace them so they aren't
         // affected by the next steps
         $pdfInlineImages = [];
-        while (preg_match('/\sBI\s(.+?)\sID\s(.+?)\sEI(?=\s|$)/s', $content, $text)) {
-            $id = uniqid('IMAGE_', true);
-            $pdfInlineImages[$id] = [$text[1], $text[2]];
-            $content = preg_replace(
-                '/'.preg_quote($text[0], '/').'/',
-                '^^^'.$id.'^^^',
-                $content,
-                1
-            );
+        $offsetBI = 0;
+        while (preg_match('/\sBI\s(\/.+?)\sID\s(.+?)\sEI(?=\s|$)/s', $content, $text, \PREG_OFFSET_CAPTURE, $offsetBI)) {
+            // Attempt to detemine if this instance of the 'BI' command
+            // actually occured within a (string) using the following
+            // steps:
+
+            // Remove any escaped parentheses from the alleged image
+            // characteristics data
+            $para = str_replace(['\\(', '\\)'], '', $text[1][0]);
+
+            // Remove all correctly ordered and balanced parentheses
+            // from (strings)
+            do {
+                $paraTest = $para;
+                $para = preg_replace('/\(([^)]*)\)/', '$1', $paraTest);
+            } while ($para != $paraTest);
+
+            $paraOpen = strpos($para, '(');
+            $paraClose = strpos($para, ')');
+
+            // If the remaining text contains a close parenthesis ')'
+            // AND it occurs before any open parenthesis, then we are
+            // almost certain to be inside a (string)
+            if (0 < $paraClose && (false === $paraOpen || $paraClose < $paraOpen)) {
+                // Bump the search offset forward and match again
+                $offsetBI = (int) $text[1][1];
+                continue;
+            }
+
+            // Double check that this is actually inline image data by
+            // parsing the alleged image characteristics as a dictionary
+            $dict = $this->parseDictionary('<<'.$text[1][0].'>>');
+
+            // Check if an image Width and Height are set in the dict
+            if ((isset($dict['W']) || isset($dict['Width']))
+                && (isset($dict['H']) || isset($dict['Height']))) {
+                $id = uniqid('IMAGE_', true);
+                $pdfInlineImages[$id] = [
+                    preg_replace(['/\r\n/', '/\r/', '/\n/'], ' ', $text[1][0]),
+                    preg_replace(['/\r\n/', '/\r/', '/\n/'], '', $text[2][0]),
+                ];
+                $content = preg_replace(
+                    '/'.preg_quote($text[0][0], '/').'/',
+                    '^^^'.$id.'^^^',
+                    $content,
+                    1
+                );
+            }
         }
 
         // Find all strings () and replace them so they aren't affected
@@ -338,7 +377,7 @@ class PDFObject
         foreach ($pdfInlineImages as $id => $image) {
             $content = str_replace(
                 '^^^'.$id.'^^^',
-                "\r\nBI\r\n".$image[0]."\r\nID\r\n".$image[1]."\r\nEI\r\n",
+                "\r\nBI\r\n".$image[0]." ID\r\n".$image[1]." EI\r\n",
                 $content
             );
         }
