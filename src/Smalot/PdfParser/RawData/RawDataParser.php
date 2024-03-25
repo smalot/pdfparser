@@ -891,7 +891,7 @@ class RawDataParser
         } elseif (strpos($pdfData, 'xref', $bumpOffset) == $bumpOffset) {
             // Already pointing at the xref table
             $startxref = $bumpOffset;
-        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $bumpOffset)) {
+        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, 0, $bumpOffset)) {
             // Cross-Reference Stream object
             $startxref = $bumpOffset;
         } else {
