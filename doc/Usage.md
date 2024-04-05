@@ -226,7 +226,8 @@ foreach ($pages as $page) {
     $details = $page->getDetails();
     // The page could haven't the Mediabox, then we get this information from document
     if (!isset($details['MediaBox'])) {
-        $details = reset($pdf->getObjectsByType('Pages'))->getHeader()->getDetails();
+        $pages = $pdf->getObjectsByType('Pages');
+        $details = reset($pages)->getHeader()->getDetails();
     }
     $mediaBox[] = [
         'width' => $details['MediaBox'][2],
