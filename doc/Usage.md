@@ -224,6 +224,11 @@ $pages = $pdf->getPages();
 $mediaBox = [];
 foreach ($pages as $page) {
     $details = $page->getDetails();
+    // If Mediabox is not set in details of current $page instance, get details from the header instead
+    if (!isset($details['MediaBox'])) {
+        $pages = $pdf->getObjectsByType('Pages');
+        $details = reset($pages)->getHeader()->getDetails();
+    }
     $mediaBox[] = [
         'width' => $details['MediaBox'][2],
         'height' => $details['MediaBox'][3]
