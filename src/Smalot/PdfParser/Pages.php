@@ -85,7 +85,7 @@ class Pages extends PDFObject
     /**
      * @return Font[]
      */
-    public function getFonts()
+    protected function getFonts()
     {
         if (null !== $this->fonts) {
             return $this->fonts;
