@@ -40,7 +40,7 @@ use Smalot\PdfParser\Element\ElementArray;
 class Pages extends PDFObject
 {
     /**
-     * @var Font[]
+     * @var array<\Smalot\PdfParser\Font>|null
      */
     protected $fonts;
 
@@ -63,7 +63,10 @@ class Pages extends PDFObject
         }
 
         // Prepare to apply the Pages' object's fonts to each page
-        $fonts = $this->getFonts();
+        if (false === \is_array($this->fonts)) {
+            $this->setupFonts();
+        }
+        $fontsAvailable = 0 < \count($this->fonts);
 
         $kids = $kidsElement->getContent();
         $pages = [];
@@ -72,8 +75,8 @@ class Pages extends PDFObject
             if ($kid instanceof self) {
                 $pages = array_merge($pages, $kid->getPages(true));
             } elseif ($kid instanceof Page) {
-                if (!empty($this->fonts)) {
-                    $kid->setFonts($fonts);
+                if ($fontsAvailable) {
+                    $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
             }
@@ -83,19 +86,18 @@ class Pages extends PDFObject
     }
 
     /**
-     * @return Font[]
+     * Gathers information about fonts and collects them in a list.
+     *
+     * @return void
      */
-    protected function getFonts()
+    protected function setupFonts()
     {
-        if (null !== $this->fonts) {
-            return $this->fonts;
-        }
-
         $resources = $this->get('Resources');
 
         if (method_exists($resources, 'has') && $resources->has('Font')) {
+            // no fonts available, therefore stop here
             if ($resources->get('Font') instanceof Element\ElementMissing) {
-                return [];
+                return;
             }
 
             if ($resources->get('Font') instanceof Header) {
@@ -118,9 +120,9 @@ class Pages extends PDFObject
                 }
             }
 
-            return $this->fonts = $table;
+            $this->fonts = $table;
+        } else {
+            $this->fonts = [];
         }
-
-        return [];
     }
 }
