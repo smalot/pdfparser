@@ -42,7 +42,7 @@ class Pages extends PDFObject
     /**
      * @var array<\Smalot\PdfParser\Font>|null
      */
-    protected $fonts;
+    protected $fonts = null;
 
     /**
      * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
