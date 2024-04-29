@@ -139,7 +139,7 @@ class PagesTest extends TestCase
         // Trigger setupFonts method in $pages
         $pages->getPages(true);
 
-        // Note: 
+        // Note:
         // $font1 and $font2 are intenionally not both of the same type.
         // One is a mock and the other one a real instance of Font.
         // This way we can simply check the return value of getFonts here.
