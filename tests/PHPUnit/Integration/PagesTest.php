@@ -45,6 +45,9 @@ use Smalot\PdfParser\Pages;
 class PagesDummy extends Pages
 {
     /**
+     * The purpose of this function is to bypass the tedious
+     * work to setup instances which lead to a valid $fonts variable.
+     *
      * @param array<\Smalot\PdfParser\Font> $fonts
      *
      * @return void
@@ -60,13 +63,20 @@ class PagesTest extends TestCase
     /**
      * If fonts are not stored in Page instances but in the Pages instance.
      *
+     *      Pages
+     *        |   `--- Font[]
+     *        |
+     *        |
+     *        `--+ Page1 (no fonts)
+     *        `--+ ...
+     *
      * @see https://github.com/smalot/pdfparser/pull/698
      */
     public function testPullRequest698NoFontsSet(): void
     {
         $document = $this->createMock(Document::class);
 
-        // create a Page mock and tell PHPUnit that its setFonts has to be called once
+        // Create a Page mock and tell PHPUnit that its setFonts has to be called once
         // otherwise an error is raised
         $page1 = $this->createMock(Page::class);
         $page1->expects($this->once())->method('setFonts');
@@ -80,15 +90,26 @@ class PagesTest extends TestCase
 
         $font1 = $this->createMock(Font::class);
 
+        // Preset fonts variable so we don't have to prepare all the
+        // prerequisites manually (like creating a Ressources instance
+        // with Font instances, see Pages::setupFonts())
         $pages = new PagesDummy($document, $header);
         $pages->setFonts([$font1]);
 
-        // we expect setFonts is called on $page1
+        // We expect setFonts is called on $page1, therefore no assertion here
         $pages->getPages(true);
     }
 
     /**
-     * Dont override fonts list in Page, if available.
+     * Dont override fonts list in a Page instance, if available.
+     *
+     *      Pages
+     *        |   `--- Font[]           <=== less important than fonts in Page instance
+     *        |
+     *        |
+     *        `--+ Page1
+     *                  `--- Font[]     <=== must be kept
+     *        `--+ ...
      *
      * @see https://github.com/smalot/pdfparser/pull/698
      */
