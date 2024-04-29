@@ -135,12 +135,14 @@ class PagesTest extends TestCase
         $pages = new PagesDummy($document, $header);
         $pages->setFonts([$font1]);
 
+        // Trigger setupFonts method in $pages
         $pages->getPages(true);
 
-        // note: $font1 and $font2 are intenionally not both of the same type.
-        // one is a mock and the other one a real instance of Font.
-        // this way we can simply check the return value of getFonts here.
-        // if both were one of the other, we had to use a different assertation approach.
+        // Note: 
+        // $font1 and $font2 are intenionally not both of the same type.
+        // One is a mock and the other one a real instance of Font.
+        // This way we can simply check the return value of getFonts here.
+        // If both were one of the other, we had to use a different assertation approach.
         $this->assertEquals([$font2], $page1->getFonts());
     }
 }
