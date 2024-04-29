@@ -56,6 +56,8 @@ class Page extends PDFObject
 
     /**
      * @param array<\Smalot\PdfParser\Font> $fonts
+     *
+     * @internal
      */
     public function setFonts($fonts)
     {
