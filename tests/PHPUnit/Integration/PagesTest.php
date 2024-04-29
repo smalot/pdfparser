@@ -64,10 +64,11 @@ class PagesTest extends TestCase
      * If fonts are not stored in Page instances but in the Pages instance.
      *
      *      Pages
-     *        |   `--- Font[]
+     *        |   `--- fonts = Font[]           <=== will be used to override fonts in Page1 ...
      *        |
      *        |
-     *        `--+ Page1 (no fonts)
+     *        `--+ Page1
+     *        |         `--- fonts = null       <=== Will be overwritten with the content of Pages.fonts
      *        `--+ ...
      *
      * @see https://github.com/smalot/pdfparser/pull/698
@@ -104,11 +105,11 @@ class PagesTest extends TestCase
      * Dont override fonts list in a Page instance, if available.
      *
      *      Pages
-     *        |   `--- Font[]           <=== less important than fonts in Page instance
+     *        |   `--- fonts = Font[]           <=== Has to be ignored because fonts in Page1 is set
      *        |
      *        |
      *        `--+ Page1
-     *                  `--- Font[]     <=== must be kept
+     *        |         `--- fonts = Font[]     <=== must not be overwritten
      *        `--+ ...
      *
      * @see https://github.com/smalot/pdfparser/pull/698
