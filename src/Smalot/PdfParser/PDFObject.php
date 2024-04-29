@@ -274,6 +274,12 @@ class PDFObject
                     $content,
                     1
                 );
+            } else {
+                // If there was no valid dictionary, or a height and width
+                // weren't specified, then we don't know what this is, so
+                // just leave it alone; bump the search offset forward and
+                // match again
+                $offsetBI = (int) $text[1][1];
             }
         }
 
