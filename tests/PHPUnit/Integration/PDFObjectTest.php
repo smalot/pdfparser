@@ -284,6 +284,13 @@ q
 
         // Binary check is done before a regexp that causes an error
         $this->assertStringContainsString('Marko Nestorović PR', $pages[0]->getText());
+
+        // mb_check_encoding(..., 'UTF-8') returns true here,
+        // necessitating a test for UTF-8 that's more strict
+        $content = hex2bin('0101010101010101');
+        $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
+
+        $this->assertEquals('', $cleaned);
     }
 
     public function testGetSectionsText(): void
