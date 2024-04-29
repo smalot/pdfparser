@@ -45,7 +45,8 @@ class Pages extends PDFObject
     protected $fonts;
 
     /**
-     * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
+     * @todo Objects other than Pages or Page might need to be treated specifically
+     *       in order to get Page objects out of them.
      *
      * @see https://github.com/smalot/pdfparser/issues/331
      */
@@ -89,6 +90,8 @@ class Pages extends PDFObject
      * Gathers information about fonts and collects them in a list.
      *
      * @return void
+     *
+     * @internal
      */
     protected function setupFonts()
     {
