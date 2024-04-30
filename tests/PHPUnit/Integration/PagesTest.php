@@ -118,8 +118,8 @@ class PagesTest extends TestCase
     {
         $document = $this->createMock(Document::class);
 
-        // create a Page mock and tell PHPUnit that its setFonts has to be called once
-        // otherwise an error is raised
+        // Setup an empty Page instance and insert a Font instance.
+        // We wanna see later on, if $font2 is overwritten by $font1.
         $font2 = new Font($document);
         $page1 = new Page($document);
         $page1->setFonts([$font2]);
