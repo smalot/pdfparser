@@ -146,4 +146,43 @@ class PagesTest extends TestCase
         // If both were one of the other, we had to use a different assertation approach.
         $this->assertEquals([$font2], $page1->getFonts());
     }
+
+    /**
+     * In this example a Document instance is created, which has one Pages instance with a few Font instances.
+     * With the new functionality, related Font instances are passed down to related Page instances.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/698
+     */
+    public function testPullRequest698WithoutUsageOfSetFonts(): void
+    {
+        $path = $this->rootDir.'/samples/grouped-by-generator/RichDocument_Generated_by_Libreoffice-6.4_PDF-v1.4.pdf';
+        $document = (new Parser())->parseFile($path);
+
+        // get Pages instance from generated Document instance
+        $objectsOfTypePages = $document->getObjectsByType('Pages');
+        $this->assertEquals(1, count($objectsOfTypePages));
+
+        $pagesInstance = array_values($objectsOfTypePages)[0];
+
+        // collect Font instance(s) of Page instances
+        $fonts = [];
+        foreach ($pagesInstance->getPages() as $page) {
+            foreach ($page->getFonts() as $font) {
+                $fonts[$font->getName()] = $font;
+            }
+        }
+
+        // collect Font instance(s) of Pages instance itself
+        $list = $pagesInstance->get('Resources')->get('Font')->getHeader()->getElements();
+        $fontsToCompareAgainst = [];
+        foreach ($list as $font) {
+            $fontsToCompareAgainst[$font->getName()] = $font;
+        }
+
+        // check if font names are equal
+        $this->assertEquals(
+            array_keys($fonts),
+            array_keys($fontsToCompareAgainst),
+        );
+    }
 }
