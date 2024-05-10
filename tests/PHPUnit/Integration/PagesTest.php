@@ -182,7 +182,7 @@ class PagesTest extends TestCase
         // check if font names are equal
         $this->assertEquals(
             array_keys($fonts),
-            array_keys($fontsToCompareAgainst),
+            array_keys($fontsToCompareAgainst)
         );
     }
 }
