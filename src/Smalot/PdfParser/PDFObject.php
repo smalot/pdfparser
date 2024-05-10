@@ -233,31 +233,32 @@ class PDFObject
             // actually occured within a (string) using the following
             // steps:
 
-            // Remove any escaped parentheses from the alleged image
-            // characteristics data
+            // Step 1: Remove any escaped parentheses from the alleged
+            // image characteristics data
             $para = str_replace(['\\(', '\\)'], '', $text[1][0]);
 
-            // Remove all correctly ordered and balanced parentheses
-            // from (strings)
+            // Step 2: Remove all correctly ordered and balanced
+            // parentheses from (strings)
             do {
                 $paraTest = $para;
-                $para = preg_replace('/\(([^)]*)\)/', '$1', $paraTest);
+                $para = preg_replace('/\(([^()]*)\)/', '$1', $paraTest);
             } while ($para != $paraTest);
 
             $paraOpen = strpos($para, '(');
             $paraClose = strpos($para, ')');
 
-            // If the remaining text contains a close parenthesis ')'
-            // AND it occurs before any open parenthesis, then we are
-            // almost certain to be inside a (string)
+            // Check: If the remaining text contains a close parenthesis
+            // ')' AND it occurs before any open parenthesis, then we
+            // are almost certain to be inside a (string)
             if (0 < $paraClose && (false === $paraOpen || $paraClose < $paraOpen)) {
                 // Bump the search offset forward and match again
                 $offsetBI = (int) $text[1][1];
                 continue;
             }
 
-            // Double check that this is actually inline image data by
-            // parsing the alleged image characteristics as a dictionary
+            // Step 3: Double check that this is actually inline image
+            // data by parsing the alleged image characteristics as a
+            // dictionary
             $dict = $this->parseDictionary('<<'.$text[1][0].'>>');
 
             // Check if an image Width and Height are set in the dict
