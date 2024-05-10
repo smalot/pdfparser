@@ -160,7 +160,7 @@ class PagesTest extends TestCase
 
         // get Pages instance from generated Document instance
         $objectsOfTypePages = $document->getObjectsByType('Pages');
-        $this->assertEquals(1, count($objectsOfTypePages));
+        $this->assertEquals(1, \count($objectsOfTypePages));
 
         $pagesInstance = array_values($objectsOfTypePages)[0];
 
