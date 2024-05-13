@@ -291,6 +291,14 @@ q
         $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
 
         $this->assertEquals('', $cleaned);
+
+        // Check that escaped slashes and parentheses are accounted for;
+        // formatContent would emit a PHP Warning for "regular expression
+        // is too large" here without fix for Issue #709
+        $content = '(String \\\\\\(string)Tj '.str_repeat('(Test)Tj ', 4500);
+        $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
+
+        $this->assertStringContainsString('(String \\\\\\(string)Tj'."\r\n", $cleaned);
     }
 
     /**
