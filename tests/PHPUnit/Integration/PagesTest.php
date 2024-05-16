@@ -38,7 +38,6 @@ use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
-use Smalot\PdfParser\Parser;
 
 /**
  * @internal only for test purposes
@@ -61,129 +60,47 @@ class PagesDummy extends Pages
 
 class PagesTest extends TestCase
 {
-    /**
-     * If fonts are not stored in Page instances but in the Pages instance.
-     *
-     *      Pages
-     *        |   `--- fonts = Font[]           <=== will be used to override fonts in Page1 ...
-     *        |
-     *        |
-     *        `--+ Page1
-     *        |         `--- fonts = null       <=== Will be overwritten with the content of Pages.fonts
-     *        `--+ ...
-     *
-     * @see https://github.com/smalot/pdfparser/pull/698
-     */
-    public function testPullRequest698NoFontsSet(): void
+    public function testFontsArePassedFromPagesToPage(): void
     {
+        // Create mock Document, Font and Page objects
         $document = $this->createMock(Document::class);
+        $font1 = new Font($document);
+        $page = new Page($document);
 
-        // Create a Page mock and tell PHPUnit that its setFonts has to be called once
-        // otherwise an error is raised
-        $page1 = $this->createMock(Page::class);
-        $page1->expects($this->once())->method('setFonts');
-
-        // setup header
+        // Create a Header object that indicates $page is a child
         $header = new Header([
             'Kids' => new ElementArray([
-                $page1,
+                $page,
             ]),
         ], $document);
 
-        $font1 = $this->createMock(Font::class);
-
-        // Preset fonts variable so we don't have to prepare all the
-        // prerequisites manually (like creating a Ressources instance
-        // with Font instances, see Pages::setupFonts())
+        // Use this header to create a mock Pages object
         $pages = new PagesDummy($document, $header);
-        $pages->setFonts([$font1]);
 
-        // We expect setFonts is called on $page1, therefore no assertion here
-        $pages->getPages(true);
-    }
-
-    /**
-     * Dont override fonts list in a Page instance, if available.
-     *
-     *      Pages
-     *        |   `--- fonts = Font[]           <=== Has to be ignored because fonts in Page1 is set
-     *        |
-     *        |
-     *        `--+ Page1
-     *        |         `--- fonts = Font[]     <=== must not be overwritten
-     *        `--+ ...
-     *
-     * @see https://github.com/smalot/pdfparser/pull/698
-     */
-    public function testPullRequest698DontOverride(): void
-    {
-        $document = $this->createMock(Document::class);
-
-        // Setup an empty Page instance and insert a Font instance.
-        // We wanna see later on, if $font2 is overwritten by $font1.
-        $font2 = new Font($document);
-        $page1 = new Page($document);
-        $page1->setFonts([$font2]);
-
-        // setup header
-        $header = new Header([
-            'Kids' => new ElementArray([
-                $page1,
-            ]),
-        ], $document);
-
-        $font1 = $this->createMock(Font::class);
-
-        $pages = new PagesDummy($document, $header);
+        // Apply $font1 as a Font object to this Pages object;
+        // setFonts is used here as part of PagesDummy, only to access
+        // the protected Pages::fonts variable; it is not a method
+        // available in production
         $pages->setFonts([$font1]);
 
         // Trigger setupFonts method in $pages
         $pages->getPages(true);
 
-        // Note:
-        // $font1 and $font2 are intenionally not both of the same type.
-        // One is a mock and the other one a real instance of Font.
-        // This way we can simply check the return value of getFonts here.
-        // If both were one of the other, we had to use a different assertation approach.
-        $this->assertEquals([$font2], $page1->getFonts());
-    }
+        // Since the $page object font list is empty, $font1 from Pages
+        // object must be passed to the Page object
+        $this->assertEquals([$font1], $page->getFonts());
 
-    /**
-     * In this example a Document instance is created, which has one Pages instance with a few Font instances.
-     * With the new functionality, related Font instances are passed down to related Page instances.
-     *
-     * @see https://github.com/smalot/pdfparser/pull/698
-     */
-    public function testPullRequest698WithoutUsageOfSetFonts(): void
-    {
-        $path = $this->rootDir.'/samples/grouped-by-generator/RichDocument_Generated_by_Libreoffice-6.4_PDF-v1.4.pdf';
-        $document = (new Parser())->parseFile($path);
+        // Create a second $font2 using a different method
+        $font2 = $this->createMock(Font::class);
 
-        // get Pages instance from generated Document instance
-        $objectsOfTypePages = $document->getObjectsByType('Pages');
-        $this->assertEquals(1, \count($objectsOfTypePages));
+        // Update the fonts in $pages
+        $pages->setFonts([$font1, $font2]);
 
-        $pagesInstance = array_values($objectsOfTypePages)[0];
+        // Trigger setupFonts method in $pages
+        $pages->getPages(true);
 
-        // collect Font instance(s) of Page instances
-        $fonts = [];
-        foreach ($pagesInstance->getPages() as $page) {
-            foreach ($page->getFonts() as $font) {
-                $fonts[$font->getName()] = $font;
-            }
-        }
-
-        // collect Font instance(s) of Pages instance itself
-        $list = $pagesInstance->get('Resources')->get('Font')->getHeader()->getElements();
-        $fontsToCompareAgainst = [];
-        foreach ($list as $font) {
-            $fontsToCompareAgainst[$font->getName()] = $font;
-        }
-
-        // check if font names are equal
-        $this->assertEquals(
-            array_keys($fonts),
-            array_keys($fontsToCompareAgainst)
-        );
+        // Now that $page already has a font, updates from $pages
+        // should not overwrite it
+        $this->assertEquals([$font1], $page->getFonts());
     }
 }
