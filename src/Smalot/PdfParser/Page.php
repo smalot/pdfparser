@@ -55,6 +55,18 @@ class Page extends PDFObject
     protected $dataTm;
 
     /**
+     * @param array<\Smalot\PdfParser\Font> $fonts
+     *
+     * @internal
+     */
+    public function setFonts($fonts)
+    {
+        if (empty($this->fonts)) {
+            $this->fonts = $fonts;
+        }
+    }
+
+    /**
      * @return Font[]
      */
     public function getFonts()
