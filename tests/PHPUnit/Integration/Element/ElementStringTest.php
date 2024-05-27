@@ -131,6 +131,9 @@ class ElementStringTest extends TestCase
         $element = ElementString::parse('(Gutter\\ console\\ assembly)', null, $offset);
         $this->assertEquals('Gutter console assembly', $element->getContent());
         $this->assertEquals(27, $offset);
+
+        $element = ElementString::parse('(())');
+        $this->assertEquals('()', $element->getContent());
     }
 
     public function testGetContent(): void

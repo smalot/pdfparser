@@ -449,8 +449,10 @@ class ParserTest extends TestCase
         $this->fixture = new Parser();
         $document = $this->fixture->parseFile($filename);
         $result = (string) ($document->getObjectsByType('Sig')['4_0'] ?? null)?->getHeader()->get('Contents');
-
         $this->assertEquals('()\\', $result);
+        $details = $document->getDetails();
+        $this->assertEquals('x(y)', $details['Producer'] ?? null);
+        $this->assertEquals('a(b)', $details['Creator'] ?? null);
     }
 }
 
