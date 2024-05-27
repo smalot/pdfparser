@@ -438,6 +438,20 @@ class ParserTest extends TestCase
 
         // without the configuration option set, an exception would be thrown.
     }
+
+    /**
+     * Tests special chars encoded as hex.
+     */
+    public function testSpecialCharsEncodedAsHex(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue715.pdf';
+
+        $this->fixture = new Parser();
+        $document = $this->fixture->parseFile($filename);
+        $result = (string) ($document->getObjectsByType('Sig')['4_0'] ?? null)?->getHeader()->get('Contents');
+
+        $this->assertEquals('()\\', $result);
+    }
 }
 
 class ParserSub extends Parser

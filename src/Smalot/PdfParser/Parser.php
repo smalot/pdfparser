@@ -296,7 +296,7 @@ class Parser
                 return ElementString::parse('('.$value.')', $document);
 
             case '<':
-                return $this->parseHeaderElement('(', ElementHexa::decode($value), $document);
+                return ElementHexa::parse('<'.$value.'>', $document);
 
             case '/':
                 return ElementName::parse('/'.$value, $document);

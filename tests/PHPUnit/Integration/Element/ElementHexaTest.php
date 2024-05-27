@@ -130,5 +130,9 @@ class ElementHexaTest extends TestCase
 007000610  073007100750061002c0020> ');
 
         $this->assertEquals('pasqua, primavera, resurrezione, festa cristiana, gesù, uova di cioccolata, coniglietti, pulcini, pasquale, campane, dina rebucci, uova di pasqua, ', $element);
+
+        $testString = '()\\';
+        $element = ElementHexa::parse('<'.bin2hex($testString).'>', null, $offset);
+        $this->assertEquals($testString, (string) $element);
     }
 }
