@@ -59,25 +59,71 @@ class ElementString extends Element
         if (preg_match('/^\s*\((?P<name>.*)/s', $content, $match)) {
             $name = $match['name'];
 
-            // Find next ')' not escaped.
-            $cur_start_text = $start_search_end = 0;
-            while (false !== ($cur_start_pos = strpos($name, ')', $start_search_end))) {
-                $cur_extract = substr($name, $cur_start_text, $cur_start_pos - $cur_start_text);
-                preg_match('/(?P<escape>[\\\]*)$/s', $cur_extract, $match);
-                if (!(\strlen($match['escape']) % 2)) {
-                    break;
+            $delimiterCount = 0;
+            $position = 0;
+            $processedName = '';
+            do {
+                $char = substr($name, 0, 1);
+                $name = substr($name, 1);
+                ++$position;
+                switch ($char) {
+                    // matched delimiters should be treated as part of string
+                    case '(':
+                        $processedName .= $char;
+                        ++$delimiterCount;
+                        break;
+                    case ')':
+                        if (0 === $delimiterCount) {
+                            $name = substr($name, 1);
+                            break 2;
+                        }
+                        $processedName .= $char;
+                        --$delimiterCount;
+                        break;
+                        // escaped chars
+                    case '\\':
+                        $nextChar = substr($name, 0, 1);
+                        switch ($nextChar) {
+                            // end-of-line markers (CR, LF, CRLF) should be ignored
+                            case "\r":
+                            case "\n":
+                                preg_match('/^\\r?\\n?/', $name, $matches);
+                                $name = substr($name, \strlen($matches[0]));
+                                $position += \strlen($matches[0]);
+                                break;
+                                // process LF, CR, HT, BS, FF
+                            case 'n':
+                            case 't':
+                            case 'r':
+                            case 'b':
+                            case 'f':
+                                $processedName .= stripcslashes('\\'.$nextChar);
+                                $name = substr($name, 1);
+                                ++$position;
+                                break;
+                                // decode escaped parentheses and backslash
+                            case '(':
+                            case ')':
+                            case '\\':
+                            case ' ': // TODO: this should probably be removed - kept for compatibility
+                                $processedName .= $nextChar;
+                                $name = substr($name, 1);
+                                ++$position;
+                                break;
+                                // TODO: process octal encoding (but it is also processed later)
+                                // keep backslash in other cases
+                            default:
+                                $processedName .= $char;
+                        }
+                        break;
+                    default:
+                        $processedName .= $char;
                 }
-                $start_search_end = $cur_start_pos + 1;
-            }
+            } while (\strlen($name));
 
-            // Extract string.
-            $name = substr($name, 0, (int) $cur_start_pos);
-            $offset += strpos($content, '(') + $cur_start_pos + 2; // 2 for '(' and ')'
-            $name = str_replace(
-                ['\\\\', '\\ ', '\\/', '\(', '\)', '\n', '\r', '\t'],
-                ['\\',   ' ',   '/',   '(',  ')',  "\n", "\r", "\t"],
-                $name
-            );
+            $offset += strpos($content, '(') + 1 + $position;
+
+            $name = $processedName;
 
             // Decode string.
             $name = Font::decodeOctal($name);
