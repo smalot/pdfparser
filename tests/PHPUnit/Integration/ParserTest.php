@@ -438,6 +438,30 @@ class ParserTest extends TestCase
 
         // without the configuration option set, an exception would be thrown.
     }
+
+    /**
+     * Test case to demonstrate reported issue #703. Expected error message is:
+     *
+     *    Undefined array key 0 in /.../src/Smalot/PdfParser/Page.php on line 284
+     *
+     * @see https://github.com/smalot/pdfparser/issues/703
+     */
+    public function testIssue703(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue703.pdf';
+
+        echo (new Parser())->parseContent(file_get_contents($filename));
+
+        // Running this test results in a different error though:
+        // 1) PHPUnitTests\Integration\ParserTest::testIssue703
+        // Exception: Invalid object reference for $obj.
+        // /var/www/html/src/Smalot/PdfParser/RawData/RawDataParser.php:536
+        // /var/www/html/src/Smalot/PdfParser/RawData/RawDataParser.php:242
+        // /var/www/html/src/Smalot/PdfParser/RawData/RawDataParser.php:918
+        // /var/www/html/src/Smalot/PdfParser/RawData/RawDataParser.php:952
+        // /var/www/html/src/Smalot/PdfParser/Parser.php:103
+        // /var/www/html/tests/PHPUnit/Integration/ParserTest.php:446
+    }
 }
 
 class ParserSub extends Parser
