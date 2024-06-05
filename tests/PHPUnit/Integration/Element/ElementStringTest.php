@@ -140,6 +140,29 @@ class ElementStringTest extends TestCase
     {
         $element = ElementString::parse('(())');
         $this->assertEquals('()', $element->getContent());
+
+        // source: https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf
+        // page 54
+        $string = '(Strings may contain balanced parentheses ( ) and
+special characters (*!&}^% and so on).)';
+        $element = ElementString::parse($string);
+        $this->assertEquals('Strings may contain balanced parentheses ( ) and
+special characters (*!&}^% and so on).', $element->getContent());
+
+        // source: https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf
+        // page 55
+        $string = '( This string has an end−of−line at the end of it.
+)';
+        $element = ElementString::parse($string);
+        $this->assertEquals(' This string has an end−of−line at the end of it.'.\PHP_EOL, $element->getContent());
+
+        // source: https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf
+        // page 55
+        $string = '( These \
+two strings \
+are the same.)';
+        $element = ElementString::parse($string);
+        $this->assertEquals(' These two strings are the same.', $element->getContent());
     }
 
     public function testGetContent(): void
