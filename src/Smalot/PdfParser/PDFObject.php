@@ -251,9 +251,9 @@ class PDFObject
             // actually occured within a (string) using the following
             // steps:
 
-            // Step 1: Remove any escaped parentheses from the alleged
-            // image characteristics data
-            $para = str_replace(['\\(', '\\)'], '', $text[1][0]);
+            // Step 1: Remove any escaped slashes and parentheses from
+            // the alleged image characteristics data
+            $para = str_replace(['\\\\', '\\(', '\\)'], '', $text[1][0]);
 
             // Step 2: Remove all correctly ordered and balanced
             // parentheses from (strings)
@@ -306,13 +306,16 @@ class PDFObject
         // by the next steps
         $pdfstrings = [];
         $attempt = '(';
-        while (preg_match('/'.preg_quote($attempt, '/').'.*?(?<![^\\\\]\\\\)\)/s', $content, $text)) {
+        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text)) {
+            // Remove all escaped slashes and parentheses from the target text
+            $para = str_replace(['\\\\', '\\(', '\\)'], '', $text[0]);
+
             // PDF strings can contain unescaped parentheses as long as
             // they're balanced, so check for balanced parentheses
-            $left = preg_match_all('/(?<![^\\\\]\\\\)\(/', $text[0]);
-            $right = preg_match_all('/(?<![^\\\\]\\\\)\)/', $text[0]);
+            $left = preg_match_all('/\(/', $para);
+            $right = preg_match_all('/\)/', $para);
 
-            if ($left == $right) {
+            if (')' == $para[-1] && $left == $right) {
                 // Replace the string with a unique placeholder
                 $id = uniqid('STRING_', true);
                 $pdfstrings[$id] = $text[0];

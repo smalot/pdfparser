@@ -294,6 +294,24 @@ q
     }
 
     /**
+     * Check that escaped slashes and parentheses are accounted for,
+     * formatContent would emit a PHP Warning for "regular expression
+     * is too large" here without fix for issue #709
+     *
+     * @see https://github.com/smalot/pdfparser/issues/709
+     */
+    public function testFormatContentIssue709()
+    {
+        $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
+        $formatContent->setAccessible(true);
+
+        $content = '(String \\\\\\(string)Tj '.str_repeat('(Test)Tj ', 4500);
+        $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
+
+        $this->assertStringContainsString('(String \\\\\\(string)Tj'."\r\n", $cleaned);
+    }
+
+    /**
      * Check that inline image data does not corrupt the stream
      *
      * @see: https://github.com/smalot/pdfparser/issues/691
