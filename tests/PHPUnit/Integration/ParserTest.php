@@ -442,7 +442,7 @@ class ParserTest extends TestCase
     /**
      * Test case to demonstrate reported issue #703. Expected error message is:
      *
-     *    Undefined array key 0 in /.../src/Smalot/PdfParser/Page.php on line 284
+     *    Undefined array key 0 in /src/Smalot/PdfParser/Page.php on line 284
      *
      * @see https://github.com/smalot/pdfparser/issues/703
      */
