@@ -131,7 +131,13 @@ class ElementStringTest extends TestCase
         $element = ElementString::parse('(Gutter\\ console\\ assembly)', null, $offset);
         $this->assertEquals('Gutter console assembly', $element->getContent());
         $this->assertEquals(27, $offset);
+    }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/issues/715
+     */
+    public function testParseIssue715(): void
+    {
         $element = ElementString::parse('(())');
         $this->assertEquals('()', $element->getContent());
     }

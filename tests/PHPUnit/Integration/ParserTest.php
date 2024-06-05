@@ -441,19 +441,20 @@ class ParserTest extends TestCase
 
     /**
      * Tests special chars encoded as hex.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/715
      */
-    public function testSpecialCharsEncodedAsHex(): void
+    public function testIssue715SpecialCharsEncodedAsHex(): void
     {
         $filename = $this->rootDir.'/samples/bugs/Issue715.pdf';
 
         $this->fixture = new Parser();
         $document = $this->fixture->parseFile($filename);
         $sigObject = $document->getObjectsByType('Sig');
-        $result = null;
-        if (isset($sigObject['4_0'])) {
-            $result = (string) $sigObject['4_0']->getHeader()->get('Contents');
-        }
-        $this->assertEquals('()\\', $result);
+
+        $this->assertTrue(isset($sigObject['4_0']));
+        $this->assertEquals('()\\', (string) $sigObject['4_0']->getHeader()->get('Contents'));
+
         $details = $document->getDetails();
         $this->assertEquals('x(y)', $details['Producer'] ?? null);
         $this->assertEquals('a(b)', $details['Creator'] ?? null);
