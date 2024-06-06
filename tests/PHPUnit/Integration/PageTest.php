@@ -256,9 +256,9 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $dataCommands = $page->getDataCommands();
-        $this->assertCount(176, $dataCommands);
+        $this->assertCount(185, $dataCommands);
 
-        $tmItem = $dataCommands[2];
+        $tmItem = $dataCommands[6];
         $this->assertCount(3, $tmItem);
         $this->assertArrayHasKey('t', $tmItem);
         $this->assertArrayHasKey('o', $tmItem);
@@ -267,7 +267,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Tm', $tmItem['o']);
         $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
 
-        $tjItem = $dataCommands[3];
+        $tjItem = $dataCommands[7];
         $this->assertCount(3, $tjItem);
         $this->assertArrayHasKey('t', $tjItem);
         $this->assertArrayHasKey('o', $tjItem);

@@ -525,14 +525,17 @@ class Page extends PDFObject
                 case 'BT':
                     $extractedData[] = $command;
                     break;
-
                     /*
-                     * ET
-                     * End a text object, discarding the text matrix
+                     * cm
+                     * Concatenation Matrix that will transform all following Tm
                      */
                 case 'cm':
                     $extractedData[] = $command;
                     break;
+                    /*
+                     * ET
+                     * End a text object, discarding the text matrix
+                     */
                 case 'ET':
                     $extractedData[] = $command;
                     break;
@@ -643,6 +646,18 @@ class Page extends PDFObject
                 case 'TJ':
                     $extractedData[] = $command;
                     break;
+                    /*
+                     * q
+                     * Save current graphics state to stack
+                     */
+                case 'q':
+                    /*
+                     * Q
+                     * Load last saved graphics state from stack
+                     */
+                case 'Q':
+                    $extractedData[] = $command;
+                    break;
                 default:
             }
         }
@@ -675,7 +690,7 @@ class Page extends PDFObject
          */
         $defaultTm = ['1', '0', '0', '1', '0', '0'];
         $concatTm = ['1', '0', '0', '1', '0', '0'];
-
+        $graphicsStatesStack = [];
         /*
          *  Set the text leading used by T*, ' and " operators
          */
@@ -734,13 +749,22 @@ class Page extends PDFObject
                     $Ty = 0;
                     break;
 
+                case 'cm':
+                    $newConcatTm = (array) explode(' ', $command['c']);
+                    $TempMatrix = [];
+                    // Multiply with previous concatTm
+                    $TempMatrix[0] = (float) $concatTm[0] * (float) $newConcatTm[0] + (float) $concatTm[1] * (float) $newConcatTm[2];
+                    $TempMatrix[1] = (float) $concatTm[0] * (float) $newConcatTm[1] + (float) $concatTm[1] * (float) $newConcatTm[3];
+                    $TempMatrix[2] = (float) $concatTm[2] * (float) $newConcatTm[0] + (float) $concatTm[3] * (float) $newConcatTm[2];
+                    $TempMatrix[3] = (float) $concatTm[2] * (float) $newConcatTm[1] + (float) $concatTm[3] * (float) $newConcatTm[3];
+                    $TempMatrix[4] = (float) $concatTm[4] * (float) $newConcatTm[0] + (float) $concatTm[5] * (float) $newConcatTm[2] + (float) $newConcatTm[4];
+                    $TempMatrix[5] = (float) $concatTm[4] * (float) $newConcatTm[1] + (float) $concatTm[5] * (float) $newConcatTm[3] + (float) $newConcatTm[5];
+                    $concatTm = $TempMatrix;
+                    break;
                     /*
                      * ET
                      * End a text object
                      */
-                case 'cm':
-                    $concatTm = explode(' ', $command['c']);
-                    break;
                 case 'ET':
                     break;
 
@@ -792,14 +816,14 @@ class Page extends PDFObject
                      * [1 0 0 1 0 0]
                      */
                 case 'Tm':
-                    $Tm = explode(' ', $command['c']);    
+                    $Tm = explode(' ', $command['c']);
                     $TempMatrix = [];
-                    $TempMatrix[0] = $Tm[0] * $concatTm[0] + $Tm[1] * $concatTm[2];
-                    $TempMatrix[1] = $Tm[0] * $concatTm[1] + $Tm[1] * $concatTm[3];
-                    $TempMatrix[2] = $Tm[2] * $concatTm[0] + $Tm[3] * $concatTm[2];
-                    $TempMatrix[3] = $Tm[2] * $concatTm[1] + $Tm[3] * $concatTm[3];
-                    $TempMatrix[4] = $Tm[4] * $concatTm[0] + $Tm[5] * $concatTm[2] + $concatTm[4];
-                    $TempMatrix[5] = $Tm[4] * $concatTm[1] + $Tm[5] * $concatTm[3] + $concatTm[5];
+                    $TempMatrix[0] = round((float) $Tm[0] * (float) $concatTm[0] + (float) $Tm[1] * (float) $concatTm[2], 6);
+                    $TempMatrix[1] = round((float) $Tm[0] * (float) $concatTm[1] + (float) $Tm[1] * (float) $concatTm[3], 6);
+                    $TempMatrix[2] = round((float) $Tm[2] * (float) $concatTm[0] + (float) $Tm[3] * (float) $concatTm[2], 6);
+                    $TempMatrix[3] = round((float) $Tm[2] * (float) $concatTm[1] + (float) $Tm[3] * (float) $concatTm[3], 6);
+                    $TempMatrix[4] = round((float) $Tm[4] * (float) $concatTm[0] + (float) $Tm[5] * (float) $concatTm[2] + (float) $concatTm[4], 2);
+                    $TempMatrix[5] = round((float) $Tm[4] * (float) $concatTm[1] + (float) $Tm[5] * (float) $concatTm[3] + (float) $concatTm[5], 2);
                     $Tm = $TempMatrix;
                     $Tx = (float) $Tm[$x];
                     $Ty = (float) $Tm[$y];
@@ -894,6 +918,20 @@ class Page extends PDFObject
                         $data[] = $fontSize;
                     }
                     $extractedData[] = $data;
+                    break;
+                    /*
+                     * q
+                     * Save current graphics state to stack
+                     */
+                case 'q':
+                    $graphicsStatesStack[] = $concatTm;
+                    break;
+                    /*
+                     * Q
+                     * Load last saved graphics state from stack
+                     */
+                case 'Q':
+                    $concatTm = array_pop($graphicsStatesStack);
                     break;
                 default:
             }
