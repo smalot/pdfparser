@@ -530,6 +530,9 @@ class Page extends PDFObject
                      * ET
                      * End a text object, discarding the text matrix
                      */
+                case 'cm':
+                    $extractedData[] = $command;
+                    break;
                 case 'ET':
                     $extractedData[] = $command;
                     break;
@@ -671,6 +674,7 @@ class Page extends PDFObject
          * At the beginning of a text object Tm is the identity matrix
          */
         $defaultTm = ['1', '0', '0', '1', '0', '0'];
+        $concatTm = ['1', '0', '0', '1', '0', '0'];
 
         /*
          *  Set the text leading used by T*, ' and " operators
@@ -734,6 +738,9 @@ class Page extends PDFObject
                      * ET
                      * End a text object
                      */
+                case 'cm':
+                    $concatTm = explode(' ', $command['c']);
+                    break;
                 case 'ET':
                     break;
 
@@ -785,7 +792,15 @@ class Page extends PDFObject
                      * [1 0 0 1 0 0]
                      */
                 case 'Tm':
-                    $Tm = explode(' ', $command['c']);
+                    $Tm = explode(' ', $command['c']);    
+                    $TempMatrix = [];
+                    $TempMatrix[0] = $Tm[0] * $concatTm[0] + $Tm[1] * $concatTm[2];
+                    $TempMatrix[1] = $Tm[0] * $concatTm[1] + $Tm[1] * $concatTm[3];
+                    $TempMatrix[2] = $Tm[2] * $concatTm[0] + $Tm[3] * $concatTm[2];
+                    $TempMatrix[3] = $Tm[2] * $concatTm[1] + $Tm[3] * $concatTm[3];
+                    $TempMatrix[4] = $Tm[4] * $concatTm[0] + $Tm[5] * $concatTm[2] + $concatTm[4];
+                    $TempMatrix[5] = $Tm[4] * $concatTm[1] + $Tm[5] * $concatTm[3] + $concatTm[5];
+                    $Tm = $TempMatrix;
                     $Tx = (float) $Tm[$x];
                     $Ty = (float) $Tm[$y];
                     break;
