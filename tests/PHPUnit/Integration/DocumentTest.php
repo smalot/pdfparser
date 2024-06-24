@@ -232,4 +232,35 @@ class DocumentTest extends TestCase
         $document = $this->getDocumentInstance();
         $document->getPages();
     }
+
+    public function testExtractXMPMetadata(): void
+    {
+        $document = $this->getDocumentInstance();
+
+        // Check that XMP metadata is parsed even if missing a
+        // dc:format tag
+        // See: https://github.com/smalot/pdfparser/issues/721
+        $content = '<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.6-c015 84.159810, 2016/09/10-02:41:30">
+   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <rdf:Description>
+         <dc:creator>
+            <rdf:Seq>
+               <rdf:li>PdfParser</rdf:li>
+            </rdf:Seq>
+         </dc:creator>
+         <xmp:CreateDate>2018-02-07T11:51:44-05:00</xmp:CreateDate>
+         <xmp:ModifyDate>2019-10-23T09:56:01-04:00</xmp:ModifyDate>
+      </rdf:Description>
+   </rdf:RDF>
+</x:xmpmeta>';
+
+        $document->extractXMPMetadata($content);
+        $document->init();
+        $details = $document->getDetails();
+
+        $this->assertEquals(4, \count($details));
+        $this->assertEquals('PdfParser', $details['dc:creator']);
+        $this->assertEquals('2019-10-23T09:56:01-04:00', $details['xmp:modifydate']);
+    }
 }

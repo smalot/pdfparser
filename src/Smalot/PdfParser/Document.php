@@ -287,7 +287,7 @@ class Document
             }
 
             // Only use this metadata if it's referring to a PDF
-            if (isset($metadata['dc:format']) && 'application/pdf' == $metadata['dc:format']) {
+            if (!isset($metadata['dc:format']) || 'application/pdf' == $metadata['dc:format']) {
                 // According to the XMP specifications: 'Conflict resolution
                 // for separate packets that describe the same resource is
                 // beyond the scope of this document.' - Section 6.1
