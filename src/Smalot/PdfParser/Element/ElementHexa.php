@@ -47,12 +47,11 @@ class ElementHexa extends ElementString
         if (preg_match('/^\s*\<(?P<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name = $match['name'];
             $offset += strpos($content, '<'.$name) + \strlen($name) + 2; // 1 for '>'
-            // repackage string as standard
-            $name = '('.self::decode($name).')';
-            $element = ElementDate::parse($name, $document);
+            $name = self::decode($name);
+            $element = ElementDate::parse('('.$name.')', $document);
 
             if (!$element) {
-                $element = ElementString::parse($name, $document);
+                $element = new self($name);
             }
 
             return $element;

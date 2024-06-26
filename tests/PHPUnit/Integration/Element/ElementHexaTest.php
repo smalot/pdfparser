@@ -131,4 +131,17 @@ class ElementHexaTest extends TestCase
 
         $this->assertEquals('pasqua, primavera, resurrezione, festa cristiana, gesù, uova di cioccolata, coniglietti, pulcini, pasquale, campane, dina rebucci, uova di pasqua, ', $element);
     }
+
+    /**
+     * Closing round bracket encoded in hexadecimal format breaks parsing - string is truncated.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/715
+     */
+    public function testIssue715(): void
+    {
+        $offset = 0;
+        $testString = '()\\';
+        $element = ElementHexa::parse('<'.bin2hex($testString).'>', null, $offset);
+        $this->assertEquals($testString, (string) $element);
+    }
 }
