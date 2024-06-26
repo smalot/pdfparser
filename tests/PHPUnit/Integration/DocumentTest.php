@@ -233,13 +233,14 @@ class DocumentTest extends TestCase
         $document->getPages();
     }
 
-    public function testExtractXMPMetadata(): void
+    /**
+     * @see https://github.com/smalot/pdfparser/issues/721
+     */
+    public function testExtractXMPMetadataIssue721(): void
     {
         $document = $this->getDocumentInstance();
 
-        // Check that XMP metadata is parsed even if missing a
-        // dc:format tag
-        // See: https://github.com/smalot/pdfparser/issues/721
+        // Check that XMP metadata is parsed even if missing a dc:format tag
         $content = '<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.6-c015 84.159810, 2016/09/10-02:41:30">
    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
