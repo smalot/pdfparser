@@ -818,12 +818,12 @@ class Page extends PDFObject
                 case 'Tm':
                     $Tm = explode(' ', $command['c']);
                     $TempMatrix = [];
-                    $TempMatrix[0] = round((float) $Tm[0] * (float) $concatTm[0] + (float) $Tm[1] * (float) $concatTm[2], 6);
-                    $TempMatrix[1] = round((float) $Tm[0] * (float) $concatTm[1] + (float) $Tm[1] * (float) $concatTm[3], 6);
-                    $TempMatrix[2] = round((float) $Tm[2] * (float) $concatTm[0] + (float) $Tm[3] * (float) $concatTm[2], 6);
-                    $TempMatrix[3] = round((float) $Tm[2] * (float) $concatTm[1] + (float) $Tm[3] * (float) $concatTm[3], 6);
-                    $TempMatrix[4] = round((float) $Tm[4] * (float) $concatTm[0] + (float) $Tm[5] * (float) $concatTm[2] + (float) $concatTm[4], 2);
-                    $TempMatrix[5] = round((float) $Tm[4] * (float) $concatTm[1] + (float) $Tm[5] * (float) $concatTm[3] + (float) $concatTm[5], 2);
+                    $TempMatrix[0] = (float) $Tm[0] * (float) $concatTm[0] + (float) $Tm[1] * (float) $concatTm[2];
+                    $TempMatrix[1] = (float) $Tm[0] * (float) $concatTm[1] + (float) $Tm[1] * (float) $concatTm[3];
+                    $TempMatrix[2] = (float) $Tm[2] * (float) $concatTm[0] + (float) $Tm[3] * (float) $concatTm[2];
+                    $TempMatrix[3] = (float) $Tm[2] * (float) $concatTm[1] + (float) $Tm[3] * (float) $concatTm[3];
+                    $TempMatrix[4] = (float) $Tm[4] * (float) $concatTm[0] + (float) $Tm[5] * (float) $concatTm[2] + (float) $concatTm[4];
+                    $TempMatrix[5] = (float) $Tm[4] * (float) $concatTm[1] + (float) $Tm[5] * (float) $concatTm[3] + (float) $concatTm[5];
                     $Tm = $TempMatrix;
                     $Tx = (float) $Tm[$x];
                     $Ty = (float) $Tm[$y];
