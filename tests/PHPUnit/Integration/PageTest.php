@@ -256,9 +256,9 @@ class PageTest extends TestCase
         $pages = $document->getPages();
         $page = $pages[0];
         $dataCommands = $page->getDataCommands();
-        $this->assertCount(176, $dataCommands);
+        $this->assertCount(185, $dataCommands);
 
-        $tmItem = $dataCommands[2];
+        $tmItem = $dataCommands[6];
         $this->assertCount(3, $tmItem);
         $this->assertArrayHasKey('t', $tmItem);
         $this->assertArrayHasKey('o', $tmItem);
@@ -267,7 +267,7 @@ class PageTest extends TestCase
         $this->assertStringContainsString('Tm', $tmItem['o']);
         $this->assertStringContainsString('0.999429 0 0 1 201.96 720.68', $tmItem['c']);
 
-        $tjItem = $dataCommands[3];
+        $tjItem = $dataCommands[7];
         $this->assertCount(3, $tjItem);
         $this->assertArrayHasKey('t', $tjItem);
         $this->assertArrayHasKey('o', $tjItem);
@@ -307,7 +307,14 @@ class PageTest extends TestCase
                 '201.96',
                 '720.68',
             ],
-            $item[0]
+            [
+                round($item[0][0], 6),
+                round($item[0][1], 6),
+                round($item[0][2], 6),
+                round($item[0][3], 6),
+                round($item[0][4], 2),
+                round($item[0][5], 2),
+            ]
         );
         $this->assertStringContainsString('Document title', $item[1]);
 
@@ -321,7 +328,14 @@ class PageTest extends TestCase
                 '70.8',
                 '673.64',
             ],
-            $item[0]
+            [
+                round($item[0][0], 6),
+                round($item[0][1], 6),
+                round($item[0][2], 6),
+                round($item[0][3], 6),
+                round($item[0][4], 2),
+                round($item[0][5], 2),
+            ]
         );
         $this->assertStringContainsString('Calibri : Lorem ipsum dolor sit amet, consectetur a', $item[1]);
 
@@ -332,10 +346,17 @@ class PageTest extends TestCase
                 '0',
                 '0',
                 '1',
-                '342.840222606',
+                '342.84',
                 '81.44',
             ],
-            $item[0]
+            [
+                round($item[0][0], 6),
+                round($item[0][1], 6),
+                round($item[0][2], 6),
+                round($item[0][3], 6),
+                round($item[0][4], 2),
+                round($item[0][5], 2),
+            ]
         );
         $this->assertStringContainsString('nenatis.', $item[1]);
 
@@ -626,7 +647,7 @@ class PageTest extends TestCase
         $document = $parser->parseFile($filename);
         $pages = $document->getPages();
         $page = $pages[0];
-        $result = $page->getTextXY(201.96, 720.68);
+        $result = $page->getTextXY(201.96, 720.68, 0.01, 0.01);
         $this->assertCount(1, $result);
         $this->assertCount(2, $result[0]);
         $this->assertEquals(
@@ -638,7 +659,14 @@ class PageTest extends TestCase
                 '201.96',
                 '720.68',
             ],
-            $result[0][0]
+            [
+                round($result[0][0][0], 6),
+                round($result[0][0][1], 6),
+                round($result[0][0][2], 6),
+                round($result[0][0][3], 6),
+                round($result[0][0][4], 2),
+                round($result[0][0][5], 2),
+            ]
         );
         $this->assertStringContainsString('Document title', $result[0][1]);
 
@@ -657,7 +685,14 @@ class PageTest extends TestCase
                 '201.96',
                 '720.68',
             ],
-            $result[0][0]
+            [
+                round($result[0][0][0], 6),
+                round($result[0][0][1], 6),
+                round($result[0][0][2], 6),
+                round($result[0][0][3], 6),
+                round($result[0][0][4], 2),
+                round($result[0][0][5], 2),
+            ]
         );
         $this->assertStringContainsString('Document title', $result[0][1]);
 
@@ -827,10 +862,10 @@ class PageTest extends TestCase
         $this->assertEquals(2, \count($dataTm[0]));
         $this->assertIsArray($dataTm[0][0]);
         $this->assertEquals(6, \count($dataTm[0][0]));
-        $this->assertEquals(201.96, $dataTm[0][0][4]);
-        $this->assertEquals(720.68, $dataTm[0][0][5]);
+        $this->assertEquals(201.96, round($dataTm[0][0][4], 2));
+        $this->assertEquals(720.68, round($dataTm[0][0][5], 2));
         $this->assertStringContainsString('Document title', $dataTm[0][1]);
-        $textData = $page->getTextXY(201.96, 720.68);
+        $textData = $page->getTextXY(201.96, 720.68, 0.01, 0.01);
         $this->assertStringContainsString('Document title', $textData[0][1]);
         $page = $pages[2];
         $dataTm = $page->getDataTm();
@@ -888,5 +923,39 @@ class PageTest extends TestCase
 
         $this->assertCount(2, $dataTm[0]);
         $this->assertFalse(isset($dataTm[0][2]));
+    }
+
+    public function testCmCommandInPdfs(): void
+    {
+        $config = new Config();
+        $parser = $this->getParserInstance($config);
+        $filename = $this->rootDir.'/samples/Document-Word-Landscape-printedaspdf.pdf';
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $page = $pages[0];
+        $dataTm = $page->getDataTm();
+        $item = $dataTm[2];
+        $this->assertCount(6, $dataTm);
+        $this->assertCount(2, $item);
+        $this->assertCount(6, $item[0]);
+        $this->assertEquals('This is just a test', trim($item[1]));
+        $this->assertEquals(
+            [
+                '0.75',
+                '0.0',
+                '0.0',
+                '0.75',
+                '59.16',
+                '500.4',
+            ],
+            [
+                round($item[0][0], 6),
+                round($item[0][1], 6),
+                round($item[0][2], 6),
+                round($item[0][3], 6),
+                round($item[0][4], 2),
+                round($item[0][5], 2),
+            ]
+        );
     }
 }
