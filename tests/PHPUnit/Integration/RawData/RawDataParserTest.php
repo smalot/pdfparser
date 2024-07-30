@@ -198,8 +198,7 @@ class RawDataParserTest extends TestCase
     /**
      * Handle self referencing xref
      *
-     * It seems that some pdf creators output `Prev 0` when there is no previous
-     * xref
+     * It seems that some PDF creators output `Prev 0` when there is no previous xref.
      *
      * @see https://github.com/smalot/pdfparser/pull/727
      */
