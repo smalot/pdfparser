@@ -214,8 +214,11 @@ class RawDataParser
                 }
             }
             if (preg_match('/Prev[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
-                // get previous xref
-                $xref = $this->getXrefData($pdfData, (int) $matches[1], $xref);
+                $offset = (int) $matches[1];
+                if (0 != $offset) {
+                    // get previous xref
+                    $xref = $this->getXrefData($pdfData, $offset, $xref);
+                }
             }
         } else {
             throw new \Exception('Unable to find trailer');
