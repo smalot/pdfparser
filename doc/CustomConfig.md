@@ -25,7 +25,7 @@ The `Config` class has the following options:
 | `setHorizontalOffset`    | String  | ` `             | When words are broken up or when the structure of a table is not preserved, you may get better results when adapting `setHorizontalOffset`.          |
 | `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |                                                                                                                                                      |
 | `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |                                                                                                                                                      |
-| `setRetainImageContent`  | Boolean | `true`          | If parsing fails because of memory exhaustion, you can set the value to `false`. It wont retain image content anymore, but will use less memory too. |
+| `setRetainImageContent`  | Boolean | `true`          | If parsing fails due to memory exhaustion, you can set the value to `false`. This will reduce memory usage, although it will no longer retain image content. |
 
 
 ## option setDecodeMemoryLimit + setRetainImageContent (manage memory usage)
