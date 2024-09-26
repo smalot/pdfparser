@@ -255,7 +255,7 @@ class Document
                             if ('rdf:li' == $val['tag']) {
                                 $metadata[] = $val['value'];
 
-                            // Else assign a value to this property
+                                // Else assign a value to this property
                             } else {
                                 $metadata[$val['tag']] = $val['value'];
                             }

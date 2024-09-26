@@ -267,7 +267,8 @@ class RawDataParser
             if (
                 ('/' == $v[0])
                 && ('Type' == $v[1])
-                && (isset($sarr[$k + 1])
+                && (
+                    isset($sarr[$k + 1])
                     && '/' == $sarr[$k + 1][0]
                     && 'XRef' == $sarr[$k + 1][1]
                 )
@@ -293,7 +294,8 @@ class RawDataParser
                     if (
                         '/' == $vdc[0]
                         && 'Columns' == $vdc[1]
-                        && (isset($decpar[$kdc + 1])
+                        && (
+                            isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -301,7 +303,8 @@ class RawDataParser
                     } elseif (
                         '/' == $vdc[0]
                         && 'Predictor' == $vdc[1]
-                        && (isset($decpar[$kdc + 1])
+                        && (
+                            isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -407,7 +410,7 @@ class RawDataParser
                     }
                     $prev_row = $ddata[$k];
                 } // end for each row
-            // complete decoding
+                // complete decoding
             } else {
                 // number of bytes in a row
                 $rowlen = array_sum($wb);
