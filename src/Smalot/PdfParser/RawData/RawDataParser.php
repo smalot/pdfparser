@@ -43,6 +43,8 @@
 namespace Smalot\PdfParser\RawData;
 
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Exception\MissingPdfHeaderException;
+use Smalot\PdfParser\Exception\EmptyPdfException;
 
 class RawDataParser
 {
@@ -938,17 +940,17 @@ class RawDataParser
      *
      * @return array array of parsed PDF document objects
      *
-     * @throws \Exception if empty PDF data given
-     * @throws \Exception if PDF data missing %PDF header
+     * @throws EmptyPdfException if empty PDF data given
+     * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
      */
     public function parseData(string $data): array
     {
         if (empty($data)) {
-            throw new \Exception('Empty PDF data given.');
+            throw new EmptyPdfException('Empty PDF data given.');
         }
         // find the pdf header starting position
         if (false === ($trimpos = strpos($data, '%PDF-'))) {
-            throw new \Exception('Invalid PDF data: missing %PDF header.');
+            throw new MissingPdfHeaderException('Invalid PDF data: Missing `%PDF-` header.');
         }
 
         // get PDF content string
