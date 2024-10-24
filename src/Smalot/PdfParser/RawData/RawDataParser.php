@@ -214,8 +214,11 @@ class RawDataParser
                 }
             }
             if (preg_match('/Prev[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
-                // get previous xref
-                $xref = $this->getXrefData($pdfData, (int) $matches[1], $xref);
+                $offset = (int) $matches[1];
+                if (0 != $offset) {
+                    // get previous xref
+                    $xref = $this->getXrefData($pdfData, $offset, $xref);
+                }
             }
         } else {
             throw new \Exception('Unable to find trailer');
@@ -264,7 +267,8 @@ class RawDataParser
             if (
                 ('/' == $v[0])
                 && ('Type' == $v[1])
-                && (isset($sarr[$k + 1])
+                && (
+                    isset($sarr[$k + 1])
                     && '/' == $sarr[$k + 1][0]
                     && 'XRef' == $sarr[$k + 1][1]
                 )
@@ -290,7 +294,8 @@ class RawDataParser
                     if (
                         '/' == $vdc[0]
                         && 'Columns' == $vdc[1]
-                        && (isset($decpar[$kdc + 1])
+                        && (
+                            isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -298,7 +303,8 @@ class RawDataParser
                     } elseif (
                         '/' == $vdc[0]
                         && 'Predictor' == $vdc[1]
-                        && (isset($decpar[$kdc + 1])
+                        && (
+                            isset($decpar[$kdc + 1])
                             && 'numeric' == $decpar[$kdc + 1][0]
                         )
                     ) {
@@ -404,7 +410,7 @@ class RawDataParser
                     }
                     $prev_row = $ddata[$k];
                 } // end for each row
-            // complete decoding
+                // complete decoding
             } else {
                 // number of bytes in a row
                 $rowlen = array_sum($wb);

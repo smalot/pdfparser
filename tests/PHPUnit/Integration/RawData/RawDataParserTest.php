@@ -194,4 +194,23 @@ class RawDataParserTest extends TestCase
 
         self::assertStringContainsString('6 rue des Goutais', $text);
     }
+
+    /**
+     * Handle self referencing xref
+     *
+     * It seems that some PDF creators output `Prev 0` when there is no previous xref.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/727
+     */
+    public function testDecodeXrefIssue727(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue727.pdf';
+
+        // Parsing this document would previously cause an infinite loop
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $text = $document->getText();
+
+        self::assertStringContainsString('', $text);
+    }
 }
