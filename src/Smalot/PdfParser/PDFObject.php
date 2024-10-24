@@ -82,7 +82,7 @@ class PDFObject
         Document $document,
         ?Header $header = null,
         ?string $content = null,
-        ?Config $config = null,
+        ?Config $config = null
     ) {
         $this->document = $document;
         $this->header = $header ?? new Header();
@@ -1144,7 +1144,7 @@ class PDFObject
         Document $document,
         Header $header,
         ?string $content,
-        ?Config $config = null,
+        ?Config $config = null
     ): self {
         switch ($header->get('Type')->getContent()) {
             case 'XObject':
