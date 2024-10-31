@@ -287,8 +287,13 @@ class Font extends PDFObject
         // Usually, Widths key is set in $details array, but if it isn't use an empty array instead.
         $widths = $details['Widths'] ?? [];
 
-        // Widths array is zero indexed but table is not. We must map them based on FirstChar and LastChar
-        $width_map = array_flip(range($details['FirstChar'], $details['LastChar']));
+        /*
+         * Widths array is zero indexed but table is not. We must map them based on FirstChar and LastChar
+         *
+         * Note: Without the change you would see warnings in PHP 8.4 because the values of FirstChar or LastChar
+         *       can be null sometimes.
+         */
+        $width_map = array_flip(range((int) $details['FirstChar'], (int) $details['LastChar']));
 
         $width = null;
         $missing = [];
