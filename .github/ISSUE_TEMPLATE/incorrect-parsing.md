@@ -8,10 +8,10 @@ assignees: ''
 ---
 
 <!-- DO NOT THROW THIS AWAY -->
-<!-- Fill out the FULL versions with patch versions -->
+<!-- Fill out the FULL versions with patch versions (e.g. 2.10.0) -->
 
- - PHP Version: 
- - PDFParser Version: 
+ - PHP Version:
+ - PDFParser Version:
 
 ### Description:
 
