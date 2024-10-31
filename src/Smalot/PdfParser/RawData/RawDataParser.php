@@ -43,8 +43,8 @@
 namespace Smalot\PdfParser\RawData;
 
 use Smalot\PdfParser\Config;
-use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 use Smalot\PdfParser\Exception\EmptyPdfException;
+use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 
 class RawDataParser
 {
