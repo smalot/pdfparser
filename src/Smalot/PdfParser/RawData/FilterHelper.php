@@ -42,6 +42,8 @@
 
 namespace Smalot\PdfParser\RawData;
 
+use Smalot\PdfParser\Exception\NotImplementedException;
+
 class FilterHelper
 {
     protected $availableFilters = ['ASCIIHexDecode', 'ASCII85Decode', 'LZWDecode', 'FlateDecode', 'RunLengthDecode'];
@@ -54,7 +56,8 @@ class FilterHelper
      *
      * @return string Decoded data string
      *
-     * @throws \Exception if a certain decode function is not implemented yet
+     * @throws \Exception
+     * @throws \Smalot\PdfParser\Exception\NotImplementedException if a certain decode function is not implemented yet
      */
     public function decodeFilter(string $filter, string $data, int $decodeMemoryLimit = 0): string
     {
@@ -75,15 +78,15 @@ class FilterHelper
                 return $this->decodeFilterRunLengthDecode($data);
 
             case 'CCITTFaxDecode':
-                throw new \Exception('Decode CCITTFaxDecode not implemented yet.');
+                throw new NotImplementedException('Decode CCITTFaxDecode not implemented yet.');
             case 'JBIG2Decode':
-                throw new \Exception('Decode JBIG2Decode not implemented yet.');
+                throw new NotImplementedException('Decode JBIG2Decode not implemented yet.');
             case 'DCTDecode':
-                throw new \Exception('Decode DCTDecode not implemented yet.');
+                throw new NotImplementedException('Decode DCTDecode not implemented yet.');
             case 'JPXDecode':
-                throw new \Exception('Decode JPXDecode not implemented yet.');
+                throw new NotImplementedException('Decode JPXDecode not implemented yet.');
             case 'Crypt':
-                throw new \Exception('Decode Crypt not implemented yet.');
+                throw new NotImplementedException('Decode Crypt not implemented yet.');
             default:
                 return $data;
         }
