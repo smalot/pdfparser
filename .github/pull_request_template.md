@@ -11,4 +11,4 @@
 
 # Checklist for code / configuration changes
 
-In [CONTRIBUTING.md] we provide important information for contributing.
+See [CONTRIBUTING.md] for all essential information about contributing.
