@@ -32,6 +32,7 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Exception\InvalidDictionaryObjectException;
 use Smalot\PdfParser\XObject\Form;
 use Smalot\PdfParser\XObject\Image;
 
@@ -559,7 +560,7 @@ class PDFObject
      *
      * @internal
      *
-     * @throws \Exception
+     * @throws InvalidDictionaryObjectException
      */
     public function parseDictionary(string $dictionary): array
     {
@@ -567,7 +568,7 @@ class PDFObject
         $dictionary = preg_replace(['/\r/', '/\n/', '/\s{2,}/'], ' ', trim($dictionary));
 
         if ('<<' != substr($dictionary, 0, 2)) {
-            throw new \Exception('Not a valid dictionary object.');
+            throw new InvalidDictionaryObjectException('Not a valid dictionary object.');
         }
 
         $parsed = [];
