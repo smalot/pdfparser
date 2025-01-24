@@ -41,6 +41,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Page;
+use TypeError;
 
 class PageTest extends TestCase
 {
@@ -903,6 +904,42 @@ class PageTest extends TestCase
 
         $this->assertCount(4, $dataTm[0]);
         $this->assertEquals('F2', $dataTm[0][2]);
+    }
+
+    public function testIssue427GetPageDimensions(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue427.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $pages = $document->getPages();
+        $notFound = 0;
+        foreach ($pages as $page) {
+            $details = $page->getDetails();
+            if (!isset($details['MediaBox'])) {
+                $fallbackPages = $document->getObjectsByType('Pages');
+                $details = reset($fallbackPages)->getHeader()->getDetails();
+                if (!isset($details['MediaBox'])) {
+                    try {
+                        $objects = $page->getXObjects();
+                        if (isset($objects[0])) {
+                            $details = $objects[0]->getHeader()->getDetails();
+                            if (isset($details['BBox'])) {
+                                $this->assertArrayHasKey('BBox', $details);
+                                $this->assertArrayHasKey(2, $details['BBox']);
+                                $this->assertArrayHasKey(3, $details['BBox']);
+                                continue;
+                            }
+                        }
+                        $notFound++;
+                        continue;
+                    } catch (TypeError $e) {
+                        $notFound++;
+                        continue;
+                    }
+                }
+            }
+        }
+        $this->assertEquals(count($pages) - 1, $notFound);
     }
 
     /**

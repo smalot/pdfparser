@@ -228,11 +228,22 @@ foreach ($pages as $page) {
     if (!isset($details['MediaBox'])) {
         $pages = $pdf->getObjectsByType('Pages');
         $details = reset($pages)->getHeader()->getDetails();
+        if (!isset($details['MediaBox'])) {
+            $objects = $page->getXObjects();
+            if (isset($objects[0])) {
+                $details = $objects[0]->getHeader()->getDetails();
+                if (isset($details['BBox'])) {
+                    $details['MediaBox'] = $details['BBox'];
+                }
+            }
+        }
     }
-    $mediaBox[] = [
-        'width' => $details['MediaBox'][2],
-        'height' => $details['MediaBox'][3]
-    ];
+    if (isset($details['MediaBox'])) {
+        $mediaBox[] = [
+            'width' => $details['MediaBox'][2],
+            'height' => $details['MediaBox'][3]
+        ];
+    }
 }
 ```
 
