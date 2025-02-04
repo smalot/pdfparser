@@ -894,7 +894,7 @@ class PDFObject
 
                         if (true === $this->addPositionWhitespace && false !== $current_position['x']) {
                             $curY = $currentY - $current_position['y'];
-                            if (abs($curY) >= abs($factorY) / 4) {
+                            if (abs($curY) >= abs($factorY) / 4 && $currentX < 30) {
                                 $whiteSpace = "\n";
                             } else {
                                 if (true === $reverse_text) {
