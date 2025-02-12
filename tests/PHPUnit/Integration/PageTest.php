@@ -35,6 +35,7 @@
 
 namespace PHPUnitTests\Integration;
 
+use PHPUnit\Framework\Attributes\Ticket;
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
@@ -956,6 +957,51 @@ class PageTest extends TestCase
                 round($item[0][4], 2),
                 round($item[0][5], 2),
             ]
+        );
+    }
+
+    /**
+     * Test that the parser returns the correct text for the corresponding Text Matrix in getDataTm() if the document
+     * contains an 'Do' command with an empty string content.
+     */
+    #[Ticket('https://github.com/smalot/pdfparser/pull/761')]
+    public function testDoCommandWithEmptyStringContentInPdf(): void
+    {
+        $config = new Config();
+        $parser = $this->getParserInstance($config);
+
+        // Document contains an 'Do' command with an empty string content
+        $document = $parser->parseFile($this->rootDir . '/samples/bugs/Issue761.pdf');
+
+        $pages = $document->getPages();
+        self::assertCount(2, $pages);
+
+        self::assertEquals(
+            [
+                [
+                    [
+                        '1',
+                        '0',
+                        '0',
+                        '1',
+                        '36.266',
+                        '754.031',
+                    ],
+                    'Test',
+                ],
+                [
+                    [
+                        '1',
+                        '0',
+                        '0',
+                        '1',
+                        '34.016',
+                        '701.653',
+                    ],
+                    '{{signer1}}',
+                ],
+            ],
+            $pages[1]->getDataTm()
         );
     }
 }
