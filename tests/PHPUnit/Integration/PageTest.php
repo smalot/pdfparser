@@ -1001,7 +1001,7 @@ class PageTest extends TestCase
                     '{{signer1}}',
                 ],
             ],
-            $pages[1]->getDataTm(),
+            $pages[1]->getDataTm()
         );
     }
 }
