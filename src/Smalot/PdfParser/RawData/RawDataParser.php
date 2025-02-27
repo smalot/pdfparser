@@ -883,7 +883,7 @@ class RawDataParser
 
         // Find all startxref tables from this $offset forward
         $startxrefPreg = preg_match_all(
-            '/(?<=[\r\n])startxref(?:[\s]*[\r\n]+|\s+)([0-9]+)[\s]*[\r\n]+%%EOF/i',
+            '/(?<=[\r\n])startxref(?:[\s]*[\r\n]+[\s]*|\s+)([0-9]+)[\s]*[\r\n]+%%EOF/i',
             $pdfData,
             $startxrefMatches,
             \PREG_SET_ORDER,
