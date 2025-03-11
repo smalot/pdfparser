@@ -526,6 +526,9 @@ class PDFObject
      */
     private function getTJUsingFontFallback(Font $font, array $command, ?Page $page = null, float $fontFactor = 4): string
     {
+        if (!$font) {
+            return '';
+        }
         $orig_text = $font->decodeText($command, $fontFactor);
         $text = $orig_text;
 
