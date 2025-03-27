@@ -216,11 +216,13 @@ class Font extends PDFObject
             // Support for multiple bfrange sections
             if (preg_match_all('/beginbfrange(?P<sections>.*?)endbfrange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    // Regexp to capture <from>, <to>, and either <offset> or [...] items.
-                    // - (?P<from>...) Source range's start
-                    // - (?P<to>...)   Source range's end
-                    // - (?P<dest>...) Destination range's offset or each char code
-                    //                 Some PDF file has 2-byte Unicode values on new lines > added \r\n
+                    /**
+                     * Regexp to capture <from>, <to>, and either <offset> or [...] items.
+                     * - (?P<from>...) Source range's start
+                     * - (?P<to>...)   Source range's end
+                     *  - (?P<dest>...) Destination range's offset or each char code
+                     *                 Some PDF file has 2-byte Unicode values on new lines > added \r\n
+                     */
                     $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *(?P<dest><[0-9A-F]+>|\[[\r\n<>0-9A-F ]+\])[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
@@ -230,7 +232,7 @@ class Font extends PDFObject
                         $char_to = hexdec($matches['to'][$key]);
                         $dest = $matches['dest'][$key];
 
-                        if (preg_match('/^<(?P<offset>[0-9A-F]+)>$/i', $dest, $offset_matches)) {
+                        if (1 === preg_match('/^<(?P<offset>[0-9A-F]+)>$/i', $dest, $offset_matches)) {
                             // Support for : <srcCode1> <srcCode2> <dstString>
                             $offset = hexdec($offset_matches['offset']);
 
