@@ -263,6 +263,9 @@ begincmap
 /CMapType 2 def
 1 beginbfrange
 <0677> <0689> [<FB1F> <FEDF0672> <FEE00672> <FEDF0673> <FEE00673> <FEDF0675> <FEE00675> <06B5FE8E> <06B5FE8E> <06B6FE8E> <06B6FE8E> <06B7FE8E> <06B7FE8E> <06B8FE8E> <06B8FE8E> <06F4> <0667> <FEDFFB51> <FEE0FB51>]
+<0690> <0693> [<FFFF> <FFFFFFFF> <FFFFFFFFFFFF> <FFFFFFFFFFFFFFFF>]
+<0694> <0695> [F<> 123 <>00]
+<0696> <0701> [<1> <23> <456> <7890> <ABCDE> <F12345>]
 endbfrange
 endcmap
 CMapName currentdict /CMap defineresource pop
@@ -276,7 +279,7 @@ end';
         // Test reload
         $table = $font->loadTranslateTable();
 
-        $this->assertEquals(19, \count($table));
+        $this->assertEquals(29, \count($table));
 
         // Test ranges
         $this->assertEquals("\u{FB1F}", $table[0x0677]);
@@ -298,6 +301,16 @@ end';
         $this->assertEquals("\u{0667}", $table[0x0687]);
         $this->assertEquals("\u{FEDF}\u{FB51}", $table[0x0688]);
         $this->assertEquals("\u{FEE0}\u{FB51}", $table[0x0689]);
+        $this->assertEquals("\u{FFFF}", $table[0x0690]);
+        $this->assertEquals("\u{FFFF}\u{FFFF}", $table[0x0691]);
+        $this->assertEquals("\u{FFFF}\u{FFFF}\u{FFFF}", $table[0x0692]);
+        $this->assertEquals("\u{FFFF}\u{FFFF}\u{FFFF}\u{FFFF}", $table[0x0693]);
+        $this->assertEquals("\u{0001}", $table[0x0696]);
+        $this->assertEquals("\u{0023}", $table[0x0697]);
+        $this->assertEquals("\u{0456}", $table[0x0698]);
+        $this->assertEquals("\u{7890}", $table[0x0699]);
+        $this->assertEquals("\u{ABCD}\u{000E}", $table[0x069A]);
+        $this->assertEquals("\u{F123}\u{0045}", $table[0x069B]);
     }
 
     public function testDecodeHexadecimal(): void
