@@ -239,11 +239,13 @@ class Font extends PDFObject
                             for ($char = $char_from; $char <= $char_to; ++$char) {
                                 $this->table[$char] = self::uchr($char - $char_from + $offset);
                             }
-
                         } else {
                             // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
                             $strings = [];
-                            preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $dest, $strings);
+                            $matched = preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $dest, $strings);
+                            if (false === $matched || 0 === $matched) {
+                                continue;
+                            }
 
                             foreach ($strings['string'] as $position => $string) {
                                 $parts = preg_split(
@@ -252,6 +254,9 @@ class Font extends PDFObject
                                     0,
                                     \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                                 );
+                                if (false === $parts) {
+                                    continue;
+                                }
                                 $text = '';
                                 foreach ($parts as $part) {
                                     $text .= self::uchr(hexdec($part));
