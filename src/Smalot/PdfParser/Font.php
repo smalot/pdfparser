@@ -216,45 +216,53 @@ class Font extends PDFObject
             // Support for multiple bfrange sections
             if (preg_match_all('/beginbfrange(?P<sections>.*?)endbfrange/s', $content, $matches)) {
                 foreach ($matches['sections'] as $section) {
-                    // Support for : <srcCode1> <srcCode2> <dstString>
-                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *<(?P<offset>[0-9A-F]+)>[ \r\n]+/is';
+                    /**
+                     * Regexp to capture <from>, <to>, and either <offset> or [...] items.
+                     * - (?P<from>...) Source range's start
+                     * - (?P<to>...)   Source range's end
+                     * - (?P<dest>...) Destination range's offset or each char code
+                     *                 Some PDF file has 2-byte Unicode values on new lines > added \r\n
+                     */
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *(?P<dest><[0-9A-F]+>|\[[\r\n<>0-9A-F ]+\])[ \r\n]+/is';
 
                     preg_match_all($regexp, $section, $matches);
 
                     foreach ($matches['from'] as $key => $from) {
                         $char_from = hexdec($from);
                         $char_to = hexdec($matches['to'][$key]);
-                        $offset = hexdec($matches['offset'][$key]);
+                        $dest = $matches['dest'][$key];
 
-                        for ($char = $char_from; $char <= $char_to; ++$char) {
-                            $this->table[$char] = self::uchr($char - $char_from + $offset);
-                        }
-                    }
+                        if (1 === preg_match('/^<(?P<offset>[0-9A-F]+)>$/i', $dest, $offset_matches)) {
+                            // Support for : <srcCode1> <srcCode2> <dstString>
+                            $offset = hexdec($offset_matches['offset']);
 
-                    // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
-                    // Some PDF file has 2-byte Unicode values on new lines > added \r\n
-                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *\[(?P<strings>[\r\n<>0-9A-F ]+)\][ \r\n]+/is';
-
-                    preg_match_all($regexp, $section, $matches);
-
-                    foreach ($matches['from'] as $key => $from) {
-                        $char_from = hexdec($from);
-                        $strings = [];
-
-                        preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $matches['strings'][$key], $strings);
-
-                        foreach ($strings['string'] as $position => $string) {
-                            $parts = preg_split(
-                                '/([0-9A-F]{4})/i',
-                                $string,
-                                0,
-                                \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
-                            );
-                            $text = '';
-                            foreach ($parts as $part) {
-                                $text .= self::uchr(hexdec($part));
+                            for ($char = $char_from; $char <= $char_to; ++$char) {
+                                $this->table[$char] = self::uchr($char - $char_from + $offset);
                             }
-                            $this->table[$char_from + $position] = $text;
+                        } else {
+                            // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
+                            $strings = [];
+                            $matched = preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $dest, $strings);
+                            if (false === $matched || 0 === $matched) {
+                                continue;
+                            }
+
+                            foreach ($strings['string'] as $position => $string) {
+                                $parts = preg_split(
+                                    '/([0-9A-F]{4})/i',
+                                    $string,
+                                    0,
+                                    \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
+                                );
+                                if (false === $parts) {
+                                    continue;
+                                }
+                                $text = '';
+                                foreach ($parts as $part) {
+                                    $text .= self::uchr(hexdec($part));
+                                }
+                                $this->table[$char_from + $position] = $text;
+                            }
                         }
                     }
                 }
