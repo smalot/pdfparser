@@ -220,7 +220,7 @@ class Font extends PDFObject
                      * Regexp to capture <from>, <to>, and either <offset> or [...] items.
                      * - (?P<from>...) Source range's start
                      * - (?P<to>...)   Source range's end
-                     *  - (?P<dest>...) Destination range's offset or each char code
+                     * - (?P<dest>...) Destination range's offset or each char code
                      *                 Some PDF file has 2-byte Unicode values on new lines > added \r\n
                      */
                     $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *(?P<dest><[0-9A-F]+>|\[[\r\n<>0-9A-F ]+\])[ \r\n]+/is';
