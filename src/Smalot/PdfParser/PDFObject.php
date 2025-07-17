@@ -776,7 +776,7 @@ class PDFObject
 
                     case 'Do':
                         if (is_null($page)) {
-                          break;
+                            break;
                         }
 
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
@@ -785,12 +785,12 @@ class PDFObject
 
                         // Check we got a PDFObject back.
                         if (!$xobject instanceof self) {
-                          break;
+                            break;
                         }
 
                         // If the PDFObject is an image, do nothing, as images aren't text.
                         if ($xobject instanceof Image) {
-                          break;
+                            break;
                         }
 
                         // Check this is not a circular reference.
