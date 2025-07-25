@@ -202,7 +202,7 @@ jobs:
 
   windows-tests:
     name: Windows-Tests with PHP ${{ matrix.php-versions }}
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     strategy:
       fail-fast: true
