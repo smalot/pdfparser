@@ -8,7 +8,7 @@ env:
 jobs:
   phpunit:
     name: "PHPUnit (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -46,7 +46,7 @@ jobs:
 
   phpunit-lower-php:
     name: "PHPUnit (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -77,7 +77,7 @@ jobs:
 
   phpunit-coverage:
     name: "PHPUnit coverage (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -108,7 +108,7 @@ jobs:
 
   phpunit-composerv2:
     name: "PHPUnit Composer v2 (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -139,7 +139,7 @@ jobs:
 
   alt-autoload:
     name: "Tests alternative autoloader (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -169,7 +169,7 @@ jobs:
 
   phpunit-lowest:
     name: "PHPUnit lowest deps (PHP ${{ matrix.php }})"
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -202,7 +202,7 @@ jobs:
 
   windows-tests:
     name: Windows-Tests with PHP ${{ matrix.php-versions }}
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     strategy:
       fail-fast: true
