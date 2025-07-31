@@ -6,8 +6,12 @@ namespace PHPUnitTests\Unit;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\PDFObject;
+use Smalot\PdfParser\XObject\Image;
 
 class PDFObjectTest extends TestCase
 {
@@ -21,5 +25,40 @@ class PDFObjectTest extends TestCase
         $document = new Document();
 
         static::assertSame(' ', (new PDFObject($document, null, null))->getText(new Page($document)));
+    }
+
+    public function testTextArrayObjects(): void
+    {
+        $document = new Document();
+        $document->init();
+
+        $image = new Image($document);
+        $xObject = new PDFObject($document);
+
+        $header1 = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Im0' => $image,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Imo Do', $document)], $document),
+        ]);
+        $page1 = new Page($document, $header1);
+
+        $header2 = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Ps0' => $xObject,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Ps0 Do', $document)], $document),
+        ]);
+        $page2 = new Page($document, $header2);
+
+        // Page 1 contains an image, which should not appear in the text array.
+        self::assertSame([], $page1->getTextArray());
+
+        // Page 2 contains a non-image object, which should appear in the text array.
+        self::assertSame([' '], $page2->getTextArray());
     }
 }
