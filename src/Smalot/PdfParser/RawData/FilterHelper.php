@@ -190,6 +190,17 @@ class FilterHelper
                 // the value represented by a group of 5 characters should never be greater than 2^32 - 1
                 $tuple += (($char - 33) * $pow85[$group_pos]);
                 if (4 == $group_pos) {
+                    // The following if-clause is an attempt to fix/suppress the following deprecation warning:
+                    //      chr(): Providing a value not in-between 0 and 255 is deprecated, this is because a byte value
+                    //      must be in the [0, 255] interval. The value used will be constrained using % 256
+                    if (
+                        255 < $tuple >> 24
+                        || 255 < $tuple >> 16
+                        || 255 < $tuple >> 8
+                    ) {
+                        $tuple = $tuple % 256;
+                    }
+
                     $decoded .= \chr($tuple >> 24)
                         .\chr($tuple >> 16)
                         .\chr($tuple >> 8)
