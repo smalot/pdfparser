@@ -212,10 +212,13 @@ class FilterHelper
                         $chr24Part = \chr($tuple >> 24);
                     }
 
-                    $decoded .= $chr24Part
-                        . $chr16Part
-                        . $chr8Part
-                        .\chr($tuple);
+                    if (255 < $tuple) {
+                        $chrTuple = \chr($tuple % 256);
+                    } else {
+                        $chrTuple = \chr($tuple);
+                    }
+
+                    $decoded .= $chr24Part . $chr16Part . $chr8Part . $chrTuple;
                     $tuple = 0;
                     $group_pos = 0;
                 } else {
