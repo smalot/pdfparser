@@ -195,21 +195,18 @@ class FilterHelper
                     //      must be in the [0, 255] interval. The value used will be constrained using % 256
                     // I know this is ugly and there might be more fancier ways. If you know one, feel free to provide a pull request.
                     if (255 < $tuple >> 8) {
-                        \chr($tuple >> 8);
                         $chr8Part = \chr(($tuple >> 8) % 256);
                     } else {
                         $chr8Part = \chr($tuple >> 8);
                     }
 
                     if (255 < $tuple >> 16) {
-                        \chr($tuple >> 16);
                         $chr16Part = \chr(($tuple >> 16) % 256);
                     } else {
                         $chr16Part = \chr($tuple >> 16);
                     }
 
                     if (255 < $tuple >> 24) {
-                        \chr($tuple >> 24);
                         $chr24Part = \chr(($tuple >> 24) % 256);
                     } else {
                         $chr24Part = \chr($tuple >> 24);
