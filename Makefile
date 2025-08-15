@@ -8,4 +8,4 @@ run-phpstan:
 	dev-tools/vendor/bin/phpstan analyze $(ARGS)
 
 run-phpunit:
-	dev-tools/vendor/bin/phpunit --display-phpunit-deprecations $(ARGS)
+	dev-tools/vendor/bin/phpunit --display-deprecations $(ARGS)
