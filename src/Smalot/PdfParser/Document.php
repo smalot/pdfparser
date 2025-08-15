@@ -299,7 +299,16 @@ class Document
                 $this->metadata = array_merge($this->metadata, $metadata);
             }
         }
-        xml_parser_free($xml);
+
+        // TODO: remove this if-clause and its content when dropping PHP 7 support
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            // ref: https://www.php.net/manual/en/function.xml-parser-free.php
+            xml_parser_free($xml);
+
+            // to avoid memory leaks; documentation said:
+            // > it was necessary to also explicitly unset the reference to parser to avoid memory leaks
+            unset($xml);
+        }
     }
 
     public function getDictionary(): array

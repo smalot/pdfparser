@@ -263,7 +263,14 @@ q
         $expected = str_replace(["\r\n", "\n"], ["\n", "\r\n"], $expected);
 
         $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
-        $formatContent->setAccessible(true);
+
+        // TODO: remove this if-clause when dropping 8.0.x support
+        // From documentation > http://php.net/manual/en/reflectionproperty.setaccessible.php:
+        // As of PHP 8.1.0, calling this method has no effect; all properties are accessible by default.
+        if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+            $formatContent->setAccessible(true);
+        }
+
         $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
 
         $this->assertEquals($expected, $cleaned);
@@ -303,7 +310,13 @@ q
     public function testFormatContentIssue709()
     {
         $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
-        $formatContent->setAccessible(true);
+
+        // TODO: remove this if-clause when dropping 8.0.x support
+        // From documentation > http://php.net/manual/en/reflectionproperty.setaccessible.php:
+        // As of PHP 8.1.0, calling this method has no effect; all properties are accessible by default.
+        if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+            $formatContent->setAccessible(true);
+        }
 
         $content = '(String \\\\\\(string)Tj '.str_repeat('(Test)Tj ', 4500);
         $cleaned = $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
@@ -319,7 +332,13 @@ q
     public function testFormatContentInlineImages(): void
     {
         $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
-        $formatContent->setAccessible(true);
+
+        // TODO: remove this if-clause when dropping 8.0.x support
+        // From documentation > http://php.net/manual/en/reflectionproperty.setaccessible.php:
+        // As of PHP 8.1.0, calling this method has no effect; all properties are accessible by default.
+        if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+            $formatContent->setAccessible(true);
+        }
 
         $cleaned = $formatContent->invoke(
             $this->getPdfObjectInstance(new Document()),

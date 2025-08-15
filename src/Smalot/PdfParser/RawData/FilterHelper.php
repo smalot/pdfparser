@@ -190,7 +190,10 @@ class FilterHelper
                 // the value represented by a group of 5 characters should never be greater than 2^32 - 1
                 $tuple += (($char - 33) * $pow85[$group_pos]);
                 if (4 == $group_pos) {
-                    $decoded .= \chr($tuple >> 24).\chr($tuple >> 16).\chr($tuple >> 8).\chr($tuple);
+                    $decoded .= \chr($tuple >> 24)
+                        .\chr($tuple >> 16)
+                        .\chr($tuple >> 8)
+                        .\chr($tuple);
                     $tuple = 0;
                     $group_pos = 0;
                 } else {
