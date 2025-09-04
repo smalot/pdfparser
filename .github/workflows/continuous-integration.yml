@@ -129,7 +129,7 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: "Checkout"
@@ -176,13 +176,13 @@ jobs:
         run: "make run-phpunit"
 
   windows-tests:
-    name: Windows-Tests with PHP ${{ matrix.php-versions }}
+    name: Windows-Tests with PHP ${{ matrix.php }}
     runs-on: windows-latest
 
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout
@@ -191,7 +191,7 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php }}
           ini-values: memory_limit=1G
 
       - name: Install Composer dependencies (root)
