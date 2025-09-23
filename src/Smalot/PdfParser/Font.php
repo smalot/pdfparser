@@ -301,7 +301,7 @@ class Font extends PDFObject
          * Note: Without the change you would see warnings in PHP 8.4 because the values of FirstChar or LastChar
          *       can be null sometimes.
          */
-        $width_map = array_flip(range((int) $details['FirstChar'], (int) $details['LastChar']));
+        $width_map = array_flip(range((int) ($details['FirstChar'] ?? 0), (int) ($details['LastChar'] ?? 0)));
 
         $width = null;
         $missing = [];
