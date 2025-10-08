@@ -41,6 +41,7 @@ use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementString;
 use Smalot\PdfParser\Element\ElementXRef;
+use Smalot\PdfParser\Exception\FileNotReadableException;
 use Smalot\PdfParser\RawData\RawDataParser;
 
 /**
@@ -73,10 +74,15 @@ class Parser
 
     /**
      * @throws \Exception
+     * @throws FileNotReadableException
      */
     public function parseFile(string $filename): Document
     {
         $content = file_get_contents($filename);
+
+        if (false === $content) {
+            throw new FileNotReadableException('The file at ' . $filename . ' cannot be found or is not readable.');
+        }
 
         /*
          * 2018/06/20 @doganoo as multiple times a
