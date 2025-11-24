@@ -320,6 +320,7 @@ class Parser
 
             case 'endstream':
             case 'obj': // I don't know what it means but got my project fixed.
+            case 'endobj': // I don't know what this means either, but it is found in some PDF documents I tried to parse.
             case '':
                 // Nothing to do with.
                 return null;
