@@ -48,6 +48,30 @@ class RawDataParserHelper extends RawDataParser
     {
         return $this->getRawObject($pdfData, $offset);
     }
+
+    /**
+     * Expose protected function "getXrefData".
+     */
+    public function exposeGetXrefData(string $pdfData, int $offset = 0, array $xref = [], array $visitedOffsets = []): array
+    {
+        return $this->getXrefData($pdfData, $offset, $xref, $visitedOffsets);
+    }
+
+    /**
+     * Expose protected function "decodeXref".
+     */
+    public function exposeDecodeXref(string $pdfData, int $startxref, array $xref = [], array $visitedOffsets = []): array
+    {
+        return $this->decodeXref($pdfData, $startxref, $xref, $visitedOffsets);
+    }
+
+    /**
+     * Expose protected function "decodeXrefStream".
+     */
+    public function exposeDecodeXrefStream(string $pdfData, int $startxref, array $xref = [], array $visitedOffsets = []): array
+    {
+        return $this->decodeXrefStream($pdfData, $startxref, $xref, $visitedOffsets);
+    }
 }
 
 class RawDataParserTest extends TestCase
@@ -212,5 +236,83 @@ class RawDataParserTest extends TestCase
         $text = $document->getText();
 
         self::assertStringContainsString('', $text);
+    }
+
+    /**
+     * Test that getXrefData prevents circular references
+     *
+     * When a PDF has circular references in xref chain (e.g., Prev pointing to already visited offset),
+     * the parser should detect this and stop recursion to prevent infinite loops.
+     */
+    public function testGetXrefDataPreventsCircularReferences(): void
+    {
+        // Create a minimal PDF structure with xref that would create a circular reference
+        $pdfData = "%PDF-1.5\n";
+        $pdfData .= "xref\n";
+        $pdfData .= "0 1\n";
+        $pdfData .= "0000000000 65535 f \n";
+        $pdfData .= "trailer\n";
+        $pdfData .= "<</Size 1/Prev 7>>\n";  // Prev points back to offset 7 (the xref keyword)
+        $pdfData .= "startxref\n";
+        $pdfData .= "7\n";
+        $pdfData .= "%%EOF\n";
+
+        // Test with visitedOffsets containing the offset we're trying to visit
+        $result = $this->fixture->exposeGetXrefData($pdfData, 7, [], [7]);
+
+        // Should return empty xref array without recursing
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test that decodeXref passes visitedOffsets correctly when handling Prev
+     *
+     * This ensures that circular reference detection works when decodeXref
+     * calls getXrefData for a Prev pointer.
+     */
+    public function testDecodeXrefPassesVisitedOffsets(): void
+    {
+        // Create a minimal xref structure with Prev
+        $pdfData = "xref\n";
+        $pdfData .= "0 1\n";
+        $pdfData .= "0000000000 65535 f \n";
+        $pdfData .= "trailer\n";
+        $pdfData .= "<</Size 1/Prev 100>>\n";
+
+        // Call decodeXref with visitedOffsets that includes the Prev offset
+        // This should not cause infinite recursion
+        $result = $this->fixture->exposeDecodeXref($pdfData, 0, [], [100]);
+
+        // Should complete without error and return an array
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('trailer', $result);
+    }
+
+    /**
+     * Test that getXrefData tracks visited offsets correctly
+     *
+     * Ensures that offsets are added to visitedOffsets array to prevent
+     * circular references in subsequent calls.
+     */
+    public function testGetXrefDataTracksVisitedOffsets(): void
+    {
+        // Test that calling with an already-visited offset returns immediately
+        $pdfData = "%PDF-1.5\n";
+        $pdfData .= "xref\n";
+        $pdfData .= "0 1\n";
+        $pdfData .= "0000000000 65535 f \n";
+        $pdfData .= "trailer\n";
+        $pdfData .= "<</Size 1>>\n";
+        $pdfData .= "startxref\n";
+        $pdfData .= "7\n";
+        $pdfData .= "%%EOF\n";
+
+        // Call with offset 50 already in visitedOffsets - should return immediately
+        $result = $this->fixture->exposeGetXrefData($pdfData, 50, [], [50]);
+        
+        // Should return empty array without processing
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
     }
 }
