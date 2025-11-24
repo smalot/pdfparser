@@ -11,6 +11,7 @@ use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\PDFObject;
+use Smalot\PdfParser\XObject\Form;
 use Smalot\PdfParser\XObject\Image;
 
 class PDFObjectTest extends TestCase
@@ -33,6 +34,7 @@ class PDFObjectTest extends TestCase
         $document->init();
 
         $image = new Image($document);
+        $form = new Form($document);
         $xObject = new PDFObject($document);
 
         $header1 = new Header([
@@ -41,11 +43,21 @@ class PDFObjectTest extends TestCase
                     'Im0' => $image,
                 ])
             ]),
-            'Contents' => new ElementArray([new Element('/Imo Do', $document)], $document),
+            'Contents' => new ElementArray([new Element('/Im0 Do', $document)], $document),
         ]);
         $page1 = new Page($document, $header1);
 
         $header2 = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Fr0' => $form,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+        $page2 = new Page($document, $header2);
+
+        $header3 = new Header([
             'Resources' => new Header([
                 'XObject' => new Header([
                     'Ps0' => $xObject,
@@ -53,12 +65,15 @@ class PDFObjectTest extends TestCase
             ]),
             'Contents' => new ElementArray([new Element('/Ps0 Do', $document)], $document),
         ]);
-        $page2 = new Page($document, $header2);
+        $page3 = new Page($document, $header3);
 
         // Page 1 contains an image, which should not appear in the text array.
         self::assertSame([], $page1->getTextArray());
 
-        // Page 2 contains a non-image object, which should appear in the text array.
-        self::assertSame([' '], $page2->getTextArray());
+        // Page 2 contains a form, which should not appear in the text array.
+        self::assertSame([], $page2->getTextArray());
+
+        // Page 3 contains a non-image object, which should appear in the text array.
+        self::assertSame([' '], $page3->getTextArray());
     }
 }

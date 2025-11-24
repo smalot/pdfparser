@@ -788,8 +788,9 @@ class PDFObject
                             break;
                         }
 
-                        // If the PDFObject is an image, do nothing, as images aren't text.
-                        if ($xobject instanceof Image) {
+                        // If the PDFObject is an Image or a Form, do nothing as
+                        // neither of these XObject types are text.
+                        if ($xobject instanceof Image || $xobject instanceof Form) {
                             break;
                         }
 
