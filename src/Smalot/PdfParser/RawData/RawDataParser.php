@@ -880,7 +880,7 @@ class RawDataParser
             // We've already processed this offset, skip to avoid infinite loop
             return $xref;
         }
-        
+
         // Track this offset as visited
         $visitedOffsets[] = $offset;
         // If the $offset is currently pointed at whitespace, bump it

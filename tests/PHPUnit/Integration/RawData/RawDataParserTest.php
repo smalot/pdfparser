@@ -310,7 +310,7 @@ class RawDataParserTest extends TestCase
 
         // Call with offset 50 already in visitedOffsets - should return immediately
         $result = $this->fixture->exposeGetXrefData($pdfData, 50, [], [50]);
-        
+
         // Should return empty array without processing
         $this->assertIsArray($result);
         $this->assertEmpty($result);
