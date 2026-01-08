@@ -152,15 +152,16 @@ class RawDataParser
     /**
      * Decode the Cross-Reference section
      *
-     * @param string $pdfData   PDF data
-     * @param int    $startxref Offset at which the xref section starts (position of the 'xref' keyword)
-     * @param array  $xref      Previous xref array (if any)
+     * @param string     $pdfData        PDF data
+     * @param int        $startxref      Offset at which the xref section starts (position of the 'xref' keyword)
+     * @param array      $xref           Previous xref array (if any)
+     * @param array<int> $visitedOffsets Array of visited offsets to prevent infinite loops
      *
      * @return array containing xref and trailer data
      *
      * @throws \Exception
      */
-    protected function decodeXref(string $pdfData, int $startxref, array $xref = []): array
+    protected function decodeXref(string $pdfData, int $startxref, array $xref = [], array $visitedOffsets = []): array
     {
         $startxref += 4; // 4 is the length of the word 'xref'
         // skip initial white space chars
@@ -219,7 +220,7 @@ class RawDataParser
                 $offset = (int) $matches[1];
                 if (0 != $offset) {
                     // get previous xref
-                    $xref = $this->getXrefData($pdfData, $offset, $xref);
+                    $xref = $this->getXrefData($pdfData, $offset, $xref, $visitedOffsets);
                 }
             }
         } else {
@@ -232,15 +233,16 @@ class RawDataParser
     /**
      * Decode the Cross-Reference Stream section
      *
-     * @param string $pdfData   PDF data
-     * @param int    $startxref Offset at which the xref section starts
-     * @param array  $xref      Previous xref array (if any)
+     * @param string     $pdfData        PDF data
+     * @param int        $startxref      Offset at which the xref section starts
+     * @param array      $xref           Previous xref array (if any)
+     * @param array<int> $visitedOffsets Array of visited offsets to prevent infinite loops
      *
      * @return array containing xref and trailer data
      *
      * @throws \Exception if unknown PNG predictor detected
      */
-    protected function decodeXrefStream(string $pdfData, int $startxref, array $xref = []): array
+    protected function decodeXrefStream(string $pdfData, int $startxref, array $xref = [], array $visitedOffsets = []): array
     {
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
@@ -502,7 +504,7 @@ class RawDataParser
         } // end decoding data
         if (isset($prevxref)) {
             // get previous xref
-            $xref = $this->getXrefData($pdfData, $prevxref, $xref);
+            $xref = $this->getXrefData($pdfData, $prevxref, $xref, $visitedOffsets);
         }
 
         return $xref;
@@ -862,16 +864,25 @@ class RawDataParser
     /**
      * Get Cross-Reference (xref) table and trailer data from PDF document data.
      *
-     * @param int   $offset xref offset (if known)
-     * @param array $xref   previous xref array (if any)
+     * @param int        $offset        xref offset (if known)
+     * @param array      $xref          previous xref array (if any)
+     * @param array<int> $visitedOffsets array of visited offsets to prevent infinite loops
      *
      * @return array containing xref and trailer data
      *
      * @throws \Exception if it was unable to find startxref
      * @throws \Exception if it was unable to find xref
      */
-    protected function getXrefData(string $pdfData, int $offset = 0, array $xref = []): array
+    protected function getXrefData(string $pdfData, int $offset = 0, array $xref = [], array $visitedOffsets = []): array
     {
+        // Check for circular references to prevent infinite loops
+        if (\in_array($offset, $visitedOffsets, true)) {
+            // We've already processed this offset, skip to avoid infinite loop
+            return $xref;
+        }
+
+        // Track this offset as visited
+        $visitedOffsets[] = $offset;
         // If the $offset is currently pointed at whitespace, bump it
         // forward until it isn't; affects loosely targetted offsets
         // for the 'xref' keyword
@@ -914,7 +925,7 @@ class RawDataParser
         // check xref position
         if (strpos($pdfData, 'xref', $startxref) == $startxref) {
             // Cross-Reference
-            $xref = $this->decodeXref($pdfData, $startxref, $xref);
+            $xref = $this->decodeXref($pdfData, $startxref, $xref, $visitedOffsets);
         } else {
             // Check if the $pdfData might have the wrong line-endings
             $pdfDataUnix = str_replace("\r\n", "\n", $pdfData);
@@ -923,7 +934,7 @@ class RawDataParser
                 $xref = ['Unix' => true];
             } else {
                 // Cross-Reference Stream
-                $xref = $this->decodeXrefStream($pdfData, $startxref, $xref);
+                $xref = $this->decodeXrefStream($pdfData, $startxref, $xref, $visitedOffsets);
             }
         }
         if (empty($xref)) {
