@@ -1,29 +1,30 @@
-name: "Performance Tests"
+name: Performance Tests
 
 on:
   pull_request:
   push:
     branches:
-      - "master"
+      - master
 
 env:
   fail-fast: true
 
 jobs:
   performance-tests:
-    name: "Tests for the performance testing the PDF parsing"
+    name: Tests for the performance testing the PDF parsing
+
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        php: ['7.4']
+        php: ['7.4', '8.3', '8.4', '8.5']
 
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v3"
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: "Run composer for further autoloading"
-        run: "composer update"
+      - name: Run composer for further autoloading
+        run: composer update
 
-      - name: "Run performance tests"
-        run: "php tests/Performance/runPerformanceTests.php"
+      - name: Run performance tests
+        run: php tests/Performance/runPerformanceTests.php
