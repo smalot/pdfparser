@@ -803,7 +803,7 @@ class PDFObject
 
                         // If the PDFObject is a Form and doesn't have any text,
                         // skip it.
-                        if (($xobject instanceof Form) && ($objectText === ' ')) {
+                        if ($xobject instanceof Form && $objectText === ' ') {
                             break;
                         }
 
