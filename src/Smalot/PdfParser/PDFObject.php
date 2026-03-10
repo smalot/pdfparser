@@ -788,16 +788,26 @@ class PDFObject
                             break;
                         }
 
-                        // If the PDFObject is an Image or a Form, do nothing as
-                        // neither of these XObject types are text.
-                        if ($xobject instanceof Image || $xobject instanceof Form) {
+                        // If the PDFObject is an Image, do nothing as images
+                        // aren't text.
+                        if ($xobject instanceof Image) {
                             break;
                         }
 
                         // Check this is not a circular reference.
-                        if (!\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
-                            $text[] = $xobject->getText($page);
+                        if (\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
+                            break;
                         }
+
+                        $objectText = $xobject->getText($page);
+
+                        // If the PDFObject is a Form and doesn't have any text,
+                        // skip it.
+                        if ($xobject instanceof Form && $objectText === ' ') {
+                            break;
+                        }
+
+                        $text[] = $objectText;
                         break;
 
                         // Marked content point with (DP) & without (MP) property list

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PHPUnitTests\Unit;
 
 use PHPUnitTests\TestCase;
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
 use Smalot\PdfParser\Element\ElementArray;
@@ -33,8 +34,10 @@ class PDFObjectTest extends TestCase
         $document = new Document();
         $document->init();
 
+        $config = new Config();
         $image = new Image($document);
-        $form = new Form($document);
+        $formNoText = new Form($document);
+        $formWithText = new Form($document, null, 'BT /F1 12 Tf 10 10 Td (Form text) Tj ET', $config);
         $xObject = new PDFObject($document);
 
         $header1 = new Header([
@@ -50,7 +53,7 @@ class PDFObjectTest extends TestCase
         $header2 = new Header([
             'Resources' => new Header([
                 'XObject' => new Header([
-                    'Fr0' => $form,
+                    'Fr0' => $formNoText,
                 ])
             ]),
             'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
@@ -60,20 +63,36 @@ class PDFObjectTest extends TestCase
         $header3 = new Header([
             'Resources' => new Header([
                 'XObject' => new Header([
+                    'Fr0' => $formWithText,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+        $page3 = new Page($document, $header3);
+
+        $header4 = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
                     'Ps0' => $xObject,
                 ])
             ]),
             'Contents' => new ElementArray([new Element('/Ps0 Do', $document)], $document),
         ]);
-        $page3 = new Page($document, $header3);
+        $page4 = new Page($document, $header4);
 
         // Page 1 contains an image, which should not appear in the text array.
         self::assertSame([], $page1->getTextArray());
 
-        // Page 2 contains a form, which should not appear in the text array.
+        // Page 2 contains a form that contains no text, which should not appear
+        // in the text array.
         self::assertSame([], $page2->getTextArray());
 
-        // Page 3 contains a non-image object, which should appear in the text array.
-        self::assertSame([' '], $page3->getTextArray());
+        // Page 3 contains a form that contains text, which should appear in the
+        // text array.
+        self::assertSame(['Form text '], $page3->getTextArray());
+
+        // Page 4 contains a non-image object, which should appear in the text
+        // array.
+        self::assertSame([' '], $page4->getTextArray());
     }
 }
