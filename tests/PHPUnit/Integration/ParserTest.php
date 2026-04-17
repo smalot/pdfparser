@@ -438,6 +438,18 @@ class ParserTest extends TestCase
 
         // without the configuration option set, an exception would be thrown.
     }
+
+    /**
+     * Tests a fix for chr() which threw deprecations when running PHP 8.5
+     *
+     * @see https://github.com/smalot/pdfparser/pull/793
+     */
+    public function testPullRequest793ChrDeprecationFix(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest793.pdf');
+
+        $this->assertEquals('ASCII85 last-tuple overflow test', $document->getText());
+    }
 }
 
 class ParserSub extends Parser
