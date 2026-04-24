@@ -975,6 +975,17 @@ class RawDataParser
             }
         }
 
+        // Some malformed files point startxref to the bytes right before the xref keyword.
+        // Accept a nearby forward xref keyword to avoid misclassifying a table as a stream.
+        $nextXrefPos = strpos($pdfData, 'xref', $startxrefOffset);
+        if (
+            false !== $nextXrefPos
+            && $nextXrefPos <= ($startxrefOffset + 64)
+            && preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', substr($pdfData, $nextXrefPos, 5)) > 0
+        ) {
+            $startxrefOffset = $nextXrefPos;
+        }
+
         $xrefSubsectionAtOffset = preg_match(
             '/[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A',
             substr($pdfData, $startxrefOffset, 48)

@@ -117,4 +117,11 @@ class DocumentIssueFocusTest extends TestCase
 
         self::assertCount(1, $document->getPages());
     }
+
+    public function testParseFileWhenStartxrefPointsBeforeXrefKeyword(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest808-pdf.js.pdf');
+
+        self::assertCount(5, $document->getPages());
+    }
 }
