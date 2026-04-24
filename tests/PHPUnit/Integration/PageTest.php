@@ -154,7 +154,9 @@ class PageTest extends TestCase
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/bugs/PullRequest457.pdf';
-        $parser = $this->getParserInstance();
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $parser = $this->getParserInstance($config);
         $document = $parser->parseFile($filename);
         $pages = $document->getPages();
         $page = $pages[0];
