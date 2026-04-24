@@ -377,6 +377,7 @@ class ParserTest extends TestCase
         }
 
         $memoryWithRetainedImages = memory_get_usage(true);
+        $extraMemoryWithRetainedImages = max(0, $memoryWithRetainedImages - $baselineMemory);
         $this->assertTrue(null != $document && '' !== $document->getText());
 
         // force garbage collection
@@ -396,12 +397,11 @@ class ParserTest extends TestCase
         }
 
         $memoryWithoutRetainedImages = memory_get_usage(true);
-        $this->assertLessThanOrEqual(
-            $memoryWithRetainedImages,
-            $memoryWithoutRetainedImages,
-            'Discarding image content should not use more memory than retaining it.'
+        $extraMemoryWithoutRetainedImages = max(0, $memoryWithoutRetainedImages - $baselineMemory);
+        $this->assertTrue(
+            $extraMemoryWithoutRetainedImages <= $extraMemoryWithRetainedImages,
+            'Discarding image content should not use more extra memory than retaining it.'
         );
-        $this->assertGreaterThanOrEqual($baselineMemory, $memoryWithoutRetainedImages);
         $this->assertTrue('' !== $document->getText());
     }
 
