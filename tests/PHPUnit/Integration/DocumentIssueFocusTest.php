@@ -112,6 +112,9 @@ class DocumentIssueFocusTest extends TestCase
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/795
+     */
     public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
