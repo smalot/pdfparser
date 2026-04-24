@@ -513,7 +513,7 @@ class RawDataParser
     protected function getObjectHeaderPattern(array $objRefs): string
     {
         // consider all whitespace character (PDF specifications)
-        return '/'.$objRefs[0].$this->config->getPdfWhitespacesRegex().$objRefs[1].$this->config->getPdfWhitespacesRegex().'obj/';
+        return '/'.$objRefs[0].$this->config->getPdfWhitespacesRegex().'+'.$objRefs[1].$this->config->getPdfWhitespacesRegex().'+obj/';
     }
 
     protected function getObjectHeaderLen(array $objRefs): int
@@ -546,6 +546,7 @@ class RawDataParser
             throw new \Exception('Invalid object reference for $obj.');
         }
 
+        $objHeaderPattern = $this->getObjectHeaderPattern($objRefArr);
         $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
 
         /*
@@ -555,9 +556,27 @@ class RawDataParser
         $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
-        if (0 == preg_match($this->getObjectHeaderPattern($objRefArr), substr($pdfData, $offset, $objHeaderLen))) {
-            // an indirect reference to an undefined object shall be considered a reference to the null object
-            return ['null', 'null', $offset];
+        if (0 == preg_match($objHeaderPattern, substr($pdfData, $offset, 33), $headerMatches)) {
+            // Some malformed files have slightly inaccurate xref offsets.
+            // Try to recover by locating the expected object header nearby.
+            $searchStart = max(0, $offset - 64);
+            $searchLen = 192;
+            if (
+                preg_match(
+                    $objHeaderPattern,
+                    substr($pdfData, $searchStart, $searchLen),
+                    $headerMatches,
+                    \PREG_OFFSET_CAPTURE
+                ) > 0
+            ) {
+                $offset = $searchStart + $headerMatches[0][1];
+                $objHeaderLen = \strlen($headerMatches[0][0]);
+            } else {
+                // an indirect reference to an undefined object shall be considered a reference to the null object
+                return ['null', 'null', $offset];
+            }
+        } else {
+            $objHeaderLen = \strlen($headerMatches[0]);
         }
 
         /*
