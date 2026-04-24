@@ -821,8 +821,12 @@ class RawDataParser
         return [$objtype, $objval, $offset];
     }
 
-    private function shouldSkipImageStreamContent(array $headerDic): bool
+    private function shouldSkipImageStreamContent(?array $headerDic): bool
     {
+        if (false === \is_array($headerDic)) {
+            return false;
+        }
+
         $memoryLimit = $this->getMemoryLimitBytes();
         if ($memoryLimit <= 0) {
             return false;
