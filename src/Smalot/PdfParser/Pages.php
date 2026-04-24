@@ -63,6 +63,30 @@ class Pages extends PDFObject
             return $kidsElement->getContent();
         }
 
+        $visited = [];
+
+        return $this->collectPages($visited);
+    }
+
+    /**
+     * @param array<string, bool> $visited
+     *
+     * @return array<Page>
+     */
+    protected function collectPages(array &$visited): array
+    {
+        $nodeId = \function_exists('spl_object_id')
+            ? (string) \spl_object_id($this)
+            : \spl_object_hash($this);
+        if (isset($visited[$nodeId])) {
+            return [];
+        }
+
+        $visited[$nodeId] = true;
+
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
+
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
             $this->setupFonts();
@@ -74,7 +98,7 @@ class Pages extends PDFObject
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true));
+                $pages = array_merge($pages, $kid->collectPages($visited));
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
