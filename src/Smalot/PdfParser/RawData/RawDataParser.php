@@ -169,7 +169,19 @@ class RawDataParser
         // initialize object number
         $obj_num = 0;
         // search for cross-reference entries or subsection
-        while (preg_match('/([0-9]+)[\x20]([0-9]+)[\x20]?([nf]?)(\r\n|[\x20]?[\r\n])/', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
+        while (true) {
+            // Some files include comment lines between xref entries.
+            // Skip comments so parsing can continue through the full table.
+            while (isset($pdfData[$offset]) && '%' === $pdfData[$offset]) {
+                $offset += strcspn($pdfData, "\r\n", $offset);
+                $offset += strspn($pdfData, "\r\n", $offset);
+                $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
+            }
+
+            if (preg_match('/([0-9]+)[\x20]([0-9]+)[\x20]?([nf]?)(\r\n|[\x20]?[\r\n])/', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) <= 0) {
+                break;
+            }
+
             if ($matches[0][1] != $offset) {
                 // we are on another section
                 break;

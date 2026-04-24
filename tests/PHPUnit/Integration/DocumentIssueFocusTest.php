@@ -111,4 +111,11 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+
+    public function testParseFileWithCommentsInsideXrefTable(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest805-pdf.js.pdf');
+
+        self::assertCount(3, $document->getPages());
+    }
 }
