@@ -116,6 +116,6 @@ class DocumentIssueFocusTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestInvalidObjectReference.pdf');
 
-        self::assertSame(1, count($document->getPages()));
+        self::assertCount(1, $document->getPages());
     }
 }
