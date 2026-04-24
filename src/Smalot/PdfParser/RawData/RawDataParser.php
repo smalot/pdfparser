@@ -216,6 +216,12 @@ class RawDataParser
                     $xref['trailer']['id'][1] = $matches[2];
                 }
             }
+            if (preg_match('/XRefStm[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
+                $xrefStmOffset = (int) $matches[1];
+                if (0 != $xrefStmOffset) {
+                    $xref = $this->decodeXrefStream($pdfData, $xrefStmOffset, $xref, $visitedOffsets);
+                }
+            }
             if (preg_match('/Prev[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
                 $offset = (int) $matches[1];
                 if (0 != $offset) {
@@ -246,7 +252,45 @@ class RawDataParser
     {
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
-        $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefobj[1], $startxref, true);
+        $xrefObjRef = isset($xrefobj[1]) && \is_string($xrefobj[1]) ? $xrefobj[1] : '';
+        $xrefObjOffset = $startxref;
+
+        // Some malformed files point startxref near the xref stream object header.
+        // Recover a nearby valid object header instead of failing with a type error.
+        if (0 === preg_match('/^[0-9]+_[0-9]+$/', $xrefObjRef)) {
+            if (
+                preg_match('/([0-9]+)[\x20]+([0-9]+)[\x20]+obj/i', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $startxref) > 0
+                && ($matches[0][1] - $startxref) <= 64
+            ) {
+                $xrefObjRef = (int) $matches[1][0].'_'.(int) $matches[2][0];
+                $xrefObjOffset = $matches[0][1];
+            }
+        }
+
+        if (0 === preg_match('/^[0-9]+_[0-9]+$/', $xrefObjRef)) {
+            if (
+                preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $startxref) > 0
+                && $matches[0][1] <= $startxref
+            ) {
+                $trailerData = $matches[1][0];
+                if (preg_match('/XRefStm[\s]+([0-9]+)/i', $trailerData, $stmMatches) > 0) {
+                    $stmOffset = (int) $stmMatches[1];
+                    if (0 != $stmOffset) {
+                        $xref = $this->decodeXrefStream($pdfData, $stmOffset, $xref, $visitedOffsets);
+                    }
+                }
+                if (preg_match('/Prev[\s]+([0-9]+)/i', $trailerData, $prevMatches) > 0) {
+                    $prevOffset = (int) $prevMatches[1];
+                    if (0 != $prevOffset) {
+                        $xref = $this->getXrefData($pdfData, $prevOffset, $xref, $visitedOffsets);
+                    }
+                }
+            }
+
+            return $xref;
+        }
+
+        $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefObjRef, $xrefObjOffset, true);
         if (!isset($xref['trailer']) || empty($xref['trailer'])) {
             // get only the last updated version
             $xref['trailer'] = [];
@@ -920,6 +964,20 @@ class RawDataParser
 
         if ($startxref > \strlen($pdfData)) {
             throw new \Exception('Unable to find xref (PDF corrupted?)');
+        }
+
+        // Some malformed files point startxref a few bytes after the xref keyword.
+        $nearXrefWindowStart = max(0, $startxref - 64);
+        $nearXrefWindowLength = $startxref - $nearXrefWindowStart + 8;
+        if ($nearXrefWindowLength > 0) {
+            $nearXrefChunk = substr($pdfData, $nearXrefWindowStart, $nearXrefWindowLength);
+            $nearXrefPos = strrpos($nearXrefChunk, 'xref');
+            if (false !== $nearXrefPos) {
+                $nearXrefOffset = $nearXrefWindowStart + $nearXrefPos;
+                if ($nearXrefOffset <= $startxref && preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', substr($pdfData, $nearXrefOffset, 5)) > 0) {
+                    $startxref = $nearXrefOffset;
+                }
+            }
         }
 
         // check xref position
