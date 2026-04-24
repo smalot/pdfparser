@@ -3,7 +3,7 @@
 /**
  * @file This file is part of the PdfParser library.
  *
- * @author  Konrad Abicht <k.abicht@gmail.com>
+ * @author  Vitor Mattos <1079143+vitormattos@users.noreply.github.com>
  *
  * @date    2026-04-24
  *
