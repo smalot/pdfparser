@@ -111,4 +111,11 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+
+    public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInXrefStream(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestStartxrefWhitespaceXrefStream.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
 }
