@@ -303,7 +303,7 @@ class FilterHelper
             return $decodeMemoryLimit;
         }
 
-        $memoryLimit = $this->parseIniMemoryLimit((string) ini_get('memory_limit'));
+        $memoryLimit = MemoryLimit::toBytes((string) ini_get('memory_limit'));
         if ($memoryLimit <= 0) {
             // Unlimited PHP memory limit.
             return 0;
@@ -320,31 +320,6 @@ class FilterHelper
 
         return (int) min(max($safeLimit, 1024 * 1024), 256 * 1024 * 1024);
     }
-
-    private function parseIniMemoryLimit(string $value): int
-    {
-        $value = trim($value);
-        if ('' === $value || '-1' === $value) {
-            return -1;
-        }
-
-        $unit = strtolower(substr($value, -1));
-        $number = (int) $value;
-        switch ($unit) {
-            case 'g':
-                return $number * 1024 * 1024 * 1024;
-
-            case 'm':
-                return $number * 1024 * 1024;
-
-            case 'k':
-                return $number * 1024;
-
-            default:
-                return (int) $value;
-        }
-    }
-
     /**
      * LZWDecode
      *

@@ -850,32 +850,7 @@ class RawDataParser
             return $memoryLimit;
         }
 
-        $value = trim((string) ini_get('memory_limit'));
-        if ('' === $value || '-1' === $value) {
-            $memoryLimit = -1;
-
-            return $memoryLimit;
-        }
-
-        $unit = strtolower(substr($value, -1));
-        $number = (int) $value;
-        switch ($unit) {
-            case 'g':
-                $memoryLimit = $number * 1024 * 1024 * 1024;
-                break;
-
-            case 'm':
-                $memoryLimit = $number * 1024 * 1024;
-                break;
-
-            case 'k':
-                $memoryLimit = $number * 1024;
-                break;
-
-            default:
-                $memoryLimit = (int) $value;
-                break;
-        }
+        $memoryLimit = MemoryLimit::toBytes((string) ini_get('memory_limit'));
 
         return $memoryLimit;
     }
