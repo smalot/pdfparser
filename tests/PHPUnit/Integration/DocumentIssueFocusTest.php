@@ -118,4 +118,14 @@ class DocumentIssueFocusTest extends TestCase
 
         self::assertSame(1, count($document->getPages()));
     }
+
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/797
+     */
+    public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
 }
