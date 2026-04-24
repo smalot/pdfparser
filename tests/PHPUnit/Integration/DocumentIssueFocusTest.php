@@ -113,6 +113,9 @@ class DocumentIssueFocusTest extends TestCase
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
 
+    /**
+     * @group linux-only
+     */
     public function testParseFileWithLargeFlateStreams(): void
     {
         $config = new Config();
