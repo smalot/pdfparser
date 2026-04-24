@@ -443,7 +443,9 @@ class Document
                 continue;
             }
 
-            $id = spl_object_id($page);
+            $id = \function_exists('spl_object_id')
+                ? (string) \spl_object_id($page)
+                : \spl_object_hash($page);
             if (isset($seen[$id])) {
                 continue;
             }
