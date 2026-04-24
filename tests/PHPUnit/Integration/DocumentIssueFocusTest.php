@@ -111,4 +111,13 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+
+    public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
+
+        $pages = $document->getPages();
+
+        self::assertCount(1, $pages);
+    }
 }
