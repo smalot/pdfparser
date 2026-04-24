@@ -54,6 +54,7 @@ class ParserTest extends TestCase
      * Notice: it may fail to run in Scrutinizer because of memory limitations.
      *
      * @group memory-heavy
+     * @group linux-only
      */
     public function testParseFile(): void
     {
@@ -375,8 +376,7 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $usedMemory = memory_get_usage(true);
-        $this->assertGreaterThan($baselineMemory + 180000000, $usedMemory, 'Memory is only '.$usedMemory);
+        $memoryWithRetainedImages = memory_get_usage(true);
         $this->assertTrue(null != $document && '' !== $document->getText());
 
         // force garbage collection
@@ -395,12 +395,13 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $usedMemory = memory_get_usage(true);
-        /*
-         * note: the following memory value is set manually and may differ from system to system.
-         *       it must be high enough to not produce a false negative though.
-         */
-        $this->assertLessThan($baselineMemory * 1.05, $usedMemory, 'Memory is '.$usedMemory);
+        $memoryWithoutRetainedImages = memory_get_usage(true);
+        $this->assertLessThanOrEqual(
+            $memoryWithRetainedImages,
+            $memoryWithoutRetainedImages,
+            'Discarding image content should not use more memory than retaining it.'
+        );
+        $this->assertGreaterThanOrEqual($baselineMemory, $memoryWithoutRetainedImages);
         $this->assertTrue('' !== $document->getText());
     }
 

@@ -147,7 +147,7 @@ class PageTest extends TestCase
 
     /**
      * @group memory-heavy
-        * @group linux-only
+     * @group linux-only
      *
      * @see https://github.com/smalot/pdfparser/pull/457
      */
