@@ -36,7 +36,6 @@
 namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
-use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -112,9 +111,9 @@ class DocumentIssueFocusTest extends TestCase
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
 
-    public function testParseFileWhenStartxrefPointsToLeadingWhitespace(): void
+    public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestXrefWhitespaceStart.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-vera.pdf');
 
         self::assertSame(1, count($document->getPages()));
     }
@@ -124,7 +123,7 @@ class DocumentIssueFocusTest extends TestCase
      */
     public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-pdf.js.pdf');
 
         self::assertCount(1, $document->getPages());
     }
