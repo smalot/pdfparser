@@ -532,6 +532,9 @@ class Page extends PDFObject
                 case 'cm':
                     $extractedData[] = $command;
                     break;
+                case 'Do':
+                    $extractedData[] = $command;
+                    break;
                     /*
                      * ET
                      * End a text object, discarding the text matrix
@@ -733,7 +736,7 @@ class Page extends PDFObject
             // If we've used up all the texts from getTextArray(), exit
             // so we aren't accessing non-existent array indices
             // Fixes 'undefined array key' errors in Issues #575, #576
-            if (\count($extractedTexts) <= \count($extractedData)) {
+            if (\count($extractedTexts) > 0 && \count($extractedTexts) <= \count($extractedData)) {
                 break;
             }
             $currentText = $extractedTexts[\count($extractedData)];
@@ -760,6 +763,16 @@ class Page extends PDFObject
                     $TempMatrix[4] = (float) $concatTm[4] * (float) $newConcatTm[0] + (float) $concatTm[5] * (float) $newConcatTm[2] + (float) $newConcatTm[4];
                     $TempMatrix[5] = (float) $concatTm[4] * (float) $newConcatTm[1] + (float) $concatTm[5] * (float) $newConcatTm[3] + (float) $newConcatTm[5];
                     $concatTm = $TempMatrix;
+                    break;
+                case 'Do':
+                    $args = preg_split('/\s/s', $command[self::COMMAND]);
+                    $id = trim(array_pop($args), '/ ');
+                    $xobject = $this->getXObject($id);
+                    if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
+                        self::$recursionStack[] = $xobject->getUniqueId();
+                        $extractedData = array_merge($xobject->getDataTm(), $extractedData);
+                        $extractedTexts = array_merge($xobject->getTextArray(), $extractedTexts);
+                    }
                     break;
                     /*
                      * ET
