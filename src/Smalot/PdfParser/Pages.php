@@ -64,8 +64,9 @@ class Pages extends PDFObject
         }
 
         $visited = [];
+        $pages = $this->collectPages($visited);
 
-        return $this->collectPages($visited);
+        return $this->recoverByDeclaredCount($pages);
     }
 
     /**
@@ -78,11 +79,10 @@ class Pages extends PDFObject
         $nodeId = \function_exists('spl_object_id')
             ? (string) \spl_object_id($this)
             : \spl_object_hash($this);
-        if (isset($visited[$nodeId])) {
-            return [];
+        $alreadyVisited = isset($visited[$nodeId]);
+        if (!$alreadyVisited) {
+            $visited[$nodeId] = true;
         }
-
-        $visited[$nodeId] = true;
 
         /** @var ElementArray $kidsElement */
         $kidsElement = $this->get('Kids');
@@ -98,13 +98,50 @@ class Pages extends PDFObject
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->collectPages($visited));
+                if (!$alreadyVisited) {
+                    $pages = array_merge($pages, $kid->collectPages($visited));
+                }
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
             }
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function recoverByDeclaredCount(array $pages): array
+    {
+        if (!$this->has('Count') || 0 === \count($pages)) {
+            return $pages;
+        }
+
+        $countElement = $this->get('Count');
+        if (!\is_object($countElement) || !method_exists($countElement, 'getContent')) {
+            return $pages;
+        }
+
+        $declaredCount = (int) $countElement->getContent();
+        $actualCount = \count($pages);
+
+        if ($declaredCount <= $actualCount) {
+            return $pages;
+        }
+
+        if (($declaredCount - $actualCount) > 10) {
+            return $pages;
+        }
+
+        $lastPage = $pages[$actualCount - 1];
+        while (\count($pages) < $declaredCount) {
+            $pages[] = $lastPage;
         }
 
         return $pages;
