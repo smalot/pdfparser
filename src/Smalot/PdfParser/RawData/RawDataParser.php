@@ -246,6 +246,16 @@ class RawDataParser
     {
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
+        if (!isset($xrefobj[0], $xrefobj[1]) || 'objref' !== $xrefobj[0] || !\is_string($xrefobj[1])) {
+            // Some malformed files point startxref inside the trailer of a classic xref section.
+            $searchStart = max(0, $startxref - 32);
+            $relativeXrefOffset = strrpos(substr($pdfData, $searchStart, ($startxref - $searchStart) + 1), 'xref');
+            if (false !== $relativeXrefOffset) {
+                $recoveredXrefOffset = $searchStart + $relativeXrefOffset;
+
+                return $this->decodeXref($pdfData, $recoveredXrefOffset, $xref, $visitedOffsets);
+            }
+        }
         $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefobj[1], $startxref, true);
         if (!isset($xref['trailer']) || empty($xref['trailer'])) {
             // get only the last updated version
