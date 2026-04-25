@@ -524,6 +524,41 @@ class RawDataParser
     }
 
     /**
+     * Merge missing xref offsets by scanning object headers directly in the PDF body.
+     *
+     * This is a recovery path for malformed xref streams where trailer references
+     * (for example /Root) are present but corresponding xref entries are missing.
+     */
+    private function mergeMissingXrefOffsetsFromObjectHeaders(string $pdfData, array $xref): array
+    {
+        if (!isset($xref['xref']) || !\is_array($xref['xref'])) {
+            $xref['xref'] = [];
+        }
+
+        if (
+            preg_match_all(
+                '/(?:^|[\r\n])([0-9]+)[\x09\x0a\x0c\x0d\x20]+([0-9]+)[\x09\x0a\x0c\x0d\x20]+obj(?=[\x09\x0a\x0c\x0d\x20<])/i',
+                $pdfData,
+                $matches,
+                \PREG_OFFSET_CAPTURE
+            ) > 0
+        ) {
+            foreach ($matches[1] as $idx => $objMatch) {
+                $objNum = $objMatch[0];
+                $offset = $objMatch[1];
+                $genNum = $matches[2][$idx][0];
+                $objRef = $objNum.'_'.$genNum;
+
+                if (!isset($xref['xref'][$objRef])) {
+                    $xref['xref'][$objRef] = $offset;
+                }
+            }
+        }
+
+        return $xref;
+    }
+
+    /**
      * Get content of indirect object.
      *
      * @param string $pdfData  PDF data
@@ -974,6 +1009,11 @@ class RawDataParser
         if (isset($xref['Unix'])) {
             $pdfData = str_replace("\r\n", "\n", $pdfData);
             $xref = $this->getXrefData($pdfData);
+        }
+
+        $rootObjectRef = $xref['trailer']['root'] ?? null;
+        if (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef])) {
+            $xref = $this->mergeMissingXrefOffsetsFromObjectHeaders($pdfData, $xref);
         }
 
         // parse all document objects
