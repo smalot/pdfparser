@@ -173,7 +173,7 @@ class RawDataParser
         // initialize object number
         $obj_num = 0;
         // search for cross-reference entries or subsection
-        while (preg_match('/([0-9]+)[\x20]([0-9]+)[\x20]?([nf]?)(\r\n|[\x20]?[\r\n])/', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
+        while (preg_match('/([0-9]+)[\x20]+([0-9]+)[\x20]*([nf]?)(\r\n|[\x20]*[\r\n])/', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
             if ($matches[0][1] != $offset) {
                 // we are on another section
                 break;
