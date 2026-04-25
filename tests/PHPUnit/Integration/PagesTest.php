@@ -37,6 +37,7 @@ use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\Pages;
 
 /**
@@ -102,5 +103,12 @@ class PagesTest extends TestCase
         // Now that $page already has a font, updates from $pages
         // should not overwrite it
         $this->assertEquals([$font1], $page->getFonts());
+    }
+
+    public function testParseFileWithCyclicPagesTree(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
+
+        self::assertCount(2, $document->getPages());
     }
 }
