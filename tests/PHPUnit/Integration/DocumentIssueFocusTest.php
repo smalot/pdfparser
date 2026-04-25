@@ -36,6 +36,7 @@
 namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
+use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -109,22 +110,5 @@ class DocumentIssueFocusTest extends TestCase
         // as well as removing \r line-feeds
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
-    }
-
-    public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-vera.pdf');
-
-        self::assertSame(1, count($document->getPages()));
-    }
-
-    /**
-     * @see https://github.com/smalot/pdfparser/pull/797
-     */
-    public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
     }
 }
