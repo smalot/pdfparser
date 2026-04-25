@@ -37,6 +37,7 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\RawDataParser;
 
 class RawDataParserHelper extends RawDataParser
@@ -314,5 +315,17 @@ class RawDataParserTest extends TestCase
         // Should return empty array without processing
         $this->assertIsArray($result);
         $this->assertEmpty($result);
+    }
+
+    /**
+     * Ensure parser resolves compressed object references from xref streams.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/796
+     */
+    public function testParseFileWithCompressedObjRefInXrefStream(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestInvalidObjectReference.pdf');
+
+        self::assertCount(1, $document->getPages());
     }
 }
