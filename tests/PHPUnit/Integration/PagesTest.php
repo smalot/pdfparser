@@ -37,8 +37,8 @@ use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
-use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\Pages;
+use Smalot\PdfParser\Parser;
 
 /**
  * @internal only for test purposes
