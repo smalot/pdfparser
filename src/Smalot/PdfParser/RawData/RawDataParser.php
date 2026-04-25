@@ -902,15 +902,10 @@ class RawDataParser
         );
 
         if (0 == $startxrefPreg) {
-            $xrefSubsectionAtOffset = preg_match(
-                '/[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A',
-                substr($pdfData, $bumpOffset, 48)
-            ) > 0;
-
-            if (strpos($pdfData, 'xref', $bumpOffset) === $bumpOffset || $xrefSubsectionAtOffset) {
+            if (strpos($pdfData, 'xref', $bumpOffset) === $bumpOffset || $this->hasXrefSubsectionAtOffset($pdfData, $bumpOffset)) {
                 // No startxref stanza, but caller already points to an xref table/subsection.
                 $startxref = $bumpOffset;
-            } elseif (preg_match('/^[0-9]+[\s]+[0-9]+[\s]+obj/i', substr($pdfData, $bumpOffset, 32)) > 0) {
+            } elseif ($this->hasObjectHeaderAtOffset($pdfData, $bumpOffset)) {
                 // No startxref stanza, but caller points to an xref stream object.
                 $startxref = $bumpOffset;
             } else {
@@ -929,7 +924,7 @@ class RawDataParser
         } elseif (strpos($pdfData, 'xref', $bumpOffset) === $bumpOffset) {
             // Already pointing at the xref table
             $startxref = $bumpOffset;
-        } elseif (preg_match('/^[0-9]+[\s]+[0-9]+[\s]+obj/i', substr($pdfData, $bumpOffset, 32)) > 0) {
+        } elseif ($this->hasObjectHeaderAtOffset($pdfData, $bumpOffset)) {
             // Cross-Reference Stream object
             $startxref = $bumpOffset;
         } else {
@@ -969,65 +964,18 @@ class RawDataParser
     private function recoverXrefWithoutStartxref(string $pdfData): array
     {
         $trailerPos = strrpos($pdfData, 'trailer');
-        $recoveredOffset = null;
-
-        if (false !== $trailerPos) {
-            $searchStart = max(0, $trailerPos - 8192);
-            $searchChunk = substr($pdfData, $searchStart, $trailerPos - $searchStart);
-            $lastXrefPos = strrpos($searchChunk, 'xref');
-            if (false !== $lastXrefPos) {
-                $candidateOffset = $searchStart + $lastXrefPos;
-                if (
-                    preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', substr($pdfData, $candidateOffset, 5)) > 0
-                    && preg_match('/xref[\s]*[\r\n]+[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A', substr($pdfData, $candidateOffset, 96)) > 0
-                ) {
-                    $recoveredOffset = $candidateOffset;
-                }
-            }
-        }
+        $recoveredOffset = false !== $trailerPos
+            ? $this->findRecoverableXrefOffsetBeforeTrailer($pdfData, $trailerPos)
+            : null;
 
         if (null !== $recoveredOffset) {
             return $this->getXrefData($pdfData, $recoveredOffset);
         }
 
-        $xref = ['xref' => [], 'trailer' => []];
-        if (
-            preg_match_all('/([0-9]+)[\x20]+([0-9]+)[\x20]+obj\b/i', $pdfData, $objMatches, \PREG_OFFSET_CAPTURE) > 0
-        ) {
-            foreach ($objMatches[0] as $i => $fullMatch) {
-                $objNum = (int) $objMatches[1][$i][0];
-                $genNum = (int) $objMatches[2][$i][0];
-                $xref['xref'][$objNum.'_'.$genNum] = $fullMatch[1];
-            }
+        $xref = $this->buildXrefFromObjectHeaders($pdfData);
 
-            if (false !== $trailerPos) {
-                $trailerEnd = strpos($pdfData, '%%EOF', $trailerPos);
-                if (false === $trailerEnd) {
-                    $trailerEnd = min(
-                        \strlen($pdfData),
-                        $trailerPos + 4096
-                    );
-                }
-                $trailerData = substr($pdfData, $trailerPos, $trailerEnd - $trailerPos);
-
-                if (preg_match('/Size[\s]+([0-9]+)/i', $trailerData, $matches) > 0) {
-                    $xref['trailer']['size'] = (int) $matches[1];
-                }
-                if (preg_match('/Root[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-                    $xref['trailer']['root'] = (int) $matches[1].'_'.(int) $matches[2];
-                }
-                if (preg_match('/Encrypt[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-                    $xref['trailer']['encrypt'] = (int) $matches[1].'_'.(int) $matches[2];
-                }
-                if (preg_match('/Info[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-                    $xref['trailer']['info'] = (int) $matches[1].'_'.(int) $matches[2];
-                }
-                if (preg_match('/ID[\s]*[\[]\s*[<]([^>]*)[>][\s]*[<]([^>]*)[>]/i', $trailerData, $matches) > 0) {
-                    $xref['trailer']['id'] = [];
-                    $xref['trailer']['id'][0] = $matches[1];
-                    $xref['trailer']['id'][1] = $matches[2];
-                }
-            }
+        if (false !== $trailerPos) {
+            $this->fillRecoveredTrailerData($xref, $this->getTrailerChunk($pdfData, $trailerPos));
         }
 
         if (empty($xref['xref'])) {
@@ -1039,6 +987,93 @@ class RawDataParser
         }
 
         return $xref;
+    }
+
+    private function hasXrefSubsectionAtOffset(string $pdfData, int $offset): bool
+    {
+        return preg_match(
+            '/[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A',
+            substr($pdfData, $offset, 48)
+        ) > 0;
+    }
+
+    private function hasObjectHeaderAtOffset(string $pdfData, int $offset): bool
+    {
+        return preg_match('/^[0-9]+[\s]+[0-9]+[\s]+obj/i', substr($pdfData, $offset, 32)) > 0;
+    }
+
+    private function findRecoverableXrefOffsetBeforeTrailer(string $pdfData, int $trailerPos): ?int
+    {
+        $searchStart = max(0, $trailerPos - 8192);
+        $searchChunk = substr($pdfData, $searchStart, $trailerPos - $searchStart);
+        $lastXrefPos = strrpos($searchChunk, 'xref');
+
+        if (false === $lastXrefPos) {
+            return null;
+        }
+
+        $candidateOffset = $searchStart + $lastXrefPos;
+        $candidateChunk = substr($pdfData, $candidateOffset, 96);
+        if (
+            preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', $candidateChunk) > 0
+            && preg_match('/xref[\s]*[\r\n]+[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A', $candidateChunk) > 0
+        ) {
+            return $candidateOffset;
+        }
+
+        return null;
+    }
+
+    private function buildXrefFromObjectHeaders(string $pdfData): array
+    {
+        $xref = ['xref' => [], 'trailer' => []];
+        if (
+            preg_match_all('/([0-9]+)[\x20]+([0-9]+)[\x20]+obj\b/i', $pdfData, $objMatches, \PREG_OFFSET_CAPTURE) === 0
+        ) {
+            return $xref;
+        }
+
+        foreach ($objMatches[0] as $i => $fullMatch) {
+            $objNum = (int) $objMatches[1][$i][0];
+            $genNum = (int) $objMatches[2][$i][0];
+            $xref['xref'][$objNum.'_'.$genNum] = $fullMatch[1];
+        }
+
+        return $xref;
+    }
+
+    private function getTrailerChunk(string $pdfData, int $trailerPos): string
+    {
+        $trailerEnd = strpos($pdfData, '%%EOF', $trailerPos);
+        if (false === $trailerEnd) {
+            $trailerEnd = min(
+                \strlen($pdfData),
+                $trailerPos + 4096
+            );
+        }
+
+        return substr($pdfData, $trailerPos, $trailerEnd - $trailerPos);
+    }
+
+    private function fillRecoveredTrailerData(array &$xref, string $trailerData): void
+    {
+        if (preg_match('/Size[\s]+([0-9]+)/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['size'] = (int) $matches[1];
+        }
+        if (preg_match('/Root[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['root'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/Encrypt[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['encrypt'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/Info[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['info'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/ID[\s]*[\[]\s*[<]([^>]*)[>][\s]*[<]([^>]*)[>]/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['id'] = [];
+            $xref['trailer']['id'][0] = $matches[1];
+            $xref['trailer']['id'][1] = $matches[2];
+        }
     }
 
     /**
