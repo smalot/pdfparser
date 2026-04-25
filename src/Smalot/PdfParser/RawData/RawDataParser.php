@@ -976,6 +976,15 @@ class RawDataParser
             $xref = $this->getXrefData($pdfData);
         }
 
+        $rootObjectRef = $xref['trailer']['root'] ?? null;
+        $trailerSize = isset($xref['trailer']['size']) ? (int) $xref['trailer']['size'] : 0;
+        $xrefEntryCount = isset($xref['xref']) && \is_array($xref['xref']) ? \count($xref['xref']) : 0;
+        if (
+            (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef]))
+            || ($trailerSize > 0 && $xrefEntryCount > 0 && $xrefEntryCount < $trailerSize)
+        ) {
+            $xref = $this->mergeMissingXrefOffsetsFromObjectHeaders($pdfData, $xref);
+        }
         // parse all document objects
         $objects = [];
         foreach ($xref['xref'] as $obj => $offset) {
