@@ -147,6 +147,7 @@ class PageTest extends TestCase
 
     /**
      * @group memory-heavy
+     * @group linux-only
      *
      * @see https://github.com/smalot/pdfparser/pull/457
      */
@@ -154,7 +155,9 @@ class PageTest extends TestCase
     {
         // Document with text.
         $filename = $this->rootDir.'/samples/bugs/PullRequest457.pdf';
-        $parser = $this->getParserInstance();
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $parser = $this->getParserInstance($config);
         $document = $parser->parseFile($filename);
         $pages = $document->getPages();
         $page = $pages[0];
@@ -957,5 +960,12 @@ class PageTest extends TestCase
                 round($item[0][5], 2),
             ]
         );
+    }
+
+    public function testParseFileWithCyclicPagesTree(): void
+    {
+        $document = $this->getParserInstance()->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
     }
 }
