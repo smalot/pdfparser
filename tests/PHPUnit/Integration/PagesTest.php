@@ -105,6 +105,9 @@ class PagesTest extends TestCase
         $this->assertEquals([$font1], $page->getFonts());
     }
 
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/Pages-tree-refs.pdf
+     */
     public function testParseFileWithCyclicPagesTree(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
