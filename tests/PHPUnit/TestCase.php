@@ -57,6 +57,19 @@ abstract class TestCase extends PHPTestCase
         $this->rootDir = __DIR__.'/../..';
     }
 
+    protected function tearDown(): void
+    {
+        $this->fixture = null;
+        $this->rootDir = null;
+
+        \gc_collect_cycles();
+        if (\function_exists('gc_mem_caches')) {
+            \gc_mem_caches();
+        }
+
+        parent::tearDown();
+    }
+
     protected function getDocumentInstance(): Document
     {
         return new Document();
