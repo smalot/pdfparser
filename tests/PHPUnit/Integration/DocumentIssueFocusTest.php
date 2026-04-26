@@ -114,6 +114,7 @@ class DocumentIssueFocusTest extends TestCase
 
     /**
      * @see https://github.com/smalot/pdfparser/pull/795
+        * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/PullRequestDuplicateKids.pdf
      */
     public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
     {
