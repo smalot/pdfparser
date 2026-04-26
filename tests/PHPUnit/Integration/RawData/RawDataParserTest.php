@@ -320,8 +320,8 @@ class RawDataParserTest extends TestCase
     /**
      * @return iterable<string, array{string}>
         *
-        * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-        * @see https://github.com/veraPDF/veraPDF-corpus
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     * @see https://github.com/veraPDF/veraPDF-corpus
      */
     public static function provideRawDataRegressionFixtures(): iterable
     {
@@ -408,7 +408,7 @@ class RawDataParserTest extends TestCase
     /**
      * Ensures malformed xref streams with missing /Root xref entries still recover pages.
         *
-        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
      */
     public function testMalformedXrefStreamMissingRootEntryStillParsesPage(): void
     {
