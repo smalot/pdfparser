@@ -321,6 +321,7 @@ class RawDataParserTest extends TestCase
      * Ensure parser resolves compressed object references from xref streams.
      *
      * @see https://github.com/smalot/pdfparser/pull/796
+        * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
      */
     public function testParseFileWithCompressedObjRefInXrefStream(): void
     {
@@ -329,6 +330,9 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+     */
     public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-vera.pdf');
@@ -338,6 +342,7 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/smalot/pdfparser/pull/797
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
      */
     public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
     {
