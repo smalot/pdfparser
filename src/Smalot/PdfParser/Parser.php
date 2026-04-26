@@ -320,6 +320,7 @@ class Parser
 
             case 'endstream':
             case 'obj': // I don't know what it means but got my project fixed.
+            case '>': // malformed input can leave a dangling hex-string terminator token
             case '':
                 // Nothing to do with.
                 return null;
