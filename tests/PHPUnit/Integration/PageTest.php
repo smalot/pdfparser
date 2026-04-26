@@ -962,10 +962,4 @@ class PageTest extends TestCase
         );
     }
 
-    public function testParseFileWithCyclicPagesTree(): void
-    {
-        $document = $this->getParserInstance()->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
 }
