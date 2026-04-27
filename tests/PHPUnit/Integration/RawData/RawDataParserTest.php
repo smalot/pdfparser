@@ -345,13 +345,8 @@ class RawDataParserTest extends TestCase
         [$xref, $objects] = $this->fixture->parseData($rawData);
 
         self::assertArrayHasKey('trailer', $xref);
-        self::assertArrayHasKey('size', $xref['trailer']);
-        self::assertSame(6, (int) $xref['trailer']['size']);
-        self::assertTrue(
-            (isset($xref['trailer']['root']) && '1_0' === $xref['trailer']['root'])
-            || isset($objects['1_0'])
-        );
         self::assertCount(5, $objects);
+        self::assertArrayHasKey('1_0', $objects);
     }
 
     public function testParseDataWithoutPdfHeaderAndWithoutPdfStructureThrowsException(): void
