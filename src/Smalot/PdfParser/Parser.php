@@ -206,6 +206,7 @@ class Parser
                             $id = $ids[$index].'_0';
                             $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
                             $sub_content = substr($content, $position, (int) $next_position - (int) $position);
+                            $sub_content = $this->normalizeObjectStreamSubContent($sub_content);
 
                             $sub_header = Header::parse($sub_content, $document);
                             $object = PDFObject::factory($document, $sub_header, '', $this->config);
@@ -238,6 +239,15 @@ class Parser
         }
     }
 
+    protected function normalizeObjectStreamSubContent(string $content): string
+    {
+        if (preg_match('/^\s*%\s*\d+\s+\d+\s+obj\b\s*/s', $content, $matches) > 0) {
+            return ltrim(substr($content, \strlen($matches[0])));
+        }
+
+        return $content;
+    }
+
     /**
      * @throws \Exception
      */
@@ -247,9 +257,38 @@ class Parser
         $count = \count($structure);
 
         for ($position = 0; $position < $count; $position += 2) {
-            $name = $structure[$position][1];
-            $type = $structure[$position + 1][0];
-            $value = $structure[$position + 1][1];
+            if (!isset($structure[$position], $structure[$position + 1])) {
+                break;
+            }
+
+            if (!\is_array($structure[$position]) || !\is_array($structure[$position + 1])) {
+                continue;
+            }
+
+            if (
+                !isset($structure[$position][0])
+                || !isset($structure[$position][1])
+                || !isset($structure[$position + 1][0])
+                || !array_key_exists(1, $structure[$position + 1])
+            ) {
+                continue;
+            }
+
+            if ('/' !== $structure[$position][0] || !\is_string($structure[$position][1])) {
+                continue;
+            }
+
+            $name = $structure[$position][1] ?? null;
+            $type = $structure[$position + 1][0] ?? null;
+            $value = $structure[$position + 1][1] ?? null;
+
+            if (!\is_string($name) || '' === $name) {
+                continue;
+            }
+
+            if (null !== $type && !\is_string($type)) {
+                continue;
+            }
 
             $elements[$name] = $this->parseHeaderElement($type, $value, $document);
         }
@@ -320,6 +359,8 @@ class Parser
 
             case 'endstream':
             case 'obj': // I don't know what it means but got my project fixed.
+            case '>': // malformed input can leave a dangling hex-string terminator token
+            case ']':
             case '':
                 // Nothing to do with.
                 return null;
