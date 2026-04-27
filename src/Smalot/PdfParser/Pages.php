@@ -56,11 +56,15 @@ class Pages extends PDFObject
             return [];
         }
 
-        /** @var ElementArray $kidsElement */
         $kidsElement = $this->get('Kids');
+        if ($kidsElement instanceof ElementArray) {
+            $kids = $kidsElement->getContent();
+        } else {
+            $kids = [$kidsElement];
+        }
 
         if (!$deep) {
-            return $kidsElement->getContent();
+            return $kids;
         }
 
         // Prepare to apply the Pages' object's fonts to each page
@@ -69,7 +73,6 @@ class Pages extends PDFObject
         }
         $fontsAvailable = 0 < \count($this->fonts);
 
-        $kids = $kidsElement->getContent();
         $pages = [];
 
         foreach ($kids as $kid) {

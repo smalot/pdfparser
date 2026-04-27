@@ -192,8 +192,28 @@ class RawDataParser
             }
         }
         // get trailer data
-        if (preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
-            $trailer_data = $matches[1][0];
+        if (preg_match('/trailer\b/is', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
+            $trailer_data = '';
+            if (preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $trailerMatches, \PREG_OFFSET_CAPTURE, $offset) > 0) {
+                $trailer_data = $trailerMatches[1][0];
+            } else {
+                $trailerStart = $matches[0][1] + \strlen($matches[0][0]);
+                $trailerStart += strspn($pdfData, $this->config->getPdfWhitespaces(), $trailerStart);
+                if ('<<' === substr($pdfData, $trailerStart, 2)) {
+                    $trailerStart += 2;
+                }
+
+                $trailerEnd = strpos($pdfData, 'startxref', $trailerStart);
+                if (false === $trailerEnd) {
+                    $trailerEnd = strpos($pdfData, '%%EOF', $trailerStart);
+                }
+                if (false === $trailerEnd) {
+                    $trailerEnd = \strlen($pdfData);
+                }
+
+                $trailer_data = substr($pdfData, $trailerStart, $trailerEnd - $trailerStart);
+            }
+
             if (!isset($xref['trailer']) || empty($xref['trailer'])) {
                 // get only the last updated version
                 $xref['trailer'] = [];
@@ -214,6 +234,12 @@ class RawDataParser
                     $xref['trailer']['id'] = [];
                     $xref['trailer']['id'][0] = $matches[1];
                     $xref['trailer']['id'][1] = $matches[2];
+                }
+            }
+            if (preg_match('/XRefStm[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
+                $xrefStmOffset = (int) $matches[1];
+                if (0 != $xrefStmOffset) {
+                    $xref = $this->decodeXrefStream($pdfData, $xrefStmOffset, $xref, $visitedOffsets);
                 }
             }
             if (preg_match('/Prev[\s]+([0-9]+)/i', $trailer_data, $matches) > 0) {
@@ -246,7 +272,41 @@ class RawDataParser
     {
         // try to read Cross-Reference Stream
         $xrefobj = $this->getRawObject($pdfData, $startxref);
-        $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefobj[1], $startxref, true);
+        $xrefObjRef = isset($xrefobj[1]) && \is_string($xrefobj[1]) ? $xrefobj[1] : '';
+        $xrefObjOffset = $startxref;
+
+        if (!preg_match('/^[0-9]+_[0-9]+$/', $xrefObjRef)) {
+            $nearbyObject = $this->findNearbyIndirectObjectReference($pdfData, $startxref);
+            if (null !== $nearbyObject) {
+                $xrefObjRef = $nearbyObject['objRef'];
+                $xrefObjOffset = $nearbyObject['offset'];
+            }
+        }
+
+        if (!preg_match('/^[0-9]+_[0-9]+$/', $xrefObjRef)) {
+            if (
+                preg_match('/trailer[\s]*<<(.*)>>/isU', $pdfData, $matches, \PREG_OFFSET_CAPTURE, $startxref) > 0
+                && $matches[0][1] <= $startxref
+            ) {
+                $trailerData = $matches[1][0];
+                if (preg_match('/XRefStm[\s]+([0-9]+)/i', $trailerData, $stmMatches) > 0) {
+                    $stmOffset = (int) $stmMatches[1];
+                    if (0 != $stmOffset) {
+                        $xref = $this->decodeXrefStream($pdfData, $stmOffset, $xref, $visitedOffsets);
+                    }
+                }
+                if (preg_match('/Prev[\s]+([0-9]+)/i', $trailerData, $prevMatches) > 0) {
+                    $prevOffset = (int) $prevMatches[1];
+                    if (0 != $prevOffset) {
+                        $xref = $this->getXrefData($pdfData, $prevOffset, $xref, $visitedOffsets);
+                    }
+                }
+            }
+
+            return $xref;
+        }
+
+        $xrefcrs = $this->getIndirectObject($pdfData, $xref, $xrefObjRef, $xrefObjOffset, true);
         if (!isset($xref['trailer']) || empty($xref['trailer'])) {
             // get only the last updated version
             $xref['trailer'] = [];
@@ -513,7 +573,7 @@ class RawDataParser
     protected function getObjectHeaderPattern(array $objRefs): string
     {
         // consider all whitespace character (PDF specifications)
-        return '/'.$objRefs[0].$this->config->getPdfWhitespacesRegex().$objRefs[1].$this->config->getPdfWhitespacesRegex().'obj/';
+        return '/'.$objRefs[0].$this->config->getPdfWhitespacesRegex().'+'.$objRefs[1].$this->config->getPdfWhitespacesRegex().'+obj/';
     }
 
     protected function getObjectHeaderLen(array $objRefs): int
@@ -521,6 +581,159 @@ class RawDataParser
         // "4 0 obj"
         // 2 whitespaces + strlen("obj") = 5
         return 5 + \strlen($objRefs[0]) + \strlen($objRefs[1]);
+    }
+
+    /**
+     * Merge missing xref offsets by scanning object headers directly in the PDF body.
+     */
+    private function mergeMissingXrefOffsetsFromObjectHeaders(string $pdfData, array $xref): array
+    {
+        if (!isset($xref['xref']) || !\is_array($xref['xref'])) {
+            $xref['xref'] = [];
+        }
+
+        if (
+            preg_match_all(
+                '/(?:^|[\r\n])(?:%[\x09\x0a\x0c\x0d\x20]*)?([0-9]+)[\x09\x0a\x0c\x0d\x20]+([0-9]+)[\x09\x0a\x0c\x0d\x20]+obj(?=[\x09\x0a\x0c\x0d\x20<])/i',
+                $pdfData,
+                $matches,
+                \PREG_OFFSET_CAPTURE
+            ) > 0
+        ) {
+            foreach ($matches[1] as $idx => $objMatch) {
+                $objRef = $objMatch[0].'_'.(int) $matches[2][$idx][0];
+                if (!isset($xref['xref'][$objRef])) {
+                    $xref['xref'][$objRef] = $objMatch[1];
+                }
+            }
+        }
+
+        return $xref;
+    }
+
+    /**
+     * Find an indirect object header close to a malformed xref offset.
+     *
+     * @return array{objRef:string,offset:int}|null
+     */
+    private function findNearbyIndirectObjectReference(string $pdfData, int $offset, int $distance = 64): ?array
+    {
+        $searchStart = max(0, $offset - $distance);
+        $searchLength = min(\strlen($pdfData) - $searchStart, ($distance * 2) + 64);
+        if ($searchLength <= 0) {
+            return null;
+        }
+
+        if (
+            preg_match_all(
+                '/([0-9]+)[\x09\x0a\x0c\x0d\x20]+([0-9]+)[\x09\x0a\x0c\x0d\x20]+obj(?=[\x09\x0a\x0c\x0d\x20<])/i',
+                substr($pdfData, $searchStart, $searchLength),
+                $matches,
+                \PREG_OFFSET_CAPTURE
+            ) > 0
+        ) {
+            $best = null;
+            foreach ($matches[0] as $idx => $match) {
+                $matchOffset = $searchStart + $match[1];
+                if (null === $best || abs($matchOffset - $offset) < abs($best['offset'] - $offset)) {
+                    $best = [
+                        'objRef' => $matches[1][$idx][0].'_'.(int) $matches[2][$idx][0],
+                        'offset' => $matchOffset,
+                    ];
+                }
+            }
+
+            return $best;
+        }
+
+        return null;
+    }
+
+    private function findNearbyXrefKeywordOffset(string $pdfData, int $offset, int $distance = 64): ?int
+    {
+        $searchStart = max(0, $offset - $distance);
+        $searchLength = min(\strlen($pdfData) - $searchStart, ($distance * 2) + 8);
+        if ($searchLength <= 0) {
+            return null;
+        }
+
+        $chunk = substr($pdfData, $searchStart, $searchLength);
+        if (false === preg_match_all('/xref(?=[\x09\x0a\x0c\x0d\x20])/i', $chunk, $matches, \PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $bestOffset = null;
+        $bestDistance = null;
+
+        foreach ($matches[0] as $match) {
+            $xrefOffset = $searchStart + $match[1];
+            $previousChar = $xrefOffset > 0 ? $chunk[$match[1] - 1] ?? '' : '';
+            if ('' !== $previousChar && !preg_match('/[\x09\x0a\x0c\x0d\x20]/', $previousChar)) {
+                continue;
+            }
+
+            $currentDistance = abs($xrefOffset - $offset);
+            if (null === $bestDistance || $currentDistance < $bestDistance) {
+                $bestOffset = $xrefOffset;
+                $bestDistance = $currentDistance;
+            }
+        }
+
+        return $bestOffset;
+    }
+
+    private function findLastXrefKeywordOffset(string $pdfData): ?int
+    {
+        return $this->findLastValidXrefKeywordOffset($pdfData, 0);
+    }
+
+    private function findLastValidXrefKeywordOffset(string $chunk, int $chunkOffset = 0, ?int $maxOffset = null): ?int
+    {
+        if (false === preg_match_all('/xref(?=[\x09\x0a\x0c\x0d\x20])/i', $chunk, $matches, \PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $lastOffset = null;
+        foreach ($matches[0] as $match) {
+            $xrefOffset = $chunkOffset + $match[1];
+            if (null !== $maxOffset && $xrefOffset > $maxOffset) {
+                continue;
+            }
+
+            $previousChar = $xrefOffset > 0 ? $chunk[$match[1] - 1] ?? $chunk[$match[1]] : '';
+            if ('' !== $previousChar && !preg_match('/[\x09\x0a\x0c\x0d\x20]/', $previousChar)) {
+                continue;
+            }
+
+            $lastOffset = $xrefOffset;
+        }
+
+        return $lastOffset;
+    }
+
+    private function findObjectHeaderOffsetByReference(string $pdfData, string $objRef): ?int
+    {
+        $objRefArr = explode('_', $objRef);
+        if (2 !== \count($objRefArr)) {
+            return null;
+        }
+
+        $pattern = '/(?:^|[\r\n])(?:%[\x09\x0a\x0c\x0d\x20]*)?'
+            .preg_quote($objRefArr[0], '/')
+            .'[\x09\x0a\x0c\x0d\x20]+'
+            .preg_quote($objRefArr[1], '/')
+            .'[\x09\x0a\x0c\x0d\x20]+obj\b/i';
+
+        if (preg_match($pattern, $pdfData, $matches, \PREG_OFFSET_CAPTURE) > 0) {
+            return (int) $matches[0][1];
+        }
+
+        return null;
+    }
+
+    private function isNullResolvedObject(array $object): bool
+    {
+        return isset($object[0], $object[1]) && 'null' === $object[0] && 'null' === $object[1];
     }
 
     /**
@@ -546,6 +759,7 @@ class RawDataParser
             throw new \Exception('Invalid object reference for $obj.');
         }
 
+        $objHeaderPattern = $this->getObjectHeaderPattern($objRefArr);
         $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
 
         /*
@@ -555,9 +769,35 @@ class RawDataParser
         $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
         // ignore leading zeros for object number
         $offset += strspn($pdfData, '0', $offset);
-        if (0 == preg_match($this->getObjectHeaderPattern($objRefArr), substr($pdfData, $offset, $objHeaderLen))) {
-            // an indirect reference to an undefined object shall be considered a reference to the null object
-            return ['null', 'null', $offset];
+        $directMatchOffset = null;
+        if (preg_match($objHeaderPattern, substr($pdfData, $offset, 33), $headerMatches, \PREG_OFFSET_CAPTURE) > 0) {
+            $directMatchOffset = $headerMatches[0][1];
+        }
+
+        if (null === $directMatchOffset || 0 !== $directMatchOffset) {
+            $searchStart = max(0, $offset - 64);
+            $searchLen = 192;
+            $recoveryPattern = '/(?:%'.$this->config->getPdfWhitespacesRegex().'*)?'
+                .$objRefArr[0]
+                .$this->config->getPdfWhitespacesRegex().'+'
+                .$objRefArr[1]
+                .$this->config->getPdfWhitespacesRegex().'+obj/';
+            if (
+                preg_match(
+                    $recoveryPattern,
+                    substr($pdfData, $searchStart, $searchLen),
+                    $headerMatches,
+                    \PREG_OFFSET_CAPTURE
+                ) > 0
+            ) {
+                $offset = $searchStart + $headerMatches[0][1];
+                $objHeaderLen = \strlen($headerMatches[0][0]);
+            } else {
+                // an indirect reference to an undefined object shall be considered a reference to the null object
+                return ['null', 'null', $offset];
+            }
+        } else {
+            $objHeaderLen = \strlen($headerMatches[0][0]);
         }
 
         /*
@@ -633,6 +873,10 @@ class RawDataParser
 
         // skip initial white space chars
         $offset += strspn($pdfData, $this->config->getPdfWhitespaces(), $offset);
+
+        if (!isset($pdfData[$offset])) {
+            return ['null', 'null', $offset];
+        }
 
         // get first char
         $char = $pdfData[$offset];
@@ -875,6 +1119,11 @@ class RawDataParser
      */
     protected function getXrefData(string $pdfData, int $offset = 0, array $xref = [], array $visitedOffsets = []): array
     {
+        $pdfDataLength = \strlen($pdfData);
+        if ($offset > $pdfDataLength) {
+            throw new \Exception('Unable to find xref (PDF corrupted?)');
+        }
+
         // Check for circular references to prevent infinite loops
         if (\in_array($offset, $visitedOffsets, true)) {
             // We've already processed this offset, skip to avoid infinite loop
@@ -888,7 +1137,7 @@ class RawDataParser
         // for the 'xref' keyword
         // See: https://github.com/smalot/pdfparser/issues/673
         $bumpOffset = $offset;
-        while (preg_match('/\s/', substr($pdfData, $bumpOffset, 1))) {
+        while ($bumpOffset < $pdfDataLength && preg_match('/\s/', substr($pdfData, $bumpOffset, 1))) {
             ++$bumpOffset;
         }
 
@@ -902,8 +1151,15 @@ class RawDataParser
         );
 
         if (0 == $startxrefPreg) {
-            // No startxref tables were found
-            throw new \Exception('Unable to find startxref');
+            if (0 == $offset) {
+                $startxref = $this->findLastXrefKeywordOffset($pdfData);
+                if (null === $startxref) {
+                    throw new \Exception('Unable to find startxref');
+                }
+            } else {
+                // No startxref tables were found
+                throw new \Exception('Unable to find startxref');
+            }
         } elseif (0 == $offset) {
             // Use the last startxref in the document
             $startxref = (int) $startxrefMatches[\count($startxrefMatches) - 1][1];
@@ -918,23 +1174,39 @@ class RawDataParser
             $startxref = (int) $startxrefMatches[0][1];
         }
 
-        if ($startxref > \strlen($pdfData)) {
-            throw new \Exception('Unable to find xref (PDF corrupted?)');
+        if ($startxref > $pdfDataLength) {
+            $fallbackXrefOffset = $this->findLastXrefKeywordOffset($pdfData);
+            if (null !== $fallbackXrefOffset) {
+                $startxref = $fallbackXrefOffset;
+            } else {
+                throw new \Exception('Unable to find xref (PDF corrupted?)');
+            }
+        }
+
+        $nearXrefOffset = $this->findNearbyXrefKeywordOffset($pdfData, $startxref, 512);
+        if (null !== $nearXrefOffset) {
+            $startxref = $nearXrefOffset;
+        }
+
+        $startxrefOffset = $startxref + strspn($pdfData, $this->config->getPdfWhitespaces(), $startxref);
+        if ($startxrefOffset > 0 && strpos($pdfData, 'xref', $startxrefOffset - 1) == $startxrefOffset - 1) {
+            --$startxrefOffset;
         }
 
         // check xref position
-        if (strpos($pdfData, 'xref', $startxref) == $startxref) {
+        if ($startxrefOffset < $pdfDataLength && strpos($pdfData, 'xref', $startxrefOffset) == $startxrefOffset) {
             // Cross-Reference
-            $xref = $this->decodeXref($pdfData, $startxref, $xref, $visitedOffsets);
+            $xref = $this->decodeXref($pdfData, $startxrefOffset, $xref, $visitedOffsets);
         } else {
             // Check if the $pdfData might have the wrong line-endings
             $pdfDataUnix = str_replace("\r\n", "\n", $pdfData);
-            if ($startxref < \strlen($pdfDataUnix) && strpos($pdfDataUnix, 'xref', $startxref) == $startxref) {
+            $startxrefUnixOffset = $startxref + strspn($pdfDataUnix, $this->config->getPdfWhitespaces(), $startxref);
+            if ($startxrefUnixOffset < \strlen($pdfDataUnix) && strpos($pdfDataUnix, 'xref', $startxrefUnixOffset) == $startxrefUnixOffset) {
                 // Return Unix-line-ending flag
                 $xref = ['Unix' => true];
             } else {
                 // Cross-Reference Stream
-                $xref = $this->decodeXrefStream($pdfData, $startxref, $xref, $visitedOffsets);
+                $xref = $this->decodeXrefStream($pdfData, $startxrefOffset, $xref, $visitedOffsets);
             }
         }
         if (empty($xref)) {
@@ -976,12 +1248,30 @@ class RawDataParser
             $xref = $this->getXrefData($pdfData);
         }
 
+        $rootObjectRef = $xref['trailer']['root'] ?? null;
+        if (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef])) {
+            $xref = $this->mergeMissingXrefOffsetsFromObjectHeaders($pdfData, $xref);
+        }
+
         // parse all document objects
         $objects = [];
         foreach ($xref['xref'] as $obj => $offset) {
             if (!isset($objects[$obj]) && ($offset > 0)) {
                 // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+                $objectData = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+
+                if ($this->isNullResolvedObject($objectData)) {
+                    $recoveredOffset = $this->findObjectHeaderOffsetByReference($pdfData, $obj);
+                    if (null !== $recoveredOffset && $recoveredOffset !== $offset) {
+                        $retriedObjectData = $this->getIndirectObject($pdfData, $xref, $obj, $recoveredOffset, true);
+                        if (!$this->isNullResolvedObject($retriedObjectData)) {
+                            $objectData = $retriedObjectData;
+                            $xref['xref'][$obj] = $recoveredOffset;
+                        }
+                    }
+                }
+
+                $objects[$obj] = $objectData;
             }
         }
 

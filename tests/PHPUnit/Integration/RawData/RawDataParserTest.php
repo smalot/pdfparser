@@ -37,6 +37,7 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\RawDataParser;
 
 class RawDataParserHelper extends RawDataParser
@@ -314,5 +315,26 @@ class RawDataParserTest extends TestCase
         // Should return empty array without processing
         $this->assertIsArray($result);
         $this->assertEmpty($result);
+    }
+
+    /**
+     * @return array<string,array{0:string,1:int}>
+     */
+    public static function provideRecoverableMalformedPdfFixtures(): array
+    {
+        return [
+            'bug1250079' => ['bug1250079.pdf', 1],
+            'bug1795263' => ['bug1795263.pdf', 1],
+        ];
+    }
+
+    /**
+     * @dataProvider provideRecoverableMalformedPdfFixtures
+     */
+    public function testParseRecoverableMalformedPdfjsFixtures(string $fixture, int $expectedPages): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
+
+        self::assertCount($expectedPages, $document->getPages());
     }
 }
