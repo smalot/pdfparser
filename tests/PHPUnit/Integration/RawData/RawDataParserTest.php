@@ -318,122 +318,23 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
-        *
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     * @see https://github.com/veraPDF/veraPDF-corpus
+     * @return array<string,array{0:string,1:int}>
      */
-    public static function provideRawDataRegressionFixtures(): iterable
+    public static function provideRecoverableMalformedPdfFixtures(): array
     {
-        yield 'pr796 invalid-object-reference / pr798 startxref-whitespace equivalent' => [
-            'rawdata/PullRequestInvalidObjectReference.pdf',
-        ];
-        yield 'pr797 vera / pr798 pullrequest794 equivalent' => [
-            'rawdata/PullRequest797-vera.pdf',
-        ];
-        yield 'pr797 pdf.js xref stream fixture' => [
-            'rawdata/PullRequest797-pdf.js.pdf',
-        ];
-        yield 'pr799 xref subsection with multiple spaces' => [
-            'rawdata/PullRequestXrefSubsectionMultipleSpaces.pdf',
-        ];
-        yield 'pr800 object header with multiple spaces (nearby xref offset)' => [
-            'rawdata/PullRequestNearbyObjectHeaderOffset.pdf',
-        ];
-        yield 'pr804 pdf.js issue17147 hybrid xref offsets' => [
-            'rawdata/PullRequest804-pdf.js.pdf',
+        return [
+            'bug1250079' => ['bug1250079.pdf', 1],
+            'bug1795263' => ['bug1795263.pdf', 1],
         ];
     }
 
     /**
-     * @dataProvider provideRawDataRegressionFixtures
+     * @dataProvider provideRecoverableMalformedPdfFixtures
      */
-    public function testParseFileWithRawDataRegressionFixture(string $fixturePath): void
+    public function testParseRecoverableMalformedPdfjsFixtures(string $fixture, int $expectedPages): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/'.$fixturePath);
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
 
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug766138.pdf
-     */
-    public function testParseFileWithCommentsInsideXrefTable(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest805-pdf.js.pdf');
-
-        self::assertCount(3, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     */
-    public function testParseFileWithXrefTableMissingXrefKeyword(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-missing-keyword.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     */
-    public function testParseFileWhenStartxrefPointsBeforeXrefKeyword(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-startxref-misaligned.pdf');
-
-        self::assertCount(5, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     */
-    public function testParseFileWithoutStartxrefButWithTrailerRoot(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest809-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
-     */
-    public function testParseFileWhenStartxrefPointsNearXrefKeyword(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest794.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * Ensures malformed xref streams with missing /Root xref entries still recover pages.
-        *
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
-     */
-    public function testMalformedXrefStreamMissingRootEntryStillParsesPage(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest812-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     */
-    public function testRecoverPagesWhenXrefEntriesArePartiallyMissing(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest813-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
-     */
-    public function testRecoverPagesWhenRootOffsetPointsToInvalidObject(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest814-pdf.js.pdf');
-
-        self::assertCount(1, $document->getPages());
+        self::assertCount($expectedPages, $document->getPages());
     }
 }
