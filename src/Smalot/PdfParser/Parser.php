@@ -265,6 +265,19 @@ class Parser
                 continue;
             }
 
+            if (
+                !isset($structure[$position][0])
+                || !isset($structure[$position][1])
+                || !isset($structure[$position + 1][0])
+                || !array_key_exists(1, $structure[$position + 1])
+            ) {
+                continue;
+            }
+
+            if ('/' !== $structure[$position][0] || !\is_string($structure[$position][1])) {
+                continue;
+            }
+
             $name = $structure[$position][1] ?? null;
             $type = $structure[$position + 1][0] ?? null;
             $value = $structure[$position + 1][1] ?? null;
@@ -346,7 +359,7 @@ class Parser
 
             case 'endstream':
             case 'obj': // I don't know what it means but got my project fixed.
-            case '>':
+            case '>': // malformed input can leave a dangling hex-string terminator token
             case ']':
             case '':
                 // Nothing to do with.
