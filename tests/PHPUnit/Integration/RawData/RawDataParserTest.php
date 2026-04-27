@@ -319,34 +319,55 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+     * @return iterable<string, array{string, int}>
      */
-    public function testParseContentWithoutPdfHeaderButWithRecoverableStructure(): void
+    public static function provideRecoverablePdfJsFixtures(): iterable
     {
-        $prefix = "\n";
-        $object1Offset = \strlen($prefix);
-        $object1 = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
-        $object2Offset = $object1Offset + \strlen($object1);
-        $object2 = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
-        $object3Offset = $object2Offset + \strlen($object2);
-        $object3 = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 10 10] >>\nendobj\n";
+        yield 'pr816 malformed page type key' => ['rawdata/PullRequest816-poppler-937-0-fuzzed.pdf', 1];
+    }
 
-        $pdfData = $prefix.$object1.$object2.$object3;
-        $xrefOffset = \strlen($pdfData);
-        $pdfData .= "xref\n";
-        $pdfData .= "0 4\n";
-        $pdfData .= "0000000000 65535 f \n";
-        $pdfData .= sprintf("%010d 00000 n \n", $object1Offset);
-        $pdfData .= sprintf("%010d 00000 n \n", $object2Offset);
-        $pdfData .= sprintf("%010d 00000 n \n", $object3Offset);
-        $pdfData .= "trailer\n<< /Size 4 /Root 1 0 R >>\n";
-        $pdfData .= "startxref\n";
-        $pdfData .= $xrefOffset."\n";
-        $pdfData .= "%%EOF\n";
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
+     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf
+     *
+     * @dataProvider provideRecoverablePdfJsFixtures
+     */
+    public function testParseFileWithRecoverablePdfJsFixture(string $fixturePath, int $expectedPages): void
+    {
+        $fullPath = $this->rootDir.'/samples/bugs/'.$fixturePath;
+        self::assertFileExists($fullPath);
 
-        $document = (new Parser())->parseContent($pdfData);
+        $document = (new Parser())->parseFile($fullPath);
 
-        self::assertCount(1, $document->getPages());
+        self::assertCount($expectedPages, $document->getPages());
+    }
+
+    /**
+     * @return iterable<string, array{string, string, int}>
+     */
+    public static function provideHeaderlessRawDataFixtures(): iterable
+    {
+        yield 'bug1606566 missing header' => ['rawdata/bug1606566.pdf', '1_0', 5];
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/bug1606566.pdf
+     *
+     * @dataProvider provideHeaderlessRawDataFixtures
+     */
+    public function testParseDataWithHeaderlessFixtureRegression(string $fixturePath, string $expectedRoot, int $expectedObjectCount): void
+    {
+        $fullPath = $this->rootDir.'/samples/bugs/'.$fixturePath;
+        self::assertFileExists($fullPath);
+
+        $rawData = file_get_contents($fullPath);
+        self::assertNotFalse($rawData);
+
+        [$xref, $objects] = $this->fixture->parseData($rawData);
+
+        self::assertSame($expectedRoot, $xref['trailer']['root']);
+        self::assertCount($expectedObjectCount, $objects);
     }
 
     /**
@@ -359,14 +380,4 @@ class RawDataParserTest extends TestCase
         $this->fixture->parseData('this is not pdf data');
     }
 
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
-     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf
-     */
-    public function testParseFileWithMalformedPageTypeKeyFixture(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
 }
