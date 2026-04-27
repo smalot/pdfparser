@@ -375,4 +375,14 @@ class RawDataParserTest extends TestCase
 
         self::assertCount(1, $document->getPages());
     }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+     */
+    public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest815-xref-command-missing.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
 }
