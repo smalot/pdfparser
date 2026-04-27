@@ -151,9 +151,6 @@ class FilterHelperTest extends TestCase
         $this->assertEquals('something', $result);
     }
 
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
-     */
     public function testDecodeFilterRunLengthDecodeHonorsMemoryLimit(): void
     {
         $this->expectException(\Exception::class);
@@ -170,7 +167,7 @@ class FilterHelperTest extends TestCase
      */
     public function testParseFileWithRunLengthFixtureRegression(): void
     {
-        $fullPath = $this->rootDir.'/samples/bugs/rawdata/issue19517.pdf';
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/pdfjs-issue19517.pdf';
         self::assertFileExists($fullPath);
 
         $config = new Config();
