@@ -247,6 +247,10 @@ class Parser
         $count = \count($structure);
 
         for ($position = 0; $position < $count; $position += 2) {
+            if (!isset($structure[$position][1], $structure[$position + 1][0], $structure[$position + 1][1])) {
+                continue;
+            }
+
             $name = $structure[$position][1];
             $type = $structure[$position + 1][0];
             $value = $structure[$position + 1][1];
