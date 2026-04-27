@@ -37,6 +37,7 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\RawDataParser;
 
@@ -440,5 +441,43 @@ class RawDataParserTest extends TestCase
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
 
         self::assertCount($expectedPages, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
+     */
+    public function testParseFileWithRecoverablePdfJsFixture(): void
+    {
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf';
+        self::assertFileExists($fullPath);
+
+        $document = (new Parser())->parseFile($fullPath);
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+     */
+    public function testParseDataWithHeaderlessFixtureRegression(): void
+    {
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/bug1606566.pdf';
+        self::assertFileExists($fullPath);
+
+        $rawData = file_get_contents($fullPath);
+        self::assertNotFalse($rawData);
+
+        [$xref, $objects] = $this->fixture->parseData($rawData);
+
+        self::assertArrayHasKey('trailer', $xref);
+        self::assertCount(5, $objects);
+        self::assertArrayHasKey('1_0', $objects);
+    }
+
+    public function testParseDataWithoutPdfHeaderAndWithoutPdfStructureThrowsException(): void
+    {
+        $this->expectException(MissingPdfHeaderException::class);
+
+        $this->fixture->parseData('this is not pdf data');
     }
 }
