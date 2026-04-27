@@ -233,6 +233,34 @@ class DocumentTest extends TestCase
         $document->getPages();
     }
 
+    public function testGetPagesDeduplicatesDuplicateKidsReferences(): void
+    {
+        $document = $this->getDocumentInstance();
+
+        $content = '<</Type/Page>>';
+        $header = Header::parse($content, $document);
+        $page = $this->getPageInstance($document, $header);
+
+        $content = '<</Type/Pages/Kids[10 0 R 10 0 R]>>';
+        $header = Header::parse($content, $document);
+        $pagesNode = $this->getPagesInstance($document, $header);
+
+        $content = '<</Type/Catalog/Pages 20 0 R>>';
+        $header = Header::parse($content, $document);
+        $catalog = $this->getPDFObjectInstance($document, $header);
+
+        $document->setObjects([
+            '10_0' => $page,
+            '20_0' => $pagesNode,
+            '30_0' => $catalog,
+        ]);
+
+        $pages = $document->getPages();
+
+        $this->assertCount(1, $pages);
+        $this->assertSame($page, $pages[0]);
+    }
+
     /**
      * @see https://github.com/smalot/pdfparser/issues/721
      */
