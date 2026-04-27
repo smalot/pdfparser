@@ -319,46 +319,24 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, int}>
-     */
-    public static function provideRecoverablePdfJsFixtures(): iterable
-    {
-        yield 'pr816 malformed page type key' => ['rawdata/PullRequest816-poppler-937-0-fuzzed.pdf', 1];
-    }
-
-    /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
-     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf
-     *
-     * @dataProvider provideRecoverablePdfJsFixtures
      */
-    public function testParseFileWithRecoverablePdfJsFixture(string $fixturePath, int $expectedPages): void
+    public function testParseFileWithRecoverablePdfJsFixture(): void
     {
-        $fullPath = $this->rootDir.'/samples/bugs/'.$fixturePath;
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf';
         self::assertFileExists($fullPath);
 
         $document = (new Parser())->parseFile($fullPath);
 
-        self::assertCount($expectedPages, $document->getPages());
-    }
-
-    /**
-     * @return iterable<string, array{string, string, int}>
-     */
-    public static function provideHeaderlessRawDataFixtures(): iterable
-    {
-        yield 'bug1606566 missing header' => ['rawdata/bug1606566.pdf', '1_0', 5];
+        self::assertCount(1, $document->getPages());
     }
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
-     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/bug1606566.pdf
-     *
-     * @dataProvider provideHeaderlessRawDataFixtures
      */
-    public function testParseDataWithHeaderlessFixtureRegression(string $fixturePath, string $expectedRoot, int $expectedObjectCount): void
+    public function testParseDataWithHeaderlessFixtureRegression(): void
     {
-        $fullPath = $this->rootDir.'/samples/bugs/'.$fixturePath;
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/bug1606566.pdf';
         self::assertFileExists($fullPath);
 
         $rawData = file_get_contents($fullPath);
@@ -366,8 +344,8 @@ class RawDataParserTest extends TestCase
 
         [$xref, $objects] = $this->fixture->parseData($rawData);
 
-        self::assertSame($expectedRoot, $xref['trailer']['root']);
-        self::assertCount($expectedObjectCount, $objects);
+        self::assertSame('1_0', $xref['trailer']['root']);
+        self::assertCount(5, $objects);
     }
 
     /**
@@ -379,5 +357,4 @@ class RawDataParserTest extends TestCase
 
         $this->fixture->parseData('this is not pdf data');
     }
-
 }

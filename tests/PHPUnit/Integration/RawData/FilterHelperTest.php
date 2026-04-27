@@ -166,30 +166,19 @@ class FilterHelperTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, int, int}>
-     */
-    public static function provideRunLengthFixtureRegressionCases(): iterable
-    {
-        yield 'issue19517 memory-safe runlength decode' => ['rawdata/issue19517.pdf', 8 * 1024 * 1024, 1];
-    }
-
-    /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
-     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/issue19517.pdf
-     *
-     * @dataProvider provideRunLengthFixtureRegressionCases
      */
-    public function testParseFileWithRunLengthFixtureRegression(string $fixturePath, int $decodeMemoryLimit, int $expectedPages): void
+    public function testParseFileWithRunLengthFixtureRegression(): void
     {
-        $fullPath = $this->rootDir.'/samples/bugs/'.$fixturePath;
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/issue19517.pdf';
         self::assertFileExists($fullPath);
 
         $config = new Config();
-        $config->setDecodeMemoryLimit($decodeMemoryLimit);
+        $config->setDecodeMemoryLimit(8 * 1024 * 1024);
 
         $document = (new Parser([], $config))->parseFile($fullPath);
 
-        self::assertCount($expectedPages, $document->getPages());
+        self::assertCount(1, $document->getPages());
     }
 
     /*
