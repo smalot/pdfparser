@@ -389,7 +389,7 @@ class FilterHelper
      */
     protected function decodeFilterRunLengthDecode(string $data, int $decodeMemoryLimit): string
     {
-        $effectiveDecodeMemoryLimit = $this->getEffectiveDecodeMemoryLimit($decodeMemoryLimit);
+        $effectiveDecodeMemoryLimit = $decodeMemoryLimit;
 
         // initialize string to return
         $decoded = '';
