@@ -111,4 +111,17 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+    public function testRecoverPagesWhenXrefEntriesArePartiallyMissing(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest813-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    public function testRecoverPagesWhenRootOffsetPointsToInvalidObject(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest814-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
 }
