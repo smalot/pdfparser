@@ -1119,15 +1119,15 @@ class RawDataParser
      */
     protected function getXrefData(string $pdfData, int $offset = 0, array $xref = [], array $visitedOffsets = []): array
     {
-        $pdfDataLength = \strlen($pdfData);
-        if ($offset > $pdfDataLength) {
-            throw new \Exception('Unable to find xref (PDF corrupted?)');
-        }
-
         // Check for circular references to prevent infinite loops
         if (\in_array($offset, $visitedOffsets, true)) {
             // We've already processed this offset, skip to avoid infinite loop
             return $xref;
+        }
+
+        $pdfDataLength = \strlen($pdfData);
+        if ($offset > $pdfDataLength) {
+            throw new \Exception('Unable to find xref (PDF corrupted?)');
         }
 
         // Track this offset as visited
