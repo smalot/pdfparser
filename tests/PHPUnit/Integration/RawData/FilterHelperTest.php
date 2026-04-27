@@ -150,6 +150,9 @@ class FilterHelperTest extends TestCase
         $this->assertEquals('something', $result);
     }
 
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
+     */
     public function testDecodeFilterRunLengthDecodeHonorsMemoryLimit(): void
     {
         $this->expectException(\Exception::class);

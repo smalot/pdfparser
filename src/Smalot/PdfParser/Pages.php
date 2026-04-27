@@ -70,6 +70,9 @@ class Pages extends PDFObject
         $fontsAvailable = 0 < \count($this->fonts);
 
         $kids = $kidsElement->getContent();
+        if (!\is_array($kids)) {
+            $kids = [];
+        }
         $pages = [];
 
         foreach ($kids as $kid) {
@@ -87,6 +90,47 @@ class Pages extends PDFObject
                 }
                 $pages[] = $recoveredPage;
             }
+        }
+
+        if ([] === $pages) {
+            $pages = $this->recoverPagesByParentReference($fontsAvailable);
+        }
+
+        return $pages;
+    }
+
+    /**
+     * Recover page objects when Kids is malformed but child objects still point
+     * to this node via Parent.
+     *
+     * @return array<Page>
+     */
+    protected function recoverPagesByParentReference(bool $fontsAvailable): array
+    {
+        $pages = [];
+
+        foreach ($this->getDocument()->getObjects() as $object) {
+            if ($object instanceof Page && $object->has('Parent') && $object->get('Parent') === $this) {
+                if ($fontsAvailable) {
+                    $object->setFonts($this->fonts);
+                }
+                $pages[] = $object;
+                continue;
+            }
+
+            if (!$object instanceof PDFObject || !$this->isRecoverablePageObject($object)) {
+                continue;
+            }
+
+            if ($object->get('Parent') !== $this) {
+                continue;
+            }
+
+            $recoveredPage = new Page($object->getDocument(), $object->getHeader(), $object->getContent(), $object->getConfig());
+            if ($fontsAvailable) {
+                $recoveredPage->setFonts($this->fonts);
+            }
+            $pages[] = $recoveredPage;
         }
 
         return $pages;

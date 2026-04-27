@@ -318,6 +318,9 @@ class RawDataParserTest extends TestCase
         $this->assertEmpty($result);
     }
 
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+     */
     public function testParseContentWithoutPdfHeaderButWithRecoverableStructure(): void
     {
         $prefix = "\n";
@@ -346,10 +349,24 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+     */
     public function testParseDataWithoutPdfHeaderAndWithoutPdfStructureThrowsException(): void
     {
         $this->expectException(MissingPdfHeaderException::class);
 
         $this->fixture->parseData('this is not pdf data');
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
+     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf
+     */
+    public function testParseFileWithMalformedPageTypeKeyFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest816-poppler-937-0-fuzzed.pdf');
+
+        self::assertCount(1, $document->getPages());
     }
 }
