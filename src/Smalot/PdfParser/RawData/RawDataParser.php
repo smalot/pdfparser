@@ -1151,22 +1151,39 @@ class RawDataParser
         );
 
         if (0 == $startxrefPreg) {
-            if (0 == $offset) {
+            if (strpos($pdfData, 'xref', $bumpOffset) === $bumpOffset || $this->hasXrefSubsectionAtOffset($pdfData, $bumpOffset)) {
+                // No startxref stanza, but caller already points to an xref table/subsection.
+                $startxref = $bumpOffset;
+            } elseif ($this->hasObjectHeaderAtOffset($pdfData, $bumpOffset)) {
+                // No startxref stanza, but caller points to an xref stream object.
+                $startxref = $bumpOffset;
+            } elseif (0 == $offset) {
                 $startxref = $this->findLastXrefKeywordOffset($pdfData);
                 if (null === $startxref) {
+                    $recoveredXref = $this->recoverXrefWithoutStartxref($pdfData);
+                    if (!empty($recoveredXref)) {
+                        return $recoveredXref;
+                    }
+
                     throw new \Exception('Unable to find startxref');
                 }
             } else {
-                // No startxref tables were found
+                // No valid startxref table was found. Try to recover from nearby xref data
+                // or reconstruct a minimal xref from object headers plus trailer metadata.
+                $recoveredXref = $this->recoverXrefWithoutStartxref($pdfData);
+                if (!empty($recoveredXref)) {
+                    return $recoveredXref;
+                }
+
                 throw new \Exception('Unable to find startxref');
             }
         } elseif (0 == $offset) {
             // Use the last startxref in the document
             $startxref = (int) $startxrefMatches[\count($startxrefMatches) - 1][1];
-        } elseif (strpos($pdfData, 'xref', $bumpOffset) == $bumpOffset) {
+        } elseif (strpos($pdfData, 'xref', $bumpOffset) === $bumpOffset || $this->hasXrefSubsectionAtOffset($pdfData, $bumpOffset)) {
             // Already pointing at the xref table
             $startxref = $bumpOffset;
-        } elseif (preg_match('/([0-9]+[\s][0-9]+[\s]obj)/i', $pdfData, $matches, 0, $bumpOffset)) {
+        } elseif ($this->hasObjectHeaderAtOffset($pdfData, $bumpOffset)) {
             // Cross-Reference Stream object
             $startxref = $bumpOffset;
         } else {
@@ -1179,7 +1196,28 @@ class RawDataParser
             if (null !== $fallbackXrefOffset) {
                 $startxref = $fallbackXrefOffset;
             } else {
-                throw new \Exception('Unable to find xref (PDF corrupted?)');
+                // Some malformed files contain an invalid startxref value.
+                // Try to recover by finding the last xref subsection header before trailer.
+                $trailerPos = strrpos($pdfData, 'trailer');
+                if (false !== $trailerPos) {
+                    $searchStart = max(0, $trailerPos - 8192);
+                    $searchChunk = substr($pdfData, $searchStart, $trailerPos - $searchStart);
+                    if (
+                        preg_match_all(
+                            '/(?:^|[\r\n])([0-9]+[\x20]+[0-9]+)[\x20]*[\r\n]/',
+                            $searchChunk,
+                            $subsectionMatches,
+                            \PREG_OFFSET_CAPTURE
+                        ) > 0
+                    ) {
+                        $lastSubsection = $subsectionMatches[1][\count($subsectionMatches[1]) - 1][1];
+                        $startxref = $searchStart + $lastSubsection;
+                    }
+                }
+
+                if ($startxref > $pdfDataLength) {
+                    throw new \Exception('Unable to find xref (PDF corrupted?)');
+                }
             }
         }
 
@@ -1193,8 +1231,42 @@ class RawDataParser
             --$startxrefOffset;
         }
 
+        // Some files point startxref to the whitespace right before the xref keyword or stream object.
+        // Some malformed files point startxref a few bytes after the xref keyword.
+        $nearXrefWindowStart = max(0, $startxrefOffset - 64);
+        $nearXrefWindowLength = $startxrefOffset - $nearXrefWindowStart + 8;
+        if ($nearXrefWindowLength > 0) {
+            $nearXrefChunk = substr($pdfData, $nearXrefWindowStart, $nearXrefWindowLength);
+            $nearXrefPos = strrpos($nearXrefChunk, 'xref');
+            if (false !== $nearXrefPos) {
+                $nearXrefCandidate = $nearXrefWindowStart + $nearXrefPos;
+                if ($nearXrefCandidate <= $startxrefOffset && preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', substr($pdfData, $nearXrefCandidate, 5)) > 0) {
+                    $startxrefOffset = $nearXrefCandidate;
+                }
+            }
+        }
+
+        // Some malformed files point startxref to the bytes right before the xref keyword.
+        // Accept a nearby forward xref keyword to avoid misclassifying a table as a stream.
+        $nextXrefPos = strpos($pdfData, 'xref', $startxrefOffset);
+        if (
+            false !== $nextXrefPos
+            && $nextXrefPos <= ($startxrefOffset + 64)
+            && preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', substr($pdfData, $nextXrefPos, 5)) > 0
+        ) {
+            $startxrefOffset = $nextXrefPos;
+        }
+
+        $xrefSubsectionAtOffset = preg_match(
+            '/[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A',
+            substr($pdfData, $startxrefOffset, 48)
+        ) > 0;
+
         // check xref position
-        if ($startxrefOffset < $pdfDataLength && strpos($pdfData, 'xref', $startxrefOffset) == $startxrefOffset) {
+        if (
+            ($startxrefOffset < $pdfDataLength && strpos($pdfData, 'xref', $startxrefOffset) == $startxrefOffset)
+            || $xrefSubsectionAtOffset
+        ) {
             // Cross-Reference
             $xref = $this->decodeXref($pdfData, $startxrefOffset, $xref, $visitedOffsets);
         } else {
@@ -1210,10 +1282,133 @@ class RawDataParser
             }
         }
         if (empty($xref)) {
+            $recoveredXref = $this->recoverXrefWithoutStartxref($pdfData);
+            if (!empty($recoveredXref)) {
+                return $recoveredXref;
+            }
+
             throw new \Exception('Unable to find xref');
         }
 
         return $xref;
+    }
+
+    /**
+     * Attempt to recover xref/trailer data when no valid startxref stanza exists.
+     */
+    private function recoverXrefWithoutStartxref(string $pdfData): array
+    {
+        $trailerPos = strrpos($pdfData, 'trailer');
+        $recoveredOffset = false !== $trailerPos
+            ? $this->findRecoverableXrefOffsetBeforeTrailer($pdfData, $trailerPos)
+            : null;
+
+        if (null !== $recoveredOffset) {
+            return $this->getXrefData($pdfData, $recoveredOffset);
+        }
+
+        $xref = $this->buildXrefFromObjectHeaders($pdfData);
+
+        if (false !== $trailerPos) {
+            $this->fillRecoveredTrailerData($xref, $this->getTrailerChunk($pdfData, $trailerPos));
+        }
+
+        if (empty($xref['xref'])) {
+            return [];
+        }
+
+        if (!isset($xref['trailer']['size'])) {
+            $xref['trailer']['size'] = \count($xref['xref']) + 1;
+        }
+
+        return $xref;
+    }
+
+    private function hasXrefSubsectionAtOffset(string $pdfData, int $offset): bool
+    {
+        return preg_match(
+            '/[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A',
+            substr($pdfData, $offset, 48)
+        ) > 0;
+    }
+
+    private function hasObjectHeaderAtOffset(string $pdfData, int $offset): bool
+    {
+        return preg_match('/^[0-9]+[\s]+[0-9]+[\s]+obj/i', substr($pdfData, $offset, 32)) > 0;
+    }
+
+    private function findRecoverableXrefOffsetBeforeTrailer(string $pdfData, int $trailerPos): ?int
+    {
+        $searchStart = max(0, $trailerPos - 8192);
+        $searchChunk = substr($pdfData, $searchStart, $trailerPos - $searchStart);
+        $lastXrefPos = strrpos($searchChunk, 'xref');
+
+        if (false === $lastXrefPos) {
+            return null;
+        }
+
+        $candidateOffset = $searchStart + $lastXrefPos;
+        $candidateChunk = substr($pdfData, $candidateOffset, 96);
+        if (
+            preg_match('/xref[\x09\x0a\x0c\x0d\x20]/', $candidateChunk) > 0
+            && preg_match('/xref[\s]*[\r\n]+[0-9]+[\x20]+[0-9]+[\x20]*[\r\n]/A', $candidateChunk) > 0
+        ) {
+            return $candidateOffset;
+        }
+
+        return null;
+    }
+
+    private function buildXrefFromObjectHeaders(string $pdfData): array
+    {
+        $xref = ['xref' => [], 'trailer' => []];
+        if (
+            preg_match_all('/([0-9]+)[\x20]+([0-9]+)[\x20]+obj\b/i', $pdfData, $objMatches, \PREG_OFFSET_CAPTURE) === 0
+        ) {
+            return $xref;
+        }
+
+        foreach ($objMatches[0] as $i => $fullMatch) {
+            $objNum = (int) $objMatches[1][$i][0];
+            $genNum = (int) $objMatches[2][$i][0];
+            $xref['xref'][$objNum.'_'.$genNum] = $fullMatch[1];
+        }
+
+        return $xref;
+    }
+
+    private function getTrailerChunk(string $pdfData, int $trailerPos): string
+    {
+        $trailerEnd = strpos($pdfData, '%%EOF', $trailerPos);
+        if (false === $trailerEnd) {
+            $trailerEnd = min(
+                \strlen($pdfData),
+                $trailerPos + 4096
+            );
+        }
+
+        return substr($pdfData, $trailerPos, $trailerEnd - $trailerPos);
+    }
+
+    private function fillRecoveredTrailerData(array &$xref, string $trailerData): void
+    {
+        if (preg_match('/Size[\s]+([0-9]+)/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['size'] = (int) $matches[1];
+        }
+        if (preg_match('/Root[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['root'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/Encrypt[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['encrypt'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/Info[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['info'] = (int) $matches[1].'_'.(int) $matches[2];
+        }
+        if (preg_match('/ID[\s]*[\[]\s*[<]([^>]*)[>][\s]*[<]([^>]*)[>]/i', $trailerData, $matches) > 0) {
+            $xref['trailer']['id'] = [];
+            $xref['trailer']['id'][0] = $matches[1];
+            $xref['trailer']['id'][1] = $matches[2];
+        }
     }
 
     /**
@@ -1236,8 +1431,9 @@ class RawDataParser
             throw new MissingPdfHeaderException('Invalid PDF data: Missing `%PDF-` header.');
         }
 
-        // get PDF content string
-        $pdfData = $trimpos > 0 ? substr($data, $trimpos) : $data;
+        // Keep the original byte layout to preserve absolute xref offsets.
+        // Some PDFs contain bytes before %PDF- and xref offsets still target the full file.
+        $pdfData = $data;
 
         // get xref and trailer data
         $xref = $this->getXrefData($pdfData);
@@ -1249,7 +1445,12 @@ class RawDataParser
         }
 
         $rootObjectRef = $xref['trailer']['root'] ?? null;
-        if (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef])) {
+        $trailerSize = isset($xref['trailer']['size']) ? (int) $xref['trailer']['size'] : 0;
+        $xrefEntryCount = isset($xref['xref']) && \is_array($xref['xref']) ? \count($xref['xref']) : 0;
+        if (
+            (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef]))
+            || ($trailerSize > 0 && $xrefEntryCount > 0 && $xrefEntryCount < $trailerSize)
+        ) {
             $xref = $this->mergeMissingXrefOffsetsFromObjectHeaders($pdfData, $xref);
         }
 
