@@ -3,7 +3,6 @@
 /**
  * @file This file is part of the PdfParser library.
  *
- *
  * @author  Konrad Abicht <k.abicht@gmail.com>
  *
  * @date    2024-04-19
@@ -104,5 +103,4 @@ class PagesTest extends TestCase
         // should not overwrite it
         $this->assertEquals([$font1], $page->getFonts());
     }
-
 }

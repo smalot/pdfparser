@@ -348,9 +348,6 @@ class RawDataParserTest extends TestCase
         self::assertCount(5, $objects);
     }
 
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
-     */
     public function testParseDataWithoutPdfHeaderAndWithoutPdfStructureThrowsException(): void
     {
         $this->expectException(MissingPdfHeaderException::class);
