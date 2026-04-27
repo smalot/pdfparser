@@ -37,6 +37,8 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Exception\MissingPdfHeaderException;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\RawDataParser;
 
 class RawDataParserHelper extends RawDataParser
@@ -314,5 +316,40 @@ class RawDataParserTest extends TestCase
         // Should return empty array without processing
         $this->assertIsArray($result);
         $this->assertEmpty($result);
+    }
+
+    public function testParseContentWithoutPdfHeaderButWithRecoverableStructure(): void
+    {
+        $prefix = "\n";
+        $object1Offset = \strlen($prefix);
+        $object1 = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+        $object2Offset = $object1Offset + \strlen($object1);
+        $object2 = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+        $object3Offset = $object2Offset + \strlen($object2);
+        $object3 = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 10 10] >>\nendobj\n";
+
+        $pdfData = $prefix.$object1.$object2.$object3;
+        $xrefOffset = \strlen($pdfData);
+        $pdfData .= "xref\n";
+        $pdfData .= "0 4\n";
+        $pdfData .= "0000000000 65535 f \n";
+        $pdfData .= sprintf("%010d 00000 n \n", $object1Offset);
+        $pdfData .= sprintf("%010d 00000 n \n", $object2Offset);
+        $pdfData .= sprintf("%010d 00000 n \n", $object3Offset);
+        $pdfData .= "trailer\n<< /Size 4 /Root 1 0 R >>\n";
+        $pdfData .= "startxref\n";
+        $pdfData .= $xrefOffset."\n";
+        $pdfData .= "%%EOF\n";
+
+        $document = (new Parser())->parseContent($pdfData);
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    public function testParseDataWithoutPdfHeaderAndWithoutPdfStructureThrowsException(): void
+    {
+        $this->expectException(MissingPdfHeaderException::class);
+
+        $this->fixture->parseData('this is not pdf data');
     }
 }

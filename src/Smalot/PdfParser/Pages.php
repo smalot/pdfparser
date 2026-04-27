@@ -80,10 +80,27 @@ class Pages extends PDFObject
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
+            } elseif ($kid instanceof PDFObject && $this->isRecoverablePageObject($kid)) {
+                $recoveredPage = new Page($kid->getDocument(), $kid->getHeader(), $kid->getContent(), $kid->getConfig());
+                if ($fontsAvailable) {
+                    $recoveredPage->setFonts($this->fonts);
+                }
+                $pages[] = $recoveredPage;
             }
         }
 
         return $pages;
+    }
+
+    protected function isRecoverablePageObject(PDFObject $object): bool
+    {
+        // Some malformed files corrupt the key name for /Type and objects are not
+        // instantiated as Page. Recover only when page-specific keys are present.
+        if (!$object->has('Parent')) {
+            return false;
+        }
+
+        return $object->has('MediaBox') || $object->has('Contents');
     }
 
     /**

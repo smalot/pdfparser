@@ -3,6 +3,7 @@
 /**
  * @file This file is part of the PdfParser library.
  *
+ *
  * @author  Konrad Abicht <k.abicht@gmail.com>
  *
  * @date    2024-04-19
@@ -102,5 +103,15 @@ class PagesTest extends TestCase
         // Now that $page already has a font, updates from $pages
         // should not overwrite it
         $this->assertEquals([$font1], $page->getFonts());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/Pages-tree-refs.pdf
+     */
+    public function testParseFileWithCyclicPagesTree(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
+
+        self::assertCount(2, $document->getPages());
     }
 }

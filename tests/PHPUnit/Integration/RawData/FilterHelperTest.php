@@ -150,6 +150,17 @@ class FilterHelperTest extends TestCase
         $this->assertEquals('something', $result);
     }
 
+    public function testDecodeFilterRunLengthDecodeHonorsMemoryLimit(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('decodeFilterRunLengthDecode: exceeded memory limit');
+
+        // 129 expands to two bytes and keeps expanding until EOD (128).
+        $compressed = str_repeat(chr(129).chr(65), 4).chr(128);
+
+        $this->fixture->decodeFilter('RunLengthDecode', $compressed, 4);
+    }
+
     /*
      * Test for filters not being implemented yet.
      */
