@@ -36,6 +36,7 @@
 namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\FilterHelper;
 
@@ -148,6 +149,33 @@ class FilterHelperTest extends TestCase
     {
         $result = $this->fixture->decodeFilter('a string '.rand(), 'something');
         $this->assertEquals('something', $result);
+    }
+
+    public function testDecodeFilterRunLengthDecodeHonorsMemoryLimit(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('decodeFilterRunLengthDecode: exceeded memory limit');
+
+        // 129 expands to two bytes and keeps expanding until EOD (128).
+        $compressed = str_repeat(chr(129).chr(65), 4).chr(128);
+
+        $this->fixture->decodeFilter('RunLengthDecode', $compressed, 4);
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
+     */
+    public function testParseFileWithRunLengthFixtureRegression(): void
+    {
+        $fullPath = $this->rootDir.'/samples/bugs/rawdata/pdfjs-issue19517.pdf';
+        self::assertFileExists($fullPath);
+
+        $config = new Config();
+        $config->setDecodeMemoryLimit(8 * 1024 * 1024);
+
+        $document = (new Parser([], $config))->parseFile($fullPath);
+
+        self::assertCount(1, $document->getPages());
     }
 
     /*

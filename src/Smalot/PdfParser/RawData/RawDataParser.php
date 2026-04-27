@@ -543,7 +543,9 @@ class RawDataParser
         // $objHeader = "[object number] [generation number] obj"
         $objRefArr = explode('_', $objRef);
         if (2 !== \count($objRefArr)) {
-            throw new \Exception('Invalid object reference for $obj.');
+            // Malformed xref streams may emit invalid object references.
+            // Treat these as null objects to keep parsing recoverable content.
+            return ['null', 'null', $offset];
         }
 
         $objHeaderLen = $this->getObjectHeaderLen($objRefArr);
@@ -922,6 +924,18 @@ class RawDataParser
             throw new \Exception('Unable to find xref (PDF corrupted?)');
         }
 
+        // Some malformed files store startxref a few bytes after the actual
+        // xref keyword (for example at the first subsection line). Align to
+        // a nearby xref marker when found.
+        $nearbyStart = max(0, $startxref - 32);
+        $nearbyChunk = substr($pdfData, $nearbyStart, 64);
+        if (preg_match('/\bxref\b/', $nearbyChunk, $nearbyXref, \PREG_OFFSET_CAPTURE) > 0) {
+            $candidate = $nearbyStart + $nearbyXref[0][1];
+            if ($candidate <= $startxref && ($startxref - $candidate) <= 32) {
+                $startxref = $candidate;
+            }
+        }
+
         // check xref position
         if (strpos($pdfData, 'xref', $startxref) == $startxref) {
             // Cross-Reference
@@ -961,7 +975,9 @@ class RawDataParser
         }
         // find the pdf header starting position
         if (false === ($trimpos = strpos($data, '%PDF-'))) {
-            throw new MissingPdfHeaderException('Invalid PDF data: Missing `%PDF-` header.');
+            if (!$this->hasRecoverablePdfStructure($data)) {
+                throw new MissingPdfHeaderException('Invalid PDF data: Missing `%PDF-` header.');
+            }
         }
 
         // get PDF content string
@@ -986,5 +1002,15 @@ class RawDataParser
         }
 
         return [$xref, $objects];
+    }
+
+    private function hasRecoverablePdfStructure(string $data): bool
+    {
+        $hasObjectHeader = (bool) preg_match('/(^|[\r\n])[\s]*[0-9]+[\s]+[0-9]+[\s]+obj\b/', $data);
+        $hasPdfMarkers = false !== strpos($data, 'trailer')
+            || false !== strpos($data, 'xref')
+            || false !== strpos($data, 'startxref');
+
+        return $hasObjectHeader && $hasPdfMarkers;
     }
 }

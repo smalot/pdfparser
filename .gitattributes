@@ -1,5 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.pdf binary
 
 /.editorconfig export-ignore
 /.gitattributes export-ignore
