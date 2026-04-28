@@ -322,21 +322,28 @@ class RawDataParserTest extends TestCase
      */
     public static function provideRawDataRegressionFixtures(): iterable
     {
+        // @see https://github.com/smalot/pdfparser/pull/796
         yield 'pr796 invalid-object-reference / pr798 startxref-whitespace equivalent' => [
             'rawdata/PullRequestInvalidObjectReference.pdf',
         ];
+        // @see https://github.com/smalot/pdfparser/pull/797
         yield 'pr797 vera / pr798 pullrequest794 equivalent' => [
             'rawdata/PullRequest797-vera.pdf',
         ];
+        // @see https://github.com/smalot/pdfparser/pull/797
         yield 'pr797 pdf.js xref stream fixture' => [
             'rawdata/PullRequest797-pdf.js.pdf',
         ];
+        // @see https://github.com/smalot/pdfparser/pull/799
         yield 'pr799 xref subsection with multiple spaces' => [
             'rawdata/PullRequestXrefSubsectionMultipleSpaces.pdf',
         ];
+        // @see https://github.com/smalot/pdfparser/pull/800
         yield 'pr800 object header with multiple spaces (nearby xref offset)' => [
             'rawdata/PullRequestNearbyObjectHeaderOffset.pdf',
         ];
+        // @see https://github.com/smalot/pdfparser/pull/804
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17147.pdf
         yield 'pr804 pdf.js issue17147 hybrid xref offsets' => [
             'rawdata/PullRequest804-pdf.js.pdf',
         ];
