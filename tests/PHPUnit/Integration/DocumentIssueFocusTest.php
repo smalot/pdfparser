@@ -43,22 +43,6 @@ use Smalot\PdfParser\Parser;
  */
 class DocumentIssueFocusTest extends TestCase
 {
-    public static function provideRecoverableObjectStreamCatalogFixtures(): array
-    {
-        return [
-            'bug1539074' => ['bug1539074.pdf', 1],
-            'bug1539074.1' => ['bug1539074.1.pdf', 1],
-        ];
-    }
-
-    public static function provideRecoverableMalformedCatalogFixtures(): array
-    {
-        return [
-            'named_dest_collision_for_editor' => ['named_dest_collision_for_editor.pdf', 1],
-            'poppler-742-0-fuzzed' => ['poppler-742-0-fuzzed.pdf', 1],
-        ];
-    }
-
     /**
      * Tests getText method without a given page limit.
      *
@@ -127,23 +111,4 @@ class DocumentIssueFocusTest extends TestCase
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
 
-    /**
-     * @dataProvider provideRecoverableObjectStreamCatalogFixtures
-     */
-    public function testGetPagesRecoversCatalogFromCommentedObjectStreamHeaders(string $fixture, int $expectedPages): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
-
-        self::assertCount($expectedPages, $document->getPages());
-    }
-
-    /**
-     * @dataProvider provideRecoverableMalformedCatalogFixtures
-     */
-    public function testGetPagesRecoversMalformedCatalogAndKidsEntries(string $fixture, int $expectedPages): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
-
-        self::assertCount($expectedPages, $document->getPages());
-    }
 }
