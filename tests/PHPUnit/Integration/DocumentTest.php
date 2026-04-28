@@ -263,7 +263,13 @@ class DocumentTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/795
+     * Synthetic fixture created in-repo to reproduce duplicate /Kids references.
+     *
+     * Fixture: samples/bugs/PullRequestDuplicateKids.pdf
+     * sha256: f8f6c7ea31a62d3bff305f1aa27a1080ecfa13bac38ba7c57d84acc5b99d83b9
+     * sha1:   9be6584c6290b09b8643782206c82d6c77f76d37
+     * md5:    ffd080477e9322434bbe486450da9f0b
+     *
      * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/PullRequestDuplicateKids.pdf
      */
     public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
