@@ -264,9 +264,6 @@ class DocumentTest extends TestCase
 
     /**
      * Synthetic fixture created in-repo to reproduce duplicate /Kids references.
-     *
-     * Fixture: samples/bugs/PullRequestDuplicateKids.pdf
-     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/PullRequestDuplicateKids.pdf
      */
     public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
     {
