@@ -322,27 +322,26 @@ class RawDataParserTest extends TestCase
      */
     public static function provideRawDataRegressionFixtures(): iterable
     {
-        // @see https://github.com/smalot/pdfparser/pull/796
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
         yield 'pr796 invalid-object-reference / pr798 startxref-whitespace equivalent' => [
             'rawdata/PullRequestInvalidObjectReference.pdf',
         ];
-        // @see https://github.com/smalot/pdfparser/pull/797
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
         yield 'pr797 vera / pr798 pullrequest794 equivalent' => [
             'rawdata/PullRequest797-vera.pdf',
         ];
-        // @see https://github.com/smalot/pdfparser/pull/797
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/pdfkit_compressed.pdf
         yield 'pr797 pdf.js xref stream fixture' => [
             'rawdata/PullRequest797-pdf.js.pdf',
         ];
-        // @see https://github.com/smalot/pdfparser/pull/799
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.4%20Cross%20reference%20trailer/isartor-6-1-4-t01-fail-a.pdf
         yield 'pr799 xref subsection with multiple spaces' => [
             'rawdata/PullRequestXrefSubsectionMultipleSpaces.pdf',
         ];
-        // @see https://github.com/smalot/pdfparser/pull/800
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.8%20Indirect%20objects/isartor-6-1-8-t01-fail-a.pdf
         yield 'pr800 object header with multiple spaces (nearby xref offset)' => [
             'rawdata/PullRequestNearbyObjectHeaderOffset.pdf',
         ];
-        // @see https://github.com/smalot/pdfparser/pull/804
         // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17147.pdf
         yield 'pr804 pdf.js issue17147 hybrid xref offsets' => [
             'rawdata/PullRequest804-pdf.js.pdf',
@@ -360,8 +359,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/805
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/filled-background.pdf
      */
     public function testParseFileWithCommentsInsideXrefTable(): void
     {
@@ -371,8 +369,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/807
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
      */
     public function testParseFileWithXrefTableMissingXrefKeyword(): void
     {
@@ -382,8 +379,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/807
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/outlines_for_editor.pdf
      */
     public function testParseFileWhenStartxrefPointsBeforeXrefKeyword(): void
     {
@@ -393,8 +389,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/809
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19800.pdf
      */
     public function testParseFileWithoutStartxrefButWithTrailerRoot(): void
     {
@@ -404,8 +399,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/794
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
      */
     public function testParseFileWhenStartxrefPointsNearXrefKeyword(): void
     {
@@ -417,8 +411,7 @@ class RawDataParserTest extends TestCase
     /**
      * Ensures malformed xref streams with missing /Root xref entries still recover pages.
       *
-      * @see https://github.com/smalot/pdfparser/pull/812
-      * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
      */
     public function testMalformedXrefStreamMissingRootEntryStillParsesPage(): void
     {
@@ -428,8 +421,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/813
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/GHOSTSCRIPT-698804-1-fuzzed.pdf
      */
     public function testRecoverPagesWhenXrefEntriesArePartiallyMissing(): void
     {
@@ -439,8 +431,7 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/814
-     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+        * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9418.pdf
      */
     public function testRecoverPagesWhenRootOffsetPointsToInvalidObject(): void
     {
