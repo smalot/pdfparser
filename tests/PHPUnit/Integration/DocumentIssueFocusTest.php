@@ -36,7 +36,7 @@
 namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
-use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Parser;
 
 /**
@@ -111,4 +111,44 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+    /**
+     * @group linux-only
+     */
+    public function testParseFileWithLargeFlateStreams(): void
+    {
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $config->setDecodeMemoryLimit(8 * 1024 * 1024);
+        $document = (new Parser([], $config))->parseFile($this->rootDir.'/samples/bugs/PullRequest457.pdf');
+
+        self::assertCount(28, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/795
+     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/PullRequestDuplicateKids.pdf
+     */
+    public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
+
+        $pages = $document->getPages();
+
+        self::assertCount(1, $pages);
+    }
+
+    public function testRecoverPagesWhenXrefEntriesArePartiallyMissing(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest813-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    public function testRecoverPagesWhenRootOffsetPointsToInvalidObject(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest814-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
 }

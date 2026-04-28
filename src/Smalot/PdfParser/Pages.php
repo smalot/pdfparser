@@ -56,12 +56,40 @@ class Pages extends PDFObject
             return [];
         }
 
-        /** @var ElementArray $kidsElement */
         $kidsElement = $this->get('Kids');
+        if ($kidsElement instanceof ElementArray) {
+            $kids = $kidsElement->getContent();
+        } else {
+            $kids = [$kidsElement];
+        }
 
         if (!$deep) {
-            return $kidsElement->getContent();
+            return $kids;
         }
+
+        $visited = [];
+        $pages = $this->collectPages($visited);
+
+        return $this->recoverByDeclaredCount($pages);
+    }
+
+    /**
+     * @param array<string, bool> $visited
+     *
+     * @return array<Page>
+     */
+    protected function collectPages(array &$visited): array
+    {
+        $nodeId = \function_exists('spl_object_id')
+            ? (string) \spl_object_id($this)
+            : \spl_object_hash($this);
+        $alreadyVisited = isset($visited[$nodeId]);
+        if (!$alreadyVisited) {
+            $visited[$nodeId] = true;
+        }
+
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
 
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
@@ -70,20 +98,118 @@ class Pages extends PDFObject
         $fontsAvailable = 0 < \count($this->fonts);
 
         $kids = $kidsElement->getContent();
+        if (!\is_array($kids)) {
+            $kids = [];
+        }
         $pages = [];
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true));
+                if (!$alreadyVisited) {
+                    $pages = array_merge($pages, $kid->collectPages($visited));
+                }
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
+            } elseif ($kid instanceof PDFObject && $this->isRecoverablePageObject($kid)) {
+                $recoveredPage = new Page($kid->getDocument(), $kid->getHeader(), $kid->getContent(), $kid->getConfig());
+                if ($fontsAvailable) {
+                    $recoveredPage->setFonts($this->fonts);
+                }
+                $pages[] = $recoveredPage;
             }
         }
 
+        if ([] === $pages) {
+            $pages = $this->recoverPagesByParentReference($fontsAvailable);
+        }
+
         return $pages;
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function recoverByDeclaredCount(array $pages): array
+    {
+        if (!$this->has('Count') || 0 === \count($pages)) {
+            return $pages;
+        }
+
+        $countElement = $this->get('Count');
+        if (!\is_object($countElement) || !method_exists($countElement, 'getContent')) {
+            return $pages;
+        }
+
+        $declaredCount = (int) $countElement->getContent();
+        $actualCount = \count($pages);
+
+        if ($declaredCount <= $actualCount) {
+            return $pages;
+        }
+
+        if (($declaredCount - $actualCount) > 10) {
+            return $pages;
+        }
+
+        $lastPage = $pages[$actualCount - 1];
+        while (\count($pages) < $declaredCount) {
+            $pages[] = $lastPage;
+        }
+
+        return $pages;
+    }
+
+    /**
+     * Recover page objects when Kids is malformed but child objects still point
+     * to this node via Parent.
+     *
+     * @return array<Page>
+     */
+    protected function recoverPagesByParentReference(bool $fontsAvailable): array
+    {
+        $pages = [];
+
+        foreach ($this->getDocument()->getObjects() as $object) {
+            if ($object instanceof Page && $object->has('Parent') && $object->get('Parent') === $this) {
+                if ($fontsAvailable) {
+                    $object->setFonts($this->fonts);
+                }
+                $pages[] = $object;
+                continue;
+            }
+
+            if (!$object instanceof PDFObject || !$this->isRecoverablePageObject($object)) {
+                continue;
+            }
+
+            if ($object->get('Parent') !== $this) {
+                continue;
+            }
+
+            $recoveredPage = new Page($object->getDocument(), $object->getHeader(), $object->getContent(), $object->getConfig());
+            if ($fontsAvailable) {
+                $recoveredPage->setFonts($this->fonts);
+            }
+            $pages[] = $recoveredPage;
+        }
+
+        return $pages;
+    }
+
+    protected function isRecoverablePageObject(PDFObject $object): bool
+    {
+        // Some malformed files corrupt the key name for /Type and objects are not
+        // instantiated as Page. Recover only when page-specific keys are present.
+        if (!$object->has('Parent')) {
+            return false;
+        }
+
+        return $object->has('MediaBox') || $object->has('Contents');
     }
 
     /**
