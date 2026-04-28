@@ -427,7 +427,9 @@ class RawDataParserTest extends TestCase
     public static function provideRecoverableMalformedPdfFixtures(): array
     {
         return [
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1250079.pdf
             'bug1250079' => ['bug1250079.pdf', 1],
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1795263.pdf
             'bug1795263' => ['bug1795263.pdf', 1],
         ];
     }
@@ -438,9 +440,13 @@ class RawDataParserTest extends TestCase
     public static function provideRecoverableCatalogFixtures(): array
     {
         return [
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1539074.pdf
             'bug1539074' => ['bug1539074.pdf', 1],
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1539074.1.pdf
             'bug1539074.1' => ['bug1539074.1.pdf', 1],
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/named_dest_collision_for_editor.pdf
             'named_dest_collision_for_editor' => ['named_dest_collision_for_editor.pdf', 1],
+            // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-742-0-fuzzed.pdf
             'poppler-742-0-fuzzed' => ['poppler-742-0-fuzzed.pdf', 1],
         ];
     }
