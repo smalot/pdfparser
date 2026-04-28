@@ -451,6 +451,19 @@ class ParserTest extends TestCase
 
         $this->assertEquals('ASCII85 last-tuple overflow test', $document->getText());
     }
+
+    /**
+     * @group linux-only
+     */
+    public function testParseFileWithLargeFlateStreams(): void
+    {
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $config->setDecodeMemoryLimit(8 * 1024 * 1024);
+        $document = (new Parser([], $config))->parseFile($this->rootDir.'/samples/bugs/PullRequest457.pdf');
+
+        self::assertCount(28, $document->getPages());
+    }
 }
 
 class ParserSub extends Parser
