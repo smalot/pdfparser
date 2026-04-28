@@ -40,8 +40,8 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
-use Smalot\PdfParser\PDFObject;
 use Smalot\PdfParser\Parser;
+use Smalot\PdfParser\PDFObject;
 
 /**
  * General Document related tests.
