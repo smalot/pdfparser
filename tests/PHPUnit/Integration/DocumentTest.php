@@ -41,6 +41,7 @@ use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
 use Smalot\PdfParser\PDFObject;
+use Smalot\PdfParser\Parser;
 
 /**
  * General Document related tests.
@@ -259,6 +260,19 @@ class DocumentTest extends TestCase
 
         $this->assertCount(1, $pages);
         $this->assertSame($page, $pages[0]);
+    }
+
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/795
+     * @see https://github.com/smalot/pdfparser/blob/master/samples/bugs/PullRequestDuplicateKids.pdf
+     */
+    public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
+
+        $pages = $document->getPages();
+
+        $this->assertCount(1, $pages);
     }
 
     /**
