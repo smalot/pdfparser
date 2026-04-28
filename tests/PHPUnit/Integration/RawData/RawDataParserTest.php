@@ -359,6 +359,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/805
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testParseFileWithCommentsInsideXrefTable(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest805-pdf.js.pdf');
@@ -366,6 +370,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(3, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/807
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testParseFileWithXrefTableMissingXrefKeyword(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-missing-keyword.pdf');
@@ -373,6 +381,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/807
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testParseFileWhenStartxrefPointsBeforeXrefKeyword(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-startxref-misaligned.pdf');
@@ -380,6 +392,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(5, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/809
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testParseFileWithoutStartxrefButWithTrailerRoot(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest809-pdf.js.pdf');
@@ -387,6 +403,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/794
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testParseFileWhenStartxrefPointsNearXrefKeyword(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest794.pdf');
@@ -396,6 +416,9 @@ class RawDataParserTest extends TestCase
 
     /**
      * Ensures malformed xref streams with missing /Root xref entries still recover pages.
+      *
+      * @see https://github.com/smalot/pdfparser/pull/812
+      * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
      */
     public function testMalformedXrefStreamMissingRootEntryStillParsesPage(): void
     {
@@ -404,6 +427,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/813
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testRecoverPagesWhenXrefEntriesArePartiallyMissing(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest813-pdf.js.pdf');
@@ -411,6 +438,10 @@ class RawDataParserTest extends TestCase
         self::assertCount(1, $document->getPages());
     }
 
+    /**
+     * @see https://github.com/smalot/pdfparser/pull/814
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
+     */
     public function testRecoverPagesWhenRootOffsetPointsToInvalidObject(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest814-pdf.js.pdf');
