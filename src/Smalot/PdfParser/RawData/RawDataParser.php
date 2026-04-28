@@ -292,13 +292,25 @@ class RawDataParser
                 if (preg_match('/XRefStm[\s]+([0-9]+)/i', $trailerData, $stmMatches) > 0) {
                     $stmOffset = (int) $stmMatches[1];
                     if (0 != $stmOffset) {
-                        $xref = $this->decodeXrefStream($pdfData, $stmOffset, $xref, $visitedOffsets);
+                        try {
+                            $xref = $this->decodeXrefStream($pdfData, $stmOffset, $xref, $visitedOffsets);
+                        } catch (\Exception $exception) {
+                            if (!$this->isRecoverableXrefLookupException($exception)) {
+                                throw $exception;
+                            }
+                        }
                     }
                 }
                 if (preg_match('/Prev[\s]+([0-9]+)/i', $trailerData, $prevMatches) > 0) {
                     $prevOffset = (int) $prevMatches[1];
                     if (0 != $prevOffset) {
-                        $xref = $this->getXrefData($pdfData, $prevOffset, $xref, $visitedOffsets);
+                        try {
+                            $xref = $this->getXrefData($pdfData, $prevOffset, $xref, $visitedOffsets);
+                        } catch (\Exception $exception) {
+                            if (!$this->isRecoverableXrefLookupException($exception)) {
+                                throw $exception;
+                            }
+                        }
                     }
                 }
             }
@@ -564,7 +576,13 @@ class RawDataParser
         } // end decoding data
         if (isset($prevxref)) {
             // get previous xref
-            $xref = $this->getXrefData($pdfData, $prevxref, $xref, $visitedOffsets);
+            try {
+                $xref = $this->getXrefData($pdfData, $prevxref, $xref, $visitedOffsets);
+            } catch (\Exception $exception) {
+                if (!$this->isRecoverableXrefLookupException($exception)) {
+                    throw $exception;
+                }
+            }
         }
 
         return $xref;
@@ -685,6 +703,15 @@ class RawDataParser
     private function findLastXrefKeywordOffset(string $pdfData): ?int
     {
         return $this->findLastValidXrefKeywordOffset($pdfData, 0);
+    }
+
+    private function isRecoverableXrefLookupException(\Exception $exception): bool
+    {
+        return in_array(
+            $exception->getMessage(),
+            ['Unable to find startxref', 'Unable to find xref', 'Unable to find xref (PDF corrupted?)'],
+            true
+        );
     }
 
     private function findLastValidXrefKeywordOffset(string $chunk, int $chunkOffset = 0, ?int $maxOffset = null): ?int
