@@ -434,9 +434,32 @@ class RawDataParserTest extends TestCase
     }
 
     /**
+     * @return array<string,array{0:string,1:int}>
+     */
+    public static function provideRecoverableCatalogFixtures(): array
+    {
+        return [
+            'bug1539074' => ['bug1539074.pdf', 1],
+            'bug1539074.1' => ['bug1539074.1.pdf', 1],
+            'named_dest_collision_for_editor' => ['named_dest_collision_for_editor.pdf', 1],
+            'poppler-742-0-fuzzed' => ['poppler-742-0-fuzzed.pdf', 1],
+        ];
+    }
+
+    /**
      * @dataProvider provideRecoverableMalformedPdfFixtures
      */
     public function testParseRecoverableMalformedPdfjsFixtures(string $fixture, int $expectedPages): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
+
+        self::assertCount($expectedPages, $document->getPages());
+    }
+
+    /**
+     * @dataProvider provideRecoverableCatalogFixtures
+     */
+    public function testParseRecoverableCatalogFixtures(string $fixture, int $expectedPages): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixture);
 
