@@ -36,6 +36,7 @@
 namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
+use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 
 /**
