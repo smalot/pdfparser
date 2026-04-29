@@ -243,6 +243,41 @@ class Pages extends PDFObject
     }
 
     /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function recoverByDeclaredCount(array $pages): array
+    {
+        if (!$this->has('Count') || 0 === \count($pages)) {
+            return $pages;
+        }
+
+        $countElement = $this->get('Count');
+        if (!\is_object($countElement) || !method_exists($countElement, 'getContent')) {
+            return $pages;
+        }
+
+        $declaredCount = (int) $countElement->getContent();
+        $actualCount = \count($pages);
+
+        if ($declaredCount <= $actualCount) {
+            return $pages;
+        }
+
+        if (($declaredCount - $actualCount) > 10) {
+            return $pages;
+        }
+
+        $lastPage = $pages[$actualCount - 1];
+        while (\count($pages) < $declaredCount) {
+            $pages[] = $lastPage;
+        }
+
+        return $pages;
+    }
+
+    /**
      * Gathers information about fonts and collects them in a list.
      *
      * @return void

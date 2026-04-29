@@ -82,47 +82,48 @@ class RawDataParserTest extends TestCase
         parent::setUp();
 
         $this->fixture = new RawDataParserHelper([], new Config());
-    }
 
     /**
      * Tests buggy behavior of getRawObject.
      *
      * When PDF has corrupted xref table getRawObject may run into an infinite loop.
-     *
-     * @see https://github.com/smalot/pdfparser/issues/372
-     * @see https://github.com/smalot/pdfparser/pull/377
-     */
-    public function testGetRawObjectIssue372(): void
-    {
-        // The following $data content is a minimal example to trigger the infinite loop
-        $data = '<</Producer (eDkºãa˜þõ‚LÅòÕ�PïÙ��)©)>>';
-
-        // calling "getRawObject" via "exposeGetRawObject" would result in an infinite loop
-        // if the fix is not there.
-        $result = $this->fixture->exposeGetRawObject($data);
-
-        $this->assertEquals(
-            [
-                '<<',
                 [
                     ['/', 'Producer', 11],
-                    ['(', 'eDkºãa˜þõ‚LÅòÕ�PïÙ��', 52],
-                ],
-                52,
-            ],
-            $result
-        );
+         */
+        public function testParseFileWithCompressedObjRefInXrefStream(): void
+        {
+            $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequestInvalidObjectReference.pdf');
 
-        // Test that spaces after a 'stream' declaration are absorbed
-        // See: https://github.com/smalot/pdfparser/issues/641
-        $data = 'stream '."\n";
-        $data .= 'streamdata'."\n";
-        $data .= 'endstream'."\n";
-        $data .= 'endobj';
+            self::assertCount(1, $document->getPages());
+        }
 
-        $result = $this->fixture->exposeGetRawObject($data);
+        /**
+         * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+         */
+        public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
+        {
+            $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-vera.pdf');
 
-        // Value 'streamdata'."\n" would be empty string without the fix
+            self::assertCount(1, $document->getPages());
+        }
+
+        /**
+         * @see https://github.com/smalot/pdfparser/pull/797
+         * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
+         */
+        public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
+        {
+            $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-pdf.js.pdf');
+
+            self::assertCount(1, $document->getPages());
+        }
+
+        /**
+         * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+         */
+        public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
+        {
+            $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-missing-keyword.pdf');
         $this->assertEquals(
             [
                 'stream',
@@ -320,6 +321,7 @@ class RawDataParserTest extends TestCase
     /**
      * Ensure parser resolves compressed object references from xref streams.
      *
+<<<<<<< HEAD
      * @see https://github.com/smalot/pdfparser/pull/796
      * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
      */
@@ -357,6 +359,44 @@ class RawDataParserTest extends TestCase
     public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest815-xref-command-missing.pdf');
+||||||| 2cfa0d9
+=======
+     * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+     */
+    public function testParseFileWithCompressedObjRefInXrefStream(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequestInvalidObjectReference.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+     */
+    public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-vera.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
+     */
+    public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-pdf.js.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+     */
+    public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-missing-keyword.pdf');
+>>>>>>> origin/fix/rawdata-next-xref-trailer-recovery
 
         self::assertCount(1, $document->getPages());
     }
