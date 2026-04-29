@@ -63,24 +63,180 @@ class Pages extends PDFObject
             return $kidsElement->getContent();
         }
 
+        $visited = [];
+        $pages = $this->collectPages($visited);
+
+        return $this->recoverByDeclaredCount($pages);
+    }
+
+    /**
+     * @param array<string, bool> $visited
+     *
+     * @return array<Page>
+     */
+    protected function collectPages(array &$visited): array
+    {
+        $nodeId = \function_exists('spl_object_id')
+            ? (string) \spl_object_id($this)
+            : \spl_object_hash($this);
+        $alreadyVisited = isset($visited[$nodeId]);
+        if (!$alreadyVisited) {
+            $visited[$nodeId] = true;
+        }
+
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
+
+        if ($kidsElement instanceof ElementArray) {
+            $kids = $kidsElement->getContent();
+        } else {
+            $kids = [$kidsElement];
+        }
+
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
             $this->setupFonts();
         }
         $fontsAvailable = 0 < \count($this->fonts);
-
-        $kids = $kidsElement->getContent();
         $pages = [];
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true));
+                if (!$alreadyVisited) {
+                    $pages = array_merge($pages, $kid->collectPages($visited));
+                }
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
+            } elseif ($kid instanceof PDFObject && $this->isRecoverablePageObject($kid)) {
+                $recoveredPage = new Page($kid->getDocument(), $kid->getHeader(), $kid->getContent(), $kid->getConfig());
+                if ($fontsAvailable) {
+                    $recoveredPage->setFonts($this->fonts);
+                }
+                $pages[] = $recoveredPage;
             }
+        }
+
+        if ([] === $pages) {
+            $pages = $this->recoverPagesByParentReference($fontsAvailable);
+        }
+
+        return $this->deduplicatePages($pages);
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function recoverPagesByParentReference(bool $fontsAvailable): array
+    {
+        $pages = [];
+
+        foreach ($this->getDocument()->getObjects() as $object) {
+            if ($object instanceof Page && $object->has('Parent') && $object->get('Parent') === $this) {
+                if ($fontsAvailable) {
+                    $object->setFonts($this->fonts);
+                }
+                $pages[] = $object;
+                continue;
+            }
+
+            if (!$object instanceof PDFObject || !$this->isRecoverablePageObject($object)) {
+                continue;
+            }
+
+            if ($object->get('Parent') !== $this) {
+                continue;
+            }
+
+            $recoveredPage = new Page($object->getDocument(), $object->getHeader(), $object->getContent(), $object->getConfig());
+            if ($fontsAvailable) {
+                $recoveredPage->setFonts($this->fonts);
+            }
+            $pages[] = $recoveredPage;
+        }
+
+        return $pages;
+    }
+
+    protected function isRecoverablePageObject(PDFObject $object): bool
+    {
+        if (!$object->has('Parent')) {
+            return false;
+        }
+
+        return $object->has('MediaBox') || $object->has('Contents');
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function deduplicatePages(array $pages): array
+    {
+        $seen = [];
+        $deduplicated = [];
+
+        foreach ($pages as $page) {
+            $key = \function_exists('spl_object_id')
+                ? (string) \spl_object_id($page)
+                : \spl_object_hash($page);
+            $signatureKey = $this->buildPageSignature($page);
+
+            if (isset($seen[$key]) || isset($seen[$signatureKey])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $seen[$signatureKey] = true;
+            $deduplicated[] = $page;
+        }
+
+        return $deduplicated;
+    }
+
+    protected function buildPageSignature(Page $page): string
+    {
+        $header = $page->getHeader();
+        $headerKey = \function_exists('spl_object_id')
+            ? (string) \spl_object_id($header)
+            : \spl_object_hash($header);
+
+        return $headerKey.'|'.serialize($page->getContent());
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function recoverByDeclaredCount(array $pages): array
+    {
+        if (!$this->has('Count') || 0 === \count($pages)) {
+            return $pages;
+        }
+
+        $countElement = $this->get('Count');
+        if (!\is_object($countElement) || !method_exists($countElement, 'getContent')) {
+            return $pages;
+        }
+
+        $declaredCount = (int) $countElement->getContent();
+        $actualCount = \count($pages);
+
+        if ($declaredCount <= $actualCount) {
+            return $pages;
+        }
+
+        if (($declaredCount - $actualCount) > 10) {
+            return $pages;
+        }
+
+        $lastPage = $pages[$actualCount - 1];
+        while (\count($pages) < $declaredCount) {
+            $pages[] = $lastPage;
         }
 
         return $pages;
