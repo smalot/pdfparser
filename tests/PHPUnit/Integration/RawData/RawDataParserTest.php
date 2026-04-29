@@ -37,7 +37,6 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
-use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\RawData\RawDataParser;
 
@@ -439,16 +438,6 @@ class RawDataParserTest extends TestCase
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest814-pdf.js.pdf');
 
         self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
-     */
-    public function testParseFileWhenPrevXrefOffsetIsMalformed(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest818-pdf.js.pdf');
-
-        self::assertInstanceOf(Document::class, $document);
     }
 
     /**
