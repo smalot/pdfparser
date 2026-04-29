@@ -325,7 +325,7 @@ class RawDataParserTest extends TestCase
      */
     public function testParseFileWithCompressedObjRefInXrefStream(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestInvalidObjectReference.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequestInvalidObjectReference.pdf');
 
         self::assertCount(1, $document->getPages());
     }
@@ -335,7 +335,7 @@ class RawDataParserTest extends TestCase
      */
     public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixture(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-vera.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-vera.pdf');
 
         self::assertCount(1, $document->getPages());
     }
@@ -346,7 +346,7 @@ class RawDataParserTest extends TestCase
      */
     public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest797-pdf.js.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest797-pdf.js.pdf');
 
         self::assertCount(1, $document->getPages());
     }
@@ -356,7 +356,7 @@ class RawDataParserTest extends TestCase
      */
     public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest815-xref-command-missing.pdf');
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest807-pdfjs-xref-missing-keyword.pdf');
 
         self::assertCount(1, $document->getPages());
     }
