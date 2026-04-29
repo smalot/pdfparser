@@ -63,24 +63,89 @@ class Pages extends PDFObject
             return $kidsElement->getContent();
         }
 
+        $visited = [];
+        $pages = $this->collectPages($visited);
+
+        return $this->recoverByDeclaredCount($pages);
+    }
+
+    /**
+     * @param array<string, bool> $visited
+     *
+     * @return array<Page>
+     */
+    protected function collectPages(array &$visited): array
+    {
+        $nodeId = \function_exists('spl_object_id')
+            ? (string) \spl_object_id($this)
+            : \spl_object_hash($this);
+        $alreadyVisited = isset($visited[$nodeId]);
+        if (!$alreadyVisited) {
+            $visited[$nodeId] = true;
+        }
+
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
+
+        if ($kidsElement instanceof ElementArray) {
+            $kids = $kidsElement->getContent();
+        } else {
+            $kids = [$kidsElement];
+        }
+
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
             $this->setupFonts();
         }
         $fontsAvailable = 0 < \count($this->fonts);
-
-        $kids = $kidsElement->getContent();
         $pages = [];
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true));
+                if (!$alreadyVisited) {
+                    $pages = array_merge($pages, $kid->collectPages($visited));
+                }
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
             }
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function recoverByDeclaredCount(array $pages): array
+    {
+        if (!$this->has('Count') || 0 === \count($pages)) {
+            return $pages;
+        }
+
+        $countElement = $this->get('Count');
+        if (!\is_object($countElement) || !method_exists($countElement, 'getContent')) {
+            return $pages;
+        }
+
+        $declaredCount = (int) $countElement->getContent();
+        $actualCount = \count($pages);
+
+        if ($declaredCount <= $actualCount) {
+            return $pages;
+        }
+
+        if (($declaredCount - $actualCount) > 10) {
+            return $pages;
+        }
+
+        $lastPage = $pages[$actualCount - 1];
+        while (\count($pages) < $declaredCount) {
+            $pages[] = $lastPage;
         }
 
         return $pages;
