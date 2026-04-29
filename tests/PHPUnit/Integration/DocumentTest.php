@@ -40,6 +40,7 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
+use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\PDFObject;
 
 /**
@@ -231,6 +232,46 @@ class DocumentTest extends TestCase
         // Missing catalog
         $document = $this->getDocumentInstance();
         $document->getPages();
+    }
+
+    public function testGetPagesDeduplicatesDuplicateKidsReferences(): void
+    {
+        $document = $this->getDocumentInstance();
+
+        $content = '<</Type/Page>>';
+        $header = Header::parse($content, $document);
+        $page = $this->getPageInstance($document, $header);
+
+        $content = '<</Type/Pages/Kids[10 0 R 10 0 R]>>';
+        $header = Header::parse($content, $document);
+        $pagesNode = $this->getPagesInstance($document, $header);
+
+        $content = '<</Type/Catalog/Pages 20 0 R>>';
+        $header = Header::parse($content, $document);
+        $catalog = $this->getPDFObjectInstance($document, $header);
+
+        $document->setObjects([
+            '10_0' => $page,
+            '20_0' => $pagesNode,
+            '30_0' => $catalog,
+        ]);
+
+        $pages = $document->getPages();
+
+        $this->assertCount(1, $pages);
+        $this->assertSame($page, $pages[0]);
+    }
+
+    /**
+     * Synthetic fixture created in-repo to reproduce duplicate /Kids references.
+     */
+    public function testGetPagesDeduplicatesDuplicateKidsFixture(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
+
+        $pages = $document->getPages();
+
+        $this->assertCount(1, $pages);
     }
 
     /**

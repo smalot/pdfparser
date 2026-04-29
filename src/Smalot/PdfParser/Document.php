@@ -401,7 +401,7 @@ class Document
             /** @var Pages $object */
             $object = $catalogue->get('Pages');
             if (method_exists($object, 'getPages')) {
-                return $object->getPages(true);
+                return $this->uniquePages($object->getPages(true));
             }
         }
 
@@ -415,17 +415,46 @@ class Document
                 $pages = array_merge($pages, $object->getPages(true));
             }
 
-            return $pages;
+            return $this->uniquePages($pages);
         }
 
         if ($this->hasObjectsByType('Page')) {
             // Search for 'page' (unordered pages).
             $pages = $this->getObjectsByType('Page');
 
-            return array_values($pages);
+            return $this->uniquePages(array_values($pages));
         }
 
         throw new MissingCatalogException('Missing catalog.');
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function uniquePages(array $pages): array
+    {
+        $unique = [];
+        $seen = [];
+
+        foreach ($pages as $page) {
+            if (!\is_object($page)) {
+                continue;
+            }
+
+            $id = \function_exists('spl_object_id')
+                ? (string) \spl_object_id($page)
+                : \spl_object_hash($page);
+            if (isset($seen[$id])) {
+                continue;
+            }
+
+            $seen[$id] = true;
+            $unique[] = $page;
+        }
+
+        return $unique;
     }
 
     public function getText(?int $pageLimit = null): string
