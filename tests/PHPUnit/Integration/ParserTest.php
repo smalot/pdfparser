@@ -450,6 +450,16 @@ class ParserTest extends TestCase
 
         $this->assertEquals('ASCII85 last-tuple overflow test', $document->getText());
     }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1978317.pdf
+     */
+    public function testParseFileWithMalformedObjectStreamPreamble(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/bug1978317.pdf');
+
+        self::assertGreaterThanOrEqual(1, count($document->getPages()));
+    }
 }
 
 class ParserSub extends Parser
