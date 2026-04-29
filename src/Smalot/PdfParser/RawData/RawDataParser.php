@@ -1458,7 +1458,7 @@ class RawDataParser
             throw new EmptyPdfException('Empty PDF data given.');
         }
         // find the pdf header starting position
-        if (false === ($trimpos = strpos($data, '%PDF-'))) {
+        if (false === strpos($data, '%PDF-') && !$this->hasRecoverablePdfStructureWithoutHeader($data)) {
             throw new MissingPdfHeaderException('Invalid PDF data: Missing `%PDF-` header.');
         }
 
@@ -1508,5 +1508,24 @@ class RawDataParser
         }
 
         return [$xref, $objects];
+    }
+
+    private function hasRecoverablePdfStructureWithoutHeader(string $data): bool
+    {
+        if (
+            preg_match('/(?:^|[\r\n])[0-9]+[\x09\x0a\x0c\x0d\x20]+[0-9]+[\x09\x0a\x0c\x0d\x20]+obj\b/i', $data) === 0
+        ) {
+            return false;
+        }
+
+        if (preg_match('/\btrailer\b/i', $data) === 0) {
+            return false;
+        }
+
+        if (preg_match('/\bstartxref\b/i', $data) === 0 && preg_match('/\bxref\b/i', $data) === 0) {
+            return false;
+        }
+
+        return true;
     }
 }

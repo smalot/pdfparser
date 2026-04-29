@@ -181,20 +181,39 @@ class Parser
 
                         // Split xrefs and contents.
                         preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
-                        $content = $match[3];
+                        $content = $match[3] ?? '';
+                        $xrefBlob = $match[1] ?? '';
+
+                        if ('' === $xrefBlob) {
+                            return;
+                        }
 
                         // Extract xrefs.
                         $xrefs = preg_split(
                             '/(\d+\s+\d+\s*)/s',
-                            $match[1],
+                            $xrefBlob,
                             -1,
                             \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                         );
+
+                        if (!\is_array($xrefs) || [] === $xrefs) {
+                            return;
+                        }
                         $table = [];
 
                         foreach ($xrefs as $xref) {
-                            list($id, $position) = preg_split("/\s+/", trim($xref));
+                            $parts = preg_split('/\s+/', trim($xref));
+                            if (!\is_array($parts) || \count($parts) < 2) {
+                                continue;
+                            }
+
+                            $id = $parts[0];
+                            $position = $parts[1];
                             $table[$position] = $id;
+                        }
+
+                        if ([] === $table) {
+                            return;
                         }
 
                         ksort($table);
