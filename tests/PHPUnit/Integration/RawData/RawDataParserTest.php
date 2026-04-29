@@ -385,4 +385,21 @@ class RawDataParserTest extends TestCase
 
         self::assertCount(1, $document->getPages());
     }
+
+    public function testRecoverPagesWhenNearbyObjectHeadersRestoreMissingOffsets(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest812-issue7229.pdf');
+
+        self::assertCount(2, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+     */
+    public function testParseFileWithInvalidXrefOffsetFromPdfJsCorpus(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/REDHAT-1531897-0.pdf');
+
+        self::assertInstanceOf(\Smalot\PdfParser\Document::class, $document);
+    }
 }
