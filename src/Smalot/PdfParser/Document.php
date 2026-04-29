@@ -485,23 +485,17 @@ class Document
      */
     protected function getUniquePages(array $pages): array
     {
-        $seen = [];
-        $uniquePages = [];
+        $normalizedPages = [];
 
         foreach ($pages as $page) {
-            $key = \function_exists('spl_object_id')
-                ? (string) \spl_object_id($page)
-                : \spl_object_hash($page);
-
-            if (isset($seen[$key])) {
+            if (!$page instanceof Page) {
                 continue;
             }
 
-            $seen[$key] = true;
-            $uniquePages[] = $page;
+            $normalizedPages[] = $page;
         }
 
-        return $uniquePages;
+        return $normalizedPages;
     }
 
     /**

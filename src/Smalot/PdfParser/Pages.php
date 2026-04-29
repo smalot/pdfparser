@@ -79,10 +79,10 @@ class Pages extends PDFObject
         $nodeId = \function_exists('spl_object_id')
             ? (string) \spl_object_id($this)
             : \spl_object_hash($this);
-        $alreadyVisited = isset($visited[$nodeId]);
-        if (!$alreadyVisited) {
-            $visited[$nodeId] = true;
+        if (isset($visited[$nodeId])) {
+            return [];
         }
+        $visited[$nodeId] = true;
 
         /** @var ElementArray $kidsElement */
         $kidsElement = $this->get('Kids');
@@ -102,9 +102,7 @@ class Pages extends PDFObject
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                if (!$alreadyVisited) {
-                    $pages = array_merge($pages, $kid->collectPages($visited));
-                }
+                $pages = array_merge($pages, $kid->collectPages($visited));
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);
@@ -123,7 +121,12 @@ class Pages extends PDFObject
             $pages = $this->recoverPagesByParentReference($fontsAvailable);
         }
 
-        return $this->deduplicatePages($pages);
+        // Treat visited nodes as recursion-stack entries only:
+        // this prevents loops while still allowing repeated references
+        // to contribute valid page entries.
+        unset($visited[$nodeId]);
+
+        return $pages;
     }
 
     /**
