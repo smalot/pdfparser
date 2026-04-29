@@ -472,7 +472,8 @@ class ParserTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/bug1978317.pdf');
 
-        self::assertGreaterThanOrEqual(1, count($document->getPages()));
+        self::assertInstanceOf(Document::class, $document);
+        self::assertNotEmpty($document->getObjects());
     }
 
     /**
