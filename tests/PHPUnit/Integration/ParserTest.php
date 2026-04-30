@@ -464,6 +464,27 @@ class ParserTest extends TestCase
 
         self::assertCount(28, $document->getPages());
     }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1978317.pdf
+     */
+    public function testParseFileWithMalformedObjectStreamPreamble(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/bug1978317.pdf');
+
+        self::assertInstanceOf(Document::class, $document);
+        self::assertNotEmpty($document->getObjects());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+     */
+    public function testParseFileWithInvalidXrefOffsetRecoversPages(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/REDHAT-1531897-0.pdf');
+
+        self::assertInstanceOf(Document::class, $document);
+    }
 }
 
 class ParserSub extends Parser
