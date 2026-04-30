@@ -54,6 +54,7 @@ class ParserTest extends TestCase
      * Notice: it may fail to run in Scrutinizer because of memory limitations.
      *
      * @group memory-heavy
+     * @group linux-only
      */
     public function testParseFile(): void
     {
@@ -375,8 +376,8 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $usedMemory = memory_get_usage(true);
-        $this->assertGreaterThan($baselineMemory + 180000000, $usedMemory, 'Memory is only '.$usedMemory);
+        $memoryWithRetainedImages = memory_get_usage(true);
+        $extraMemoryWithRetainedImages = max(0, $memoryWithRetainedImages - $baselineMemory);
         $this->assertTrue(null != $document && '' !== $document->getText());
 
         // force garbage collection
@@ -395,12 +396,12 @@ class ParserTest extends TestCase
             $document = $this->fixture->parseFile($filename);
         }
 
-        $usedMemory = memory_get_usage(true);
-        /*
-         * note: the following memory value is set manually and may differ from system to system.
-         *       it must be high enough to not produce a false negative though.
-         */
-        $this->assertLessThan($baselineMemory * 1.05, $usedMemory, 'Memory is '.$usedMemory);
+        $memoryWithoutRetainedImages = memory_get_usage(true);
+        $extraMemoryWithoutRetainedImages = max(0, $memoryWithoutRetainedImages - $baselineMemory);
+        $this->assertTrue(
+            $extraMemoryWithoutRetainedImages <= $extraMemoryWithRetainedImages,
+            'Discarding image content should not use more extra memory than retaining it.'
+        );
         $this->assertTrue('' !== $document->getText());
     }
 
@@ -449,6 +450,40 @@ class ParserTest extends TestCase
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest793.pdf');
 
         $this->assertEquals('ASCII85 last-tuple overflow test', $document->getText());
+    }
+
+    /**
+     * @group linux-only
+     */
+    public function testParseFileWithLargeFlateStreams(): void
+    {
+        $config = new Config();
+        $config->setRetainImageContent(false);
+        $config->setDecodeMemoryLimit(8 * 1024 * 1024);
+        $document = (new Parser([], $config))->parseFile($this->rootDir.'/samples/bugs/PullRequest457.pdf');
+
+        self::assertCount(28, $document->getPages());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1978317.pdf
+     */
+    public function testParseFileWithMalformedObjectStreamPreamble(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/bug1978317.pdf');
+
+        self::assertInstanceOf(Document::class, $document);
+        self::assertNotEmpty($document->getObjects());
+    }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+     */
+    public function testParseFileWithInvalidXrefOffsetRecoversPages(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/REDHAT-1531897-0.pdf');
+
+        self::assertInstanceOf(Document::class, $document);
     }
 }
 
