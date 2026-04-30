@@ -93,8 +93,6 @@ class Pages extends PDFObject
             $kids = [$kidsElement];
         }
 
-        $kids = $this->deduplicateKids($kids);
-
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
             $this->setupFonts();
@@ -112,138 +110,10 @@ class Pages extends PDFObject
                     $kid->setFonts($this->fonts);
                 }
                 $pages[] = $kid;
-            } elseif ($kid instanceof PDFObject && $this->isRecoverablePageObject($kid)) {
-                $recoveredPage = new Page($kid->getDocument(), $kid->getHeader(), $kid->getContent(), $kid->getConfig());
-                if ($fontsAvailable) {
-                    $recoveredPage->setFonts($this->fonts);
-                }
-                $pages[] = $recoveredPage;
             }
-        }
-
-        if ([] === $pages) {
-            $pages = $this->recoverPagesByParentReference($fontsAvailable);
         }
 
         return $pages;
-    }
-
-    /**
-     * @return array<Page>
-     */
-    protected function recoverPagesByParentReference(bool $fontsAvailable): array
-    {
-        $pages = [];
-
-        foreach ($this->getDocument()->getObjects() as $object) {
-            if ($object instanceof Page && $object->has('Parent') && $object->get('Parent') === $this) {
-                if ($fontsAvailable) {
-                    $object->setFonts($this->fonts);
-                }
-                $pages[] = $object;
-                continue;
-            }
-
-            if (!$object instanceof PDFObject || !$this->isRecoverablePageObject($object)) {
-                continue;
-            }
-
-            if ($object->get('Parent') !== $this) {
-                continue;
-            }
-
-            $recoveredPage = new Page($object->getDocument(), $object->getHeader(), $object->getContent(), $object->getConfig());
-            if ($fontsAvailable) {
-                $recoveredPage->setFonts($this->fonts);
-            }
-            $pages[] = $recoveredPage;
-        }
-
-        return $pages;
-    }
-
-    protected function isRecoverablePageObject(PDFObject $object): bool
-    {
-        if (!$object->has('Parent')) {
-            return false;
-        }
-
-        return $object->has('MediaBox') || $object->has('Contents');
-    }
-
-    /**
-     * @param array<mixed> $kids
-     *
-     * @return array<mixed>
-     */
-    protected function deduplicateKids(array $kids): array
-    {
-        foreach ($kids as $kid) {
-            if ($kid instanceof self) {
-                return $kids;
-            }
-        }
-
-        $uniqueKids = [];
-        $seen = [];
-
-        foreach ($kids as $kid) {
-            if (!\is_object($kid)) {
-                $uniqueKids[] = $kid;
-
-                continue;
-            }
-
-            $kidId = \function_exists('spl_object_id')
-                ? (string) \spl_object_id($kid)
-                : \spl_object_hash($kid);
-            if (isset($seen[$kidId])) {
-                continue;
-            }
-
-            $seen[$kidId] = true;
-            $uniqueKids[] = $kid;
-        }
-
-        return $uniqueKids;
-    }
-
-    /**
-     * @param array<Page> $pages
-     *
-     * @return array<Page>
-     */
-    protected function deduplicatePages(array $pages): array
-    {
-        $seen = [];
-        $deduplicated = [];
-
-        foreach ($pages as $page) {
-            $key = \function_exists('spl_object_id')
-                ? (string) \spl_object_id($page)
-                : \spl_object_hash($page);
-            $signatureKey = $this->buildPageSignature($page);
-
-            if (isset($seen[$key]) || isset($seen[$signatureKey])) {
-                continue;
-            }
-
-            $seen[$key] = true;
-            $seen[$signatureKey] = true;
-            $deduplicated[] = $page;
-        }
-
-        return $deduplicated;
-    }
-
-    protected function buildPageSignature(Page $page): string
-    {
-        $header = $page->getHeader();
-        $headerKey = \function_exists('spl_object_id')
-            ? (string) \spl_object_id($header)
-            : \spl_object_hash($header);
-
-        return $headerKey.'|'.serialize($page->getContent());
     }
 
     /**
@@ -254,10 +124,6 @@ class Pages extends PDFObject
     protected function recoverByDeclaredCount(array $pages): array
     {
         if (!$this->has('Count') || 0 === \count($pages)) {
-            return $pages;
-        }
-
-        if ($this->hasDuplicateKidsReferences()) {
             return $pages;
         }
 
@@ -283,39 +149,6 @@ class Pages extends PDFObject
         }
 
         return $pages;
-    }
-
-    protected function hasDuplicateKidsReferences(): bool
-    {
-        if (!$this->has('Kids')) {
-            return false;
-        }
-
-        /** @var ElementArray $kidsElement */
-        $kidsElement = $this->get('Kids');
-        if ($kidsElement instanceof ElementArray) {
-            $kids = $kidsElement->getContent();
-        } else {
-            $kids = [$kidsElement];
-        }
-
-        $seen = [];
-        foreach ($kids as $kid) {
-            if (!\is_object($kid)) {
-                continue;
-            }
-
-            $kidId = \function_exists('spl_object_id')
-                ? (string) \spl_object_id($kid)
-                : \spl_object_hash($kid);
-            if (isset($seen[$kidId])) {
-                return true;
-            }
-
-            $seen[$kidId] = true;
-        }
-
-        return false;
     }
 
     /**
