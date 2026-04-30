@@ -321,6 +321,7 @@ class RawDataParserTest extends TestCase
      * Ensure parser resolves compressed object references from xref streams.
      *
      * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+     * @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
      */
     public function testParseFileWithCompressedObjRefInXrefStream(): void
     {
@@ -331,6 +332,7 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+     * @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
      */
     public function testParseFileWhenStartxrefPointsToLeadingWhitespaceInVeraPdfFixtureLegacyPath(): void
     {
@@ -341,6 +343,7 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9252.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue9252.pdf
      */
     public function testParseFileWithCompressedXrefObjectFromPdfJsCorpusLegacyPath(): void
     {
@@ -351,6 +354,7 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/xref_command_missing.pdf
      */
     public function testParseFileWhenXrefCommandIsMissingInPdfJsFixtureLegacyPath(): void
     {
@@ -367,7 +371,8 @@ class RawDataParserTest extends TestCase
     }
 
     /**
-     * @see https://github.com/smalot/pdfparser/pull/797
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/pdfkit_compressed.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/pdfkit_compressed.pdf
      */
     public function testParseFileWithCompressedXrefObjectFromPdfJsCorpus(): void
     {
@@ -378,6 +383,7 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/xref_command_missing.pdf
      */
     public function testParseFileWhenXrefCommandIsMissingInPdfJsFixture(): void
     {
@@ -395,11 +401,126 @@ class RawDataParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/REDHAT-1531897-0.pdf
      */
     public function testParseFileWithInvalidXrefOffsetFromPdfJsCorpus(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/REDHAT-1531897-0.pdf');
 
         self::assertInstanceOf(\Smalot\PdfParser\Document::class, $document);
+    }
+
+    /**
+     * @dataProvider provideRawDataFixtureRegressionByProvenance
+     */
+    public function testParseFileWithRawDataFixtureRegressionByProvenance(string $fixturePath, int $expectedPageCount): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/'.$fixturePath);
+
+        self::assertInstanceOf(\Smalot\PdfParser\Document::class, $document);
+        self::assertCount($expectedPageCount, $document->getPages());
+    }
+
+    /**
+     * @return iterable<string, array{string, int}>
+     */
+    public static function provideRawDataFixtureRegressionByProvenance(): iterable
+    {
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        yield 'PR794 startxref near xref keyword' => ['PullRequest794.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/pdfkit_compressed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/pdfkit_compressed.pdf
+        yield 'PR797 pdf.js compressed xref object' => ['PullRequest797-pdf.js.pdf', 1];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        yield 'PR797 veraPDF startxref whitespace' => ['PullRequest797-vera.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17147.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue17147.pdf
+        yield 'PR804 hybrid xref offsets' => ['PullRequest804-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/filled-background.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/filled-background.pdf
+        yield 'PR805 comments inside xref table' => ['PullRequest805-pdf.js.pdf', 3];
+
+        // Derived fixture: no exact hash match in local corpora.
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/xref_command_missing.pdf
+        yield 'PR807 missing xref keyword' => ['PullRequest807-pdfjs-xref-missing-keyword.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/outlines_for_editor.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/outlines_for_editor.pdf
+        yield 'PR807 startxref misaligned' => ['PullRequest807-pdfjs-xref-startxref-misaligned.pdf', 5];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19800.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue19800.pdf
+        yield 'PR809 missing startxref but with trailer root' => ['PullRequest809-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue18986.pdf
+        yield 'PR812 malformed xref stream missing root entry' => ['PullRequest812-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/GHOSTSCRIPT-698804-1-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/GHOSTSCRIPT-698804-1-fuzzed.pdf
+        yield 'PR813 partially missing xref entries' => ['PullRequest813-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9418.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue9418.pdf
+        yield 'PR814 root offset points to invalid object' => ['PullRequest814-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-937-0-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-937-0-fuzzed.pdf
+        yield 'PR816 poppler fuzzed fixture' => ['PullRequest816-poppler-937-0-fuzzed.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/REDHAT-1531897-0.pdf
+        yield 'PR818 malformed prev xref chain' => ['PullRequest818-pdf.js.pdf', 0];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+        yield 'invalid object reference from xref stream' => ['PullRequestInvalidObjectReference.pdf', 1];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.8%20Indirect%20objects/isartor-6-1-8-t01-fail-a.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.8%20Indirect%20objects/isartor-6-1-8-t01-fail-a.pdf
+        yield 'nearby object header offset recovery' => ['PullRequestNearbyObjectHeaderOffset.pdf', 1];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.4%20Cross%20reference%20trailer/isartor-6-1-4-t01-fail-a.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/Isartor%20test%20files/PDFA-1b/6.1%20File%20structure/6.1.4%20Cross%20reference%20trailer/isartor-6-1-4-t01-fail-a.pdf
+        yield 'xref subsection with multiple spaces' => ['PullRequestXrefSubsectionMultipleSpaces.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1250079.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1250079.pdf
+        yield 'pdf.js bug1250079' => ['bug1250079.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1539074.1.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1539074.1.pdf
+        yield 'pdf.js bug1539074.1' => ['bug1539074.1.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1539074.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1539074.pdf
+        yield 'pdf.js bug1539074' => ['bug1539074.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1606566.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1606566.pdf
+        yield 'pdf.js bug1606566' => ['bug1606566.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1795263.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1795263.pdf
+        yield 'pdf.js bug1795263' => ['bug1795263.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/named_dest_collision_for_editor.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/named_dest_collision_for_editor.pdf
+        yield 'named destination collision for editor' => ['named_dest_collision_for_editor.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue19517.pdf
+        yield 'pdf.js issue19517' => ['pdfjs-issue19517.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-742-0-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-742-0-fuzzed.pdf
+        yield 'poppler fuzzed fixture 742' => ['poppler-742-0-fuzzed.pdf', 1];
     }
 }
