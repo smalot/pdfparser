@@ -274,6 +274,36 @@ class DocumentTest extends TestCase
         $this->assertCount(1, $pages);
     }
 
+    public function testGetPagesPreservesDeclaredCountFallbackWhenKidsAreIncomplete(): void
+    {
+        $document = $this->getDocumentInstance();
+
+        $content = '<</Type/Page>>';
+        $header = Header::parse($content, $document);
+        $page = $this->getPageInstance($document, $header);
+
+        $content = '<</Type/Pages/Count 2/Kids[10 0 R]>>';
+        $header = Header::parse($content, $document);
+        $pagesNode = $this->getPagesInstance($document, $header);
+
+        $content = '<</Type/Catalog/Pages 20 0 R>>';
+        $header = Header::parse($content, $document);
+        $catalog = $this->getPDFObjectInstance($document, $header);
+
+        $document->setObjects([
+            '10_0' => $page,
+            '20_0' => $pagesNode,
+            '30_0' => $catalog,
+        ]);
+
+        $pages = $document->getPages();
+
+        $this->assertCount(2, $pages);
+        $this->assertTrue($pages[0] instanceof Page);
+        $this->assertTrue($pages[1] instanceof Page);
+        $this->assertNotSame($pages[0], $pages[1]);
+    }
+
     /**
      * @see https://github.com/smalot/pdfparser/issues/721
      */

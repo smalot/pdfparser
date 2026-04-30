@@ -145,7 +145,14 @@ class Pages extends PDFObject
 
         $lastPage = $pages[$actualCount - 1];
         while (\count($pages) < $declaredCount) {
-            $pages[] = $lastPage;
+            $recoveredPage = new Page(
+                $lastPage->getDocument(),
+                $lastPage->getHeader(),
+                $lastPage->getContent(),
+                $lastPage->getConfig()
+            );
+            $recoveredPage->setFonts($lastPage->getFonts());
+            $pages[] = $recoveredPage;
         }
 
         return $pages;
