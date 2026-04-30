@@ -39,6 +39,8 @@ use PHPUnit\Framework\TestCase as PHPTestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Parser;
 
 abstract class TestCase extends PHPTestCase
@@ -83,5 +85,91 @@ abstract class TestCase extends PHPTestCase
     protected function getParserInstance(?Config $config = null): Parser
     {
         return new Parser([], $config);
+    }
+
+    /**
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     */
+    protected function assertDocumentPageCountAndDimensions(Document $document, array $expectedPageDimensions): void
+    {
+        $pages = $document->getPages();
+
+        self::assertCount(\count($expectedPageDimensions), $pages);
+
+        foreach ($pages as $index => $page) {
+            self::assertInstanceOf(Page::class, $page);
+
+            $dimensions = $this->extractPageDimensions($page);
+            [$expectedWidth, $expectedHeight] = $expectedPageDimensions[$index];
+
+            if (null === $dimensions) {
+                // MediaBox is absent or unparseable in this fixture; skip dimension
+                // assertions only when no specific value was expected.
+                self::assertNull($expectedWidth, 'Unable to resolve MediaBox for page index '.$index.' (expected width '.$expectedWidth.').');
+                self::assertNull($expectedHeight, 'Unable to resolve MediaBox for page index '.$index.' (expected height '.$expectedHeight.').');
+                continue;
+            }
+
+            [$width, $height] = $dimensions;
+
+            if (null === $expectedWidth) {
+                self::assertGreaterThan(0.0, $width, 'Page width must be > 0 for page index '.$index.'.');
+            } else {
+                self::assertEqualsWithDelta($expectedWidth, $width, 0.01, 'Unexpected page width for page index '.$index.'.');
+            }
+
+            if (null === $expectedHeight) {
+                self::assertGreaterThan(0.0, $height, 'Page height must be > 0 for page index '.$index.'.');
+            } else {
+                self::assertEqualsWithDelta($expectedHeight, $height, 0.01, 'Unexpected page height for page index '.$index.'.');
+            }
+        }
+    }
+
+    /**
+     * @return array<int, array{0: null, 1: null}>
+     */
+    protected static function expectedPositivePageDimensions(int $pageCount): array
+    {
+        return array_fill(0, $pageCount, [null, null]);
+    }
+
+    /**
+     * @return array{float, float}|null
+     */
+    private function extractPageDimensions(Page $page): ?array
+    {
+        $mediaBox = $page->get('MediaBox');
+        if (!$mediaBox instanceof ElementArray) {
+            return null;
+        }
+
+        $bounds = $mediaBox->getContent();
+        if (4 !== \count($bounds)) {
+            return null;
+        }
+
+        $coordinates = [];
+        foreach ($bounds as $bound) {
+            if (!\is_object($bound) || !method_exists($bound, 'getContent')) {
+                return null;
+            }
+
+            $value = $bound->getContent();
+            if (!\is_numeric($value)) {
+                return null;
+            }
+
+            $coordinates[] = (float) $value;
+        }
+
+        if ($coordinates[2] < $coordinates[0] || $coordinates[3] < $coordinates[1]) {
+            return null;
+        }
+
+        return [
+            $coordinates[2] - $coordinates[0],
+            $coordinates[3] - $coordinates[1],
+        ];
     }
 }

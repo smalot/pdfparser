@@ -269,9 +269,7 @@ class DocumentTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequestDuplicateKids.pdf');
 
-        $pages = $document->getPages();
-
-        $this->assertCount(1, $pages);
+        $this->assertDocumentPageCountAndDimensions($document, [[200.0, 200.0]]);
     }
 
     /**

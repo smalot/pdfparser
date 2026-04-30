@@ -32,6 +32,7 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementName;
 use Smalot\PdfParser\Element\ElementNumeric;
@@ -467,6 +468,11 @@ class Document
             return $this->getUniquePages($brokenPagesTreeFallbackPages);
         }
 
+        $inlineKidsFallbackPages = $this->getInlineKidsFallbackPages();
+        if ([] !== $inlineKidsFallbackPages) {
+            return $this->getUniquePages($inlineKidsFallbackPages);
+        }
+
         $minimalHeaderlessStructureFallbackPages = $this->getMinimalHeaderlessStructureFallbackPages();
         if ([] !== $minimalHeaderlessStructureFallbackPages) {
             return $this->getUniquePages($minimalHeaderlessStructureFallbackPages);
@@ -656,6 +662,43 @@ class Document
         }
 
         return [];
+    }
+
+    /**
+     * Recover pages from objects whose Kids array contains inline page dictionaries
+     * (Header objects) rather than indirect object references.
+     *
+     * Some minimal or malformed PDFs embed page dictionaries inline inside a Kids
+     * array instead of using indirect object references. When the pages tree cannot
+     * be walked through typed Catalog/Pages/Page objects, this fallback checks for
+     * Kids arrays whose elements are Header objects carrying a Contents or MediaBox
+     * key and synthesises Page objects from them.
+     *
+     * @return array<Page>
+     */
+    protected function getInlineKidsFallbackPages(): array
+    {
+        $pages = [];
+
+        foreach ($this->objects as $object) {
+            $header = $object->getHeader();
+            if (!$header->has('Kids')) {
+                continue;
+            }
+
+            $kidsEl = $header->get('Kids');
+            if (!$kidsEl instanceof ElementArray) {
+                continue;
+            }
+
+            foreach ($kidsEl->getContent() as $kid) {
+                if ($kid instanceof Header && ($kid->has('Contents') || $kid->has('MediaBox'))) {
+                    $pages[] = new Page($this, $kid, null);
+                }
+            }
+        }
+
+        return $pages;
     }
 
     /**

@@ -113,7 +113,7 @@ class PagesTest extends TestCase
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
 
-        self::assertCount(2, $document->getPages());
+        $this->assertDocumentPageCountAndDimensions($document, [[595.0, 842.0], [595.0, 842.0]]);
     }
 
 }

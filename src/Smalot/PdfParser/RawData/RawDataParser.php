@@ -48,6 +48,8 @@ use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 
 class RawDataParser
 {
+    private const MAX_PDF_GENERATION = 65535;
+
     /**
      * @var Config
      */
@@ -177,7 +179,7 @@ class RawDataParser
             $offset += \strlen($matches[0][0]);
             if ('n' == $matches[3][0]) {
                 // create unique object index: [object number]_[generation number]
-                $index = $obj_num.'_'.(int) $matches[2][0];
+                $index = $obj_num.'_'.$this->normalizeObjectGenerationNumber($matches[2][0]);
                 // check if object already exist
                 if (!isset($xref['xref'][$index])) {
                     // store object offset position
@@ -222,13 +224,13 @@ class RawDataParser
                     $xref['trailer']['size'] = (int) $matches[1];
                 }
                 if (preg_match('/Root[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailer_data, $matches) > 0) {
-                    $xref['trailer']['root'] = (int) $matches[1].'_'.(int) $matches[2];
+                    $xref['trailer']['root'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
                 }
                 if (preg_match('/Encrypt[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailer_data, $matches) > 0) {
-                    $xref['trailer']['encrypt'] = (int) $matches[1].'_'.(int) $matches[2];
+                    $xref['trailer']['encrypt'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
                 }
                 if (preg_match('/Info[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailer_data, $matches) > 0) {
-                    $xref['trailer']['info'] = (int) $matches[1].'_'.(int) $matches[2];
+                    $xref['trailer']['info'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
                 }
                 if (preg_match('/ID[\s]*[\[][\s]*[<]([^>]*)[>][\s]*[<]([^>]*)[>]/i', $trailer_data, $matches) > 0) {
                     $xref['trailer']['id'] = [];
@@ -538,7 +540,7 @@ class RawDataParser
 
                     case 1:  // (n) objects that are in use but are not compressed
                         // create unique object index: [object number]_[generation number]
-                        $index = $obj_num.'_'.$row[2];
+                        $index = $obj_num.'_'.$this->normalizeObjectGenerationNumber($row[2]);
                         // check if object already exist
                         if (!isset($xref['xref'][$index])) {
                             // store object offset position
@@ -628,7 +630,7 @@ class RawDataParser
             ) > 0
         ) {
             foreach ($matches[1] as $idx => $objMatch) {
-                $objRef = $objMatch[0].'_'.(int) $matches[2][$idx][0];
+                $objRef = $objMatch[0].'_'.$this->normalizeObjectGenerationNumber($matches[2][$idx][0]);
                 if (!isset($xref['xref'][$objRef])) {
                     $xref['xref'][$objRef] = $objMatch[1];
                 }
@@ -664,7 +666,7 @@ class RawDataParser
                 $matchOffset = $searchStart + $match[1];
                 if (null === $best || abs($matchOffset - $offset) < abs($best['offset'] - $offset)) {
                     $best = [
-                        'objRef' => $matches[1][$idx][0].'_'.(int) $matches[2][$idx][0],
+                        'objRef' => $matches[1][$idx][0].'_'.$this->normalizeObjectGenerationNumber($matches[2][$idx][0]),
                         'offset' => $matchOffset,
                     ];
                 }
@@ -709,6 +711,43 @@ class RawDataParser
         return $bestOffset;
     }
 
+    /**
+     * Normalize a raw generation-number token to a valid range.
+     *
+     * ISO 32000-1 §7.3.10:
+     * - Generation numbers are non-negative integers.
+     * - In cross-reference tables they are encoded as 5-digit fields,
+     *   which effectively limits their maximum value to 65535.
+     *
+     * Values outside this range are non-conforming. However, malformed
+     * or fuzzed PDFs may contain invalid values (e.g. extremely large
+     * integers or non-numeric tokens).
+     *
+     * This implementation normalizes invalid values to 0 as a recovery
+     * strategy, allowing objects to be resolved by object number only.
+     * This behaviour is not defined by the ISO specification but is
+     * commonly used by tolerant PDF parsers.
+     *
+     * @see https://pdfa.org/resource/iso-32000-1/
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf
+     */
+    private function normalizeObjectGenerationNumber($generation): string
+    {
+        $raw = trim((string) $generation);
+
+        // Must be a non-empty string of ASCII digits.
+        if ($raw === '' || !ctype_digit($raw)) {
+            return '0';
+        }
+
+        // Avoid integer overflow by comparing as string.
+        if (strlen($raw) > 5 || $raw > '65535') {
+            return '0';
+        }
+
+        return ltrim($raw, '0') === '' ? '0' : ltrim($raw, '0');
+    }
+
     private function findLastXrefKeywordOffset(string $pdfData): ?int
     {
         return $this->findLastValidXrefKeywordOffset($pdfData, 0);
@@ -727,7 +766,8 @@ class RawDataParser
                 continue;
             }
 
-            $previousChar = $xrefOffset > 0 ? $chunk[$match[1] - 1] ?? $chunk[$match[1]] : '';
+            $matchOffset = (int) $match[1];
+            $previousChar = $xrefOffset > 0 ? ($chunk[$matchOffset - 1] ?? '') : '';
             if ('' !== $previousChar && !preg_match('/[\x09\x0a\x0c\x0d\x20]/', $previousChar)) {
                 continue;
             }
@@ -819,6 +859,20 @@ class RawDataParser
             ) {
                 $offset = $searchStart + $headerMatches[0][1];
                 $objHeaderLen = \strlen($headerMatches[0][0]);
+            } elseif (
+                preg_match(
+                    '/(?:%'.$this->config->getPdfWhitespacesRegex().'*)?'
+                    .$objRefArr[0]
+                    .$this->config->getPdfWhitespacesRegex().'+[0-9]+'
+                    .$this->config->getPdfWhitespacesRegex().'+obj/',
+                    substr($pdfData, $searchStart, $searchLen),
+                    $headerMatches,
+                    \PREG_OFFSET_CAPTURE
+                ) > 0
+            ) {
+                // Generation may be corrupted; recover by object number match.
+                $offset = $searchStart + $headerMatches[0][1];
+                $objHeaderLen = \strlen($headerMatches[0][0]);
             } else {
                 // an indirect reference to an undefined object shall be considered a reference to the null object
                 return ['null', 'null', $offset];
@@ -847,8 +901,8 @@ class RawDataParser
             $objContentArr[$i] = $element;
             $header = isset($element[0]) && '<<' === $element[0] ? $element : null;
             ++$i;
-        } while (('endobj' !== $element[0]) && ($offset !== $oldOffset));
-        // remove closing delimiter
+        } while (('endobj' !== $element[0]) && ('obj' !== $element[0]) && ($offset !== $oldOffset));
+        // remove closing delimiter (endobj, or a new object header that signals a missing endobj)
         array_pop($objContentArr);
 
         /*
@@ -1072,11 +1126,11 @@ class RawDataParser
                     // indirect object reference
                     $objtype = 'objref';
                     $offset += \strlen($matches[0]);
-                    $objval = (int) $matches[1].'_'.(int) $matches[2];
+                    $objval = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
                 } elseif (1 == preg_match('/^([0-9]+)[\s]+([0-9]+)[\s]+obj/iU', substr($pdfData, $offset, 33), $matches)) {
                     // object start
                     $objtype = 'obj';
-                    $objval = (int) $matches[1].'_'.(int) $matches[2];
+                    $objval = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
                     $offset += \strlen($matches[0]);
                 } elseif (($numlen = strspn($pdfData, '+-.0123456789', $offset)) > 0) {
                     // numeric object
@@ -1401,7 +1455,7 @@ class RawDataParser
 
         foreach ($objMatches[0] as $i => $fullMatch) {
             $objNum = (int) $objMatches[1][$i][0];
-            $genNum = (int) $objMatches[2][$i][0];
+            $genNum = $this->normalizeObjectGenerationNumber($objMatches[2][$i][0]);
             $xref['xref'][$objNum.'_'.$genNum] = $fullMatch[1];
         }
 
@@ -1427,13 +1481,13 @@ class RawDataParser
             $xref['trailer']['size'] = (int) $matches[1];
         }
         if (preg_match('/Root[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-            $xref['trailer']['root'] = (int) $matches[1].'_'.(int) $matches[2];
+            $xref['trailer']['root'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
         }
         if (preg_match('/Encrypt[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-            $xref['trailer']['encrypt'] = (int) $matches[1].'_'.(int) $matches[2];
+            $xref['trailer']['encrypt'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
         }
         if (preg_match('/Info[\s]+([0-9]+)[\s]+([0-9]+)[\s]+R/i', $trailerData, $matches) > 0) {
-            $xref['trailer']['info'] = (int) $matches[1].'_'.(int) $matches[2];
+            $xref['trailer']['info'] = (int) $matches[1].'_'.$this->normalizeObjectGenerationNumber($matches[2]);
         }
         if (preg_match('/ID[\s]*[\[]\s*[<]([^>]*)[>][\s]*[<]([^>]*)[>]/i', $trailerData, $matches) > 0) {
             $xref['trailer']['id'] = [];
