@@ -467,6 +467,7 @@ class ParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1978317.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1978317.pdf
      */
     public function testParseFileWithMalformedObjectStreamPreamble(): void
     {
@@ -478,12 +479,83 @@ class ParserTest extends TestCase
 
     /**
      * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/REDHAT-1531897-0.pdf
      */
     public function testParseFileWithInvalidXrefOffsetRecoversPages(): void
     {
         $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/REDHAT-1531897-0.pdf');
 
         self::assertInstanceOf(Document::class, $document);
+        self::assertCount(0, $document->getPages());
+    }
+
+    /**
+     * @dataProvider provideParserFixtureRegressionByProvenance
+     */
+    public function testParseFileWithParserFixtureRegressionByProvenance(string $fixturePath, int $expectedPageCount): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/'.$fixturePath);
+
+        self::assertInstanceOf(Document::class, $document);
+        self::assertCount($expectedPageCount, $document->getPages());
+    }
+
+    /**
+     * @return iterable<string, array{string, int}>
+     */
+    public static function provideParserFixtureRegressionByProvenance(): iterable
+    {
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/Brotli-Prototype-FileA.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/Brotli-Prototype-FileA.pdf
+        yield 'Brotli prototype file' => ['Brotli-Prototype-FileA.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/pdfkit_compressed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/pdfkit_compressed.pdf
+        yield 'PR797 compressed xref from pdf.js corpus' => ['PullRequest797-pdf.js.pdf', 1];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-2b/6.6%20Metadata/6.6.2%20Metadata%20streams/6.6.2.3%20Schemas/6.6.2.3.2%20Extension%20schemas/veraPDF%20test%20suite%206-6-2-3-2-t01-pass-c.pdf
+        yield 'PR797 startxref whitespace from veraPDF corpus' => ['PullRequest797-vera.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue7229.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue7229.pdf
+        yield 'PR812 issue7229 recovery' => ['PullRequest812-issue7229.pdf', 2];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/GHOSTSCRIPT-698804-1-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/GHOSTSCRIPT-698804-1-fuzzed.pdf
+        yield 'PR813 partial xref entries' => ['PullRequest813-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9418.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue9418.pdf
+        yield 'PR814 invalid root offset' => ['PullRequest814-pdf.js.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/xref_command_missing.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/xref_command_missing.pdf
+        yield 'PR815 missing xref command' => ['PullRequest815-xref-command-missing.pdf', 1];
+
+        // @see https://github.com/veraPDF/veraPDF-corpus/blob/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+        // @see https://raw.githubusercontent.com/veraPDF/veraPDF-corpus/refs/heads/staging/PDF_A-1b/6.1%20File%20structure/6.1.2%20File%20header/veraPDF%20test%20suite%206-1-2-t01-fail-a.pdf
+        yield 'PR invalid object reference (legacy path)' => ['PullRequestInvalidObjectReference.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1978317.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1978317.pdf
+        yield 'bug1978317 malformed object stream preamble' => ['bug1978317.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/REDHAT-1531897-0.pdf
+        yield 'REDHAT invalid xref offset' => ['REDHAT-1531897-0.pdf', 0];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue15590.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue15590.pdf
+        yield 'pdf.js issue15590' => ['issue15590.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue9105_other.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue9105_other.pdf
+        yield 'pdf.js issue9105_other' => ['issue9105_other.pdf', 1];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-85140-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-85140-0.pdf
+        yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', 1];
     }
 }
 
