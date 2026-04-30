@@ -512,7 +512,7 @@ class PDFObject
             return reset($fonts);
         }
 
-        return new Font($this->document, null, null, $this->config);
+        return new Font($this->document, null, null, $this->config ?? new Config());
     }
 
     /**

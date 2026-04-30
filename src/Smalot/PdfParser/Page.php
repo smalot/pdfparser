@@ -35,6 +35,7 @@ namespace Smalot\PdfParser;
 use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementNull;
+use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementXRef;
 
 class Page extends PDFObject
@@ -53,6 +54,50 @@ class Page extends PDFObject
      * @var array
      */
     protected $dataTm;
+
+    /**
+     * Returns the value for $name from this page's header dictionary, with
+     * special handling for MediaBox:
+     *
+     *  1. If the page dict itself carries a MediaBox, that value is used.
+     *  2. Otherwise the parent Pages node chain is walked to inherit the value
+     *     (PDF spec §7.7.3.3 Table 33).
+     *  3. If no ancestor defines a MediaBox either, a default US-Letter box
+     *     [0 0 612 792] is returned, matching the fallback behaviour of pdf.js
+     *     for malformed PDFs that omit the required entry.
+     */
+    public function get(string $name)
+    {
+        $result = parent::get($name);
+
+        if ('MediaBox' !== $name || !$result instanceof ElementMissing) {
+            return $result;
+        }
+
+        // Walk the parent Pages-node chain to inherit MediaBox.
+        $ancestor = parent::get('Parent');
+        while ($ancestor instanceof PDFObject) {
+            $mediaBox = $ancestor->get('MediaBox');
+            if (!$mediaBox instanceof ElementMissing) {
+                return $mediaBox;
+            }
+            $next = $ancestor->get('Parent');
+            // Guard against a self-referencing Parent entry.
+            if ($next === $ancestor) {
+                break;
+            }
+            $ancestor = $next;
+        }
+
+        // No MediaBox found anywhere in the page tree – fall back to US Letter,
+        // the same default that pdf.js applies to malformed PDFs.
+        return new ElementArray([
+            new ElementNumeric('0'),
+            new ElementNumeric('0'),
+            new ElementNumeric('612'),
+            new ElementNumeric('792'),
+        ], null);
+    }
 
     /**
      * @param array<\Smalot\PdfParser\Font> $fonts
