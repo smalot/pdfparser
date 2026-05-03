@@ -585,6 +585,13 @@ class ParserTest extends TestCase
         // No valid MediaBox; Pages fall back to US Letter (612 × 792 pt each).
         yield 'poppler-91414-0-53 broken stream length' => ['poppler-91414-0-53.pdf', [[795.0, 842.0], [795.0, 842.0]]];
 
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-91414-0-54.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-91414-0-54.pdf
+        // Broken stream with bad Length attribute; Single page recovered;
+        // MediaBox correctly extracted as [0 0 795 842], confirming parser handles
+        // even related/similar corrupted files with proper dimension recovery.
+        yield 'poppler-91414-0-54 broken stream length' => ['poppler-91414-0-54.pdf', [[795.0, 842.0]]];
+
     }
 
     /**
