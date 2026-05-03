@@ -112,54 +112,57 @@ class DocumentIssueFocusTest extends TestCase
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
     /**
-     * Tests parsing of readable encrypted PDF with RC4 Standard V1R2 encryption.
-     * These PDFs declare encryption but remain readable without explicit user password.
+     * Data provider for pdf.js regression tests covering readable encrypted and large stream PDFs.
      *
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug900822.pdf
+     * @return iterable<string, array{string, array<int, array{0: float|null, 1: float|null}>}>
      */
-    public function testParseFileWithRC4StandardEncryptionV1R2(): void
+    public static function pdfJsRegressionFixturesProvider(): iterable
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest809-pdf.js-bug900822.pdf');
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug900822.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug900822.pdf
+        // RC4 Standard V1R2 encryption; readable without explicit user password.
+        yield 'bug900822' => ['PullRequest809-pdf.js-bug900822.pdf', [[595.0, 841.89]]];
 
-        self::assertCount(1, $document->getPages());
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17215.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue17215.pdf
+        // RC4 Standard V2R3 encryption; readable without explicit user password.
+        yield 'issue17215' => ['PullRequest810-pdf.js-issue17215.pdf', [[595.0, 842.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue19517.pdf
+        // Large stream decode resilience; parser must not exhaust memory.
+        yield 'issue19517' => ['PullRequest811-pdf.js-issue19517.pdf', [[12608.0, 16806.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/PDFBOX-4352-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/PDFBOX-4352-0.pdf
+        // Hybrid encrypted+malformed; page tree remains readable.
+        yield 'PDFBOX-4352-0' => ['PullRequest812-pdf.js-PDFBOX-4352-0.pdf', [[200.0, 50.0]]];
     }
 
     /**
-     * Tests parsing of readable encrypted PDF with RC4 Standard V2R3 encryption.
-     * These PDFs declare encryption but remain readable without explicit user password.
+     * Tests parsing of pdf.js regression fixtures covering readable encrypted PDFs and large streams.
      *
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17215.pdf
-     */
-    public function testParseFileWithRC4StandardEncryptionV2R3(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest810-pdf.js-issue17215.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * Tests parser resilience when decoding very large streams that could exhaust memory.
-     * Parser should gracefully handle decode limits and continue processing.
+     * Validates that:
+     * - PDFs with encryption declarations can be parsed without explicit user password
+     * - Parser handles large streams without memory exhaustion
+     * - Hybrid encrypted+malformed PDFs maintain readable page trees
+     * - Page dimensions (MediaBox) are correctly extracted
      *
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
-     */
-    public function testParseFileWithLargeStreamDecoding(): void
-    {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest811-pdf.js-issue19517.pdf');
-
-        self::assertCount(1, $document->getPages());
-    }
-
-    /**
-     * Tests parsing of hybrid encrypted+malformed PDF where encryption is declared but
-     * page tree remains readable.
+     * @dataProvider pdfJsRegressionFixturesProvider
+     * @group integration
+     * @group rawdata-handling
      *
-     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/PDFBOX-4352-0.pdf
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     *
+     * @see https://github.com/mozilla/pdf.js/tree/master/test/pdfs
      */
-    public function testParseFileWithHybridEncryptedMalformed(): void
+    public function testParseFileWithPdfJsRegressionFixtures(string $fixturePath, array $expectedPageDimensions): void
     {
-        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest812-pdf.js-PDFBOX-4352-0.pdf');
+        $absolutePath = $this->rootDir.'/samples/bugs/rawdata/'.$fixturePath;
+        self::assertFileExists($absolutePath, 'Missing fixture: '.$absolutePath);
 
-        self::assertCount(1, $document->getPages());
+        $document = (new Parser())->parseFile($absolutePath);
+
+        $this->assertDocumentPageCountAndDimensions($document, $expectedPageDimensions);
     }
 }
