@@ -1161,5 +1161,4 @@ class PageTest extends TestCase
             ]
         );
     }
-
 }
