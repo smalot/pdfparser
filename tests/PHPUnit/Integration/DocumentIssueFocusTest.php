@@ -111,4 +111,55 @@ class DocumentIssueFocusTest extends TestCase
         $testSubject = '•†‡…—–ƒ⁄‹›−‰„“”‘’‚™ŁŒŠŸŽıłœšž';
         self::assertStringContainsString($testSubject, $details['Subject']);
     }
+    /**
+     * Tests parsing of readable encrypted PDF with RC4 Standard V1R2 encryption.
+     * These PDFs declare encryption but remain readable without explicit user password.
+     *
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug900822.pdf
+     */
+    public function testParseFileWithRC4StandardEncryptionV1R2(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest809-pdf.js-bug900822.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * Tests parsing of readable encrypted PDF with RC4 Standard V2R3 encryption.
+     * These PDFs declare encryption but remain readable without explicit user password.
+     *
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue17215.pdf
+     */
+    public function testParseFileWithRC4StandardEncryptionV2R3(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest810-pdf.js-issue17215.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * Tests parser resilience when decoding very large streams that could exhaust memory.
+     * Parser should gracefully handle decode limits and continue processing.
+     *
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19517.pdf
+     */
+    public function testParseFileWithLargeStreamDecoding(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest811-pdf.js-issue19517.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
+
+    /**
+     * Tests parsing of hybrid encrypted+malformed PDF where encryption is declared but
+     * page tree remains readable.
+     *
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/PDFBOX-4352-0.pdf
+     */
+    public function testParseFileWithHybridEncryptedMalformed(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/rawdata/PullRequest812-pdf.js-PDFBOX-4352-0.pdf');
+
+        self::assertCount(1, $document->getPages());
+    }
 }
