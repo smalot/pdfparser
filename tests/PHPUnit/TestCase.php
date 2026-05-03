@@ -98,19 +98,11 @@ abstract class TestCase extends PHPTestCase
         foreach ($pages as $index => $page) {
             self::assertInstanceOf(Page::class, $page);
 
-            $dimension = $page->getDimensions('CropBox');
-            if (null === $dimension) {
-                $dimension = $page->getDimensions('MediaBox');
-            }
-
-            $dimensions = null;
-            if (\is_array($dimension) && isset($dimension['width'], $dimension['height'])) {
-                $dimensions = [(float) $dimension['width'], (float) $dimension['height']];
-            }
+            $dimension = $page->getDimensions('CropBox') ?? $page->getDimensions('MediaBox');
 
             [$expectedWidth, $expectedHeight] = $expectedPageDimensions[$index];
 
-            if (null === $dimensions) {
+            if (null === $dimension || !isset($dimension['width'], $dimension['height'])) {
                 // MediaBox is absent or unparseable in this fixture; skip dimension
                 // assertions only when no specific value was expected.
                 self::assertNull($expectedWidth, 'Unable to resolve MediaBox for page index '.$index.' (expected width '.$expectedWidth.').');
@@ -118,7 +110,8 @@ abstract class TestCase extends PHPTestCase
                 continue;
             }
 
-            [$width, $height] = $dimensions;
+            $width = (float) $dimension['width'];
+            $height = (float) $dimension['height'];
 
             if (null === $expectedWidth) {
                 self::assertGreaterThan(0.0, $width, 'Page width must be > 0 for page index '.$index.'.');
