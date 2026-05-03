@@ -98,7 +98,16 @@ abstract class TestCase extends PHPTestCase
         foreach ($pages as $index => $page) {
             self::assertInstanceOf(Page::class, $page);
 
-            $dimensions = $this->extractPageDimensions($page);
+            $dimension = $page->getDimensions('CropBox');
+            if (null === $dimension) {
+                $dimension = $page->getDimensions('MediaBox');
+            }
+
+            $dimensions = null;
+            if (\is_array($dimension) && isset($dimension['width'], $dimension['height'])) {
+                $dimensions = [(float) $dimension['width'], (float) $dimension['height']];
+            }
+
             [$expectedWidth, $expectedHeight] = $expectedPageDimensions[$index];
 
             if (null === $dimensions) {
@@ -131,27 +140,6 @@ abstract class TestCase extends PHPTestCase
     protected static function expectedPositivePageDimensions(int $pageCount): array
     {
         return array_fill(0, $pageCount, [null, null]);
-    }
-
-    /**
-     * @return array{float, float}|null
-     */
-    private function extractPageDimensions(Page $page): ?array
-    {
-        foreach (['CropBox', 'MediaBox'] as $boxName) {
-            $dimension = $page->getDimensions($boxName);
-            if (null === $dimension) {
-                continue;
-            }
-
-            if (!isset($dimension['width'], $dimension['height'])) {
-                continue;
-            }
-
-            return [(float) $dimension['width'], (float) $dimension['height']];
-        }
-
-        return null;
     }
 
 }
