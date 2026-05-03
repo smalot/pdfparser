@@ -553,6 +553,13 @@ class ParserTest extends TestCase
         // No MediaBox in the page dict; Page::get() falls back to US Letter (612 × 792 pt).
         yield 'pdf.js issue15590' => ['issue15590.pdf', [[612.0, 792.0]]];
 
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-85140-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-85140-0.pdf
+        // @see \Smalot\PdfParser\RawData\RawDataParser::normalizeObjectGenerationNumber()
+        // Malformed page-box values are treated as invalid and the page geometry falls
+        // back to Letter size to keep dimensions usable.
+        yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', [[612.0, 792.0]]];
+
     }
 
     /**
@@ -576,14 +583,6 @@ class ParserTest extends TestCase
         // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/REDHAT-1531897-0.pdf
         // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/REDHAT-1531897-0.pdf
         yield 'REDHAT invalid xref offset' => ['REDHAT-1531897-0.pdf', self::expectedPositivePageDimensions(0)];
-
-        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-85140-0.pdf
-        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-85140-0.pdf
-        // @see \Smalot\PdfParser\RawData\RawDataParser::normalizeObjectGenerationNumber()
-        // pdf.js can recover this file with stopAtErrors=false, but malformed page-box values
-        // still require geometry fallback. We treat absurd fuzzed coordinates as invalid and
-        // fall back to Letter size to keep page dimensions usable.
-        yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', [[612.0, 792.0]]];
     }
 }
 
