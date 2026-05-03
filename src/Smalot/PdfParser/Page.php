@@ -37,7 +37,6 @@ use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementXRef;
-use Smalot\PdfParser\Header;
 
 class Page extends PDFObject
 {
@@ -114,9 +113,6 @@ class Page extends PDFObject
         ], null);
     }
 
-    /**
-     * @param mixed $box
-     */
     private function getBoxValidity($box, bool $requirePositiveArea): ?bool
     {
         if ($box instanceof ElementMissing) {
