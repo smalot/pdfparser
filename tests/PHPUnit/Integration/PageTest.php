@@ -52,8 +52,8 @@ class PageTest extends TestCase
      */
     public function testInvalidBoundingBoxesFallbackLikePdfJs(): void
     {
-        $fixture = $this->rootDir.'/dev-tools/pdf-dataset/pdfs/pdfjs/boundingBox_invalid.pdf';
-        self::assertFileExists($fixture, 'Missing local dataset fixture: '.$fixture);
+        $fixture = $this->rootDir.'/samples/bugs/rawdata/boundingBox_invalid.pdf';
+        self::assertFileExists($fixture, 'Missing fixture: '.$fixture);
 
         $document = (new Parser())->parseFile($fixture);
         $pages = $document->getPages();
@@ -113,8 +113,8 @@ class PageTest extends TestCase
         string $fixturePath,
         array $expectedPageDimensions
     ): void {
-        $absolutePath = $this->rootDir.'/dev-tools/pdf-dataset/pdfs/pdfjs/'.$fixturePath;
-        self::assertFileExists($absolutePath, 'Missing local dataset fixture: '.$absolutePath);
+        $absolutePath = $this->rootDir.'/samples/bugs/rawdata/'.$fixturePath;
+        self::assertFileExists($absolutePath, 'Missing fixture: '.$absolutePath);
 
         $document = (new Parser())->parseFile($absolutePath);
 
