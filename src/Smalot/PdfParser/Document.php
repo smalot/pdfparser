@@ -633,6 +633,8 @@ class Document
                     return [];
                 }
             } catch (\Throwable $e) {
+                // If resolving page tree throws, do not synthesize a fake page.
+                return [];
             }
         }
 
@@ -740,35 +742,6 @@ class Document
         }
 
         return false;
-    }
-
-    /**
-     * @param array<Page> $pages
-     *
-     * @return array<Page>
-     */
-    protected function uniquePages(array $pages): array
-    {
-        $unique = [];
-        $seen = [];
-
-        foreach ($pages as $page) {
-            if (!\is_object($page)) {
-                continue;
-            }
-
-            $id = \function_exists('spl_object_id')
-                ? (string) \spl_object_id($page)
-                : \spl_object_hash($page);
-            if (isset($seen[$id])) {
-                continue;
-            }
-
-            $seen[$id] = true;
-            $unique[] = $page;
-        }
-
-        return $unique;
     }
 
     /**
