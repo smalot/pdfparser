@@ -1578,10 +1578,9 @@ class RawDataParser
 
         $rootObjectRef = $xref['trailer']['root'] ?? null;
         $trailerSize = isset($xref['trailer']['size']) ? (int) $xref['trailer']['size'] : 0;
-        $xrefEntryCount = isset($xref['xref']) && \is_array($xref['xref']) ? \count($xref['xref']) : 0;
         if (
             (\is_string($rootObjectRef) && !isset($xref['xref'][$rootObjectRef]))
-            || ($trailerSize > 0 && $xrefEntryCount > 0 && $xrefEntryCount < $trailerSize)
+            || ($trailerSize > 0 && !$this->hasXrefEntryForHighestExpectedObject($xref, $trailerSize))
         ) {
             $xref = $this->mergeMissingXrefOffsetsFromObjectHeaders($pdfData, $xref);
         }
@@ -1609,6 +1608,31 @@ class RawDataParser
         }
 
         return [$xref, $objects];
+    }
+
+    private function hasXrefEntryForHighestExpectedObject(array $xref, int $trailerSize): bool
+    {
+        if ($trailerSize <= 0 || !isset($xref['xref']) || !\is_array($xref['xref'])) {
+            return true;
+        }
+
+        $expectedHighestObjectNumber = $trailerSize - 1;
+        foreach (array_keys($xref['xref']) as $objectRef) {
+            if (!\is_string($objectRef)) {
+                continue;
+            }
+
+            $parts = explode('_', $objectRef);
+            if (!isset($parts[0]) || !ctype_digit((string) $parts[0])) {
+                continue;
+            }
+
+            if ((int) $parts[0] >= $expectedHighestObjectNumber) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function hasRecoverablePdfStructureWithoutHeader(string $data): bool

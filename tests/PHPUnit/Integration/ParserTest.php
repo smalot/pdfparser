@@ -417,7 +417,9 @@ class ParserTest extends TestCase
         $document = (new Parser([]))->parseFile($filename);
 
         self::assertInstanceOf(Document::class, $document);
-        self::assertCount(1, $document->getPages());
+        $pages = $document->getPages();
+        self::assertCount(1, $pages);
+        self::assertNotSame([], $pages[0]->getHeader()->getElements());
     }
 
     /**

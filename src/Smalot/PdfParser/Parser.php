@@ -234,7 +234,18 @@ class Parser
     private function hasReadablePageTree(Document $document): bool
     {
         try {
-            return \count($document->getPages()) > 0;
+            foreach ($document->getPages() as $page) {
+                if (!$page instanceof Page) {
+                    continue;
+                }
+
+                $header = $page->getHeader();
+                if ($header instanceof Header && [] !== $header->getElements()) {
+                    return true;
+                }
+            }
+
+            return false;
         } catch (\Throwable $e) {
             return false;
         }
