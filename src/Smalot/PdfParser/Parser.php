@@ -102,9 +102,8 @@ class Parser
         // Create structure from raw data.
         list($xref, $data) = $this->rawDataParser->parseData($content);
 
-        if (isset($xref['trailer']['encrypt']) && false === $this->config->getIgnoreEncryption()) {
-            throw new \Exception('Secured pdf file are currently not supported.');
-        }
+        $hasEncryption = isset($xref['trailer']['encrypt']);
+        $allowEncrypted = $hasEncryption && false !== $this->config->getIgnoreEncryption();
 
         if (empty($data)) {
             throw new \Exception('Object list not found. Possible secured file.');
@@ -122,7 +121,69 @@ class Parser
         $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
         $document->setObjects($this->objects);
 
+        if ($hasEncryption && !$allowEncrypted) {
+            if (!$this->isReadableEncryptedPdfWithoutUserPassword($document)) {
+                throw new \Exception('Secured pdf file are currently not supported.');
+            }
+        }
+
         return $document;
+    }
+
+    /**
+     * Some PDFs declare encryption but remain readable without an explicit user password.
+     *
+     * We treat these as readable PDFs rather than as unsupported encrypted documents when
+     * the Encrypt dictionary describes a standard crypt filter configuration with a blank
+     * user password flow.
+     */
+    private function isReadableEncryptedPdfWithoutUserPassword(Document $document): bool
+    {
+        $encrypt = $document->getTrailer()->get('Encrypt');
+        if (!\is_object($encrypt) || !method_exists($encrypt, 'getHeader')) {
+            return false;
+        }
+
+        $header = $encrypt->getHeader();
+        if (!\is_object($header) || !method_exists($header, 'getDetails')) {
+            return false;
+        }
+
+        try {
+            $details = $header->getDetails(true);
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        if (!\is_array($details)) {
+            return false;
+        }
+
+        $version = $details['V'] ?? null;
+        if (\is_object($version) && method_exists($version, 'getContent')) {
+            $version = $version->getContent();
+        }
+        if (!\is_numeric($version) || (int) $version < 4) {
+            return false;
+        }
+
+        if (!isset($details['CF']) || !\is_array($details['CF'])) {
+            return false;
+        }
+
+        $streamFilter = $details['StmF'] ?? null;
+        if (\is_object($streamFilter) && method_exists($streamFilter, 'getContent')) {
+            $streamFilter = $streamFilter->getContent();
+        }
+        $stringFilter = $details['StrF'] ?? null;
+        if (\is_object($stringFilter) && method_exists($stringFilter, 'getContent')) {
+            $stringFilter = $stringFilter->getContent();
+        }
+
+        return \is_string($streamFilter)
+            && '' !== trim($streamFilter)
+            && \is_string($stringFilter)
+            && '' !== trim($stringFilter);
     }
 
     protected function parseTrailer(array $structure, ?Document $document)
@@ -229,7 +290,9 @@ class Parser
 
                             $sub_header = Header::parse($sub_content, $document);
                             $object = PDFObject::factory($document, $sub_header, '', $this->config);
-                            $this->objects[$id] = $object;
+                            if (!isset($this->objects[$id])) {
+                                $this->objects[$id] = $object;
+                            }
                         }
 
                         // It is not necessary to store this content.

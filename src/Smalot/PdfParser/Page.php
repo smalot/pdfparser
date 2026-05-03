@@ -37,6 +37,7 @@ use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Element\ElementNull;
 use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Element\ElementXRef;
+use Smalot\PdfParser\Header;
 
 class Page extends PDFObject
 {
@@ -57,36 +58,50 @@ class Page extends PDFObject
 
     /**
      * Returns the value for $name from this page's header dictionary, with
-     * special handling for MediaBox:
+     * special handling for MediaBox/CropBox:
      *
-     *  1. If the page dict itself carries a MediaBox, that value is used.
+     *  1. If the page dict itself carries a valid box, that value is used.
      *  2. Otherwise the parent Pages node chain is walked to inherit the value
      *     (PDF spec §7.7.3.3 Table 33).
-     *  3. If no ancestor defines a MediaBox either, a default US-Letter box
+     *  3. If no ancestor defines a valid MediaBox either, a default US-Letter box
      *     [0 0 612 792] is returned, matching the fallback behaviour of pdf.js
      *     for malformed PDFs that omit the required entry.
+     *  4. CropBox defaults to MediaBox when absent/invalid.
      */
     public function get(string $name)
     {
         $result = parent::get($name);
 
-        if ('MediaBox' !== $name || !$result instanceof ElementMissing) {
+        if ('MediaBox' !== $name && 'CropBox' !== $name) {
             return $result;
         }
 
-        // Walk the parent Pages-node chain to inherit MediaBox.
+        $requirePositiveArea = true;
+        $boxValidity = $this->getBoxValidity($result, $requirePositiveArea);
+        if (true === $boxValidity || null === $boxValidity) {
+            return $this->normalizeBoxElement($result) ?? $result;
+        }
+
+        // Walk the parent Pages-node chain to inherit box values.
         $ancestor = parent::get('Parent');
         while ($ancestor instanceof PDFObject) {
-            $mediaBox = $ancestor->get('MediaBox');
-            if (!$mediaBox instanceof ElementMissing) {
-                return $mediaBox;
+            $box = $ancestor->get($name);
+            $boxValidity = $this->getBoxValidity($box, $requirePositiveArea);
+            if (true === $boxValidity || null === $boxValidity) {
+                return $this->normalizeBoxElement($box) ?? $box;
             }
+
             $next = $ancestor->get('Parent');
             // Guard against a self-referencing Parent entry.
             if ($next === $ancestor) {
                 break;
             }
             $ancestor = $next;
+        }
+
+        if ('CropBox' === $name) {
+            // CropBox defaults to MediaBox.
+            return $this->get('MediaBox');
         }
 
         // No MediaBox found anywhere in the page tree – fall back to US Letter,
@@ -97,6 +112,97 @@ class Page extends PDFObject
             new ElementNumeric('612'),
             new ElementNumeric('792'),
         ], null);
+    }
+
+    /**
+     * @param mixed $box
+     */
+    private function getBoxValidity($box, bool $requirePositiveArea): ?bool
+    {
+        if ($box instanceof ElementMissing) {
+            return false;
+        }
+
+        if (!is_object($box) || !method_exists($box, 'getContent')) {
+            return null;
+        }
+
+        $content = $box->getContent();
+        if (!is_array($content) || count($content) < 4) {
+            return null;
+        }
+
+        $coordinates = [];
+        foreach (array_slice($content, 0, 4) as $value) {
+            $value = $this->extractBoxCoordinateValue($value);
+            if (null === $value) {
+                return null;
+            }
+
+            $coordinates[] = $value;
+        }
+
+        $width = $coordinates[2] - $coordinates[0];
+        $height = $coordinates[3] - $coordinates[1];
+        if ($width < 0.0 || $height < 0.0) {
+            return false;
+        }
+
+        if ($requirePositiveArea && ($width <= 0.0 || $height <= 0.0)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function normalizeBoxElement($box): ?ElementArray
+    {
+        if (!$box instanceof ElementArray) {
+            return null;
+        }
+
+        $content = $box->getContent();
+        if (!is_array($content) || count($content) < 4) {
+            return null;
+        }
+
+        $normalized = [];
+        foreach (array_slice($content, 0, 4) as $value) {
+            $coordinate = $this->extractBoxCoordinateValue($value);
+            if (null === $coordinate) {
+                return null;
+            }
+
+            $normalized[] = new ElementNumeric((string) $coordinate);
+        }
+
+        return new ElementArray($normalized, $this->document);
+    }
+
+    private function extractBoxCoordinateValue($value): ?float
+    {
+        if (is_object($value) && method_exists($value, 'getContent')) {
+            $content = $value->getContent();
+            if (is_numeric($content)) {
+                return (float) $content;
+            }
+        }
+
+        if ($value instanceof PDFObject) {
+            $header = $value->getHeader();
+            if ($header instanceof Header) {
+                $details = $header->getDetails(true);
+                if (isset($details[0]) && is_numeric($details[0])) {
+                    return (float) $details[0];
+                }
+            }
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        return null;
     }
 
     /**

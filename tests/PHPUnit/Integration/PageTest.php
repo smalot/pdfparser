@@ -41,9 +41,137 @@ use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Page;
+use Smalot\PdfParser\Parser;
 
 class PageTest extends TestCase
 {
+    /**
+     * @group pdfjs-dataset-local
+     *
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/boundingBox_invalid.pdf
+     */
+    public function testInvalidBoundingBoxesFallbackLikePdfJs(): void
+    {
+        $fixture = $this->rootDir.'/dev-tools/pdf-dataset/pdfs/pdfjs/boundingBox_invalid.pdf';
+        self::assertFileExists($fixture, 'Missing local dataset fixture: '.$fixture);
+
+        $document = (new Parser())->parseFile($fixture);
+        $pages = $document->getPages();
+
+        self::assertCount(3, $pages);
+
+        // Page 1 has empty MediaBox => fallback to Letter size.
+        self::assertSame([612.0, 792.0], $this->extractBoxSize($pages[0], 'MediaBox'));
+
+        // Page 2 has empty CropBox => fallback to MediaBox.
+        self::assertSame([800.0, 600.0], $this->extractBoxSize($pages[1], 'CropBox'));
+        self::assertSame([800.0, 600.0], $this->extractBoxSize($pages[1], 'MediaBox'));
+
+        // Page 3 keeps explicit MediaBox and CropBox values.
+        self::assertSame([600.0, 800.0], $this->extractBoxSize($pages[2], 'MediaBox'));
+        self::assertSame([400.0, 200.0], $this->extractBoxSize($pages[2], 'CropBox'));
+    }
+
+    /**
+     * @group pdfjs-dataset-local
+     *
+     * @dataProvider providePdfJsFixtureRegressionByProvenance
+     *
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     */
+    public function testPdfJsFixturePageCountAndDimensionsByProvenance(
+        string $fixturePath,
+        array $expectedPageDimensions
+    ): void {
+        $this->assertPdfJsFixturePageCountAndDimensionsByProvenance(
+            $fixturePath,
+            $expectedPageDimensions
+        );
+    }
+
+    /**
+     * @group pdfjs-corrupted
+     *
+     * @dataProvider provideCorruptedPdfJsFixtureRegressionByProvenance
+     *
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     */
+    public function testCorruptedPdfJsFixturePageCountAndDimensionsByProvenance(
+        string $fixturePath,
+        array $expectedPageDimensions
+    ): void {
+        $this->assertPdfJsFixturePageCountAndDimensionsByProvenance(
+            $fixturePath,
+            $expectedPageDimensions
+        );
+    }
+
+    /**
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     */
+    private function assertPdfJsFixturePageCountAndDimensionsByProvenance(
+        string $fixturePath,
+        array $expectedPageDimensions
+    ): void {
+        $absolutePath = $this->rootDir.'/dev-tools/pdf-dataset/pdfs/pdfjs/'.$fixturePath;
+        self::assertFileExists($absolutePath, 'Missing local dataset fixture: '.$absolutePath);
+
+        $document = (new Parser())->parseFile($absolutePath);
+
+        $this->assertDocumentPageCountAndDimensions($document, $expectedPageDimensions);
+    }
+
+    /**
+     * @return iterable<string, array{string, array<int, array{0: float|null, 1: float|null}>}>
+     */
+    public static function providePdfJsFixtureRegressionByProvenance(): iterable
+    {
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/Pages-tree-refs.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/Pages-tree-refs.pdf
+        yield 'Pages-tree-refs' => ['Pages-tree-refs.pdf', [[595.0, 842.0], [595.0, 842.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/boundingBox_invalid.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/boundingBox_invalid.pdf
+        yield 'boundingBox_invalid' => ['boundingBox_invalid.pdf', [[612.0, 792.0], [800.0, 600.0], [400.0, 200.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/copy_paste_ligatures.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/copy_paste_ligatures.pdf
+        yield 'copy_paste_ligatures' => ['copy_paste_ligatures.pdf', [[142.7429, 14.218]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue16091.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue16091.pdf
+        yield 'issue16091' => ['issue16091.pdf', [[88.7177, 33.676]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19484_1.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue19484_1.pdf
+        // Valid PDF with an unusual declared encryption scheme; pdf.js opens it without
+        // prompting for a user password and we should still expose the page geometry.
+        yield 'issue19484_1' => ['issue19484_1.pdf', [[612.0, 792.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue19484_2.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue19484_2.pdf
+        // Valid PDF with an unusual declared encryption scheme; pdf.js opens it without
+        // prompting for a user password and we should still expose the page geometry.
+        yield 'issue19484_2' => ['issue19484_2.pdf', [[612.0, 792.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue7872.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue7872.pdf
+        yield 'issue7872' => ['issue7872.pdf', [[250.0, 50.0]]];
+
+    }
+
+    /**
+     * @return iterable<string, array{string, array<int, array{0: float|null, 1: float|null}>}>
+     */
+    public static function provideCorruptedPdfJsFixtureRegressionByProvenance(): iterable
+    {
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-742-0-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-742-0-fuzzed.pdf
+        // pdf.js cannot load this fuzzed file reliably; we keep it isolated from
+        // the regular regression set.
+        yield 'poppler-742-0-fuzzed' => ['poppler-742-0-fuzzed.pdf', [[595.276, 841.89]]];
+    }
+
     public function testGetFonts(): void
     {
         // Document with text.
@@ -76,6 +204,33 @@ class PageTest extends TestCase
         // the second to use cache.
         $fonts = $page->getFonts();
         $this->assertEquals(0, \count($fonts));
+    }
+
+    /**
+     * @return array{0: float, 1: float}
+     */
+    private function extractBoxSize(Page $page, string $boxName): array
+    {
+        $box = $page->get($boxName);
+        self::assertTrue(is_object($box) && method_exists($box, 'getContent'));
+
+        $content = $box->getContent();
+        self::assertIsArray($content);
+        self::assertGreaterThanOrEqual(4, count($content));
+
+        $coordinates = [];
+        foreach (array_slice($content, 0, 4) as $value) {
+            if (is_object($value) && method_exists($value, 'getContent')) {
+                $value = $value->getContent();
+            }
+            self::assertIsNumeric($value);
+            $coordinates[] = (float) $value;
+        }
+
+        return [
+            $coordinates[2] - $coordinates[0],
+            $coordinates[3] - $coordinates[1],
+        ];
     }
 
     public function testGetFontsElementMissing(): void

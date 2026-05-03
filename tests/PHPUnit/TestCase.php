@@ -139,32 +139,71 @@ abstract class TestCase extends PHPTestCase
      */
     private function extractPageDimensions(Page $page): ?array
     {
-        $mediaBox = $page->get('MediaBox');
-        if (!$mediaBox instanceof ElementArray) {
+        foreach (['CropBox', 'MediaBox'] as $boxName) {
+            $box = $page->get($boxName);
+            if (!$box instanceof ElementArray) {
+                continue;
+            }
+
+            $dimension = $this->extractDimensionFromBoxContent($box->getContent());
+            if (null !== $dimension) {
+                return $dimension;
+            }
+        }
+
+        try {
+            $details = $page->getDetails();
+        } catch (\Throwable $e) {
             return null;
         }
 
-        $bounds = $mediaBox->getContent();
-        if (4 !== \count($bounds)) {
+        if (!\is_array($details)) {
+            return null;
+        }
+
+        foreach (['CropBox', 'MediaBox'] as $boxName) {
+            if (!isset($details[$boxName]) || !\is_array($details[$boxName])) {
+                continue;
+            }
+
+            $dimension = $this->extractDimensionFromBoxContent($details[$boxName]);
+            if (null !== $dimension) {
+                return $dimension;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, mixed> $bounds
+     *
+     * @return array{float, float}|null
+     */
+    private function extractDimensionFromBoxContent(array $bounds): ?array
+    {
+        if (\count($bounds) < 4) {
             return null;
         }
 
         $coordinates = [];
-        foreach ($bounds as $bound) {
-            if (!\is_object($bound) || !method_exists($bound, 'getContent')) {
+        foreach (array_slice($bounds, 0, 4) as $bound) {
+            if (\is_object($bound) && method_exists($bound, 'getContent')) {
+                $bound = $bound->getContent();
+            }
+
+            if (!\is_numeric($bound)) {
                 return null;
             }
 
-            $value = $bound->getContent();
-            if (!\is_numeric($value)) {
-                return null;
-            }
-
-            $coordinates[] = (float) $value;
+            $coordinates[] = (float) $bound;
         }
 
-        if ($coordinates[2] < $coordinates[0] || $coordinates[3] < $coordinates[1]) {
-            return null;
+        if ($coordinates[2] < $coordinates[0]) {
+            [$coordinates[0], $coordinates[2]] = [$coordinates[2], $coordinates[0]];
+        }
+        if ($coordinates[3] < $coordinates[1]) {
+            [$coordinates[1], $coordinates[3]] = [$coordinates[3], $coordinates[1]];
         }
 
         return [
