@@ -153,7 +153,7 @@ abstract class TestCase extends PHPTestCase
 
         try {
             $details = $page->getDetails();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return null;
         }
 

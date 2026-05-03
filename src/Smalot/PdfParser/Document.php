@@ -632,7 +632,7 @@ class Document
                 if ([] !== $pages->getPages(true)) {
                     return [];
                 }
-            } catch (\Throwable $e) {
+            } catch (\Exception $e) {
                 // If resolving page tree throws, do not synthesize a fake page.
                 return [];
             }
