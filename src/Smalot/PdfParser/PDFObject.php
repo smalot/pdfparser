@@ -70,7 +70,7 @@ class PDFObject
     protected $content;
 
     /**
-     * @var Config|null
+     * @var Config
      */
     protected $config;
 
@@ -88,7 +88,7 @@ class PDFObject
         $this->document = $document;
         $this->header = $header ?? new Header();
         $this->content = $content;
-        $this->config = $config;
+        $this->config = $config ?? new Config();
     }
 
     public function init()
@@ -512,7 +512,7 @@ class PDFObject
             return reset($fonts);
         }
 
-        return new Font($this->document, null, null, $this->config ?? new Config());
+        return new Font($this->document, null, null, $this->config);
     }
 
     /**
