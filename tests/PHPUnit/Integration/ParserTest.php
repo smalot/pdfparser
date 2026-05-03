@@ -562,8 +562,9 @@ class ParserTest extends TestCase
 
         // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1980958.pdf
         // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1980958.pdf
-        // Malformed xref table ("Bad object number" error); No valid MediaBox;
-        // Parser recovers page structure and falls back to US Letter (612 × 792 pt).
+        // Malformed xref table ("Bad object number" error); parser recovers the page structure.
+        // MediaBox [0 0 10 10] is correctly extracted — the document genuinely defines a tiny
+        // 10 × 10 pt (0.14 × 0.14 in) page, as confirmed by pdf.js Document Properties.
         yield 'bug1980958 malformed xref' => ['bug1980958.pdf', [[10.0, 10.0]]];
 
         // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
