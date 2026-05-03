@@ -121,6 +121,53 @@ class Page extends PDFObject
         ], null);
     }
 
+    /**
+     * Returns page dimensions in points for the selected box.
+     *
+     * The same inheritance/fallback behavior as get('CropBox') / get('MediaBox')
+     * is applied before dimensions are calculated.
+     *
+     * @return array{width: float, height: float}|null
+     */
+    public function getDimensions(string $boxName = 'CropBox'): ?array
+    {
+        if ('CropBox' !== $boxName && 'MediaBox' !== $boxName) {
+            return null;
+        }
+
+        $box = $this->get($boxName);
+        if (!is_object($box) || !method_exists($box, 'getContent')) {
+            return null;
+        }
+
+        $content = $box->getContent();
+        if (!is_array($content) || count($content) < 4) {
+            return null;
+        }
+
+        $x0 = $this->extractBoxCoordinateValue($content[0]);
+        $y0 = $this->extractBoxCoordinateValue($content[1]);
+        $x1 = $this->extractBoxCoordinateValue($content[2]);
+        $y1 = $this->extractBoxCoordinateValue($content[3]);
+
+        if (null === $x0 || null === $y0 || null === $x1 || null === $y1) {
+            return null;
+        }
+
+        // Normalize inverted coordinates for malformed boxes.
+        if ($x1 < $x0) {
+            [$x0, $x1] = [$x1, $x0];
+        }
+        if ($y1 < $y0) {
+            [$y0, $y1] = [$y1, $y0];
+        }
+
+        return [
+            'width' => $x1 - $x0,
+            'height' => $y1 - $y0,
+        ];
+    }
+
     private function getBoxValidity($box, bool $requirePositiveArea): ?bool
     {
         if ($box instanceof ElementMissing) {

@@ -70,6 +70,36 @@ class PageTest extends TestCase
         // Page 3 keeps explicit MediaBox and CropBox values.
         self::assertSame([600.0, 800.0], $this->extractBoxSize($pages[2], 'MediaBox'));
         self::assertSame([400.0, 200.0], $this->extractBoxSize($pages[2], 'CropBox'));
+
+        self::assertSame(
+            [
+                ['width' => 612.0, 'height' => 792.0],
+                ['width' => 800.0, 'height' => 600.0],
+                ['width' => 400.0, 'height' => 200.0],
+            ],
+            $document->getPagesDimensions()
+        );
+
+        self::assertSame(
+            [
+                ['width' => 612.0, 'height' => 792.0],
+                ['width' => 800.0, 'height' => 600.0],
+                ['width' => 600.0, 'height' => 800.0],
+            ],
+            $document->getPagesDimensions('MediaBox')
+        );
+
+        self::assertSame(
+            ['width' => 612.0, 'height' => 792.0],
+            $pages[0]->getDimensions()
+        );
+
+        self::assertSame(
+            ['width' => 612.0, 'height' => 792.0],
+            $pages[0]->getDimensions('MediaBox')
+        );
+
+        self::assertNull($pages[0]->getDimensions('BleedBox'));
     }
 
     /**

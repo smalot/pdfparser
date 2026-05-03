@@ -771,6 +771,33 @@ class Document
         return $unique;
     }
 
+    /**
+     * Returns dimensions for all pages in points.
+     *
+     * @return array<int, array{width: float, height: float}>
+     *
+     * @throws MissingCatalogException
+     */
+    public function getPagesDimensions(string $boxName = 'CropBox'): array
+    {
+        $dimensions = [];
+
+        foreach ($this->getPages() as $page) {
+            if (!$page instanceof Page) {
+                continue;
+            }
+
+            $dimension = $page->getDimensions($boxName);
+            if (null === $dimension) {
+                continue;
+            }
+
+            $dimensions[] = $dimension;
+        }
+
+        return $dimensions;
+    }
+
     public function getText(?int $pageLimit = null): string
     {
         $texts = [];
