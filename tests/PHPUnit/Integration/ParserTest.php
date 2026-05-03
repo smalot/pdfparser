@@ -592,6 +592,17 @@ class ParserTest extends TestCase
         // even related/similar corrupted files with proper dimension recovery.
         yield 'poppler-91414-0-54 broken stream length' => ['poppler-91414-0-54.pdf', [[795.0, 842.0]]];
 
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/PDFBOX-4352-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/PDFBOX-4352-0.pdf
+        // Encrypted + malformed structure; Single page recovered;
+        // Parser extracts [0 0 200 50] correctly despite encryption and malformation.
+        yield 'PDFBOX-4352-0 encrypted malformed' => ['PDFBOX-4352-0.pdf', [[200.0, 50.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-395-0-fuzzed.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-395-0-fuzzed.pdf
+        // Fuzzed corpus file with xref and page tree corruption; Single page recovered;
+        // Parser successfully reconstructs valid page structure despite structural damage.
+        yield 'poppler-395-0-fuzzed xref corruption' => ['poppler-395-0-fuzzed.pdf', [[612.0, 792.0]]];
     }
 
     /**
