@@ -40,6 +40,7 @@ use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element\ElementMissing;
 use Smalot\PdfParser\Font;
+use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Parser;
 
@@ -100,6 +101,20 @@ class PageTest extends TestCase
         );
 
         self::assertNull($pages[0]->getDimensions('BleedBox'));
+    }
+
+    public function testInvertedMediaBoxCoordinatesAreNormalized(): void
+    {
+        $document = new Document();
+        $header = Header::parse('<</Type/Page/MediaBox [595 842 0 0]>>', $document);
+        $page = new Page($document, $header, null);
+
+        self::assertSame(
+            ['width' => 595.0, 'height' => 842.0],
+            $page->getDimensions('MediaBox')
+        );
+
+        self::assertSame([595.0, 842.0], $this->extractBoxSize($page, 'MediaBox'));
     }
 
     /**

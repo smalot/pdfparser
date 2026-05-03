@@ -64,6 +64,11 @@ class Page extends PDFObject
     protected $dataTm;
 
     /**
+     * @var array<string, array{width: float, height: float}|null>
+     */
+    private $dimensionsCache = [];
+
+    /**
      * Returns the value for $name from this page's header dictionary, with
      * special handling for MediaBox/CropBox:
      *
@@ -135,13 +140,21 @@ class Page extends PDFObject
             return null;
         }
 
+        if (array_key_exists($boxName, $this->dimensionsCache)) {
+            return $this->dimensionsCache[$boxName];
+        }
+
         $box = $this->get($boxName);
         if (!is_object($box) || !method_exists($box, 'getContent')) {
+            $this->dimensionsCache[$boxName] = null;
+
             return null;
         }
 
         $content = $box->getContent();
         if (!is_array($content) || count($content) < 4) {
+            $this->dimensionsCache[$boxName] = null;
+
             return null;
         }
 
@@ -151,6 +164,8 @@ class Page extends PDFObject
         $y1 = $this->extractBoxCoordinateValue($content[3]);
 
         if (null === $x0 || null === $y0 || null === $x1 || null === $y1) {
+            $this->dimensionsCache[$boxName] = null;
+
             return null;
         }
 
@@ -162,10 +177,14 @@ class Page extends PDFObject
             [$y0, $y1] = [$y1, $y0];
         }
 
-        return [
+        $dimensions = [
             'width' => $x1 - $x0,
             'height' => $y1 - $y0,
         ];
+
+        $this->dimensionsCache[$boxName] = $dimensions;
+
+        return $dimensions;
     }
 
     private function getBoxValidity($box, bool $requirePositiveArea): ?bool
@@ -197,11 +216,8 @@ class Page extends PDFObject
             $coordinates[] = $value;
         }
 
-        $width = $coordinates[2] - $coordinates[0];
-        $height = $coordinates[3] - $coordinates[1];
-        if ($width < 0.0 || $height < 0.0) {
-            return false;
-        }
+        $width = abs($coordinates[2] - $coordinates[0]);
+        $height = abs($coordinates[3] - $coordinates[1]);
 
         if ($requirePositiveArea && ($width <= 0.0 || $height <= 0.0)) {
             return false;
@@ -228,10 +244,22 @@ class Page extends PDFObject
                 return null;
             }
 
-            $normalized[] = new ElementNumeric((string) $coordinate);
+            $normalized[] = $coordinate;
         }
 
-        return new ElementArray($normalized, $this->document);
+        if ($normalized[2] < $normalized[0]) {
+            [$normalized[0], $normalized[2]] = [$normalized[2], $normalized[0]];
+        }
+        if ($normalized[3] < $normalized[1]) {
+            [$normalized[1], $normalized[3]] = [$normalized[3], $normalized[1]];
+        }
+
+        $elements = [];
+        foreach ($normalized as $coordinate) {
+            $elements[] = new ElementNumeric((string) $coordinate);
+        }
+
+        return new ElementArray($elements, $this->document);
     }
 
     private function extractBoxCoordinateValue($value): ?float
