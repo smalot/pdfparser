@@ -75,7 +75,7 @@ class FilterHelper
                 return $this->decodeFilterFlateDecode($data, $decodeMemoryLimit);
 
             case 'RunLengthDecode':
-                return $this->decodeFilterRunLengthDecode($data);
+                return $this->decodeFilterRunLengthDecode($data, $decodeMemoryLimit);
 
             case 'CCITTFaxDecode':
                 throw new NotImplementedException('Decode CCITTFaxDecode not implemented yet.');
@@ -410,11 +410,16 @@ class FilterHelper
      * Decompresses data encoded using a byte-oriented run-length encoding algorithm.
      *
      * @param string $data Data to decode
+     * @param int    $decodeMemoryLimit Memory limit on decoded output
+     *
+     * @throws \Exception
      */
-    protected function decodeFilterRunLengthDecode(string $data): string
+    protected function decodeFilterRunLengthDecode(string $data, int $decodeMemoryLimit = 0): string
     {
         // initialize string to return
         $decoded = '';
+        $effectiveDecodeMemoryLimit = $this->getEffectiveDecodeMemoryLimit($decodeMemoryLimit);
+
         // data length
         $data_length = \strlen($data);
         $i = 0;
@@ -424,19 +429,36 @@ class FilterHelper
             if (128 == $byte) {
                 // a length value of 128 denote EOD
                 break;
-            } elseif ($byte < 128) {
+            }
+
+            if ($byte < 128) {
                 // if the length byte is in the range 0 to 127
                 // the following length + 1 (1 to 128) bytes shall be copied literally during decompression
-                $decoded .= substr($data, $i + 1, $byte + 1);
+                $chunk = substr($data, $i + 1, $byte + 1);
+                if (
+                    $effectiveDecodeMemoryLimit > 0
+                    && (\strlen($decoded) + \strlen($chunk)) > $effectiveDecodeMemoryLimit
+                ) {
+                    throw new \Exception('decodeFilterRunLengthDecode: decoded data exceeds memory limit');
+                }
+                $decoded .= $chunk;
+
                 // move to next block
                 $i += ($byte + 2);
-            } else {
-                // if length is in the range 129 to 255,
-                // the following single byte shall be copied 257 - length (2 to 128) times during decompression
-                $decoded .= str_repeat($data[$i + 1], 257 - $byte);
-                // move to next block
-                $i += 2;
+
+                continue;
             }
+
+            // if length is in the range 129 to 255,
+            // the following single byte shall be copied 257 - length (2 to 128) times during decompression
+            $repeatCount = 257 - $byte;
+            if ($effectiveDecodeMemoryLimit > 0 && (\strlen($decoded) + $repeatCount) > $effectiveDecodeMemoryLimit) {
+                throw new \Exception('decodeFilterRunLengthDecode: decoded data exceeds memory limit');
+            }
+            $decoded .= str_repeat($data[$i + 1], $repeatCount);
+
+            // move to next block
+            $i += 2;
         }
 
         return $decoded;

@@ -128,6 +128,10 @@ class RawDataParser
             }
         }
 
+        if ($this->shouldSkipDecodingLargeImageStream($sdic, $slength)) {
+            return [$stream, $filters];
+        }
+
         // decode the stream
         $remaining_filters = [];
         foreach ($filters as $filter) {
@@ -149,6 +153,49 @@ class RawDataParser
         }
 
         return [$stream, $remaining_filters];
+    }
+
+    private function shouldSkipDecodingLargeImageStream(array $sdic, int $streamLength): bool
+    {
+        if ($streamLength <= 0 || !$this->isImageSubtypeStream($sdic)) {
+            return false;
+        }
+
+        $decodeMemoryLimit = $this->config->getDecodeMemoryLimit();
+        if ($decodeMemoryLimit <= 0) {
+            $memoryLimit = MemoryLimit::toBytes((string) ini_get('memory_limit'));
+            if ($memoryLimit <= 0) {
+                return false;
+            }
+
+            $available = $memoryLimit - memory_get_usage(true);
+            $decodeMemoryLimit = max((int) floor($available / 2), 1024 * 1024);
+        }
+
+        $safeCompressedThreshold = max(2 * 1024 * 1024, (int) floor($decodeMemoryLimit / 16));
+
+        return $streamLength > $safeCompressedThreshold;
+    }
+
+    private function isImageSubtypeStream(array $sdic): bool
+    {
+        foreach ($sdic as $index => $token) {
+            if (!is_array($token) || !isset($token[0], $token[1])) {
+                continue;
+            }
+
+            if ('/' !== $token[0] || 'Subtype' !== $token[1]) {
+                continue;
+            }
+
+            if (!isset($sdic[$index + 1]) || !is_array($sdic[$index + 1]) || !isset($sdic[$index + 1][0], $sdic[$index + 1][1])) {
+                return false;
+            }
+
+            return '/' === $sdic[$index + 1][0] && 'Image' === $sdic[$index + 1][1];
+        }
+
+        return false;
     }
 
     /**

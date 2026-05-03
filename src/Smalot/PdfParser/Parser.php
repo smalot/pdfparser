@@ -122,7 +122,10 @@ class Parser
         $document->setObjects($this->objects);
 
         if ($hasEncryption && !$allowEncrypted) {
-            if (!$this->isReadableEncryptedPdfWithoutUserPassword($document)) {
+            if (
+                !$this->isReadableEncryptedPdfWithoutUserPassword($document)
+                && !$this->hasReadablePageTree($document)
+            ) {
                 throw new \Exception('Secured pdf file are currently not supported.');
             }
         }
@@ -159,6 +162,10 @@ class Parser
             return false;
         }
 
+        if ($this->isReadableLegacyStandardEncryption($details)) {
+            return true;
+        }
+
         $version = $details['V'] ?? null;
         if (\is_object($version) && method_exists($version, 'getContent')) {
             $version = $version->getContent();
@@ -184,6 +191,53 @@ class Parser
             && '' !== trim($streamFilter)
             && \is_string($stringFilter)
             && '' !== trim($stringFilter);
+    }
+
+    /**
+     * Legacy Standard security handlers (V1/V2) can be readable with an empty user password.
+     * We treat them as readable when the Encrypt dictionary is well-formed.
+     */
+    private function isReadableLegacyStandardEncryption(array $details): bool
+    {
+        $filter = $details['Filter'] ?? null;
+        if (\is_object($filter) && method_exists($filter, 'getContent')) {
+            $filter = $filter->getContent();
+        }
+        if (!\is_string($filter) || 'Standard' !== trim($filter)) {
+            return false;
+        }
+
+        $version = $details['V'] ?? null;
+        if (\is_object($version) && method_exists($version, 'getContent')) {
+            $version = $version->getContent();
+        }
+        if (!\is_numeric($version) || (int) $version < 1 || (int) $version > 2) {
+            return false;
+        }
+
+        $revision = $details['R'] ?? null;
+        if (\is_object($revision) && method_exists($revision, 'getContent')) {
+            $revision = $revision->getContent();
+        }
+        if (!\is_numeric($revision) || (int) $revision < 2 || (int) $revision > 4) {
+            return false;
+        }
+
+        $permissions = $details['P'] ?? null;
+        if (\is_object($permissions) && method_exists($permissions, 'getContent')) {
+            $permissions = $permissions->getContent();
+        }
+
+        return isset($details['O'], $details['U']) && \is_numeric($permissions);
+    }
+
+    private function hasReadablePageTree(Document $document): bool
+    {
+        try {
+            return \count($document->getPages()) > 0;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     protected function parseTrailer(array $structure, ?Document $document)
