@@ -560,6 +560,30 @@ class ParserTest extends TestCase
         // back to Letter size to keep dimensions usable.
         yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', [[612.0, 792.0]]];
 
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/bug1980958.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/bug1980958.pdf
+        // Malformed xref table ("Bad object number" error); No valid MediaBox;
+        // Parser recovers page structure and falls back to US Letter (612 × 792 pt).
+        yield 'bug1980958 malformed xref' => ['bug1980958.pdf', [[10.0, 10.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/issue18986.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/issue18986.pdf
+        // Broken stream with missing endstream; No valid MediaBox;
+        // Parser recovers page structure and falls back to US Letter (612 × 792 pt).
+        yield 'issue18986 broken stream' => ['issue18986.pdf', [[595.0, 842.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-67295-0.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-67295-0.pdf
+        // Invalid page count in trailer (larger than number of objects);
+        // Parser recovers valid page structure and falls back to US Letter (612 × 792 pt).
+        yield 'poppler-67295 invalid page count' => ['poppler-67295-0.pdf', [[612.0, 792.0]]];
+
+        // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-91414-0-53.pdf
+        // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-91414-0-53.pdf
+        // Broken stream with bad Length attribute; Multiple pages recovered;
+        // No valid MediaBox; Pages fall back to US Letter (612 × 792 pt each).
+        yield 'poppler-91414-0-53 broken stream length' => ['poppler-91414-0-53.pdf', [[795.0, 842.0], [795.0, 842.0]]];
+
     }
 
     /**
