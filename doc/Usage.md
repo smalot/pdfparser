@@ -234,8 +234,7 @@ user password. Attempting to read such files may produce this error:
 Exception: Secured pdf file are currently not supported.
 ```
 
-Some PDFs are marked as encrypted but remain readable without an explicit password.
-These files can often still be parsed.
+Some PDFs are flagged as encrypted but remain readable without an explicit user password.
 
 See `setIgnoreEncryption` option in [CustomConfig.md](CustomConfig.md)
 for how to override the check in specific cases.
