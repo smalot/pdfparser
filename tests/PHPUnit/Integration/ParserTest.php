@@ -580,11 +580,10 @@ class ParserTest extends TestCase
         // @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/poppler-85140-0.pdf
         // @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/poppler-85140-0.pdf
         // @see \Smalot\PdfParser\RawData\RawDataParser::normalizeObjectGenerationNumber()
-        // pdf.js cannot load page 1 of this file (throws "Bad (uncompressed) XRef entry: 3R").
-        // Our generation-number normalisation (MAX_PDF_GENERATION clamp) lets us recover the page
-        // object. The width (595 pt) is real data; the height is INT32_MAX (2147483647) — a
-        // fuzz-corrupted value in the MediaBox — so we only assert it is positive.
-        yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', [[595.0, null]]];
+        // pdf.js can recover this file with stopAtErrors=false, but malformed page-box values
+        // still require geometry fallback. We treat absurd fuzzed coordinates as invalid and
+        // fall back to Letter size to keep page dimensions usable.
+        yield 'poppler 85140 corpus file' => ['poppler-85140-0.pdf', [[612.0, 792.0]]];
     }
 }
 

@@ -41,6 +41,14 @@ use Smalot\PdfParser\Element\ElementXRef;
 class Page extends PDFObject
 {
     /**
+     * Heuristic guard against fuzzed coordinates such as INT32_MAX.
+     *
+     * Values in that range are not usable for page geometry and should
+     * trigger the same fallback path used for invalid boxes.
+     */
+    private const MAX_REASONABLE_BOX_COORDINATE = 1000000.0;
+
+    /**
      * @var Font[]
      */
     protected $fonts;
@@ -133,6 +141,10 @@ class Page extends PDFObject
             $value = $this->extractBoxCoordinateValue($value);
             if (null === $value) {
                 return null;
+            }
+
+            if (abs($value) > self::MAX_REASONABLE_BOX_COORDINATE) {
+                return false;
             }
 
             $coordinates[] = $value;
