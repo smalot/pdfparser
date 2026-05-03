@@ -39,7 +39,6 @@ use PHPUnit\Framework\TestCase as PHPTestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
-use Smalot\PdfParser\Element\ElementArray;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Parser;
 
@@ -140,75 +139,19 @@ abstract class TestCase extends PHPTestCase
     private function extractPageDimensions(Page $page): ?array
     {
         foreach (['CropBox', 'MediaBox'] as $boxName) {
-            $box = $page->get($boxName);
-            if (!$box instanceof ElementArray) {
+            $dimension = $page->getDimensions($boxName);
+            if (null === $dimension) {
                 continue;
             }
 
-            $dimension = $this->extractDimensionFromBoxContent($box->getContent());
-            if (null !== $dimension) {
-                return $dimension;
-            }
-        }
-
-        try {
-            $details = $page->getDetails();
-        } catch (\Exception $e) {
-            return null;
-        }
-
-        if (!\is_array($details)) {
-            return null;
-        }
-
-        foreach (['CropBox', 'MediaBox'] as $boxName) {
-            if (!isset($details[$boxName]) || !\is_array($details[$boxName])) {
+            if (!isset($dimension['width'], $dimension['height'])) {
                 continue;
             }
 
-            $dimension = $this->extractDimensionFromBoxContent($details[$boxName]);
-            if (null !== $dimension) {
-                return $dimension;
-            }
+            return [(float) $dimension['width'], (float) $dimension['height']];
         }
 
         return null;
     }
 
-    /**
-     * @param array<int, mixed> $bounds
-     *
-     * @return array{float, float}|null
-     */
-    private function extractDimensionFromBoxContent(array $bounds): ?array
-    {
-        if (\count($bounds) < 4) {
-            return null;
-        }
-
-        $coordinates = [];
-        foreach (array_slice($bounds, 0, 4) as $bound) {
-            if (\is_object($bound) && method_exists($bound, 'getContent')) {
-                $bound = $bound->getContent();
-            }
-
-            if (!\is_numeric($bound)) {
-                return null;
-            }
-
-            $coordinates[] = (float) $bound;
-        }
-
-        if ($coordinates[2] < $coordinates[0]) {
-            [$coordinates[0], $coordinates[2]] = [$coordinates[2], $coordinates[0]];
-        }
-        if ($coordinates[3] < $coordinates[1]) {
-            [$coordinates[1], $coordinates[3]] = [$coordinates[3], $coordinates[1]];
-        }
-
-        return [
-            $coordinates[2] - $coordinates[0],
-            $coordinates[3] - $coordinates[1],
-        ];
-    }
 }
