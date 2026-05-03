@@ -154,7 +154,7 @@ class Parser
 
         try {
             $details = $header->getDetails(true);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return false;
         }
 
@@ -246,7 +246,7 @@ class Parser
             }
 
             return false;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
