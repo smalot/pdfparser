@@ -145,29 +145,14 @@ class Page extends PDFObject
         }
 
         $box = $this->get($boxName);
-        if (!is_object($box) || !method_exists($box, 'getContent')) {
+        $coordinates = $this->extractBoxCoordinates($box);
+        if (null === $coordinates) {
             $this->dimensionsCache[$boxName] = null;
 
             return null;
         }
 
-        $content = $box->getContent();
-        if (!is_array($content) || count($content) < 4) {
-            $this->dimensionsCache[$boxName] = null;
-
-            return null;
-        }
-
-        $x0 = $this->extractBoxCoordinateValue($content[0]);
-        $y0 = $this->extractBoxCoordinateValue($content[1]);
-        $x1 = $this->extractBoxCoordinateValue($content[2]);
-        $y1 = $this->extractBoxCoordinateValue($content[3]);
-
-        if (null === $x0 || null === $y0 || null === $x1 || null === $y1) {
-            $this->dimensionsCache[$boxName] = null;
-
-            return null;
-        }
+        [$x0, $y0, $x1, $y1] = $coordinates;
 
         // Normalize inverted coordinates for malformed boxes.
         if ($x1 < $x0) {
@@ -193,27 +178,15 @@ class Page extends PDFObject
             return false;
         }
 
-        if (!is_object($box) || !method_exists($box, 'getContent')) {
+        $coordinates = $this->extractBoxCoordinates($box);
+        if (null === $coordinates) {
             return null;
         }
 
-        $content = $box->getContent();
-        if (!is_array($content) || count($content) < 4) {
-            return null;
-        }
-
-        $coordinates = [];
-        foreach (array_slice($content, 0, 4) as $value) {
-            $value = $this->extractBoxCoordinateValue($value);
-            if (null === $value) {
-                return null;
-            }
-
+        foreach ($coordinates as $value) {
             if (abs($value) > self::MAX_REASONABLE_BOX_COORDINATE) {
                 return false;
             }
-
-            $coordinates[] = $value;
         }
 
         $width = abs($coordinates[2] - $coordinates[0]);
@@ -232,19 +205,9 @@ class Page extends PDFObject
             return null;
         }
 
-        $content = $box->getContent();
-        if (!is_array($content) || count($content) < 4) {
+        $normalized = $this->extractBoxCoordinates($box);
+        if (null === $normalized) {
             return null;
-        }
-
-        $normalized = [];
-        foreach (array_slice($content, 0, 4) as $value) {
-            $coordinate = $this->extractBoxCoordinateValue($value);
-            if (null === $coordinate) {
-                return null;
-            }
-
-            $normalized[] = $coordinate;
         }
 
         if ($normalized[2] < $normalized[0]) {
@@ -260,6 +223,33 @@ class Page extends PDFObject
         }
 
         return new ElementArray($elements, $this->document);
+    }
+
+    /**
+     * @return array{0: float, 1: float, 2: float, 3: float}|null
+     */
+    private function extractBoxCoordinates($box): ?array
+    {
+        if (!is_object($box) || !method_exists($box, 'getContent')) {
+            return null;
+        }
+
+        $content = $box->getContent();
+        if (!is_array($content) || count($content) < 4) {
+            return null;
+        }
+
+        $coordinates = [];
+        foreach (array_slice($content, 0, 4) as $value) {
+            $coordinate = $this->extractBoxCoordinateValue($value);
+            if (null === $coordinate) {
+                return null;
+            }
+
+            $coordinates[] = $coordinate;
+        }
+
+        return $coordinates;
     }
 
     private function extractBoxCoordinateValue($value): ?float
