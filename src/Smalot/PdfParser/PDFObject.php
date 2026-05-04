@@ -70,7 +70,7 @@ class PDFObject
     protected $content;
 
     /**
-     * @var Config
+     * @var Config|null
      */
     protected $config;
 
@@ -88,7 +88,7 @@ class PDFObject
         $this->document = $document;
         $this->header = $header ?? new Header();
         $this->content = $content;
-        $this->config = $config ?? new Config();
+        $this->config = $config;
     }
 
     public function init()
@@ -512,7 +512,7 @@ class PDFObject
             return reset($fonts);
         }
 
-        return new Font($this->document, null, null, $this->config);
+        return new Font($this->document, null, null, $this->config ?? new Config());
     }
 
     /**
@@ -1064,9 +1064,6 @@ class PDFObject
         }
 
         $result = array_merge($result, $text);
-
-        // Clean up recursion stack to prevent state leakage between calls
-        if (count(self::$recursionStack) > 0) array_pop(self::$recursionStack);
 
         return $result;
     }
