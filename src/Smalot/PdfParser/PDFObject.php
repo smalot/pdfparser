@@ -1065,6 +1065,9 @@ class PDFObject
 
         $result = array_merge($result, $text);
 
+        // Clean up recursion stack to prevent state leakage between calls
+        if (count(self::$recursionStack) > 0) array_pop(self::$recursionStack);
+
         return $result;
     }
 
