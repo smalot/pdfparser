@@ -401,85 +401,87 @@ class Document
             throw new MissingCatalogException('Missing catalog.');
         }
 
-        if ($this->hasObjectsByType('Catalog')) {
-            // Search for catalog to list pages.
-            $catalogues = $this->getObjectsByType('Catalog');
-            $catalogue = reset($catalogues);
+        $resolvers = [
+            'getPagesFromCatalogTree',
+            'getPagesFromTypedPagesObjects',
+            'getPagesFromTypedPageObjects',
+            'getRecoveredPagesFromMalformedHeaders',
+            'getEncryptedCatalogFallbackPages',
+            'getXrefRootMissingFallbackPages',
+            'getCatalogMissingPagesFallbackPages',
+            'getCatalogUnresolvablePagesFallbackPages',
+            'getBrokenPagesTreeFallbackPages',
+            'getInlineKidsFallbackPages',
+            'getMinimalHeaderlessStructureFallbackPages',
+        ];
 
-            /** @var Pages $object */
-            $object = $catalogue->get('Pages');
-            if (method_exists($object, 'getPages')) {
-                $pages = $object->getPages(true);
-                if ([] !== $pages) {
-                    return $this->getUniquePages($pages);
-                }
-            }
-        }
-
-        if ($this->hasObjectsByType('Pages')) {
-            // Search for pages to list kids.
-            $pages = [];
-
-            /** @var Pages[] $objects */
-            $objects = $this->getObjectsByType('Pages');
-            foreach ($objects as $object) {
-                $pages = array_merge($pages, $object->getPages(true));
-            }
+        foreach ($resolvers as $resolver) {
+            $pages = $this->{$resolver}();
             if ([] !== $pages) {
                 return $this->getUniquePages($pages);
             }
         }
 
-        if ($this->hasObjectsByType('Page')) {
-            // Search for 'page' (unordered pages).
-            $pages = $this->getObjectsByType('Page');
-            return $this->getUniquePages(array_values($pages));
-        }
-
-        // Last-resort recovery for malformed files where /Type key is corrupted
-        // but the object still carries page-like structure markers.
-        $recoveredPages = $this->getRecoveredPagesFromMalformedHeaders();
-        if ([] !== $recoveredPages) {
-            return $this->getUniquePages($recoveredPages);
-        }
-
-        $encryptedFallbackPages = $this->getEncryptedCatalogFallbackPages();
-        if ([] !== $encryptedFallbackPages) {
-            return $this->getUniquePages($encryptedFallbackPages);
-        }
-
-        $xrefRootMissingFallbackPages = $this->getXrefRootMissingFallbackPages();
-        if ([] !== $xrefRootMissingFallbackPages) {
-            return $this->getUniquePages($xrefRootMissingFallbackPages);
-        }
-
-        $catalogMissingPagesFallbackPages = $this->getCatalogMissingPagesFallbackPages();
-        if ([] !== $catalogMissingPagesFallbackPages) {
-            return $this->getUniquePages($catalogMissingPagesFallbackPages);
-        }
-
-        $catalogUnresolvablePagesFallbackPages = $this->getCatalogUnresolvablePagesFallbackPages();
-        if ([] !== $catalogUnresolvablePagesFallbackPages) {
-            return $this->getUniquePages($catalogUnresolvablePagesFallbackPages);
-        }
-
-        $brokenPagesTreeFallbackPages = $this->getBrokenPagesTreeFallbackPages();
-        if ([] !== $brokenPagesTreeFallbackPages) {
-            return $this->getUniquePages($brokenPagesTreeFallbackPages);
-        }
-
-        $inlineKidsFallbackPages = $this->getInlineKidsFallbackPages();
-        if ([] !== $inlineKidsFallbackPages) {
-            return $this->getUniquePages($inlineKidsFallbackPages);
-        }
-
-        $minimalHeaderlessStructureFallbackPages = $this->getMinimalHeaderlessStructureFallbackPages();
-        if ([] !== $minimalHeaderlessStructureFallbackPages) {
-            return $this->getUniquePages($minimalHeaderlessStructureFallbackPages);
-        }
-
         // Gracefully handle irrecoverable malformed PDFs by returning no pages.
         return [];
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getPagesFromCatalogTree(): array
+    {
+        if (!$this->hasObjectsByType('Catalog')) {
+            return [];
+        }
+
+        // Search for catalog to list pages.
+        $catalogues = $this->getObjectsByType('Catalog');
+        $catalogue = reset($catalogues);
+
+        /** @var Pages $object */
+        $object = $catalogue->get('Pages');
+        if (!method_exists($object, 'getPages')) {
+            return [];
+        }
+
+        return $object->getPages(true);
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getPagesFromTypedPagesObjects(): array
+    {
+        if (!$this->hasObjectsByType('Pages')) {
+            return [];
+        }
+
+        // Search for pages to list kids.
+        $pages = [];
+
+        /** @var Pages[] $objects */
+        $objects = $this->getObjectsByType('Pages');
+        foreach ($objects as $object) {
+            $pages = array_merge($pages, $object->getPages(true));
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getPagesFromTypedPageObjects(): array
+    {
+        if (!$this->hasObjectsByType('Page')) {
+            return [];
+        }
+
+        // Search for 'page' (unordered pages).
+        $pages = $this->getObjectsByType('Page');
+
+        return array_values($pages);
     }
 
     /**
