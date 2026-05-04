@@ -436,46 +436,23 @@ class Document
             return $this->getUniquePages(array_values($pages));
         }
 
-        // Last-resort recovery for malformed files where /Type key is corrupted
-        // but the object still carries page-like structure markers.
-        $recoveredPages = $this->getRecoveredPagesFromMalformedHeaders();
-        if ([] !== $recoveredPages) {
-            return $this->getUniquePages($recoveredPages);
-        }
+        // Last-resort recovery strategies for malformed/non-standard PDFs,
+        // tried in order of specificity; first non-empty result wins.
+        $fallbacks = [
+            $this->getRecoveredPagesFromMalformedHeaders(),
+            $this->getEncryptedCatalogFallbackPages(),
+            $this->getXrefRootMissingFallbackPages(),
+            $this->getCatalogMissingPagesFallbackPages(),
+            $this->getCatalogUnresolvablePagesFallbackPages(),
+            $this->getBrokenPagesTreeFallbackPages(),
+            $this->getInlineKidsFallbackPages(),
+            $this->getMinimalHeaderlessStructureFallbackPages(),
+        ];
 
-        $encryptedFallbackPages = $this->getEncryptedCatalogFallbackPages();
-        if ([] !== $encryptedFallbackPages) {
-            return $this->getUniquePages($encryptedFallbackPages);
-        }
-
-        $xrefRootMissingFallbackPages = $this->getXrefRootMissingFallbackPages();
-        if ([] !== $xrefRootMissingFallbackPages) {
-            return $this->getUniquePages($xrefRootMissingFallbackPages);
-        }
-
-        $catalogMissingPagesFallbackPages = $this->getCatalogMissingPagesFallbackPages();
-        if ([] !== $catalogMissingPagesFallbackPages) {
-            return $this->getUniquePages($catalogMissingPagesFallbackPages);
-        }
-
-        $catalogUnresolvablePagesFallbackPages = $this->getCatalogUnresolvablePagesFallbackPages();
-        if ([] !== $catalogUnresolvablePagesFallbackPages) {
-            return $this->getUniquePages($catalogUnresolvablePagesFallbackPages);
-        }
-
-        $brokenPagesTreeFallbackPages = $this->getBrokenPagesTreeFallbackPages();
-        if ([] !== $brokenPagesTreeFallbackPages) {
-            return $this->getUniquePages($brokenPagesTreeFallbackPages);
-        }
-
-        $inlineKidsFallbackPages = $this->getInlineKidsFallbackPages();
-        if ([] !== $inlineKidsFallbackPages) {
-            return $this->getUniquePages($inlineKidsFallbackPages);
-        }
-
-        $minimalHeaderlessStructureFallbackPages = $this->getMinimalHeaderlessStructureFallbackPages();
-        if ([] !== $minimalHeaderlessStructureFallbackPages) {
-            return $this->getUniquePages($minimalHeaderlessStructureFallbackPages);
+        foreach ($fallbacks as $pages) {
+            if ([] !== $pages) {
+                return $this->getUniquePages($pages);
+            }
         }
 
         // Gracefully handle irrecoverable malformed PDFs by returning no pages.
