@@ -436,20 +436,34 @@ class Document
             return $this->getUniquePages(array_values($pages));
         }
 
-        // Last-resort recovery for malformed files where /Type key is corrupted
-        // but the object still carries page-like structure markers.
         // Last-resort recovery strategies for malformed/non-standard PDFs,
         // tried in order of specificity; first non-empty result wins.
-        // Callables ensure each method is only invoked when its turn is reached.
+        // Closures preserve lazy evaluation while keeping explicit method calls.
         $fallbacks = [
-            [$this, 'getRecoveredPagesFromMalformedHeaders'],
-            [$this, 'getEncryptedCatalogFallbackPages'],
-            [$this, 'getXrefRootMissingFallbackPages'],
-            [$this, 'getCatalogMissingPagesFallbackPages'],
-            [$this, 'getCatalogUnresolvablePagesFallbackPages'],
-            [$this, 'getBrokenPagesTreeFallbackPages'],
-            [$this, 'getInlineKidsFallbackPages'],
-            [$this, 'getMinimalHeaderlessStructureFallbackPages'],
+            function () {
+                return $this->getRecoveredPagesFromMalformedHeaders();
+            },
+            function () {
+                return $this->getEncryptedCatalogFallbackPages();
+            },
+            function () {
+                return $this->getXrefRootMissingFallbackPages();
+            },
+            function () {
+                return $this->getCatalogMissingPagesFallbackPages();
+            },
+            function () {
+                return $this->getCatalogUnresolvablePagesFallbackPages();
+            },
+            function () {
+                return $this->getBrokenPagesTreeFallbackPages();
+            },
+            function () {
+                return $this->getInlineKidsFallbackPages();
+            },
+            function () {
+                return $this->getMinimalHeaderlessStructureFallbackPages();
+            },
         ];
 
         foreach ($fallbacks as $fallback) {
