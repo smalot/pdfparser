@@ -219,30 +219,22 @@ Ref: [#472](https://github.com/smalot/pdfparser/issues/427#issuecomment-97341678
 ```php
 $parser = new \Smalot\PdfParser\Parser();
 $pdf = $parser->parseFile('document.pdf');
-$pages = $pdf->getPages();
-// this variable will contain the height and width of each page of the given PDF
-$mediaBox = [];
-foreach ($pages as $page) {
-    $details = $page->getDetails();
-    // If Mediabox is not set in details of current $page instance, get details from the header instead
-    if (!isset($details['MediaBox'])) {
-        $pages = $pdf->getObjectsByType('Pages');
-        $details = reset($pages)->getHeader()->getDetails();
-    }
-    $mediaBox[] = [
-        'width' => $details['MediaBox'][2],
-        'height' => $details['MediaBox'][3]
-    ];
-}
+// Width/height per page (points), using CropBox with MediaBox fallback.
+$dimensions = $pdf->getPagesDimensions();
+
+// To force MediaBox explicitly:
+$mediaBoxDimensions = $pdf->getPagesDimensions('MediaBox');
 ```
 
 ## PDF encryption
 
-This library cannot currently read encrypted PDF files, i.e. those with
-a read password.  Attempting to do so produces this error:
+This library does not currently support decrypting PDFs that require an explicit
+user password. Attempting to read such files may produce this error:
 ```
 Exception: Secured pdf file are currently not supported.
 ```
+
+Some PDFs are flagged as encrypted but remain readable without an explicit user password.
 
 See `setIgnoreEncryption` option in [CustomConfig.md](CustomConfig.md)
 for how to override the check in specific cases.

@@ -75,7 +75,7 @@ class FilterHelper
                 return $this->decodeFilterFlateDecode($data, $decodeMemoryLimit);
 
             case 'RunLengthDecode':
-                return $this->decodeFilterRunLengthDecode($data);
+                return $this->decodeFilterRunLengthDecode($data, $decodeMemoryLimit);
 
             case 'CCITTFaxDecode':
                 throw new NotImplementedException('Decode CCITTFaxDecode not implemented yet.');
@@ -264,10 +264,12 @@ class FilterHelper
      */
     protected function decodeFilterFlateDecode(string $data, int $decodeMemoryLimit): ?string
     {
+        $effectiveDecodeMemoryLimit = $this->getEffectiveDecodeMemoryLimit($decodeMemoryLimit);
+
         // Uncatchable E_WARNING for "data error" is @ suppressed
         // so execution may proceed with an alternate decompression
         // method.
-        $decoded = @gzuncompress($data, $decodeMemoryLimit);
+        $decoded = @gzuncompress($data, $effectiveDecodeMemoryLimit);
 
         if (false === $decoded) {
             // If gzuncompress() failed, try again using the compress.zlib://
@@ -278,10 +280,10 @@ class FilterHelper
             if (false != $ztmp) {
                 fwrite($ztmp, "\x1f\x8b\x08\x00\x00\x00\x00\x00".$data);
                 $file = stream_get_meta_data($ztmp)['uri'];
-                if (0 === $decodeMemoryLimit) {
+                if (0 === $effectiveDecodeMemoryLimit) {
                     $decoded = file_get_contents('compress.zlib://'.$file);
                 } else {
-                    $decoded = file_get_contents('compress.zlib://'.$file, false, null, 0, $decodeMemoryLimit);
+                    $decoded = file_get_contents('compress.zlib://'.$file, false, null, 0, $effectiveDecodeMemoryLimit);
                 }
                 fclose($ztmp);
             }
@@ -295,6 +297,29 @@ class FilterHelper
         return $decoded;
     }
 
+    private function getEffectiveDecodeMemoryLimit(int $decodeMemoryLimit): int
+    {
+        if ($decodeMemoryLimit > 0) {
+            return $decodeMemoryLimit;
+        }
+
+        $memoryLimit = MemoryLimit::toBytes((string) ini_get('memory_limit'));
+        if ($memoryLimit <= 0) {
+            // Unlimited PHP memory limit.
+            return 0;
+        }
+
+        // Keep substantial headroom because zlib decoding can transiently allocate
+        // more memory than the returned string.
+        $available = $memoryLimit - memory_get_usage(true);
+        if ($available <= (16 * 1024 * 1024)) {
+            return 1024 * 1024;
+        }
+
+        $safeLimit = (int) floor(($available - (8 * 1024 * 1024)) / 2);
+
+        return (int) min(max($safeLimit, 1024 * 1024), 256 * 1024 * 1024);
+    }
     /**
      * LZWDecode
      *
@@ -385,11 +410,16 @@ class FilterHelper
      * Decompresses data encoded using a byte-oriented run-length encoding algorithm.
      *
      * @param string $data Data to decode
+     * @param int    $decodeMemoryLimit Memory limit on decoded output
+     *
+     * @throws \Exception
      */
-    protected function decodeFilterRunLengthDecode(string $data): string
+    protected function decodeFilterRunLengthDecode(string $data, int $decodeMemoryLimit = 0): string
     {
         // initialize string to return
         $decoded = '';
+        $effectiveDecodeMemoryLimit = $this->getEffectiveDecodeMemoryLimit($decodeMemoryLimit);
+
         // data length
         $data_length = \strlen($data);
         $i = 0;
@@ -399,19 +429,36 @@ class FilterHelper
             if (128 == $byte) {
                 // a length value of 128 denote EOD
                 break;
-            } elseif ($byte < 128) {
+            }
+
+            if ($byte < 128) {
                 // if the length byte is in the range 0 to 127
                 // the following length + 1 (1 to 128) bytes shall be copied literally during decompression
-                $decoded .= substr($data, $i + 1, $byte + 1);
+                $chunk = substr($data, $i + 1, $byte + 1);
+                if (
+                    $effectiveDecodeMemoryLimit > 0
+                    && (\strlen($decoded) + \strlen($chunk)) > $effectiveDecodeMemoryLimit
+                ) {
+                    throw new \Exception('decodeFilterRunLengthDecode: decoded data exceeds memory limit');
+                }
+                $decoded .= $chunk;
+
                 // move to next block
                 $i += ($byte + 2);
-            } else {
-                // if length is in the range 129 to 255,
-                // the following single byte shall be copied 257 - length (2 to 128) times during decompression
-                $decoded .= str_repeat($data[$i + 1], 257 - $byte);
-                // move to next block
-                $i += 2;
+
+                continue;
             }
+
+            // if length is in the range 129 to 255,
+            // the following single byte shall be copied 257 - length (2 to 128) times during decompression
+            $repeatCount = 257 - $byte;
+            if ($effectiveDecodeMemoryLimit > 0 && (\strlen($decoded) + $repeatCount) > $effectiveDecodeMemoryLimit) {
+                throw new \Exception('decodeFilterRunLengthDecode: decoded data exceeds memory limit');
+            }
+            $decoded .= str_repeat($data[$i + 1], $repeatCount);
+
+            // move to next block
+            $i += 2;
         }
 
         return $decoded;

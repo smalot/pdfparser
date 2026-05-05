@@ -32,6 +32,10 @@
 
 namespace Smalot\PdfParser;
 
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Element\ElementName;
+use Smalot\PdfParser\Element\ElementNumeric;
 use Smalot\PdfParser\Encoding\PDFDocEncoding;
 use Smalot\PdfParser\Exception\MissingCatalogException;
 
@@ -393,6 +397,10 @@ class Document
      */
     public function getPages()
     {
+        if (!$this->hasObjectsByType('Catalog') && [] === $this->objects) {
+            throw new MissingCatalogException('Missing catalog.');
+        }
+
         if ($this->hasObjectsByType('Catalog')) {
             // Search for catalog to list pages.
             $catalogues = $this->getObjectsByType('Catalog');
@@ -401,7 +409,10 @@ class Document
             /** @var Pages $object */
             $object = $catalogue->get('Pages');
             if (method_exists($object, 'getPages')) {
-                return $object->getPages(true);
+                $pages = $object->getPages(true);
+                if ([] !== $pages) {
+                    return $this->getUniquePages($pages);
+                }
             }
         }
 
@@ -414,18 +425,345 @@ class Document
             foreach ($objects as $object) {
                 $pages = array_merge($pages, $object->getPages(true));
             }
-
-            return $pages;
+            if ([] !== $pages) {
+                return $this->getUniquePages($pages);
+            }
         }
 
         if ($this->hasObjectsByType('Page')) {
             // Search for 'page' (unordered pages).
             $pages = $this->getObjectsByType('Page');
-
-            return array_values($pages);
+            return $this->getUniquePages(array_values($pages));
         }
 
-        throw new MissingCatalogException('Missing catalog.');
+        // Last-resort recovery strategies for malformed/non-standard PDFs,
+        // tried in order of specificity; first non-empty result wins.
+        // Closures preserve lazy evaluation while keeping explicit method calls.
+        $fallbacks = [
+            function () {
+                return $this->getRecoveredPagesFromMalformedHeaders();
+            },
+            function () {
+                return $this->getEncryptedCatalogFallbackPages();
+            },
+            function () {
+                return $this->getXrefRootMissingFallbackPages();
+            },
+            function () {
+                return $this->getCatalogMissingPagesFallbackPages();
+            },
+            function () {
+                return $this->getCatalogUnresolvablePagesFallbackPages();
+            },
+            function () {
+                return $this->getBrokenPagesTreeFallbackPages();
+            },
+            function () {
+                return $this->getInlineKidsFallbackPages();
+            },
+            function () {
+                return $this->getMinimalHeaderlessStructureFallbackPages();
+            },
+        ];
+
+        foreach ($fallbacks as $fallback) {
+            $pages = $fallback();
+            if ([] !== $pages) {
+                return $this->getUniquePages($pages);
+            }
+        }
+
+        // Gracefully handle irrecoverable malformed PDFs by returning no pages.
+        return [];
+    }
+
+    /**
+     * @param array<Page> $pages
+     *
+     * @return array<Page>
+     */
+    protected function getUniquePages(array $pages): array
+    {
+        $normalizedPages = [];
+        $seen = [];
+
+        foreach ($pages as $page) {
+            if (!$page instanceof Page) {
+                continue;
+            }
+
+            $key = \function_exists('spl_object_id')
+                ? (string) \spl_object_id($page)
+                : \spl_object_hash($page);
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+
+            $normalizedPages[] = $page;
+        }
+
+        return $normalizedPages;
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getRecoveredPagesFromMalformedHeaders(): array
+    {
+        $pages = [];
+
+        foreach ($this->objects as $object) {
+            $header = $object->getHeader();
+            if (null === $header) {
+                continue;
+            }
+
+            $parent = $header->get('Parent');
+            $mediaBox = $header->get('MediaBox');
+            if ($parent instanceof ElementMissing || $mediaBox instanceof ElementMissing) {
+                continue;
+            }
+
+            if (!$this->headerContainsPageMarker($header)) {
+                continue;
+            }
+
+            $pages[] = new Page($this, $header, null);
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getEncryptedCatalogFallbackPages(): array
+    {
+        if (!$this->trailer->has('Encrypt') || !$this->hasObjectsByType('Catalog')) {
+            return [];
+        }
+
+        $catalogues = $this->getObjectsByType('Catalog');
+        $catalogue = reset($catalogues);
+        if (false === $catalogue) {
+            return [];
+        }
+
+        $pages = $catalogue->get('Pages');
+        if (!$pages instanceof ElementMissing) {
+            return [];
+        }
+
+        return [new Page($this, new Header([], $this), '')];
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getXrefRootMissingFallbackPages(): array
+    {
+        if (
+            !$this->hasObjectsByType('XRef')
+            || $this->hasObjectsByType('Catalog')
+            || $this->hasObjectsByType('Pages')
+            || $this->hasObjectsByType('Page')
+        ) {
+            return [];
+        }
+
+        if (!$this->trailer->has('Root') || !$this->trailer->get('Root') instanceof ElementMissing) {
+            return [];
+        }
+
+        return [new Page($this, new Header([], $this), '')];
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getCatalogMissingPagesFallbackPages(): array
+    {
+        if (!$this->hasObjectsByType('Catalog')) {
+            return [];
+        }
+
+        $catalogues = $this->getObjectsByType('Catalog');
+        $catalogue = reset($catalogues);
+        if (false === $catalogue) {
+            return [];
+        }
+
+        if (!$catalogue->get('Pages') instanceof ElementMissing) {
+            return [];
+        }
+
+        return [new Page($this, new Header([], $this), '')];
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getCatalogUnresolvablePagesFallbackPages(): array
+    {
+        if (!$this->hasObjectsByType('Catalog')) {
+            return [];
+        }
+
+        $catalogues = $this->getObjectsByType('Catalog');
+        $catalogue = reset($catalogues);
+        if (false === $catalogue) {
+            return [];
+        }
+
+        $pages = $catalogue->get('Pages');
+        if ($pages instanceof ElementMissing || $pages instanceof Pages) {
+            return [];
+        }
+
+        if (method_exists($pages, 'getPages')) {
+            try {
+                if ([] !== $pages->getPages(true)) {
+                    return [];
+                }
+            } catch (\Exception $e) {
+                // If resolving page tree throws, do not synthesize a fake page.
+                return [];
+            }
+        }
+
+        return [new Page($this, new Header([], $this), '')];
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getBrokenPagesTreeFallbackPages(): array
+    {
+        if (!$this->hasObjectsByType('Pages')) {
+            return [];
+        }
+
+        /** @var Pages[] $objects */
+        $objects = $this->getObjectsByType('Pages');
+        foreach ($objects as $object) {
+            if ([] !== $object->getPages(true)) {
+                return [];
+            }
+
+            $count = $object->getHeader()->get('Count');
+            if ($count instanceof ElementNumeric && $count->getContent() > 0) {
+                return [new Page($this, new Header([], $this), '')];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Recover pages from objects whose Kids array contains inline page dictionaries
+     * (Header objects) rather than indirect object references.
+     *
+     * Some minimal or malformed PDFs embed page dictionaries inline inside a Kids
+     * array instead of using indirect object references. When the pages tree cannot
+     * be walked through typed Catalog/Pages/Page objects, this fallback checks for
+     * Kids arrays whose elements are Header objects carrying a Contents or MediaBox
+     * key and synthesises Page objects from them.
+     *
+     * @return array<Page>
+     */
+    protected function getInlineKidsFallbackPages(): array
+    {
+        $pages = [];
+
+        foreach ($this->objects as $object) {
+            $header = $object->getHeader();
+            if (!$header->has('Kids')) {
+                continue;
+            }
+
+            $kidsEl = $header->get('Kids');
+            if (!$kidsEl instanceof ElementArray) {
+                continue;
+            }
+
+            foreach ($kidsEl->getContent() as $kid) {
+                if ($kid instanceof Header && ($kid->has('Contents') || $kid->has('MediaBox'))) {
+                    $pages[] = new Page($this, $kid, null);
+                }
+            }
+        }
+
+        return $pages;
+    }
+
+    /**
+     * @return array<Page>
+     */
+    protected function getMinimalHeaderlessStructureFallbackPages(): array
+    {
+        if (
+            $this->trailer->has('Root')
+            || $this->hasObjectsByType('Catalog')
+            || $this->hasObjectsByType('Pages')
+            || $this->hasObjectsByType('Page')
+            ||
+            \count($this->objects) > 2
+            || [] === $this->objects
+        ) {
+            return [];
+        }
+
+        foreach ($this->objects as $object) {
+            if ([] !== $object->getHeader()->getElements()) {
+                return [];
+            }
+        }
+
+        return [new Page($this, new Header([], $this), '')];
+    }
+
+    protected function headerContainsPageMarker(Header $header): bool
+    {
+        if ('Page' === $header->get('Type')->getContent()) {
+            return true;
+        }
+
+        foreach ($header->getElements() as $element) {
+            if ($element instanceof ElementName && 'Page' === $element->getContent()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns dimensions for all pages in points.
+     *
+     * @return array<int, array{width: float, height: float}>
+     *
+     * @throws MissingCatalogException
+     */
+    public function getPagesDimensions(string $boxName = 'CropBox'): array
+    {
+        $dimensions = [];
+
+        foreach ($this->getPages() as $page) {
+            if (!$page instanceof Page) {
+                continue;
+            }
+
+            $dimension = $page->getDimensions($boxName);
+            if (null === $dimension) {
+                continue;
+            }
+
+            $dimensions[] = $dimension;
+        }
+
+        return $dimensions;
     }
 
     public function getText(?int $pageLimit = null): string

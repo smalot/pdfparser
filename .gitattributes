@@ -1,6 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# Treat PDF files as binary to prevent CRLF conversion on Windows
+*.pdf binary
+
 /.editorconfig export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore

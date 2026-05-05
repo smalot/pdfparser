@@ -102,9 +102,8 @@ class Parser
         // Create structure from raw data.
         list($xref, $data) = $this->rawDataParser->parseData($content);
 
-        if (isset($xref['trailer']['encrypt']) && false === $this->config->getIgnoreEncryption()) {
-            throw new \Exception('Secured pdf file are currently not supported.');
-        }
+        $hasEncryption = isset($xref['trailer']['encrypt']);
+        $allowEncrypted = $hasEncryption && false !== $this->config->getIgnoreEncryption();
 
         if (empty($data)) {
             throw new \Exception('Object list not found. Possible secured file.');
@@ -122,7 +121,134 @@ class Parser
         $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
         $document->setObjects($this->objects);
 
+        if ($hasEncryption && !$allowEncrypted) {
+            if (
+                !$this->isReadableEncryptedPdfWithoutUserPassword($document)
+                && !$this->hasReadablePageTree($document)
+            ) {
+                throw new \Exception('Secured pdf file are currently not supported.');
+            }
+        }
+
         return $document;
+    }
+
+    /**
+     * Some PDFs declare encryption but remain readable without an explicit user password.
+     *
+     * We treat these as readable PDFs rather than as unsupported encrypted documents when
+     * the Encrypt dictionary describes a standard crypt filter configuration with a blank
+     * user password flow.
+     */
+    private function isReadableEncryptedPdfWithoutUserPassword(Document $document): bool
+    {
+        $encrypt = $document->getTrailer()->get('Encrypt');
+        if (!\is_object($encrypt) || !method_exists($encrypt, 'getHeader')) {
+            return false;
+        }
+
+        $header = $encrypt->getHeader();
+        if (!\is_object($header) || !method_exists($header, 'getDetails')) {
+            return false;
+        }
+
+        try {
+            $details = $header->getDetails(true);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        if (!\is_array($details)) {
+            return false;
+        }
+
+        if ($this->isReadableLegacyStandardEncryption($details)) {
+            return true;
+        }
+
+        $version = $details['V'] ?? null;
+        if (\is_object($version) && method_exists($version, 'getContent')) {
+            $version = $version->getContent();
+        }
+        if (!\is_numeric($version) || (int) $version < 4) {
+            return false;
+        }
+
+        if (!isset($details['CF']) || !\is_array($details['CF'])) {
+            return false;
+        }
+
+        $streamFilter = $details['StmF'] ?? null;
+        if (\is_object($streamFilter) && method_exists($streamFilter, 'getContent')) {
+            $streamFilter = $streamFilter->getContent();
+        }
+        $stringFilter = $details['StrF'] ?? null;
+        if (\is_object($stringFilter) && method_exists($stringFilter, 'getContent')) {
+            $stringFilter = $stringFilter->getContent();
+        }
+
+        return \is_string($streamFilter)
+            && '' !== trim($streamFilter)
+            && \is_string($stringFilter)
+            && '' !== trim($stringFilter);
+    }
+
+    /**
+     * Legacy Standard security handlers (V1/V2) can be readable with an empty user password.
+     * We treat them as readable when the Encrypt dictionary is well-formed.
+     */
+    private function isReadableLegacyStandardEncryption(array $details): bool
+    {
+        $filter = $details['Filter'] ?? null;
+        if (\is_object($filter) && method_exists($filter, 'getContent')) {
+            $filter = $filter->getContent();
+        }
+        if (!\is_string($filter) || 'Standard' !== trim($filter)) {
+            return false;
+        }
+
+        $version = $details['V'] ?? null;
+        if (\is_object($version) && method_exists($version, 'getContent')) {
+            $version = $version->getContent();
+        }
+        if (!\is_numeric($version) || (int) $version < 1 || (int) $version > 2) {
+            return false;
+        }
+
+        $revision = $details['R'] ?? null;
+        if (\is_object($revision) && method_exists($revision, 'getContent')) {
+            $revision = $revision->getContent();
+        }
+        if (!\is_numeric($revision) || (int) $revision < 2 || (int) $revision > 4) {
+            return false;
+        }
+
+        $permissions = $details['P'] ?? null;
+        if (\is_object($permissions) && method_exists($permissions, 'getContent')) {
+            $permissions = $permissions->getContent();
+        }
+
+        return isset($details['O'], $details['U']) && \is_numeric($permissions);
+    }
+
+    private function hasReadablePageTree(Document $document): bool
+    {
+        try {
+            foreach ($document->getPages() as $page) {
+                if (!$page instanceof Page) {
+                    continue;
+                }
+
+                $header = $page->getHeader();
+                if ($header instanceof Header && [] !== $header->getElements()) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     protected function parseTrailer(array $structure, ?Document $document)
@@ -181,20 +307,39 @@ class Parser
 
                         // Split xrefs and contents.
                         preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
-                        $content = $match[3];
+                        $content = $match[3] ?? '';
+                        $xrefBlob = $match[1] ?? '';
+
+                        if ('' === $xrefBlob) {
+                            return;
+                        }
 
                         // Extract xrefs.
                         $xrefs = preg_split(
                             '/(\d+\s+\d+\s*)/s',
-                            $match[1],
+                            $xrefBlob,
                             -1,
                             \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                         );
+
+                        if (!\is_array($xrefs) || [] === $xrefs) {
+                            return;
+                        }
                         $table = [];
 
                         foreach ($xrefs as $xref) {
-                            list($id, $position) = preg_split("/\s+/", trim($xref));
+                            $parts = preg_split('/\s+/', trim($xref));
+                            if (!\is_array($parts) || \count($parts) < 2) {
+                                continue;
+                            }
+
+                            $id = $parts[0];
+                            $position = $parts[1];
                             $table[$position] = $id;
+                        }
+
+                        if ([] === $table) {
+                            return;
                         }
 
                         ksort($table);
@@ -206,10 +351,13 @@ class Parser
                             $id = $ids[$index].'_0';
                             $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
                             $sub_content = substr($content, $position, (int) $next_position - (int) $position);
+                            $sub_content = $this->normalizeObjectStreamSubContent($sub_content);
 
                             $sub_header = Header::parse($sub_content, $document);
                             $object = PDFObject::factory($document, $sub_header, '', $this->config);
-                            $this->objects[$id] = $object;
+                            if (!isset($this->objects[$id])) {
+                                $this->objects[$id] = $object;
+                            }
                         }
 
                         // It is not necessary to store this content.
@@ -238,6 +386,15 @@ class Parser
         }
     }
 
+    protected function normalizeObjectStreamSubContent(string $content): string
+    {
+        if (preg_match('/^\s*%\s*\d+\s+\d+\s+obj\b\s*/s', $content, $matches) > 0) {
+            return ltrim(substr($content, \strlen($matches[0])));
+        }
+
+        return $content;
+    }
+
     /**
      * @throws \Exception
      */
@@ -247,9 +404,38 @@ class Parser
         $count = \count($structure);
 
         for ($position = 0; $position < $count; $position += 2) {
-            $name = $structure[$position][1];
-            $type = $structure[$position + 1][0];
-            $value = $structure[$position + 1][1];
+            if (!isset($structure[$position], $structure[$position + 1])) {
+                break;
+            }
+
+            if (!\is_array($structure[$position]) || !\is_array($structure[$position + 1])) {
+                continue;
+            }
+
+            if (
+                !isset($structure[$position][0])
+                || !isset($structure[$position][1])
+                || !isset($structure[$position + 1][0])
+                || !array_key_exists(1, $structure[$position + 1])
+            ) {
+                continue;
+            }
+
+            if ('/' !== $structure[$position][0] || !\is_string($structure[$position][1])) {
+                continue;
+            }
+
+            $name = $structure[$position][1] ?? null;
+            $type = $structure[$position + 1][0] ?? null;
+            $value = $structure[$position + 1][1] ?? null;
+
+            if (!\is_string($name) || '' === $name) {
+                continue;
+            }
+
+            if (null !== $type && !\is_string($type)) {
+                continue;
+            }
 
             $elements[$name] = $this->parseHeaderElement($type, $value, $document);
         }
@@ -320,6 +506,8 @@ class Parser
 
             case 'endstream':
             case 'obj': // I don't know what it means but got my project fixed.
+            case '>': // malformed input can leave a dangling hex-string terminator token
+            case ']':
             case '':
                 // Nothing to do with.
                 return null;

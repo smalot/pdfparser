@@ -38,6 +38,7 @@ use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
 use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Pages;
+use Smalot\PdfParser\Parser;
 
 /**
  * @internal only for test purposes
@@ -103,4 +104,16 @@ class PagesTest extends TestCase
         // should not overwrite it
         $this->assertEquals([$font1], $page->getFonts());
     }
+
+    /**
+     * @see https://github.com/mozilla/pdf.js/blob/master/test/pdfs/Pages-tree-refs.pdf
+     * @see https://raw.githubusercontent.com/mozilla/pdf.js/refs/heads/master/test/pdfs/Pages-tree-refs.pdf
+     */
+    public function testParseFileWithCyclicPagesTree(): void
+    {
+        $document = (new Parser())->parseFile($this->rootDir.'/samples/bugs/PullRequest806-pdf.js.pdf');
+
+        $this->assertDocumentPageCountAndDimensions($document, [[595.0, 842.0], [595.0, 842.0]]);
+    }
+
 }

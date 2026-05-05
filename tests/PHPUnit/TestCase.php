@@ -39,6 +39,7 @@ use PHPUnit\Framework\TestCase as PHPTestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Page;
 use Smalot\PdfParser\Parser;
 
 abstract class TestCase extends PHPTestCase
@@ -57,6 +58,19 @@ abstract class TestCase extends PHPTestCase
         $this->rootDir = __DIR__.'/../..';
     }
 
+    protected function tearDown(): void
+    {
+        $this->fixture = null;
+        $this->rootDir = null;
+
+        \gc_collect_cycles();
+        if (\function_exists('gc_mem_caches')) {
+            \gc_mem_caches();
+        }
+
+        parent::tearDown();
+    }
+
     protected function getDocumentInstance(): Document
     {
         return new Document();
@@ -71,4 +85,54 @@ abstract class TestCase extends PHPTestCase
     {
         return new Parser([], $config);
     }
+
+    /**
+     * @param array<int, array{0: float|null, 1: float|null}> $expectedPageDimensions
+     */
+    protected function assertDocumentPageCountAndDimensions(Document $document, array $expectedPageDimensions): void
+    {
+        $pages = $document->getPages();
+
+        self::assertCount(\count($expectedPageDimensions), $pages);
+
+        foreach ($pages as $index => $page) {
+            self::assertInstanceOf(Page::class, $page);
+
+            $dimension = $page->getDimensions();
+
+            [$expectedWidth, $expectedHeight] = $expectedPageDimensions[$index];
+
+            if (null === $dimension || !isset($dimension['width'], $dimension['height'])) {
+                // Page box is absent or unparseable in this fixture; skip dimension
+                // assertions only when no specific value was expected.
+                self::assertNull($expectedWidth, 'Unable to resolve page dimensions for page index '.$index.' (expected width '.$expectedWidth.').');
+                self::assertNull($expectedHeight, 'Unable to resolve page dimensions for page index '.$index.' (expected height '.$expectedHeight.').');
+                continue;
+            }
+
+            $width = (float) $dimension['width'];
+            $height = (float) $dimension['height'];
+
+            if (null === $expectedWidth) {
+                self::assertGreaterThan(0.0, $width, 'Page width must be > 0 for page index '.$index.'.');
+            } else {
+                self::assertEqualsWithDelta($expectedWidth, $width, 0.01, 'Unexpected page width for page index '.$index.'.');
+            }
+
+            if (null === $expectedHeight) {
+                self::assertGreaterThan(0.0, $height, 'Page height must be > 0 for page index '.$index.'.');
+            } else {
+                self::assertEqualsWithDelta($expectedHeight, $height, 0.01, 'Unexpected page height for page index '.$index.'.');
+            }
+        }
+    }
+
+    /**
+     * @return array<int, array{0: null, 1: null}>
+     */
+    protected static function expectedPositivePageDimensions(int $pageCount): array
+    {
+        return array_fill(0, $pageCount, [null, null]);
+    }
+
 }
