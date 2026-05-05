@@ -438,19 +438,54 @@ class Document
 
         // Last-resort recovery strategies for malformed/non-standard PDFs,
         // tried in order of specificity; first non-empty result wins.
-        // Closures preserve lazy evaluation while keeping explicit method calls.
         $fallbacks = [
             function () {
                 return $this->getRecoveredPagesFromMalformedHeaders();
             },
+            // Encrypted catalog fallback: catalog exists but Pages is unreachable due to encryption
             function () {
-                return $this->getEncryptedCatalogFallbackPages();
+                if (!$this->trailer->has('Encrypt') || !$this->hasObjectsByType('Catalog')) {
+                    return [];
+                }
+                $catalogues = $this->getObjectsByType('Catalog');
+                $catalogue = reset($catalogues);
+                if (false === $catalogue) {
+                    return [];
+                }
+                if (!$catalogue->get('Pages') instanceof ElementMissing) {
+                    return [];
+                }
+                return [new Page($this, new Header([], $this), '')];
             },
+            // Xref root missing fallback: XRef exists but Catalog/Pages/Page refs are broken
             function () {
-                return $this->getXrefRootMissingFallbackPages();
+                if (
+                    !$this->hasObjectsByType('XRef')
+                    || $this->hasObjectsByType('Catalog')
+                    || $this->hasObjectsByType('Pages')
+                    || $this->hasObjectsByType('Page')
+                ) {
+                    return [];
+                }
+                if (!$this->trailer->has('Root') || !$this->trailer->get('Root') instanceof ElementMissing) {
+                    return [];
+                }
+                return [new Page($this, new Header([], $this), '')];
             },
+            // Catalog missing pages fallback: Catalog exists but its Pages field is missing
             function () {
-                return $this->getCatalogMissingPagesFallbackPages();
+                if (!$this->hasObjectsByType('Catalog')) {
+                    return [];
+                }
+                $catalogues = $this->getObjectsByType('Catalog');
+                $catalogue = reset($catalogues);
+                if (false === $catalogue) {
+                    return [];
+                }
+                if (!$catalogue->get('Pages') instanceof ElementMissing) {
+                    return [];
+                }
+                return [new Page($this, new Header([], $this), '')];
             },
             function () {
                 return $this->getCatalogUnresolvablePagesFallbackPages();
@@ -536,71 +571,7 @@ class Document
         return $pages;
     }
 
-    /**
-     * @return array<Page>
-     */
-    protected function getEncryptedCatalogFallbackPages(): array
-    {
-        if (!$this->trailer->has('Encrypt') || !$this->hasObjectsByType('Catalog')) {
-            return [];
-        }
 
-        $catalogues = $this->getObjectsByType('Catalog');
-        $catalogue = reset($catalogues);
-        if (false === $catalogue) {
-            return [];
-        }
-
-        $pages = $catalogue->get('Pages');
-        if (!$pages instanceof ElementMissing) {
-            return [];
-        }
-
-        return [new Page($this, new Header([], $this), '')];
-    }
-
-    /**
-     * @return array<Page>
-     */
-    protected function getXrefRootMissingFallbackPages(): array
-    {
-        if (
-            !$this->hasObjectsByType('XRef')
-            || $this->hasObjectsByType('Catalog')
-            || $this->hasObjectsByType('Pages')
-            || $this->hasObjectsByType('Page')
-        ) {
-            return [];
-        }
-
-        if (!$this->trailer->has('Root') || !$this->trailer->get('Root') instanceof ElementMissing) {
-            return [];
-        }
-
-        return [new Page($this, new Header([], $this), '')];
-    }
-
-    /**
-     * @return array<Page>
-     */
-    protected function getCatalogMissingPagesFallbackPages(): array
-    {
-        if (!$this->hasObjectsByType('Catalog')) {
-            return [];
-        }
-
-        $catalogues = $this->getObjectsByType('Catalog');
-        $catalogue = reset($catalogues);
-        if (false === $catalogue) {
-            return [];
-        }
-
-        if (!$catalogue->get('Pages') instanceof ElementMissing) {
-            return [];
-        }
-
-        return [new Page($this, new Header([], $this), '')];
-    }
 
     /**
      * @return array<Page>
