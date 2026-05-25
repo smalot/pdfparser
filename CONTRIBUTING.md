@@ -3,11 +3,11 @@
 **Please read the following text before creating a pull request.**
 
 This project is maintained by the community in very limited time.
-**At this point, contributions are effectively limited to small, well-scoped**
-- bug fixes
+**At this point, contributions are effectively limited to:**
+- small, well-scoped bug fixes
 - PHP compatibility updates
-- documentation improvements and
-- related tests.
+- documentation improvements
+- related tests
 
 **Do not** open pull requests for new features, larger refactorings, deep parser changes, performance projects, or broader behavior changes.
 Such contributions are unlikely to be reviewed, merged, or maintained responsibly in the current state of the project.
@@ -24,8 +24,8 @@ We will try to give feedback where possible, but contributor support is also lim
 To make life easier for you and us, there is a Continuous Integration (CI) system that carries out software tests and performs a number of other tasks.
 The following points describe the relevant preparations/inputs for the CI system.
 All checks must be green, otherwise a pull request will not be accepted.
-* Please create an [issue](https://github.com/smalot/pdfparser/issues) before starting work on any significant changes.
-* We only accept code that is bundled with tests, regardless of whether it is a new function or a bug fix. This strengthens the code base and avoids later regressions. :exclamation: **If you don't know how to write a test, tell us upfront when you open the pull request and we might add them ourselves or discuss other ways**. This [Medium article](https://pguso.medium.com/a-beginners-guide-to-phpunit-writing-and-running-unit-tests-in-php-d0b23b96749f) might be a good starting point. Code changes without tests are very likely to be rejected.
+* If your change goes beyond a small, well-scoped bug fix, please open an [issue](https://github.com/smalot/pdfparser/issues) first to clarify whether it is within the current maintenance scope of this project.
+* We only accept code that is bundled with tests. This applies to bug fixes as well as compatibility-related changes. This strengthens the code base and avoids later regressions. :exclamation: **If you don't know how to write a test, tell us upfront when you open the pull request and we might add them ourselves or discuss other ways**. This [Medium article](https://pguso.medium.com/a-beginners-guide-to-phpunit-writing-and-running-unit-tests-in-php-d0b23b96749f) might be a good starting point. Code changes without tests are very likely to be rejected.
 * Fix reported issues with the coding style. We use **PHP-CS-Fixer** for this. See [.php-cs-fixer.php](./.php-cs-fixer.php) for more information about our coding styles. [Developer.md](./doc/Developer.md) contains more information about this topic.
 * If you are fixing an **existing error**, refer to it in the introduction text of the pull request. For example, if you created a fix for issue `#1234` write the following Markdown: `fixes #1234`.
-* In case you have changed **internal behavior/functionality**, check our documentation to make sure these changes are **correctly documented**: https://github.com/smalot/pdfparser/tree/master/doc
+* If your bug fix or compatibility change affects documented behavior, please update the documentation accordingly: https://github.com/smalot/pdfparser/tree/master/doc
