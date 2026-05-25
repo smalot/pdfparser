@@ -8,9 +8,11 @@
 
 The `smalot/pdfparser` is a standalone PHP package that provides various tools to extract data from PDF files.
 
-This library is under **active maintenance**.
-There is no active development by the author of this library (at the moment), but we welcome any pull request adding/extending functionality!
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for further information about how to contribute.
+### Maintenance status
+
+This library is under **limited maintenance**.
+It is still kept compatible with supported PHP versions, and community contributions may be accepted. However, there is currently **no active feature development** and **no guarantee** that pull requests will be reviewed or merged in a timely manner. 
+If you plan to contribute anything beyond a small, well-scoped fix, please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
 
 ## Features
 
