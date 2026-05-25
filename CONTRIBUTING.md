@@ -2,12 +2,24 @@
 
 **Please read the following text before creating a pull request.**
 
-This project is organized and supported by contributions from the community. Maintenance is done in our limited time.
-We welcome any pull request that contributes to PDFParser (code, documentation, ...).
-However, we would like to point out that you are initially responsible for a contribution.
-If you are new to dealing with pull requests, you can find more information at [Github documentation](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+This project is maintained by the community in very limited time.
+**At this point, contributions are effectively limited to small, well-scoped**
+- bug fixes
+- PHP compatibility updates
+- documentation improvements and
+- related tests.
+
+**Do not** open pull requests for new features, larger refactorings, deep parser changes, performance projects, or broader behavior changes.
+Such contributions are unlikely to be reviewed, merged, or maintained responsibly in the current state of the project.
+
+If you are unsure whether a change is small enough in scope, please open an [issue](https://github.com/smalot/pdfparser/issues) first and ask before investing significant time.
+
+If you are new to pull requests, you can find more information in the [GitHub documentation](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+
 Please don't just throw code at us and expect us to handle it.
-Nevertheless, we will support you and give you feedback.
+We will try to give feedback where possible, but contributor support is also limited by time and available project knowledge.
+
+## CI
 
 To make life easier for you and us, there is a Continuous Integration (CI) system that carries out software tests and performs a number of other tasks.
 The following points describe the relevant preparations/inputs for the CI system.
