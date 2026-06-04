@@ -94,7 +94,19 @@ class Font extends PDFObject
 
         $details['Name'] = $this->getName();
         $details['Type'] = $this->getType();
-        $details['Encoding'] = ($this->has('Encoding') ? (string) $this->get('Encoding') : 'Ansi');
+        $encoding = $this->has('Encoding') ? $this->get('Encoding') : null;
+        if ($encoding instanceof PDFObject) {
+            // Encoding is an indirect reference to an encoding dictionary (PDF spec Table 5.11).
+            // Encoding extends PDFObject, so this branch handles both cases.
+            // Extract BaseEncoding name; absent means the font's built-in encoding is the base.
+            $baseEncoding = $encoding->getHeader()->get('BaseEncoding');
+            $baseEncodingStr = ($baseEncoding instanceof Element) ? (string) $baseEncoding : '';
+            $details['Encoding'] = $baseEncodingStr !== '' ? $baseEncodingStr : 'Ansi';
+        } elseif ($encoding instanceof Element) {
+            $details['Encoding'] = (string) $encoding;
+        } else {
+            $details['Encoding'] = 'Ansi';
+        }
 
         $details += parent::getDetails($deep);
 
