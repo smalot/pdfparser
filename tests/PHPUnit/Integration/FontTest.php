@@ -593,4 +593,35 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         // check result
         $this->assertEquals('foobar-', $font->decodeContent("foobar-\x8D"));
     }
+
+    /**
+     * Font::getDetails() must not throw when a font's Encoding entry is an
+     * indirect object reference that resolves to a plain PDFObject instead of
+     * an Element — i.e. an encoding dictionary that lacks /Type /Encoding.
+     *
+     * This is a valid PDF structure per PDF spec Table 5.11: the dictionary
+     * may carry only a /Differences array and omit /Type and /BaseEncoding.
+     * Without the fix, PHP throws:
+     *   "Object of class PDFObject could not be converted to string"
+     *
+     * @see https://github.com/smalot/pdfparser/issues/822
+     */
+    public function testGetDetailsWithEncodingAsIndirectPDFObject(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/EncodingAsIndirectPDFObject.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+
+        foreach ($document->getPages() as $page) {
+            foreach ($page->getFonts() as $font) {
+                // Must not throw "PDFObject could not be converted to string"
+                $details = $font->getDetails();
+                $this->assertIsString($details['Encoding']);
+                $this->assertNotEmpty($details['Encoding']);
+            }
+        }
+
+        // Text extraction must still work correctly
+        $this->assertSame('Hello', trim($document->getText()));
+    }
 }

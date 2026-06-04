@@ -34,11 +34,102 @@ namespace PHPUnitTests\Unit;
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
+use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Font;
+use Smalot\PdfParser\Header;
 use Smalot\PdfParser\PDFObject;
 
 class FontTest extends TestCase
 {
+    /**
+     * Font::getDetails() must not throw when Encoding is an indirect reference
+     * that resolves to a PDFObject instead of an Element.
+     *
+     * Such PDFs store the Encoding as an object reference (e.g. "12 0 R") whose
+     * resolved target is a plain PDFObject without /Type /Encoding — a valid
+     * structure per PDF spec Table 5.11 (encoding dictionary with /Differences).
+     *
+     * @see https://github.com/smalot/pdfparser/issues/822
+     */
+    public function testGetDetailsEncodingAsPDFObjectWithBaseEncoding(): void
+    {
+        $document = new Document();
+        $encodingObj = new PDFObject(
+            $document,
+            new Header(['BaseEncoding' => new Element('WinAnsiEncoding')])
+        );
+        $font = new Font($document, new Header(['Encoding' => $encodingObj]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('WinAnsiEncoding', $details['Encoding']);
+    }
+
+    /**
+     * When Encoding is a PDFObject without a BaseEncoding entry the font uses
+     * its built-in encoding as base (PDF spec §5.5.5). getDetails() must return
+     * 'Ansi' as fallback, consistent with Encoding::getDetails()['BaseEncoding'].
+     */
+    public function testGetDetailsEncodingAsPDFObjectWithoutBaseEncoding(): void
+    {
+        $document = new Document();
+        $encodingObj = new PDFObject($document, new Header([]));
+        $font = new Font($document, new Header(['Encoding' => $encodingObj]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('Ansi', $details['Encoding']);
+    }
+
+    /**
+     * When Encoding is an Encoding instance (PDFObject subclass, /Type /Encoding
+     * present) the BaseEncoding name must be returned.
+     */
+    public function testGetDetailsEncodingAsEncodingInstance(): void
+    {
+        $document = new Document();
+        $encodingObj = new Encoding(
+            $document,
+            new Header(['BaseEncoding' => new Element('MacRomanEncoding')])
+        );
+        $font = new Font($document, new Header(['Encoding' => $encodingObj]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('MacRomanEncoding', $details['Encoding']);
+    }
+
+    /**
+     * When Encoding is a direct name element (e.g. /WinAnsiEncoding) the name
+     * is returned as-is — the original pre-fix behaviour must be preserved.
+     */
+    public function testGetDetailsEncodingAsDirectElement(): void
+    {
+        $document = new Document();
+        $font = new Font(
+            $document,
+            new Header(['Encoding' => new Element('WinAnsiEncoding')])
+        );
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('WinAnsiEncoding', $details['Encoding']);
+    }
+
+    /**
+     * When no Encoding entry is present getDetails() must return 'Ansi'.
+     */
+    public function testGetDetailsEncodingMissingDefaultsToAnsi(): void
+    {
+        $document = new Document();
+        $font = new Font($document, new Header([]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('Ansi', $details['Encoding']);
+    }
+
     /**
      * decodeText must decode \b.
      *
