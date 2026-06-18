@@ -75,4 +75,15 @@ class ConfigTest extends TestCase
         $this->fixture->setRetainImageContent(false);
         $this->assertFalse($this->fixture->getRetainImageContent());
     }
+
+    /**
+     * Tests setter and getter for content spooling.
+     */
+    public function testContentSpoolingSetterGetter(): void
+    {
+        $this->assertFalse($this->fixture->getContentSpooling());
+
+        $this->fixture->setContentSpooling(true);
+        $this->assertTrue($this->fixture->getContentSpooling());
+    }
 }
