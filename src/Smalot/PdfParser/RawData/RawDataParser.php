@@ -945,16 +945,21 @@ class RawDataParser
     }
 
     /**
-     * Parses PDF data and returns extracted data as array.
+     * Normalize the raw PDF data and decode the cross-reference/trailer data.
+     *
+     * Returns the xref/trailer data together with the normalized PDF data so
+     * callers (e.g. Parser) can inspect the trailer (for instance to detect
+     * encryption) and then stream the objects one at a time via
+     * getObjectsStream() instead of materializing them all at once.
      *
      * @param string $data PDF data to parse
      *
-     * @return array array of parsed PDF document objects
+     * @return array{0: array, 1: string} [$xref, $pdfData]
      *
      * @throws EmptyPdfException if empty PDF data given
      * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
      */
-    public function parseData(string $data): array
+    public function parseHeaderAndXref(string $data): array
     {
         if (empty($data)) {
             throw new EmptyPdfException('Empty PDF data given.');
@@ -976,15 +981,31 @@ class RawDataParser
             $xref = $this->getXrefData($pdfData);
         }
 
-        // parse all document objects
-        $objects = [];
+        return [$xref, $pdfData];
+    }
+
+    /**
+     * Yield each indirect object's raw structure one at a time.
+     *
+     * Yielding (rather than returning a fully built array) lets the consumer
+     * build its own representation of an object and discard the raw structure
+     * before the next one is parsed, so the complete raw object graph - by far
+     * the largest transient structure when parsing a document - never has to be
+     * held in memory at once.
+     *
+     * @param string $pdfData normalized PDF data, as returned by parseHeaderAndXref()
+     * @param array  $xref    xref/trailer data, as returned by parseHeaderAndXref()
+     *
+     * @return \Generator<string, array> raw object structure keyed by object reference
+     */
+    public function getObjectsStream(string $pdfData, array $xref): \Generator
+    {
         foreach ($xref['xref'] as $obj => $offset) {
-            if (!isset($objects[$obj]) && ($offset > 0)) {
-                // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+            // decode objects with positive offset; xref is keyed by object
+            // reference so every $obj is unique and decoded exactly once
+            if ($offset > 0) {
+                yield $obj => $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
             }
         }
-
-        return [$xref, $objects];
     }
 }
