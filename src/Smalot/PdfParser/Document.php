@@ -74,9 +74,27 @@ class Document
      */
     protected $details;
 
+    /**
+     * Optional on-disk store for decoded object stream content, shared by all
+     * objects of this document. Only set when content spooling is enabled.
+     *
+     * @var ContentSpool|null
+     */
+    protected $contentSpool;
+
     public function __construct()
     {
         $this->trailer = new Header([], $this);
+    }
+
+    public function getContentSpool(): ?ContentSpool
+    {
+        return $this->contentSpool;
+    }
+
+    public function setContentSpool(?ContentSpool $contentSpool): void
+    {
+        $this->contentSpool = $contentSpool;
     }
 
     public function init()

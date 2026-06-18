@@ -114,6 +114,13 @@ class Parser
         $document = new Document();
         $this->objects = [];
 
+        // When content spooling is enabled, give the document an on-disk store
+        // so each object's decoded content can be moved out of memory as soon
+        // as the object is built (see parseObject()).
+        if ($this->config->getContentSpooling()) {
+            $document->setContentSpool(new ContentSpool());
+        }
+
         foreach ($data as $id => $structure) {
             $this->parseObject($id, $structure, $document);
             unset($data[$id]);
@@ -234,7 +241,12 @@ class Parser
         }
 
         if (!isset($this->objects[$id])) {
-            $this->objects[$id] = PDFObject::factory($document, $header, $content, $this->config);
+            $object = PDFObject::factory($document, $header, $content, $this->config);
+            // Free the just-decoded content from memory by moving it to the
+            // document's on-disk spool (no-op unless content spooling is on).
+            // The local $content copy is released when this method returns.
+            $object->spoolContent();
+            $this->objects[$id] = $object;
         }
     }
 

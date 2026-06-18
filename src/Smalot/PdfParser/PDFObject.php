@@ -65,9 +65,18 @@ class PDFObject
     protected $header;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $content;
+
+    /**
+     * Location of this object's content within the document's ContentSpool,
+     * as [offset, length], when the content has been spooled to disk instead
+     * of being kept in $content. Null when the content lives in memory.
+     *
+     * @var array{0: int, 1: int}|null
+     */
+    protected $contentRef;
 
     /**
      * @var Config|null
@@ -130,7 +139,43 @@ class PDFObject
 
     public function getContent(): ?string
     {
+        // Content has been spooled to disk; read it back on demand.
+        if (null !== $this->contentRef) {
+            $spool = $this->document->getContentSpool();
+
+            return null !== $spool
+                ? $spool->fetch($this->contentRef[0], $this->contentRef[1])
+                : null;
+        }
+
         return $this->content;
+    }
+
+    /**
+     * Move this object's in-memory content to the document's ContentSpool, if
+     * one is configured, freeing the in-memory copy. The content is transparently
+     * read back from disk by getContent() when needed.
+     *
+     * @internal
+     */
+    public function spoolContent(): void
+    {
+        if (null !== $this->contentRef
+            || null === $this->content
+            || '' === $this->content) {
+            return;
+        }
+
+        $spool = $this->document->getContentSpool();
+        if (null === $spool) {
+            return;
+        }
+
+        $ref = $spool->store($this->content);
+        if (null !== $ref) {
+            $this->contentRef = $ref;
+            $this->content = null;
+        }
     }
 
     /**
@@ -686,7 +731,7 @@ class PDFObject
         $marked_stack = [];
         $last_written_position = false;
 
-        $sections = $this->getSectionsText($this->content);
+        $sections = $this->getSectionsText($this->getContent());
         $current_font = $this->getDefaultFont($page);
         $current_font_size = 1;
         $current_text_leading = 0;
