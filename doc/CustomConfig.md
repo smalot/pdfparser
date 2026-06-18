@@ -26,6 +26,7 @@ The `Config` class has the following options:
 | `setPdfWhitespaces`      | String  | `\0\t\n\f\r `   |                                                                                                                                                      |
 | `setPdfWhitespacesRegex` | String  | `[\0\t\n\f\r ]` |                                                                                                                                                      |
 | `setRetainImageContent`  | Boolean | `true`          | If parsing fails due to memory exhaustion, you can set the value to `false`. This will reduce memory usage, although it will no longer retain image content. |
+| `setContentSpooling`     | Boolean | `false`         | If parsing large documents fails due to memory exhaustion, set this to `true` to spool decoded stream content to a temporary file instead of keeping it in memory. Lowers peak memory usage at the cost of some extra disk I/O. |
 
 
 ## option setDecodeMemoryLimit + setRetainImageContent (manage memory usage)
@@ -40,6 +41,26 @@ $config->setRetainImageContent(false);
 $config->setDecodeMemoryLimit(1000000);
 $parser = new \Smalot\PdfParser\Parser([], $config);
 ```
+
+## option setContentSpooling (manage memory usage)
+
+When parsing large documents, the bulk of the memory a parsed document keeps
+alive is the decoded content of its stream objects. Enabling content spooling
+writes that content to a single temporary file as objects are parsed and reads
+it back on demand, so the full set of decoded streams no longer has to reside in
+memory at once. This noticeably lowers peak memory usage for large files in
+exchange for a small amount of disk I/O. The extracted text and document details
+are identical with the option on or off.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+// Spool decoded stream content to a temporary file instead of memory
+$config->setContentSpooling(true);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+```
+
+The temporary file is created in the system temp directory and removed
+automatically once the parsed document is no longer referenced.
 
 ## option setHorizontalOffset
 

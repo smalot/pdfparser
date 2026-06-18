@@ -89,6 +89,15 @@ class Config
      */
     private $ignoreEncryption = false;
 
+    /**
+     * Whether decoded object stream content is spooled to a temporary file
+     * instead of being kept in memory. Trades disk I/O for a lower peak memory
+     * footprint when parsing large documents.
+     *
+     * @var bool
+     */
+    private $contentSpooling = false;
+
     public function getFontSpaceLimit()
     {
         return $this->fontSpaceLimit;
@@ -171,5 +180,15 @@ class Config
     public function setIgnoreEncryption(bool $ignoreEncryption): void
     {
         $this->ignoreEncryption = $ignoreEncryption;
+    }
+
+    public function getContentSpooling(): bool
+    {
+        return $this->contentSpooling;
+    }
+
+    public function setContentSpooling(bool $contentSpooling): void
+    {
+        $this->contentSpooling = $contentSpooling;
     }
 }
