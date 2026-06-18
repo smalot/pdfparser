@@ -429,71 +429,91 @@ class PDFObject
     {
         $sections = [];
 
-        // A cleaned stream has one command on every line, so split the
-        // cleaned stream content on \r\n into an array
-        $textCleaned = preg_split(
-            '/(\r\n|\n|\r)/',
-            $this->formatContent($content),
-            -1,
-            \PREG_SPLIT_NO_EMPTY
-        );
+        // A cleaned stream has one command on every line. Splitting the whole
+        // string into an array up front is simplest, but a graphics-heavy page
+        // can have hundreds of thousands of lines, of which only a handful are
+        // kept below. The resulting array can take a lot of memory.
+        // Instead split in bounded, line-aligned chunks first and process each
+        // chunk, so only a small slice is ever materialized at once.
+        $cleaned = $this->formatContent($content);
+        $length = \strlen($cleaned);
 
         $inTextBlock = false;
-        foreach ($textCleaned as $line) {
-            $line = trim($line);
-
-            // Skip empty lines
-            if ('' === $line) {
-                continue;
+        $chunkSize = 1024 * 1024; // 1 MB; bounds the per-chunk line array
+        $offset = 0;
+        while ($offset < $length) {
+            // Cut the chunk at the next line boundary so a command is never
+            // split across chunks; the $inTextBlock flag carries across them.
+            $end = min($offset + $chunkSize, $length);
+            if ($end < $length) {
+                $end += strcspn($cleaned, "\r\n", $end);
             }
 
-            // If a 'BT' is encountered, set the $inTextBlock flag
-            if (preg_match('/BT$/', $line)) {
-                $inTextBlock = true;
-                $sections[] = $line;
+            // Split into lines. When the whole stream fits in one chunk (the
+            // common case) split it directly to avoid copying it via substr().
+            $chunk = (0 === $offset && $length === $end)
+                ? $cleaned
+                : substr($cleaned, $offset, $end - $offset);
+            $textCleaned = preg_split('/(\r\n|\n|\r)/', $chunk, -1, \PREG_SPLIT_NO_EMPTY);
 
-                // If an 'ET' is encountered, unset the $inTextBlock flag
-            } elseif ('ET' == $line) {
-                $inTextBlock = false;
-                $sections[] = $line;
-            } elseif ($inTextBlock) {
-                // If we are inside a BT ... ET text block, save all lines
-                $sections[] = trim($line);
-            } else {
-                // Otherwise, if we are outside of a text block, only
-                // save specific, necessary lines. Care should be taken
-                // to ensure a command being checked for *only* matches
-                // that command. For instance, a simple search for 'c'
-                // may also match the 'sc' command. See the command
-                // list in the formatContent() method above.
-                // Add more commands to save here as you find them in
-                // weird PDFs!
-                if ('q' == $line[-1] || 'Q' == $line[-1]) {
-                    // Save and restore graphics state commands
+            // Advance past the chunk and the run of delimiters following it.
+            $offset = $end + strspn($cleaned, "\r\n", $end);
+
+            // On the final chunk the source stream is no longer needed; release
+            // it before filtering the lines so single-chunk pages peak no higher
+            // than a plain whole-string split would.
+            if ($offset >= $length) {
+                $cleaned = $chunk = '';
+            }
+
+            // Filter lines
+            foreach ($textCleaned as $line) {
+                $line = trim($line);
+
+                // Skip empty lines
+                if ('' === $line) {
+                    continue;
+                }
+
+                // If a 'BT' is encountered, set the $inTextBlock flag
+                if (preg_match('/BT$/', $line)) {
+                    $inTextBlock = true;
                     $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)B[DM]C$/', $line)) {
-                    // Begin marked content sequence
+
+                    // If an 'ET' is encountered, unset the $inTextBlock flag
+                } elseif ('ET' == $line) {
+                    $inTextBlock = false;
                     $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)[DM]P$/', $line)) {
-                    // Marked content point
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)EMC$/', $line)) {
-                    // End marked content sequence
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)cm$/', $line)) {
-                    // Graphics position change commands
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)Tf$/', $line)) {
-                    // Font change commands
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)Do$/', $line)) {
-                    // Invoke named XObject command
+
+                    // Inside a BT ... ET block keep every line; outside it, keep
+                    // only the few commands needed for positioning/extraction.
+                } elseif ($inTextBlock || $this->isKeptOutsideTextBlock($line)) {
                     $sections[] = $line;
                 }
             }
         }
 
         return $sections;
+    }
+
+    /**
+     * Whether a (trimmed, non-empty) line outside a BT...ET text block is one of
+     * the few commands worth keeping for text positioning/extraction.
+     *
+     * Care should be taken to ensure a command being checked for *only* matches
+     * that command. For instance, a simple search for 'c' may also match the
+     * 'sc' command. See the command list in the formatContent() method above.
+     * Add more commands to keep here as you find them in weird PDFs!
+     */
+    private function isKeptOutsideTextBlock(string $line): bool
+    {
+        return 'q' == $line[-1] || 'Q' == $line[-1]   // save/restore graphics state
+            || preg_match('/(?<!\w)B[DM]C$/', $line)  // begin marked content sequence
+            || preg_match('/(?<!\w)[DM]P$/', $line)   // marked content point
+            || preg_match('/(?<!\w)EMC$/', $line)     // end marked content sequence
+            || preg_match('/(?<!\w)cm$/', $line)      // graphics position change
+            || preg_match('/(?<!\w)Tf$/', $line)      // font change
+            || preg_match('/(?<!\w)Do$/', $line);     // invoke named XObject
     }
 
     private function getDefaultFont(?Page $page = null): Font
