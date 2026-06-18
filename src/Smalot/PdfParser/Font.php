@@ -142,6 +142,15 @@ class Font extends PDFObject
         // note:
         // $code was typed as int before, but changed in https://github.com/smalot/pdfparser/pull/623
         // because in some cases uchr was called with a float instead of an integer.
+        //
+        // A float that is out of integer range (e.g. resulting from a hexdec()
+        // overflow) cannot be cast to int without raising a "not representable
+        // as int" warning on PHP 8.1+, and such a value can never be a valid
+        // Unicode code point, so we treat it as a missing character.
+        if (\is_float($code) && (!\is_finite($code) || $code < \PHP_INT_MIN || $code > \PHP_INT_MAX)) {
+            return self::MISSING;
+        }
+
         $code = (int) $code;
 
         if (!isset(self::$uchrCache[$code])) {
