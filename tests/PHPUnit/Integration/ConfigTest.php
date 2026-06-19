@@ -37,6 +37,7 @@ namespace PHPUnitTests\Integration;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\ContentSpool;
 
 class ConfigTest extends TestCase
 {
@@ -54,5 +55,30 @@ class ConfigTest extends TestCase
         $reference = '11 ADET DERGİ İÇİN 3 KALEM HİZMET ALIMI İHALE EDİLECEKTİR ';
         $firstLine = explode("\n", $text)[0];
         $this->assertEquals($reference, $firstLine);
+    }
+
+    /**
+     * Spooling decoded stream content to a temporary file must not change the
+     * extracted text or document details - it only lowers peak memory usage.
+     */
+    public function testContentSpoolingProducesIdenticalOutput()
+    {
+        $filename = $this->rootDir.'/samples/bugs/Issue356.pdf';
+
+        $inMemoryConfig = new Config();
+        $inMemoryConfig->setContentSpooling(false);
+        $inMemory = $this->getParserInstance($inMemoryConfig)->parseFile($filename);
+
+        $spoolingConfig = new Config();
+        $spoolingConfig->setContentSpooling(true);
+        $spooled = $this->getParserInstance($spoolingConfig)->parseFile($filename);
+
+        // The spooling document must actually use an on-disk spool ...
+        $this->assertNull($inMemory->getContentSpool());
+        $this->assertInstanceOf(ContentSpool::class, $spooled->getContentSpool());
+
+        // ... while producing exactly the same results.
+        $this->assertSame($inMemory->getText(), $spooled->getText());
+        $this->assertSame($inMemory->getDetails(), $spooled->getDetails());
     }
 }
