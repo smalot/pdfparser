@@ -68,4 +68,36 @@ class FontTest extends TestCase
         // compare result with expected value
         self::assertEquals('3cc2ab083e', bin2hex($result));
     }
+
+    /**
+     * A CMap could contain oversized hex values. hexdec() then returns a float
+     * larger than PHP_INT_MAX which cannot be cast to int. On PHP 8.5 this
+     * cast raises a "not representable as int" warning.
+     *
+     * Since these values can not represent valid Unicode code points anyway,
+     * it's safe to return Font::MISSING for them. This test checks that this
+     * is the case.
+     *
+     * The test relies on PhpUnit's failOnWarning="true" in phpunit.xml:
+     * a warning would error.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/623
+     * @see https://github.com/smalot/pdfparser/pull/825
+     */
+    public function testUchrWithOutOfRangeFloat(): void
+    {
+        // a regular code point is still decoded
+        $this->assertEquals('A', Font::uchr(0x41));
+
+        // a float that fits into an integer is still cast and decoded; this is
+        // the reason uchr() accepts floats in the first place
+        $this->assertEquals('A', Font::uchr(65.0));
+
+        // floats that do not fit into an integer can never be a valid code
+        // point; the value below is produced by hexdec() of an oversized hex
+        // string taken from samples/bugs/Issue621.pdf
+        $this->assertEquals(Font::MISSING, Font::uchr(1.50646556872121E+28));
+        $this->assertEquals(Font::MISSING, Font::uchr(\INF));
+        $this->assertEquals(Font::MISSING, Font::uchr(\NAN));
+    }
 }
