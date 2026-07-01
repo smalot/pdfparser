@@ -320,12 +320,18 @@ class PDFObject
                 // Replace the string with a unique placeholder
                 $id = uniqid('STRING_', true);
                 $pdfstrings[$id] = $text[0];
-                $content = preg_replace(
-                    '/'.preg_quote($text[0], '/').'/',
-                    '@@@'.$id.'@@@',
-                    $content,
-                    1
-                );
+                // Replace the first literal occurrence without compiling a regex
+                // per string operand (preg_quote + preg_replace is quadratic for
+                // kerned TJ arrays with many operands).
+                $stringPos = strpos($content, $text[0]);
+                if (false !== $stringPos) {
+                    $content = substr_replace(
+                        $content,
+                        '@@@'.$id.'@@@',
+                        $stringPos,
+                        \strlen($text[0])
+                    );
+                }
 
                 // Reset to search for the next string
                 $attempt = '(';
@@ -381,24 +387,32 @@ class PDFObject
 
         // Restore the original content of the dictionary << >> commands
         $dictstore = array_reverse($dictstore, true);
-        foreach ($dictstore as $id => $dict) {
-            $content = str_replace('###'.$id.'###', $dict, $content);
+        if ([] !== $dictstore) {
+            $dictMap = [];
+            foreach ($dictstore as $id => $dict) {
+                $dictMap['###'.$id.'###'] = $dict;
+            }
+            $content = strtr($content, $dictMap);
         }
 
-        // Restore the original string content
+        // Restore the original string content in a single pass (strtr) instead
+        // of one full-content str_replace() per placeholder, which is quadratic
+        // for kerned TJ arrays with many string operands.
         $pdfstrings = array_reverse($pdfstrings, true);
+        $stringMap = [];
         foreach ($pdfstrings as $id => $text) {
             // Strings may contain escaped newlines, or literal newlines
             // and we should clean these up before replacing the string
             // back into the content stream; this ensures no strings are
             // split between two lines (every command must be on one line)
-            $text = str_replace(
+            $stringMap['@@@'.$id.'@@@'] = str_replace(
                 ["\\\r\n", "\\\r", "\\\n", "\r", "\n"],
                 ['', '', '', '\r', '\n'],
                 $text
             );
-
-            $content = str_replace('@@@'.$id.'@@@', $text, $content);
+        }
+        if ([] !== $stringMap) {
+            $content = strtr($content, $stringMap);
         }
 
         // Restore the original content of any inline images
