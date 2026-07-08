@@ -95,4 +95,81 @@ class PDFObjectTest extends TestCase
         // array.
         self::assertSame([' '], $page4->getTextArray());
     }
+
+    /**
+     * Kerned TJ arrays split a word into many small string operands. Make sure
+     * they end up in the right order again (issue #712).
+     */
+    public function testGetTextArrayReassemblesKernedTjArray(): void
+    {
+        $document = new Document();
+        $document->init();
+
+        $content = 'BT /F1 12 Tf 10 10 Td '
+            . '[(H)10(e)-5(l)3(l)20(o)-40( )30(W)5(o)-3(r)8(l)2(d)]TJ ET';
+
+        $form = new Form($document, null, $content, new Config());
+        $header = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Fr0' => $form,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+        $page = new Page($document, $header);
+
+        self::assertSame(['Hello World '], $page->getTextArray());
+    }
+
+    /**
+     * A << ... >> BDC dictionary around a text block must not swallow the
+     * text that follows it (issue #712).
+     */
+    public function testGetTextArrayRestoresMarkedContentDictionary(): void
+    {
+        $document = new Document();
+        $document->init();
+
+        $content = '/OC << /MCID 0 /Foo (bar) >> BDC '
+            . 'BT /F1 12 Tf 10 10 Td (Hello) Tj ET EMC';
+
+        $form = new Form($document, null, $content, new Config());
+        $header = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Fr0' => $form,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+        $page = new Page($document, $header);
+
+        self::assertSame(['Hello '], $page->getTextArray());
+    }
+
+    /**
+     * A string can hold balanced unescaped parentheses; check they survive
+     * extraction (issue #712).
+     */
+    public function testGetTextArrayKeepsBalancedParenthesesInsideString(): void
+    {
+        $document = new Document();
+        $document->init();
+
+        $content = 'BT /F1 12 Tf 10 10 Td (a(b)c) Tj ET';
+
+        $form = new Form($document, null, $content, new Config());
+        $header = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Fr0' => $form,
+                ])
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+        $page = new Page($document, $header);
+
+        self::assertSame(['a(b)c '], $page->getTextArray());
+    }
 }
