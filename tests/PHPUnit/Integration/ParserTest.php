@@ -119,6 +119,7 @@ class ParserTest extends TestCase
      */
     public function testIssue19(): void
     {
+        $index = "17\n0";
         $fixture = new ParserSub();
         $structure = [
             [
@@ -134,6 +135,10 @@ class ParserTest extends TestCase
                         'ObjStm',
                         7742,
                     ],
+                    ['/', 'N', 0],
+                    ['numeric', '1', 0],
+                    ['/', 'First', 0],
+                    ['numeric', (string) \strlen($index), 0],
                 ],
             ],
             [
@@ -141,7 +146,7 @@ class ParserTest extends TestCase
                 '',
                 7804,
                 [
-                    "17\n0",
+                    $index,
                     [],
                 ],
             ],
@@ -152,6 +157,171 @@ class ParserTest extends TestCase
         $objects = $fixture->getObjects();
 
         $this->assertArrayHasKey('17_0', $objects);
+    }
+
+    /**
+     * Object-stream index parsing accepts every PDF whitespace character, including NUL.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamIndexAcceptsNulWhitespace(): void
+    {
+        $index = "17\0 0 ";
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', '1', 0],
+                    ['/', 'First', 0],
+                    ['numeric', (string) \strlen($index), 0],
+                ],
+            ],
+            ['stream', $index.'null'],
+        ];
+
+        $fixture = new ParserSub();
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+
+        $this->assertArrayHasKey('17_0', $fixture->getObjects());
+    }
+
+    /**
+     * Object streams with indirect metadata retain the parser's historic fallback behaviour.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamAllowsIndirectMetadata(): void
+    {
+        $index = '17 0 ';
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['objref', '2_0', 0],
+                    ['/', 'First', 0],
+                    ['objref', '3_0', 0],
+                ],
+            ],
+            ['stream', $index.'null'],
+        ];
+
+        $fixture = new ParserSub();
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+
+        $this->assertArrayHasKey('17_0', $fixture->getObjects());
+    }
+
+    /**
+     * Out-of-range object-stream metadata fails without converting a float to an integer.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamRejectsOverflowedMetadataWithoutWarning(): void
+    {
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', '1', 0],
+                    ['/', 'First', 0],
+                    ['numeric', '9223372036854775808', 0],
+                ],
+            ],
+            ['stream', '17 0 null'],
+        ];
+
+        set_error_handler(static function ($severity, $message): void {
+            throw new \ErrorException($message, 0, $severity);
+        });
+
+        try {
+            $this->expectException(\UnexpectedValueException::class);
+            $this->expectExceptionMessage('Object stream index values must be non-negative integers.');
+
+            (new ParserSub())->exposedParseObject('19_0', $structure, new Document());
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * Object stream indexes must not depend on recursive regular-expression matching.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testLargeObjectStreamIndex(): void
+    {
+        $objectCount = 4000;
+        $index = '';
+        $body = '';
+
+        for ($position = 0; $position < $objectCount; ++$position) {
+            $objectId = 10000 + $position;
+            $index .= $objectId.' '.\strlen($body).' ';
+            $body .= 'null ';
+        }
+
+        $first = \strlen($index);
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', (string) $objectCount, 0],
+                    ['/', 'First', 0],
+                    ['numeric', (string) $first, 0],
+                ],
+            ],
+            ['stream', $index.$body],
+        ];
+        $fixture = new ParserSub();
+
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+        $objects = $fixture->getObjects();
+
+        $this->assertCount($objectCount, $objects);
+        $this->assertArrayHasKey('10000_0', $objects);
+        $this->assertArrayHasKey('13999_0', $objects);
+    }
+
+    /**
+     * Malformed object stream metadata must fail deterministically.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamIndexMustMatchObjectCount(): void
+    {
+        $index = '17 0';
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', '2', 0],
+                    ['/', 'First', 0],
+                    ['numeric', (string) \strlen($index), 0],
+                ],
+            ],
+            ['stream', $index],
+        ];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Object stream index does not match its N value.');
+
+        (new ParserSub())->exposedParseObject('19_0', $structure, new Document());
     }
 
     /**
