@@ -177,24 +177,37 @@ class Parser
                     $content = isset($part[3][0]) ? $part[3][0] : $part[1];
 
                     if ($header->get('Type')->equals('ObjStm')) {
-                        $match = [];
+                        $numberOfObjects = $this->objectStreamInteger($header, 'N');
+                        $firstObjectOffset = $this->objectStreamInteger($header, 'First');
 
-                        // Split xrefs and contents.
-                        preg_match('/^((\d+\s+\d+\s*)*)(.*)$/s', $content, $match);
-                        $content = $match[3];
+                        if ($firstObjectOffset > \strlen($content)) {
+                            throw new \UnexpectedValueException('Object stream First offset exceeds its content length.');
+                        }
 
-                        // Extract xrefs.
-                        $xrefs = preg_split(
-                            '/(\d+\s+\d+\s*)/s',
-                            $match[1],
-                            -1,
-                            \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
+                        if ($numberOfObjects > $firstObjectOffset) {
+                            throw new \UnexpectedValueException('Object stream N exceeds its index length.');
+                        }
+
+                        $xrefs = $this->parseObjectStreamIndex(
+                            substr($content, 0, $firstObjectOffset),
+                            $numberOfObjects
                         );
+                        $content = substr($content, $firstObjectOffset);
                         $table = [];
 
                         foreach ($xrefs as $xref) {
-                            list($id, $position) = preg_split("/\s+/", trim($xref));
+                            $id = $xref[0];
+                            $position = $xref[1];
+
+                            if ($position > \strlen($content)) {
+                                throw new \UnexpectedValueException('Object stream object offset exceeds its content length.');
+                            }
+
                             $table[$position] = $id;
+                        }
+
+                        if (\count($table) !== $numberOfObjects) {
+                            throw new \UnexpectedValueException('Object stream contains duplicate object offsets.');
                         }
 
                         ksort($table);
@@ -236,6 +249,62 @@ class Parser
         if (!isset($this->objects[$id])) {
             $this->objects[$id] = PDFObject::factory($document, $header, $content, $this->config);
         }
+    }
+
+    private function objectStreamInteger(Header $header, string $name): int
+    {
+        $value = $header->get($name)->getContent();
+
+        if ((!\is_int($value) && !\is_float($value))
+            || !\is_finite((float) $value)
+            || $value < 0
+            || \floor((float) $value) !== (float) $value
+            || $value > \PHP_INT_MAX
+        ) {
+            throw new \UnexpectedValueException('Object stream '.$name.' must be a non-negative integer.');
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * @return array<int, array{0: int, 1: int}>
+     */
+    private function parseObjectStreamIndex(string $index, int $numberOfObjects): array
+    {
+        $trimmedIndex = trim($index);
+        $tokens = '' === $trimmedIndex ? [] : preg_split('/\s+/', $trimmedIndex);
+
+        if (false === $tokens || \count($tokens) !== $numberOfObjects * 2) {
+            throw new \UnexpectedValueException('Object stream index does not match its N value.');
+        }
+
+        $xrefs = [];
+
+        for ($position = 0; $position < $numberOfObjects; ++$position) {
+            $xrefs[] = [
+                $this->objectStreamToken($tokens[$position * 2]),
+                $this->objectStreamToken($tokens[$position * 2 + 1]),
+            ];
+        }
+
+        return $xrefs;
+    }
+
+    private function objectStreamToken(string $token): int
+    {
+        $normalized = ltrim($token, '0');
+        $normalized = '' === $normalized ? '0' : $normalized;
+        $maximum = (string) \PHP_INT_MAX;
+
+        if (strspn($token, '0123456789') !== \strlen($token)
+            || \strlen($normalized) > \strlen($maximum)
+            || (\strlen($normalized) === \strlen($maximum) && strcmp($normalized, $maximum) > 0)
+        ) {
+            throw new \UnexpectedValueException('Object stream index values must be non-negative integers.');
+        }
+
+        return (int) $normalized;
     }
 
     /**
