@@ -160,6 +160,100 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Object-stream index parsing accepts every PDF whitespace character, including NUL.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamIndexAcceptsNulWhitespace(): void
+    {
+        $index = "17\0 0 ";
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', '1', 0],
+                    ['/', 'First', 0],
+                    ['numeric', (string) \strlen($index), 0],
+                ],
+            ],
+            ['stream', $index.'null'],
+        ];
+
+        $fixture = new ParserSub();
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+
+        $this->assertArrayHasKey('17_0', $fixture->getObjects());
+    }
+
+    /**
+     * Object streams with indirect metadata retain the parser's historic fallback behaviour.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamAllowsIndirectMetadata(): void
+    {
+        $index = '17 0 ';
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['objref', '2_0', 0],
+                    ['/', 'First', 0],
+                    ['objref', '3_0', 0],
+                ],
+            ],
+            ['stream', $index.'null'],
+        ];
+
+        $fixture = new ParserSub();
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+
+        $this->assertArrayHasKey('17_0', $fixture->getObjects());
+    }
+
+    /**
+     * Out-of-range object-stream metadata fails without converting a float to an integer.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamRejectsOverflowedMetadataWithoutWarning(): void
+    {
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['numeric', '1', 0],
+                    ['/', 'First', 0],
+                    ['numeric', '9223372036854775808', 0],
+                ],
+            ],
+            ['stream', '17 0 null'],
+        ];
+
+        set_error_handler(static function ($severity, $message): void {
+            throw new \ErrorException($message, 0, $severity);
+        });
+
+        try {
+            $this->expectException(\UnexpectedValueException::class);
+            $this->expectExceptionMessage('Object stream index values must be non-negative integers.');
+
+            (new ParserSub())->exposedParseObject('19_0', $structure, new Document());
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
      * Object stream indexes must not depend on recursive regular-expression matching.
      *
      * @see https://github.com/smalot/pdfparser/issues/835
