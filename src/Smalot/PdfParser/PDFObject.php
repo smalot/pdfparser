@@ -1210,6 +1210,6 @@ class PDFObject
      */
     protected function getUniqueId(): string
     {
-        return spl_object_hash($this);
+        return \PHP_VERSION_ID < 70200 ? \spl_object_hash($this) : (string) \spl_object_id($this);
     }
 }
