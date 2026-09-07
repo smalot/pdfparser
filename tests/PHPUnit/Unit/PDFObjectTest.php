@@ -29,6 +29,22 @@ class PDFObjectTest extends TestCase
         static::assertSame(' ', (new PDFObject($document, null, null))->getText(new Page($document)));
     }
 
+    /**
+     * A stream may concatenate save-state operators without whitespace ("qq"),
+     * which lexes as a single unknown token instead of two "q" operators. The
+     * matching "Q"s then restore a state that was never pushed, and the rest of
+     * the stream must still be read.
+     */
+    public function testGetTextWithUnmatchedGraphicsStateRestore(): void
+    {
+        $document = new Document();
+        $document->init();
+
+        $content = "qq\nBT /F1 12 Tf 10 10 Td (Hello) Tj ET\nQ\nQ\nBT 10 -20 Td (World) Tj ET";
+
+        static::assertSame("Hello\nWorld ", (new PDFObject($document, null, $content, new Config()))->getText());
+    }
+
     public function testTextArrayObjects(): void
     {
         $document = new Document();

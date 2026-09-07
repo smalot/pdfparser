@@ -827,8 +827,14 @@ class PDFObject
 
                         // Restore previous selected font and graphics matrix
                     case 'Q':
-                        list($current_font, $current_font_size) = array_pop($clipped_font);
-                        $current_position_cm = array_pop($clipped_position_cm);
+                        // A malformed content stream can restore a graphics state it never saved,
+                        // leaving nothing on these stacks to pop.
+                        if ([] !== $clipped_font) {
+                            list($current_font, $current_font_size) = array_pop($clipped_font);
+                        }
+                        if ([] !== $clipped_position_cm) {
+                            $current_position_cm = array_pop($clipped_position_cm);
+                        }
                         break;
 
                         // End marked content sequence
