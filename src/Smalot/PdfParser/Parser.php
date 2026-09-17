@@ -99,24 +99,36 @@ class Parser
      */
     public function parseContent(string $content): Document
     {
-        // Create structure from raw data.
-        list($xref, $data) = $this->rawDataParser->parseData($content);
+        // Normalize the raw data and decode the cross-reference/trailer table.
+        list($xref, $pdfData) = $this->rawDataParser->parseHeaderAndXref($content);
+
+        // The original (possibly un-trimmed) input is no longer needed; drop it
+        // so it can be freed once the normalized $pdfData copy is also released.
+        unset($content);
 
         if (isset($xref['trailer']['encrypt']) && false === $this->config->getIgnoreEncryption()) {
             throw new \Exception('Secured pdf file are currently not supported.');
-        }
-
-        if (empty($data)) {
-            throw new \Exception('Object list not found. Possible secured file.');
         }
 
         // Create destination object.
         $document = new Document();
         $this->objects = [];
 
-        foreach ($data as $id => $structure) {
+        // Stream the raw objects one at a time instead of building the whole
+        // raw object graph up front. Each structure is turned into a PDFObject
+        // and then goes out of scope before the next is parsed, so the largest
+        // transient structure - the full raw object array - is never held,
+        // which markedly lowers peak memory on large documents.
+        foreach ($this->rawDataParser->getObjectsStream($pdfData, $xref) as $id => $structure) {
             $this->parseObject($id, $structure, $document);
-            unset($data[$id]);
+        }
+
+        // Object parsing is done; the raw PDF string is no longer needed and
+        // can be released before text extraction is performed by the caller.
+        unset($pdfData);
+
+        if (empty($this->objects)) {
+            throw new \Exception('Object list not found. Possible secured file.');
         }
 
         $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
