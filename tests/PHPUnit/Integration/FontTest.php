@@ -595,16 +595,16 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
     }
 
     /**
-     * Font::getDetails() must not throw when a font's Encoding entry is an
-     * indirect object reference that resolves to a plain PDFObject instead of
-     * an Element — i.e. an encoding dictionary that lacks /Type /Encoding.
+     * The font's Encoding entry is an indirect reference to an encoding dictionary, which lacks
+     * /Type /Encoding and is therefore a plain PDFObject instead of an Encoding instance.
      *
-     * This is a valid PDF structure per PDF spec Table 5.11: the dictionary
-     * may carry only a /Differences array and omit /Type and /BaseEncoding.
-     * Without the fix, PHP throws:
-     *   "Object of class PDFObject could not be converted to string"
+     * This is a valid structure, because all entries of an encoding dictionary are optional.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
      *
      * @see https://github.com/smalot/pdfparser/issues/822
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
      */
     public function testGetDetailsWithEncodingAsIndirectPDFObject(): void
     {
@@ -612,16 +612,12 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $parser = $this->getParserInstance();
         $document = $parser->parseFile($filename);
 
-        foreach ($document->getPages() as $page) {
-            foreach ($page->getFonts() as $font) {
-                // Must not throw "PDFObject could not be converted to string"
-                $details = $font->getDetails();
-                $this->assertIsString($details['Encoding']);
-                $this->assertNotEmpty($details['Encoding']);
-            }
-        }
+        $fonts = $document->getFonts();
+        $this->assertCount(1, $fonts);
 
-        // Text extraction must still work correctly
+        $details = reset($fonts)->getDetails();
+        $this->assertSame('Ansi', $details['Encoding']);
+
         $this->assertSame('Hello', trim($document->getText()));
     }
 }

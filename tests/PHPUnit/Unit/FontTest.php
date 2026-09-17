@@ -35,6 +35,7 @@ use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Element;
+use Smalot\PdfParser\Element\ElementXRef;
 use Smalot\PdfParser\Encoding;
 use Smalot\PdfParser\Font;
 use Smalot\PdfParser\Header;
@@ -43,14 +44,11 @@ use Smalot\PdfParser\PDFObject;
 class FontTest extends TestCase
 {
     /**
-     * Font::getDetails() must not throw when Encoding is an indirect reference
-     * that resolves to a PDFObject instead of an Element.
-     *
-     * Such PDFs store the Encoding as an object reference (e.g. "12 0 R") whose
-     * resolved target is a plain PDFObject without /Type /Encoding — a valid
-     * structure per PDF spec Table 5.11 (encoding dictionary with /Differences).
+     * Encoding dictionary given as indirect reference, without /Type /Encoding (Type is optional).
+     * Such an object is a plain PDFObject, which can't be cast to string.
      *
      * @see https://github.com/smalot/pdfparser/issues/822
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
      */
     public function testGetDetailsEncodingAsPDFObjectWithBaseEncoding(): void
     {
@@ -67,9 +65,13 @@ class FontTest extends TestCase
     }
 
     /**
-     * When Encoding is a PDFObject without a BaseEncoding entry the font uses
-     * its built-in encoding as base (PDF spec §5.5.5). getDetails() must return
-     * 'Ansi' as fallback, consistent with Encoding::getDetails()['BaseEncoding'].
+     * BaseEncoding is optional in an encoding dictionary.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/822
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
      */
     public function testGetDetailsEncodingAsPDFObjectWithoutBaseEncoding(): void
     {
@@ -83,8 +85,11 @@ class FontTest extends TestCase
     }
 
     /**
-     * When Encoding is an Encoding instance (PDFObject subclass, /Type /Encoding
-     * present) the BaseEncoding name must be returned.
+     * Encoding dictionary given as indirect reference, with /Type /Encoding (= Encoding instance).
+     *
+     * The name of the base encoding is returned, not the PHP class name provided by Encoding::__toString().
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
      */
     public function testGetDetailsEncodingAsEncodingInstance(): void
     {
@@ -101,8 +106,69 @@ class FontTest extends TestCase
     }
 
     /**
-     * When Encoding is a direct name element (e.g. /WinAnsiEncoding) the name
-     * is returned as-is — the original pre-fix behaviour must be preserved.
+     * Encoding instance (with /Type /Encoding), but without BaseEncoding.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
+     */
+    public function testGetDetailsEncodingAsEncodingInstanceWithoutBaseEncoding(): void
+    {
+        $document = new Document();
+        $encodingObj = new Encoding($document, new Header([]));
+        $font = new Font($document, new Header(['Encoding' => $encodingObj]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('Ansi', $details['Encoding']);
+    }
+
+    /**
+     * Encoding dictionary given inline (direct object), which the parser represents as Header instance.
+     * Any object value may be given directly or as indirect reference.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=263 ISO 32000-1:2008, 9.6.2.1, Table 111
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=30 ISO 32000-1:2008, 7.3.10
+     */
+    public function testGetDetailsEncodingAsInlineDictionary(): void
+    {
+        $document = new Document();
+        $header = Header::parse('<</Type/Font /Encoding <</BaseEncoding /WinAnsiEncoding>> >>', $document);
+        $font = new Font($document, $header);
+
+        self::assertInstanceOf(Header::class, $font->get('Encoding'));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('WinAnsiEncoding', $details['Encoding']);
+    }
+
+    /**
+     * Inline encoding dictionary without BaseEncoding.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
+     */
+    public function testGetDetailsEncodingAsInlineDictionaryWithoutBaseEncoding(): void
+    {
+        $document = new Document();
+        $header = Header::parse('<</Type/Font /Encoding <</Differences [32 /space]>> >>', $document);
+        $font = new Font($document, $header);
+
+        self::assertInstanceOf(Header::class, $font->get('Encoding'));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('Ansi', $details['Encoding']);
+    }
+
+    /**
+     * Encoding given as name of a predefined encoding (e.g. /WinAnsiEncoding).
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=263 ISO 32000-1:2008, 9.6.2.1, Table 111
      */
     public function testGetDetailsEncodingAsDirectElement(): void
     {
@@ -118,12 +184,33 @@ class FontTest extends TestCase
     }
 
     /**
-     * When no Encoding entry is present getDetails() must return 'Ansi'.
+     * Encoding is optional in a font dictionary.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=263 ISO 32000-1:2008, 9.6.2.1, Table 111
      */
     public function testGetDetailsEncodingMissingDefaultsToAnsi(): void
     {
         $document = new Document();
         $font = new Font($document, new Header([]));
+
+        $details = $font->getDetails(false);
+
+        self::assertSame('Ansi', $details['Encoding']);
+    }
+
+    /**
+     * An indirect reference to an undefined object refers to the null object,
+     * therefore it is handled like a missing Encoding entry.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=30 ISO 32000-1:2008, 7.3.10
+     */
+    public function testGetDetailsEncodingAsReferenceToUndefinedObject(): void
+    {
+        $document = new Document();
+        $font = new Font($document, new Header(['Encoding' => new ElementXRef('99_0')], $document));
 
         $details = $font->getDetails(false);
 

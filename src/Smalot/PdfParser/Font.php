@@ -94,23 +94,35 @@ class Font extends PDFObject
 
         $details['Name'] = $this->getName();
         $details['Type'] = $this->getType();
-        $encoding = $this->has('Encoding') ? $this->get('Encoding') : null;
-        if ($encoding instanceof PDFObject) {
-            // Encoding is an indirect reference to an encoding dictionary (PDF spec Table 5.11).
-            // Encoding extends PDFObject, so this branch handles both cases.
-            // Extract BaseEncoding name; absent means the font's built-in encoding is the base.
-            $baseEncoding = $encoding->getHeader()->get('BaseEncoding');
-            $baseEncodingStr = ($baseEncoding instanceof Element) ? (string) $baseEncoding : '';
-            $details['Encoding'] = $baseEncodingStr !== '' ? $baseEncodingStr : 'Ansi';
-        } elseif ($encoding instanceof Element) {
-            $details['Encoding'] = (string) $encoding;
-        } else {
-            $details['Encoding'] = 'Ansi';
-        }
+        $details['Encoding'] = $this->getEncodingName();
 
         $details += parent::getDetails($deep);
 
         return $details;
+    }
+
+    /**
+     * Returns the name of the encoding or 'Ansi', if no name is given.
+     *
+     * Encoding is either a name or an encoding dictionary, in which all entries (e.g. Type, BaseEncoding) are optional.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
+     */
+    private function getEncodingName(): string
+    {
+        $encoding = $this->get('Encoding');
+
+        // encoding dictionary, either inline (Header) or referenced indirectly (PDFObject, Encoding)
+        if ($encoding instanceof PDFObject || $encoding instanceof Header) {
+            $encoding = $encoding->get('BaseEncoding');
+        }
+
+        $name = $encoding instanceof Element ? (string) $encoding : '';
+
+        return '' !== $name ? $name : 'Ansi';
     }
 
     /**
