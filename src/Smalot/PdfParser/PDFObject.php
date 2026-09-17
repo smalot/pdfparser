@@ -48,6 +48,12 @@ class PDFObject
     public const COMMAND = 'c';
 
     /**
+     * Size of the chunks (in bytes) getSectionsText() processes a formatted
+     * stream in; bounds the per-chunk line array.
+     */
+    private const SECTIONS_CHUNK_SIZE = 1024 * 1024;
+
+    /**
      * The recursion stack.
      *
      * @var array
@@ -417,11 +423,20 @@ class PDFObject
     }
 
     /**
-     * getSectionsText() now takes an entire, unformatted
-     * document stream as a string, cleans it, then filters out
-     * commands that aren't needed for text positioning/extraction. It
-     * returns an array of unprocessed PDF commands, one command per
-     * element.
+     * Takes an entire, unformatted document stream as a string, formats
+     * it, then filters out commands that aren't needed for text
+     * positioning/extraction. It returns an array of unprocessed PDF
+     * commands, one command per element.
+     *
+     * Commands inside of a text object (BT ... ET) are kept entirely, outside
+     * of it only the ones isKeptOutsideTextBlock() approves.
+     *
+     * The formatted stream is processed in line-aligned chunks of about
+     * SECTIONS_CHUNK_SIZE bytes, so only the lines of one chunk are held in
+     * memory at a time. The result doesn't depend on the chunk size.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=89 ISO 32000-1:2008, 7.8.2 (content streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=256 ISO 32000-1:2008, 9.4.1, Table 107 (BT, ET)
      *
      * @internal
      */
@@ -429,28 +444,26 @@ class PDFObject
     {
         $sections = [];
 
-        // A cleaned stream has one command on every line. Splitting the whole
-        // string into an array up front is simplest, but a graphics-heavy page
-        // can have hundreds of thousands of lines, of which only a handful are
-        // kept below. The resulting array can take a lot of memory.
-        // Instead split in bounded, line-aligned chunks first and process each
-        // chunk, so only a small slice is ever materialized at once.
+        // A formatted stream has one command on every line. A graphics-heavy
+        // page can consist of hundreds of thousands of lines, of which only a
+        // handful are kept below.
         $cleaned = $this->formatContent($content);
         $length = \strlen($cleaned);
 
         $inTextBlock = false;
-        $chunkSize = 1024 * 1024; // 1 MB; bounds the per-chunk line array
+        $chunkSize = self::SECTIONS_CHUNK_SIZE;
         $offset = 0;
         while ($offset < $length) {
-            // Cut the chunk at the next line boundary so a command is never
-            // split across chunks; the $inTextBlock flag carries across them.
+            // A chunk ends at the first line boundary at or after $chunkSize
+            // bytes, so a command is never split across chunks; the
+            // $inTextBlock flag carries across them.
             $end = min($offset + $chunkSize, $length);
             if ($end < $length) {
                 $end += strcspn($cleaned, "\r\n", $end);
             }
 
-            // Split into lines. When the whole stream fits in one chunk (the
-            // common case) split it directly to avoid copying it via substr().
+            // Split the chunk into lines. A stream which fits in one chunk (the
+            // common case) is used as is, which avoids copying it via substr().
             $chunk = (0 === $offset && $length === $end)
                 ? $cleaned
                 : substr($cleaned, $offset, $end - $offset);
@@ -459,9 +472,9 @@ class PDFObject
             // Advance past the chunk and the run of delimiters following it.
             $offset = $end + strspn($cleaned, "\r\n", $end);
 
-            // On the final chunk the source stream is no longer needed; release
-            // it before filtering the lines so single-chunk pages peak no higher
-            // than a plain whole-string split would.
+            // Once the final chunk is split into lines, the formatted stream is
+            // no longer needed. It gets released before the lines are filtered
+            // to keep peak memory usage low.
             if ($offset >= $length) {
                 $cleaned = $chunk = '';
             }
@@ -504,6 +517,11 @@ class PDFObject
      * that command. For instance, a simple search for 'c' may also match the
      * 'sc' command. See the command list in the formatContent() method above.
      * Add more commands to keep here as you find them in weird PDFs!
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=135 ISO 32000-1:2008, 8.4.4, Table 57 (q, Q, cm)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, BMC, DP, MP, EMC)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=251 ISO 32000-1:2008, 9.3.1, Table 105 (Tf)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=210 ISO 32000-1:2008, 8.8.1, Table 87 (Do)
      */
     private function isKeptOutsideTextBlock(string $line): bool
     {
