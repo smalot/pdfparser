@@ -52,6 +52,70 @@ class PDFObjectTest extends TestCase
         return new PDFObject($document);
     }
 
+    /**
+     * Returns the size of the chunks (in bytes) getSectionsText() processes a
+     * formatted stream in. Tests use it to place the chunk boundaries.
+     */
+    private function getSectionsChunkSize(): int
+    {
+        return (new \ReflectionClass(PDFObject::class))->getConstant('SECTIONS_CHUNK_SIZE');
+    }
+
+    /**
+     * Returns a document stream the way getSectionsText() sees it internally:
+     * one command per line, lines separated by \r\n.
+     */
+    private function formatContent(string $content): string
+    {
+        $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
+
+        // TODO: remove this if-clause when dropping 8.0.x support
+        if (version_compare(\PHP_VERSION, '8.1.0', '<')) {
+            $formatContent->setAccessible(true);
+        }
+
+        return $formatContent->invoke($this->getPdfObjectInstance(new Document()), $content);
+    }
+
+    /**
+     * Builds a document stream consisting of:
+     *
+     * 1. a path command whose first operand has $padDigits digits; each
+     *    additional digit moves everything behind it by exactly one byte
+     * 2. $fillerCount blocks of path commands, which are irrelevant for text
+     *    extraction and therefore dropped by getSectionsText()
+     * 3. $trailer
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=140 ISO 32000-1:2008, 8.5.2.1, Table 59 (m, c)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=143 ISO 32000-1:2008, 8.5.3.1, Table 60 (S)
+     */
+    private function buildPaddedStream(int $padDigits, int $fillerCount, string $trailer): string
+    {
+        return str_repeat('1', $padDigits)." 0 m\n"
+            .str_repeat("100.5 200.5 m\n110.5 210.5 120.5 220.5 130.5 230.5 c\nS\n", $fillerCount)
+            .$trailer;
+    }
+
+    /**
+     * Returns a document stream (see buildPaddedStream) which is padded in a
+     * way that $measure, applied to the formatted stream, returns $target.
+     *
+     * @param callable $measure gets the formatted stream, returns a byte position or length
+     */
+    private function fitPaddedStream(string $trailer, callable $measure, int $target): string
+    {
+        // Measure two small streams to learn how many bytes one filler block
+        // takes up in the formatted stream
+        $base = $measure($this->formatContent($this->buildPaddedStream(1, 1, $trailer)));
+        $fillerLength = $measure($this->formatContent($this->buildPaddedStream(1, 2, $trailer))) - $base;
+
+        // Get as close as possible using filler blocks, rest is done by digits
+        $fillerCount = 1 + intdiv($target - $base, $fillerLength);
+        $padDigits = 1 + $target - $base - ($fillerCount - 1) * $fillerLength;
+
+        return $this->buildPaddedStream($padDigits, $fillerCount, $trailer);
+    }
+
     public function testGetCommandsText(): void
     {
         $content = "BT /R14 30 Tf 0.999016 0 0 1 137.4
@@ -429,6 +493,181 @@ ET';
 
         $this->assertNotEquals('/FTxkP', $sections[0]);
         $this->assertNotEquals('/FTxkP', $sections[1]);
+    }
+
+    /**
+     * getSectionsText() processes the formatted stream in line-aligned chunks.
+     * The result must never depend on where a chunk boundary falls, so move
+     * the boundary over every single byte of a small probe, including the
+     * bytes of its \r\n line endings.
+     *
+     * The probe covers the relevant state transitions: a command kept outside
+     * of a text object (q), BT, commands inside the text object, ET, a command
+     * which is dropped, because it is located outside of a text object (5 5 m)
+     * and another kept one (Q).
+     *
+     * @see https://github.com/smalot/pdfparser/pull/828
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=256 ISO 32000-1:2008, 9.4.1, Table 107 (BT, ET)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=135 ISO 32000-1:2008, 8.4.4, Table 57 (q, Q)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=140 ISO 32000-1:2008, 8.5.2.1, Table 59 (m)
+     */
+    public function testGetSectionsTextChunkBoundaryAtEveryPosition(): void
+    {
+        $chunkSize = $this->getSectionsChunkSize();
+
+        $probe = "q\nBT\n/F1 12 Tf\n(Hello) Tj\nET\n5 5 m\nQ\n";
+        $probeFormatted = "q\r\nBT\r\n/F1 12 Tf\r\n(Hello) Tj\r\nET\r\n5 5 m\r\nQ\r\n";
+        $trailer = $probe."7 7 m\n8 8 l\nS\nBT\n(Tail) Tj\nET";
+
+        $expected = ['q', 'BT', '/F1 12 Tf', '(Hello) Tj', 'ET', 'Q', 'BT', '(Tail) Tj', 'ET'];
+
+        $positionOfProbe = function (string $formatted) use ($probeFormatted) {
+            return strpos($formatted, $probeFormatted);
+        };
+
+        // From the \r of the line before the probe up to the second byte of
+        // the line following the probe
+        $firstOffset = -2;
+        $lastOffset = \strlen($probeFormatted) + 1;
+
+        for ($offset = $firstOffset; $offset <= $lastOffset; ++$offset) {
+            // $offset is the byte of the probe the chunk boundary falls on
+            $content = $this->fitPaddedStream($trailer, $positionOfProbe, $chunkSize - $offset);
+
+            // Make sure the test setup does what it claims to do
+            if ($firstOffset === $offset || $lastOffset === $offset) {
+                $this->assertSame(
+                    $chunkSize - $offset,
+                    $positionOfProbe($this->formatContent($content)),
+                    'Test setup: probe is not located at the expected position'
+                );
+            }
+
+            $this->assertSame(
+                $expected,
+                $this->getPdfObjectInstance(new Document())->getSectionsText($content),
+                'Chunk boundary at byte '.$offset.' of the probe'
+            );
+        }
+    }
+
+    /**
+     * Formatted streams which are exactly as long as one chunk or exceed it
+     * by just a few bytes. In the latter cases the last chunk only consists
+     * of the closing ET (or parts of the \r\n in front of it).
+     *
+     * @see https://github.com/smalot/pdfparser/pull/828
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=256 ISO 32000-1:2008, 9.4.1, Table 107 (BT, ET)
+     */
+    public function testGetSectionsTextStreamEndsNearChunkBoundary(): void
+    {
+        $chunkSize = $this->getSectionsChunkSize();
+
+        // formatContent() trims the stream, so it ends with: \r\n(End) Tj\r\nET
+        $trailer = "q\nBT\n(End) Tj\nET";
+
+        for ($length = $chunkSize - 1; $length <= $chunkSize + 6; ++$length) {
+            $content = $this->fitPaddedStream($trailer, 'strlen', $length);
+
+            // Make sure the test setup does what it claims to do
+            $this->assertSame(
+                $length,
+                \strlen($this->formatContent($content)),
+                'Test setup: formatted stream does not have the expected length'
+            );
+
+            $this->assertSame(
+                ['q', 'BT', '(End) Tj', 'ET'],
+                $this->getPdfObjectInstance(new Document())->getSectionsText($content),
+                'Formatted stream has a length of '.$length.' bytes'
+            );
+        }
+    }
+
+    /**
+     * A stream spanning several chunks in which (almost) every line carries a
+     * running number. This way every line which gets lost, duplicated, split
+     * or reordered at one of the chunk boundaries is detected, as well as a
+     * text object state which isn't carried over to the next chunk.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/828
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=135 ISO 32000-1:2008, 8.4.4, Table 57 (cm, Q)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=257 ISO 32000-1:2008, 9.4.2, Table 108 (Td)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=140 ISO 32000-1:2008, 8.5.2.1, Table 59 (m)
+     */
+    public function testGetSectionsTextAcrossMultipleChunks(): void
+    {
+        $content = '';
+        $expected = [];
+
+        // 1. Outside of a text block: only commands relevant for positioning
+        //    are kept. These lines span more than one chunk.
+        for ($i = 100000; $i < 190000; ++$i) {
+            $content .= '1 0 0 1 '.$i." 0 cm\n".$i." 0 m\n";
+            $expected[] = '1 0 0 1 '.$i.' 0 cm';
+        }
+
+        // 2. Inside of a text block every line has to be kept. The text block
+        //    spans more than one chunk.
+        $content .= "BT\n";
+        $expected[] = 'BT';
+        for ($i = 200000; $i < 330000; ++$i) {
+            $content .= $i." 0 Td\n";
+            $expected[] = $i.' 0 Td';
+        }
+        $content .= "ET\n";
+        $expected[] = 'ET';
+
+        // 3. After the text block: more than one chunk of commands which are
+        //    not part of the result
+        for ($i = 400000; $i < 530000; ++$i) {
+            $content .= $i." 0 m\n";
+        }
+
+        $content .= 'Q';
+        $expected[] = 'Q';
+
+        // Make sure the test setup does what it claims to do
+        $this->assertGreaterThan(
+            5 * $this->getSectionsChunkSize(),
+            \strlen($this->formatContent($content)),
+            'Test setup: formatted stream is too short'
+        );
+
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+
+        // Do not pass the arrays to assertSame() directly, because if they
+        // differ, PHPUnit needs a lot of time and memory to generate the diff
+        $this->assertCount(\count($expected), $sections);
+        $this->assertTrue($expected === $sections, 'Sections differ from expected result');
+    }
+
+    /**
+     * Chunks are line-aligned, therefore a line which is longer than a chunk
+     * has to stay intact. Hexadecimal strings are used to get such lines.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/828
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=24 ISO 32000-1:2008, 7.3.4.3 (hexadecimal strings)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (Tj)
+     */
+    public function testGetSectionsTextLineLongerThanChunk(): void
+    {
+        $lineA = '<'.str_repeat('41', 600000).'> Tj';
+        $lineB = '<'.str_repeat('42', 1100000).'> Tj';
+
+        // Make sure the test setup does what it claims to do
+        $this->assertGreaterThan($this->getSectionsChunkSize(), \strlen($lineA));
+        $this->assertGreaterThan(2 * $this->getSectionsChunkSize(), \strlen($lineB));
+
+        $content = "q\nBT\n".$lineA."\n".$lineB."\n(short) Tj\nET\n5 5 m\nQ";
+
+        $sections = $this->getPdfObjectInstance(new Document())->getSectionsText($content);
+
+        $this->assertCount(7, $sections);
+        $this->assertTrue(
+            ['q', 'BT', $lineA, $lineB, '(short) Tj', 'ET', 'Q'] === $sections,
+            'Sections differ from expected result'
+        );
     }
 
     public function testParseDictionary(): void
