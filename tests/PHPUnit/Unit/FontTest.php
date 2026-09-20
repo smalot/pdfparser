@@ -70,16 +70,14 @@ class FontTest extends TestCase
     }
 
     /**
-     * A CMap could contain oversized hex values. hexdec() then returns a float
-     * larger than PHP_INT_MAX which cannot be cast to int. On PHP 8.5 this
-     * cast raises a "not representable as int" warning.
+     * hexdec() returns a float larger than PHP_INT_MAX for oversized hex
+     * strings. Casting such a float to int raises a "not representable as int"
+     * warning on PHP 8.5+; older PHP versions silently produced a wrapped-around
+     * (possibly negative) integer or 0, which uchr() then turned into a NUL byte
+     * or a literal "&#-123;" string.
      *
      * Since these values can not represent valid Unicode code points anyway,
-     * it's safe to return Font::MISSING for them. This test checks that this
-     * is the case.
-     *
-     * The test relies on PhpUnit's failOnWarning="true" in phpunit.xml:
-     * a warning would error.
+     * uchr() has to return Font::MISSING for them, on every PHP version.
      *
      * @see https://github.com/smalot/pdfparser/pull/623
      * @see https://github.com/smalot/pdfparser/pull/825
@@ -87,17 +85,30 @@ class FontTest extends TestCase
     public function testUchrWithOutOfRangeFloat(): void
     {
         // a regular code point is still decoded
-        $this->assertEquals('A', Font::uchr(0x41));
+        $this->assertSame('A', Font::uchr(0x41));
 
         // a float that fits into an integer is still cast and decoded; this is
         // the reason uchr() accepts floats in the first place
-        $this->assertEquals('A', Font::uchr(65.0));
+        $this->assertSame('A', Font::uchr(65.0));
+
+        // the highest Unicode code point as float must be cast, not treated as missing
+        $this->assertSame(Font::uchr(0x10FFFF), Font::uchr((float) 0x10FFFF));
 
         // floats that do not fit into an integer can never be a valid code
         // point; the value below is produced by hexdec() of an oversized hex
         // string taken from samples/bugs/Issue621.pdf
-        $this->assertEquals(Font::MISSING, Font::uchr(1.50646556872121E+28));
-        $this->assertEquals(Font::MISSING, Font::uchr(\INF));
-        $this->assertEquals(Font::MISSING, Font::uchr(\NAN));
+        $this->assertSame(Font::MISSING, Font::uchr(1.50646556872121E+28));
+        $this->assertSame(Font::MISSING, Font::uchr(-1.0E+30));
+        $this->assertSame(Font::MISSING, Font::uchr(\INF));
+        $this->assertSame(Font::MISSING, Font::uchr(-\INF));
+        $this->assertSame(Font::MISSING, Font::uchr(\NAN));
+
+        // boundary: PHP_INT_MAX + 1 (= 2^63 on 64-bit) is the smallest float
+        // that does not fit anymore. It is exactly what hexdec() returns for
+        // <8000000000000000>. A naive "$code > PHP_INT_MAX" check misses it,
+        // because PHP_INT_MAX is rounded up to the very same float in the comparison.
+        $this->assertSame(Font::MISSING, Font::uchr(\PHP_INT_MAX + 1));
+        $this->assertSame(Font::MISSING, Font::uchr(hexdec('8000000000000000')));
+        $this->assertSame(Font::MISSING, Font::uchr(hexdec('FFFFFFFFFFFFFFFF')));
     }
 }
