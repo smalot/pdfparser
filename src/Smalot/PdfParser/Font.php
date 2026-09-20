@@ -166,6 +166,20 @@ class Font extends PDFObject
         // note:
         // $code was typed as int before, but changed in https://github.com/smalot/pdfparser/pull/623
         // because in some cases uchr was called with a float instead of an integer.
+        //
+        // A float outside the integer range (e.g. the result of a hexdec() overflow),
+        // INF or NAN can never be a valid Unicode code point. It is treated as a
+        // missing character instead of being cast to int, which raises a
+        // "not representable as int" warning on PHP 8.5+ and silently yields a
+        // wrapped-around or zero value on older PHP versions.
+        //
+        // The upper bound is compared as float on purpose: PHP_INT_MAX is not exactly
+        // representable as float and gets rounded up to PHP_INT_MAX + 1 in a
+        // comparison, so "$code > PHP_INT_MAX" is false for exactly that value.
+        if (\is_float($code) && (!\is_finite($code) || $code < \PHP_INT_MIN || $code >= \PHP_INT_MAX + 1)) {
+            return self::MISSING;
+        }
+
         $code = (int) $code;
 
         if (!isset(self::$uchrCache[$code])) {
@@ -258,10 +272,33 @@ class Font extends PDFObject
 
                         if (1 === preg_match('/^<(?P<offset>[0-9A-F]+)>$/i', $dest, $offset_matches)) {
                             // Support for : <srcCode1> <srcCode2> <dstString>
-                            $offset = hexdec($offset_matches['offset']);
+                            //
+                            // <dstString> is a UTF-16BE string of up to 512 bytes, i.e. it may consist
+                            // of more than one code unit (e.g. <00310030002F00310031> = "10/11").
+                            // It is split into 4-digit chunks like in the bfchar/array cases above
+                            // and below. Only its last byte is incremented for each consecutive
+                            // source code; the spec requires that this never overflows the byte,
+                            // therefore the last code unit is incremented as a whole here.
+                            //
+                            // See ISO 32000-1:2008, 9.10.3 "ToUnicode CMaps":
+                            // https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=303
+                            $parts = preg_split(
+                                '/([0-9A-F]{4})/i',
+                                $offset_matches['offset'],
+                                0,
+                                \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
+                            );
+                            if (false === $parts || [] === $parts) {
+                                continue;
+                            }
+                            $offset = hexdec(array_pop($parts));
+                            $prefix = '';
+                            foreach ($parts as $part) {
+                                $prefix .= self::uchr(hexdec($part));
+                            }
 
                             for ($char = $char_from; $char <= $char_to; ++$char) {
-                                $this->table[$char] = self::uchr($char - $char_from + $offset);
+                                $this->table[$char] = $prefix.self::uchr($char - $char_from + $offset);
                             }
                         } else {
                             // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]

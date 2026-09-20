@@ -313,6 +313,116 @@ end';
         $this->assertEquals("\u{F123}\u{0045}", $table[0x069B]);
     }
 
+    /**
+     * Tests loadTranslateTable with bfrange definitions of the form
+     * <srcCode1> <srcCode2> <dstString>, where dstString consists of
+     * more than one UTF-16BE code unit (up to 512 bytes are allowed).
+     * Only the last byte of dstString is incremented per source code.
+     *
+     * A dstString of more than 16 hex digits does not fit into an integer,
+     * hexdec() returns a float for it. Such values must not end up in Font::uchr().
+     *
+     * @see https://github.com/smalot/pdfparser/pull/825
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=303 ISO 32000-1:2008, 9.10.3
+     */
+    public function testLoadTranslateTableBfrangeWithMultiCodeUnitDestination(): void
+    {
+        $document = new Document();
+
+        $content = '<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>';
+        $header = Header::parse($content, $document);
+        $font = new Font($document, $header);
+
+        $content = '/CIDInit /ProcSet findresource begin
+1 dict begin
+begincmap
+/CIDSystemInfo
+<< /Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName /Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+7 beginbfrange
+<0001> <0003> <0061>
+<0010> <0012> <00310030>
+<0020> <0020> <0031002F00310030>
+<0030> <0030> <00310030002F00310031>
+<0040> <0040> <30AA30F330B030B930C830ED30FC>
+<0050> <0051> <004142>
+<0060> <0060> <004100420043004400450046004700480049004A004B004C004D004E004F00500051005200530054>
+endbfrange
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end';
+        $unicode = new PDFObject($document, null, $content);
+
+        $document->setObjects(['1_0' => $font, '2_0' => $unicode]);
+
+        $font->init();
+        $table = $font->loadTranslateTable();
+
+        $this->assertEquals(12, \count($table));
+
+        // single code unit: the common case
+        $this->assertSame('a', $table[0x0001]);
+        $this->assertSame('b', $table[0x0002]);
+        $this->assertSame('c', $table[0x0003]);
+
+        // two code units (8 hex digits, fits into an integer):
+        // only the last code unit is incremented
+        $this->assertSame('10', $table[0x0010]);
+        $this->assertSame('11', $table[0x0011]);
+        $this->assertSame('12', $table[0x0012]);
+
+        // 16 hex digits: still fits into an integer, but is not a single code point
+        $this->assertSame('1/10', $table[0x0020]);
+
+        // more than 16 hex digits: hexdec() overflows to float.
+        // Both values are taken from samples/bugs/Issue621.pdf
+        $this->assertSame('10/11', $table[0x0030]);
+        $this->assertSame("\u{30AA}\u{30F3}\u{30B0}\u{30B9}\u{30C8}\u{30ED}\u{30FC}", $table[0x0040]);
+
+        // odd number of hex digits: the remainder is handled like in
+        // testLoadTranslateTableIssue631 and receives the offset
+        $this->assertSame("\u{0041}\u{0042}", $table[0x0050]);
+        $this->assertSame("\u{0041}\u{0043}", $table[0x0051]);
+
+        // 80 hex digits (20 code units, 40 bytes)
+        $this->assertSame('ABCDEFGHIJKLMNOPQRST', $table[0x0060]);
+    }
+
+    /**
+     * samples/bugs/Issue621.pdf contains a font whose ToUnicode CMap maps single
+     * glyphs to strings of several characters via bfrange (fractions, Japanese unit names).
+     * Their dstStrings exceed 16 hex digits.
+     *
+     * @see https://github.com/smalot/pdfparser/pull/825
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=303 ISO 32000-1:2008, 9.10.3
+     */
+    public function testLoadTranslateTableWithMultiCodeUnitBfrangeInIssue621Sample(): void
+    {
+        $document = $this->getParserInstance()->parseFile($this->rootDir.'/samples/bugs/Issue621.pdf');
+
+        $font = $document->getFonts()['48_0'];
+        $this->assertSame('PTPPKK+KozGoPr6N-Medium', $font->getName());
+
+        $table = $font->loadTranslateTable();
+
+        // <265b> <265b> <00310030002f00310031>
+        $this->assertSame('10/11', $table[0x265B]);
+        // <2660> <2660> <0031002f003100300030>
+        $this->assertSame('1/100', $table[0x2660]);
+        // <51c4> <51c4> <30b730fc30d930eb30c8> (Katakana "sievert")
+        $this->assertSame("\u{30B7}\u{30FC}\u{30D9}\u{30EB}\u{30C8}", $table[0x51C4]);
+        // regular single code unit mapping of the same font is not affected
+        $this->assertSame("\u{FB01}", $table[0x0070]);
+    }
+
     public function testDecodeHexadecimal(): void
     {
         $hexa = '<322041>';
