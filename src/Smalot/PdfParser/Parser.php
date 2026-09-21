@@ -76,19 +76,9 @@ class Parser
      */
     public function parseFile(string $filename): Document
     {
-        $content = file_get_contents($filename);
-
-        /*
-         * 2018/06/20 @doganoo as multiple times a
-         * users have complained that the parseFile()
-         * method dies silently, it is an better option
-         * to remove the error control operator (@) and
-         * let the users know that the method throws an exception
-         * by adding @throws tag to PHPDoc.
-         *
-         * See here for an example: https://github.com/smalot/pdfparser/issues/204
-         */
-        return $this->parseContent($content);
+        // parseContent() holds the only reference to the file content, which
+        // enables it to release the content.
+        return $this->parseContent(file_get_contents($filename));
     }
 
     /**
@@ -102,8 +92,9 @@ class Parser
         // Normalize the raw data and decode the cross-reference/trailer table.
         list($xref, $pdfData) = $this->rawDataParser->parseHeaderAndXref($content);
 
-        // The original (possibly un-trimmed) input is no longer needed; drop it
-        // so it can be freed once the normalized $pdfData copy is also released.
+        // $pdfData is a copy of $content, if $content had to be normalized (bytes
+        // in front of the header, line endings). $content is released to avoid
+        // holding both while the objects are parsed.
         unset($content);
 
         if (isset($xref['trailer']['encrypt']) && false === $this->config->getIgnoreEncryption()) {
@@ -114,18 +105,12 @@ class Parser
         $document = new Document();
         $this->objects = [];
 
-        // Stream the raw objects one at a time instead of building the whole
-        // raw object graph up front. Each structure is turned into a PDFObject
-        // and then goes out of scope before the next is parsed, so the largest
-        // transient structure - the full raw object array - is never held,
-        // which markedly lowers peak memory on large documents.
-        foreach ($this->rawDataParser->getObjectsStream($pdfData, $xref) as $id => $structure) {
+        // The raw objects are decoded one at a time. Each raw structure is
+        // turned into a PDFObject and goes out of scope before the next one
+        // gets decoded, so only one raw structure is held in memory at a time.
+        foreach ($this->rawDataParser->iterateIndirectObjects($pdfData, $xref) as $id => $structure) {
             $this->parseObject($id, $structure, $document);
         }
-
-        // Object parsing is done; the raw PDF string is no longer needed and
-        // can be released before text extraction is performed by the caller.
-        unset($pdfData);
 
         if (empty($this->objects)) {
             throw new \Exception('Object list not found. Possible secured file.');

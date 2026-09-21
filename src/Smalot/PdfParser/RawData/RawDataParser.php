@@ -46,6 +46,12 @@ use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Exception\EmptyPdfException;
 use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 
+/**
+ * Reads the low-level structure of a PDF file: header, cross-reference data,
+ * trailer and the raw indirect objects. It is used by Parser only.
+ *
+ * @internal
+ */
 class RawDataParser
 {
     /**
@@ -945,16 +951,45 @@ class RawDataParser
     }
 
     /**
-     * Normalize the raw PDF data and decode the cross-reference/trailer data.
+     * Parses PDF data and returns extracted data as array.
      *
-     * Returns the xref/trailer data together with the normalized PDF data so
-     * callers (e.g. Parser) can inspect the trailer (for instance to detect
-     * encryption) and then stream the objects one at a time via
-     * getObjectsStream() instead of materializing them all at once.
+     * All indirect objects are held in memory at once. Parser uses
+     * parseHeaderAndXref() and iterateIndirectObjects() to get them one at a
+     * time.
+     *
+     * @param string $data PDF data to parse
+     *
+     * @return array{0: array, 1: array<string, array>} [$xref, $objects]; objects are keyed by object reference
+     *
+     * @throws EmptyPdfException if empty PDF data given
+     * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
+     */
+    public function parseData(string $data): array
+    {
+        list($xref, $pdfData) = $this->parseHeaderAndXref($data);
+
+        return [$xref, iterator_to_array($this->iterateIndirectObjects($pdfData, $xref))];
+    }
+
+    /**
+     * Normalizes the raw PDF data and decodes the cross-reference/trailer data.
+     *
+     * Normalized PDF data starts with the header. If the offsets of the
+     * cross-reference table only fit after replacing \r\n by \n, its line
+     * endings are replaced accordingly.
+     *
+     * The trailer is available before any object gets decoded, which allows
+     * callers (e.g. Parser) to inspect it (for instance to detect encryption)
+     * and to get the objects via iterateIndirectObjects() afterwards.
      *
      * @param string $data PDF data to parse
      *
      * @return array{0: array, 1: string} [$xref, $pdfData]
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=47 ISO 32000-1:2008, 7.5.2 (file header)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=50 ISO 32000-1:2008, 7.5.5 (file trailer)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=57 ISO 32000-1:2008, 7.5.8 (cross-reference streams)
      *
      * @throws EmptyPdfException if empty PDF data given
      * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
@@ -985,24 +1020,32 @@ class RawDataParser
     }
 
     /**
-     * Yield each indirect object's raw structure one at a time.
+     * Yields the raw structure of each indirect object, one at a time.
      *
-     * Yielding (rather than returning a fully built array) lets the consumer
-     * build its own representation of an object and discard the raw structure
-     * before the next one is parsed, so the complete raw object graph - by far
-     * the largest transient structure when parsing a document - never has to be
-     * held in memory at once.
+     * An object gets decoded when the consumer asks for it. A consumer, which
+     * processes and discards a structure before it asks for the next one,
+     * holds only one raw structure in memory at a time. The raw structures
+     * are by far the largest transient data when parsing a document.
      *
      * @param string $pdfData normalized PDF data, as returned by parseHeaderAndXref()
      * @param array  $xref    xref/trailer data, as returned by parseHeaderAndXref()
      *
      * @return \Generator<string, array> raw object structure keyed by object reference
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=29 ISO 32000-1:2008, 7.3.10 (indirect objects)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=59 ISO 32000-1:2008, 7.5.8.3, Table 18 (types of cross-reference stream entries)
      */
-    public function getObjectsStream(string $pdfData, array $xref): \Generator
+    public function iterateIndirectObjects(string $pdfData, array $xref): \Generator
     {
-        foreach ($xref['xref'] as $obj => $offset) {
-            // decode objects with positive offset; xref is keyed by object
-            // reference so every $obj is unique and decoded exactly once
+        // $xref['xref'] is missing, if the cross-reference data contains no
+        // object which is in use.
+        foreach ($xref['xref'] ?? [] as $obj => $offset) {
+            // Only objects with a positive offset are decoded. Objects which
+            // are located in an object stream have an offset of -1, they get
+            // extracted from their object stream by Parser::parseObject().
+            // $xref['xref'] is keyed by object reference, so each object is
+            // decoded exactly once.
             if ($offset > 0) {
                 yield $obj => $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
             }
