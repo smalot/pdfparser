@@ -4,9 +4,11 @@ require __DIR__.'/../../vendor/autoload.php';
 
 use PerformanceTests\Exception\PerformanceFailException;
 use PerformanceTests\Test\DocumentDictionaryCacheTest;
+use PerformanceTests\Test\KernedTjArrayFormatContentTest;
 
 $tests = [
     new DocumentDictionaryCacheTest(),
+    new KernedTjArrayFormatContentTest(),
 ];
 
 foreach ($tests as $test) {
