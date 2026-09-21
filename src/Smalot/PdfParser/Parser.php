@@ -147,7 +147,6 @@ class Parser
     protected function parseObject(string $id, array $structure, ?Document $document)
     {
         $header = new Header([], $document);
-        $headerStructure = [];
         $content = '';
 
         foreach ($structure as $position => $part) {
@@ -168,7 +167,6 @@ class Parser
                     break;
 
                 case '<<':
-                    $headerStructure = $part[1];
                     $header = $this->parseHeader($part[1], $document);
                     break;
 
@@ -176,43 +174,15 @@ class Parser
                     $content = isset($part[3][0]) ? $part[3][0] : $part[1];
 
                     if ($header->get('Type')->equals('ObjStm')) {
-                        $numberOfObjects = $this->objectStreamInteger($headerStructure, 'N');
-                        $firstObjectOffset = $this->objectStreamInteger($headerStructure, 'First');
-
-                        if (null === $numberOfObjects || null === $firstObjectOffset) {
-                            list($xrefs, $firstObjectOffset) = $this->parseObjectStreamIndexWithoutMetadata($content);
-                            $numberOfObjects = \count($xrefs);
-                        } else {
-                            if ($firstObjectOffset > \strlen($content)) {
-                                throw new \UnexpectedValueException('Object stream First offset exceeds its content length.');
-                            }
-
-                            if ($numberOfObjects > $firstObjectOffset) {
-                                throw new \UnexpectedValueException('Object stream N exceeds its index length.');
-                            }
-
-                            $xrefs = $this->parseObjectStreamIndex(
-                                substr($content, 0, $firstObjectOffset),
-                                $numberOfObjects
-                            );
-                        }
-
+                        list($objectNumbers, $byteOffsets, $firstObjectOffset) = $this->getObjectStreamIndex($header, $content);
                         $content = substr($content, $firstObjectOffset);
                         $table = [];
 
-                        foreach ($xrefs as $xref) {
-                            $id = $xref[0];
-                            $position = $xref[1];
-
-                            if ($position > \strlen($content)) {
-                                throw new \UnexpectedValueException('Object stream object offset exceeds its content length.');
-                            }
-
-                            $table[$position] = $id;
-                        }
-
-                        if (\count($table) !== $numberOfObjects) {
-                            throw new \UnexpectedValueException('Object stream contains duplicate object offsets.');
+                        foreach ($byteOffsets as $key => $byteOffset) {
+                            // A byte offset with as many digits as PHP_INT_MAX or more
+                            // is located behind the content in any case
+                            $position = \strlen($byteOffset) < \strlen((string) \PHP_INT_MAX) ? (int) $byteOffset : \PHP_INT_MAX;
+                            $table[$position] = $objectNumbers[$key];
                         }
 
                         ksort($table);
@@ -256,136 +226,75 @@ class Parser
         }
     }
 
-    private function objectStreamInteger(array $headerStructure, string $name): ?int
+    /**
+     * Provides the index of an object stream and the byte offset of its first
+     * object.
+     *
+     * The index consists of pairs of integers: the number of an object and its
+     * byte offset relative to the first object. The index is expected to end
+     * with the last pair, which directly follows another pair.
+     *
+     * Integer objects behind the index look like pairs. /First, the byte offset
+     * of the first object, tells them apart. It is used, if it is located
+     * between two pairs and the number of pairs in front of it equals /N (as
+     * far as /N is usable).
+     *
+     * @return array{0: array<int, string>, 1: array<int, string>, 2: int} [$objectNumbers, $byteOffsets, $firstObjectOffset]
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
+     */
+    private function getObjectStreamIndex(Header $header, string $content): array
     {
-        $count = \count($headerStructure);
+        // \G lets a pair start where the previous one ends. White-space is \s
+        // and the null character.
+        $pattern = '/\G[\s\0]*(\d+)[\s\0]+(\d+)[\s\0]*/';
+        preg_match_all($pattern, $content, $index);
+        $length = \strlen(implode('', $index[0]));
 
-        for ($position = 0; $position + 1 < $count; $position += 2) {
-            if ('/' !== $headerStructure[$position][0] || $name !== $headerStructure[$position][1]) {
-                continue;
-            }
+        $first = $this->getObjectStreamInteger($header, 'First', $length - 1);
 
-            if ('numeric' !== $headerStructure[$position + 1][0]) {
-                return null;
-            }
-
-            return $this->objectStreamToken($headerStructure[$position + 1][1]);
+        if (
+            null === $first
+            // only white-space between /First and the end of the pairs
+            || false === strpbrk(substr($content, $first, $length - $first), '0123456789')
+            // /First is located inside of a number
+            || (0 < $first && 2 === strspn($content, '0123456789', $first - 1, 2))
+        ) {
+            return [$index[1], $index[2], $length];
         }
 
-        return null;
+        preg_match_all($pattern, substr($content, 0, $first), $indexInFrontOfFirst);
+        $numberOfObjects = $this->getObjectStreamInteger($header, 'N', \strlen($content));
+
+        if (
+            $first !== \strlen(implode('', $indexInFrontOfFirst[0]))
+            || (null !== $numberOfObjects && \count($indexInFrontOfFirst[0]) !== $numberOfObjects)
+        ) {
+            return [$index[1], $index[2], $length];
+        }
+
+        return [$indexInFrontOfFirst[1], $indexInFrontOfFirst[2], $first];
     }
 
     /**
-     * @return array<int, array{0: int, 1: int}>
+     * Provides an integer entry of the dictionary of an object stream. Null is
+     * returned, if the entry is missing, an indirect reference or outside of
+     * the range from 0 to $max.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
      */
-    private function parseObjectStreamIndex(string $index, int $numberOfObjects): array
+    private function getObjectStreamInteger(Header $header, string $name, int $max): ?int
     {
-        $xrefs = [];
-        $cursor = 0;
-        $length = \strlen($index);
-        $this->skipObjectStreamWhitespace($index, $length, $cursor);
+        $element = $header->get($name);
 
-        for ($position = 0; $position < $numberOfObjects; ++$position) {
-            $xrefs[] = [
-                $this->readObjectStreamInteger($index, $length, $cursor),
-                $this->readObjectStreamInteger($index, $length, $cursor),
-            ];
-        }
-
-        if ($cursor !== $length) {
-            throw new \UnexpectedValueException('Object stream index does not match its N value.');
-        }
-
-        return $xrefs;
-    }
-
-    /**
-     * @return array{0: array<int, array{0: int, 1: int}>, 1: int}
-     */
-    private function parseObjectStreamIndexWithoutMetadata(string $content): array
-    {
-        $xrefs = [];
-        $cursor = 0;
-        $length = \strlen($content);
-        $this->skipObjectStreamWhitespace($content, $length, $cursor);
-
-        while (null !== ($objectId = $this->tryReadObjectStreamInteger($content, $length, $cursor))) {
-            $offset = $this->tryReadObjectStreamInteger($content, $length, $cursor);
-
-            if (null === $offset) {
-                throw new \UnexpectedValueException('Object stream index does not contain complete object references.');
-            }
-
-            $xrefs[] = [$objectId, $offset];
-        }
-
-        return [$xrefs, $cursor];
-    }
-
-    private function readObjectStreamInteger(string $content, int $length, int &$cursor): int
-    {
-        $value = $this->tryReadObjectStreamInteger($content, $length, $cursor);
-
-        if (null === $value) {
-            throw new \UnexpectedValueException('Object stream index does not match its N value.');
-        }
-
-        return $value;
-    }
-
-    private function tryReadObjectStreamInteger(string $content, int $length, int &$cursor): ?int
-    {
-        if ($cursor >= $length || $content[$cursor] < '0' || $content[$cursor] > '9') {
+        if (!$element instanceof ElementNumeric) {
             return null;
         }
 
-        $start = $cursor;
+        $value = $element->getContent();
 
-        while ($cursor < $length && $content[$cursor] >= '0' && $content[$cursor] <= '9') {
-            ++$cursor;
-        }
-
-        if ($cursor < $length && !$this->isObjectStreamWhitespace($content[$cursor])) {
-            throw new \UnexpectedValueException('Object stream index values must be non-negative integers.');
-        }
-
-        $value = $this->objectStreamToken(substr($content, $start, $cursor - $start));
-        $this->skipObjectStreamWhitespace($content, $length, $cursor);
-
-        return $value;
-    }
-
-    private function skipObjectStreamWhitespace(string $content, int $length, int &$cursor): void
-    {
-        while ($cursor < $length && $this->isObjectStreamWhitespace($content[$cursor])) {
-            ++$cursor;
-        }
-    }
-
-    private function isObjectStreamWhitespace(string $character): bool
-    {
-        return "\0" === $character
-            || "\t" === $character
-            || "\n" === $character
-            || "\f" === $character
-            || "\r" === $character
-            || ' ' === $character;
-    }
-
-    private function objectStreamToken(string $token): int
-    {
-        $normalized = ltrim($token, '0');
-        $normalized = '' === $normalized ? '0' : $normalized;
-        $maximum = (string) \PHP_INT_MAX;
-
-        if (strspn($token, '0123456789') !== \strlen($token)
-            || \strlen($normalized) > \strlen($maximum)
-            || (\strlen($normalized) === \strlen($maximum) && strcmp($normalized, $maximum) > 0)
-        ) {
-            throw new \UnexpectedValueException('Object stream index values must be non-negative integers.');
-        }
-
-        return (int) $normalized;
+        return 0 <= $value && $value <= $max ? (int) $value : null;
     }
 
     /**
