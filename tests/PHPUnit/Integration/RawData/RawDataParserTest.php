@@ -37,10 +37,26 @@ namespace PHPUnitTests\Integration\RawData;
 
 use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Exception\EmptyPdfException;
+use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 use Smalot\PdfParser\RawData\RawDataParser;
 
 class RawDataParserHelper extends RawDataParser
 {
+    /**
+     * References of the objects which got decoded, in order of decoding.
+     *
+     * @var array<string>
+     */
+    public $decodedObjects = [];
+
+    protected function getIndirectObject(string $pdfData, array $xref, string $objRef, int $offset = 0, bool $decoding = true): array
+    {
+        $this->decodedObjects[] = $objRef;
+
+        return parent::getIndirectObject($pdfData, $xref, $objRef, $offset, $decoding);
+    }
+
     /**
      * Expose protected function "getRawObject".
      */
@@ -314,5 +330,245 @@ class RawDataParserTest extends TestCase
         // Should return empty array without processing
         $this->assertIsArray($result);
         $this->assertEmpty($result);
+    }
+
+    /**
+     * Objects used by the tests below. Object 3 is left out, it becomes a free entry.
+     *
+     * @return array<int, string>
+     */
+    private function getObjects(): array
+    {
+        return [
+            1 => '<< /Type /Catalog /Pages 2 0 R >>',
+            2 => '<< /Type /Pages /Kids [] /Count 0 >>',
+            4 => '<< /Foo (bar) >>',
+        ];
+    }
+
+    public function testParseHeaderAndXrefEmptyData(): void
+    {
+        $this->expectException(EmptyPdfException::class);
+
+        $this->fixture->parseHeaderAndXref('');
+    }
+
+    /**
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=47 ISO 32000-1:2008, 7.5.2 (file header)
+     */
+    public function testParseHeaderAndXrefMissingHeader(): void
+    {
+        $this->expectException(MissingPdfHeaderException::class);
+
+        $this->fixture->parseHeaderAndXref('1 0 obj << /Type /Catalog >> endobj');
+    }
+
+    /**
+     * The cross-reference table provides the byte offset of each object in use,
+     * keyed by "[object number]_[generation number]". Free entries are left out.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=51 ISO 32000-1:2008, 7.5.5, Table 15 (entries in the file trailer dictionary)
+     */
+    public function testParseHeaderAndXref(): void
+    {
+        $pdf = $this->createPdf($this->getObjects());
+
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($pdf);
+
+        $this->assertSame($pdf, $pdfData);
+        $this->assertSame(
+            [
+                '1_0' => strpos($pdf, '1 0 obj'),
+                '2_0' => strpos($pdf, '2 0 obj'),
+                '4_0' => strpos($pdf, '4 0 obj'),
+            ],
+            $xref['xref']
+        );
+        $this->assertSame(5, $xref['trailer']['size']);
+        $this->assertSame('1_0', $xref['trailer']['root']);
+
+        // This information is available before any object gets decoded
+        $this->assertSame([], $this->fixture->decodedObjects);
+    }
+
+    /**
+     * Data in front of the header is cut off, because the byte offsets of the
+     * cross-reference table are relative to the header.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=47 ISO 32000-1:2008, 7.5.2 (file header)
+     */
+    public function testParseHeaderAndXrefDataInFrontOfHeader(): void
+    {
+        $pdf = $this->createPdf($this->getObjects());
+
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref("data in front of header\n".$pdf);
+
+        $this->assertSame($pdf, $pdfData);
+        $this->assertSame(strpos($pdf, '4 0 obj'), $xref['xref']['4_0']);
+    }
+
+    /**
+     * Byte offsets depend on the end-of-line markers of a file. If each \n of a
+     * file is replaced by \r\n (e.g. by a transfer in text mode), its byte
+     * offsets only fit again after the replacement is reverted.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     * @see https://github.com/smalot/pdfparser/pull/635
+     */
+    public function testParseHeaderAndXrefLineEndings(): void
+    {
+        $pdf = $this->createPdf($this->getObjects());
+
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref(str_replace("\n", "\r\n", $pdf));
+
+        $this->assertSame($pdf, $pdfData);
+        $this->assertSame(strpos($pdf, '4 0 obj'), $xref['xref']['4_0']);
+
+        // A file whose byte offsets fit to its \r\n end-of-line markers is left as it is
+        $pdf = $this->createPdf($this->getObjects(), '', "\r\n");
+
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($pdf);
+
+        $this->assertSame($pdf, $pdfData);
+        $this->assertSame(strpos($pdf, '4 0 obj'), $xref['xref']['4_0']);
+    }
+
+    /**
+     * The Encrypt entry of the trailer is available without decoding an object,
+     * which allows Parser to reject an encrypted file right away.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=51 ISO 32000-1:2008, 7.5.5, Table 15 (entries in the file trailer dictionary)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=63 ISO 32000-1:2008, 7.6.1 (encryption)
+     */
+    public function testParseHeaderAndXrefEncryptEntry(): void
+    {
+        list($xref) = $this->fixture->parseHeaderAndXref($this->createPdf($this->getObjects(), '/Encrypt 4 0 R '));
+
+        $this->assertSame('4_0', $xref['trailer']['encrypt']);
+        $this->assertSame([], $this->fixture->decodedObjects);
+    }
+
+    /**
+     * An object gets decoded when the consumer asks for it.
+     */
+    public function testIterateIndirectObjectsDecodesOnDemand(): void
+    {
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($this->createPdf($this->getObjects()));
+
+        $objects = $this->fixture->iterateIndirectObjects($pdfData, $xref);
+
+        $this->assertInstanceOf(\Generator::class, $objects);
+        $this->assertSame([], $this->fixture->decodedObjects);
+
+        $this->assertSame('1_0', $objects->key());
+        $this->assertSame(['1_0'], $this->fixture->decodedObjects);
+
+        $objects->next();
+        $this->assertSame('2_0', $objects->key());
+        $this->assertSame(['1_0', '2_0'], $this->fixture->decodedObjects);
+    }
+
+    /**
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=29 ISO 32000-1:2008, 7.3.10 (indirect objects)
+     */
+    public function testIterateIndirectObjects(): void
+    {
+        $pdf = $this->createPdf($this->getObjects());
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($pdf);
+
+        $objects = iterator_to_array($this->fixture->iterateIndirectObjects($pdfData, $xref));
+
+        // Objects are provided in the order of the cross-reference table
+        $this->assertSame(['1_0', '2_0', '4_0'], array_keys($objects));
+
+        // An element of a raw structure consists of type, value and the offset behind it
+        $offset = strpos($pdf, '/Foo');
+        $this->assertSame(
+            [
+                [
+                    '<<',
+                    [
+                        ['/', 'Foo', $offset + 4],
+                        ['(', 'bar', $offset + 10],
+                    ],
+                    $offset + 13,
+                ],
+            ],
+            $objects['4_0']
+        );
+    }
+
+    /**
+     * Objects which are located in an object stream have no byte offset of
+     * their own (type 2 entries of a cross-reference stream). They are left
+     * out, Parser extracts them from the object stream they are located in.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=59 ISO 32000-1:2008, 7.5.8.3, Table 18 (types of cross-reference stream entries)
+     */
+    public function testIterateIndirectObjectsLeavesOutCompressedObjects(): void
+    {
+        $pdf = file_get_contents($this->rootDir.'/samples/bugs/Issue18.pdf');
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($pdf);
+
+        $objectsWithOffset = array_filter($xref['xref'], function ($offset) {
+            return $offset > 0;
+        });
+
+        // Make sure the file contains compressed objects
+        $this->assertContains(-1, $xref['xref']);
+        $this->assertNotEmpty($objectsWithOffset);
+
+        $objects = iterator_to_array($this->fixture->iterateIndirectObjects($pdfData, $xref));
+
+        $this->assertSame(array_keys($objectsWithOffset), array_keys($objects));
+    }
+
+    /**
+     * The key "xref" is only part of cross-reference data which contains an object in use.
+     */
+    public function testIterateIndirectObjectsWithoutObjects(): void
+    {
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($this->createPdf([]));
+
+        $this->assertArrayNotHasKey('xref', $xref);
+
+        // PHPUnit reports warnings and notices, but the test passes nevertheless.
+        // Turn them into exceptions to let the test fail.
+        set_error_handler(function (int $severity, string $message) {
+            throw new \ErrorException($message, 0, $severity);
+        });
+
+        try {
+            $objects = iterator_to_array($this->fixture->iterateIndirectObjects($pdfData, $xref));
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $objects);
+    }
+
+    /**
+     * parseData() provides cross-reference data and all objects at once.
+     */
+    public function testParseData(): void
+    {
+        $pdf = $this->createPdf($this->getObjects());
+        list($xref, $pdfData) = $this->fixture->parseHeaderAndXref($pdf);
+
+        $result = $this->fixture->parseData($pdf);
+
+        $this->assertCount(2, $result);
+        $this->assertSame($xref, $result[0]);
+        $this->assertSame(iterator_to_array($this->fixture->iterateIndirectObjects($pdfData, $xref)), $result[1]);
+        $this->assertSame(['1_0', '2_0', '4_0'], array_keys($result[1]));
+    }
+
+    public function testParseDataEmptyData(): void
+    {
+        $this->expectException(EmptyPdfException::class);
+
+        $this->fixture->parseData('');
     }
 }

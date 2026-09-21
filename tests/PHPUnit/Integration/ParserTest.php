@@ -39,6 +39,7 @@ use PHPUnitTests\TestCase;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
+use Smalot\PdfParser\RawData\RawDataParser;
 use Smalot\PdfParser\XObject\Image;
 
 class ParserTest extends TestCase
@@ -450,10 +451,143 @@ class ParserTest extends TestCase
 
         $this->assertEquals('ASCII85 last-tuple overflow test', $document->getText());
     }
+
+    /**
+     * Objects used by the tests below.
+     *
+     * @return array<int, string>
+     */
+    private function getObjects(): array
+    {
+        return [
+            1 => '<< /Type /Catalog /Pages 2 0 R >>',
+            2 => '<< /Type /Pages /Kids [] /Count 0 >>',
+            3 => '<< /Foo (bar) >>',
+        ];
+    }
+
+    /**
+     * Each object is decoded and turned into a PDFObject, before the next one
+     * gets decoded.
+     */
+    public function testParseContentDecodesAndBuildsObjectsAlternately(): void
+    {
+        $parser = new ParserSub();
+        $rawDataParser = $parser->useRawDataParserSpy();
+
+        $document = $parser->parseContent($this->createPdf($this->getObjects()));
+
+        $this->assertSame(
+            ['decode 1_0', 'build 1_0', 'decode 2_0', 'build 2_0', 'decode 3_0', 'build 3_0'],
+            $rawDataParser->events
+        );
+        $this->assertSame(['1_0', '2_0', '3_0'], array_keys($document->getObjects()));
+    }
+
+    /**
+     * An encrypted file is rejected before any of its objects gets decoded.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=51 ISO 32000-1:2008, 7.5.5, Table 15 (entries in the file trailer dictionary)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=63 ISO 32000-1:2008, 7.6.1 (encryption)
+     */
+    public function testParseContentEncryptedFileDecodesNoObject(): void
+    {
+        $parser = new ParserSub();
+        $rawDataParser = $parser->useRawDataParserSpy();
+
+        try {
+            $parser->parseContent($this->createPdf($this->getObjects(), '/Encrypt 3 0 R '));
+            $this->fail('Exception expected');
+        } catch (\Exception $e) {
+            $this->assertSame('Secured pdf file are currently not supported.', $e->getMessage());
+        }
+
+        $this->assertSame([], $rawDataParser->events);
+    }
+
+    /**
+     * A file, whose cross-reference table only consists of the free entry of object 0.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     */
+    public function testParseContentWithoutObjects(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Object list not found. Possible secured file.');
+
+        $this->fixture->parseContent($this->createPdf([]));
+    }
+
+    /**
+     * A Parser instance, which parsed a file with objects before, reports a
+     * file without objects as well.
+     */
+    public function testParseContentWithoutObjectsAfterFileWithObjects(): void
+    {
+        $document = $this->fixture->parseContent($this->createPdf($this->getObjects()));
+        $this->assertCount(3, $document->getObjects());
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Object list not found. Possible secured file.');
+
+        $this->fixture->parseContent($this->createPdf([]));
+    }
+
+    /**
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=47 ISO 32000-1:2008, 7.5.2 (file header)
+     */
+    public function testParseFileWithDataInFrontOfHeader(): void
+    {
+        $filename = tempnam(sys_get_temp_dir(), 'pdfparser');
+        file_put_contents($filename, "data in front of header\n".$this->createPdf($this->getObjects()));
+
+        try {
+            $document = $this->fixture->parseFile($filename);
+        } finally {
+            unlink($filename);
+        }
+
+        $this->assertSame(['1_0', '2_0', '3_0'], array_keys($document->getObjects()));
+    }
+}
+
+/**
+ * Records the order in which objects get decoded by the RawDataParser and
+ * built by ParserSub.
+ */
+class RawDataParserSpy extends RawDataParser
+{
+    /**
+     * @var array<string>
+     */
+    public $events = [];
+
+    protected function getIndirectObject(string $pdfData, array $xref, string $objRef, int $offset = 0, bool $decoding = true): array
+    {
+        $this->events[] = 'decode '.$objRef;
+
+        return parent::getIndirectObject($pdfData, $xref, $objRef, $offset, $decoding);
+    }
 }
 
 class ParserSub extends Parser
 {
+    public function useRawDataParserSpy(): RawDataParserSpy
+    {
+        $this->rawDataParser = new RawDataParserSpy();
+
+        return $this->rawDataParser;
+    }
+
+    protected function parseObject(string $id, array $structure, ?Document $document)
+    {
+        if ($this->rawDataParser instanceof RawDataParserSpy) {
+            $this->rawDataParser->events[] = 'build '.$id;
+        }
+
+        parent::parseObject($id, $structure, $document);
+    }
+
     public function exposedParseObject($id, $structure, $document)
     {
         return $this->parseObject($id, $structure, $document);

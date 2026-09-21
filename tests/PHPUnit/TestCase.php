@@ -71,4 +71,42 @@ abstract class TestCase extends PHPTestCase
     {
         return new Parser([], $config);
     }
+
+    /**
+     * Creates a minimal PDF file with a cross-reference table. The byte offsets
+     * of the objects and of the cross-reference table are calculated.
+     *
+     * @param array<int, string> $objects        object number => content of the object, in ascending order;
+     *                                           numbers which are left out become free entries
+     * @param string             $trailerEntries additional entries of the trailer dictionary
+     * @param string             $eol            end-of-line marker used in the whole file
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=46 ISO 32000-1:2008, 7.5 (file structure)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     */
+    protected function createPdf(array $objects, string $trailerEntries = '', string $eol = "\n"): string
+    {
+        $pdf = '%PDF-1.4'.$eol;
+
+        $offsets = [];
+        foreach ($objects as $number => $content) {
+            $offsets[$number] = \strlen($pdf);
+            $pdf .= $number.' 0 obj'.$eol.$content.$eol.'endobj'.$eol;
+        }
+
+        // An entry is 20 bytes long, including its end-of-line marker
+        $entryEol = 2 === \strlen($eol) ? $eol : ' '.$eol;
+        $size = [] === $objects ? 1 : max(array_keys($objects)) + 1;
+
+        $startxref = \strlen($pdf);
+        $pdf .= 'xref'.$eol.'0 '.$size.$eol.'0000000000 65535 f'.$entryEol;
+        for ($number = 1; $number < $size; ++$number) {
+            $pdf .= isset($offsets[$number])
+                ? sprintf('%010d 00000 n', $offsets[$number]).$entryEol
+                : '0000000000 00001 f'.$entryEol;
+        }
+
+        return $pdf.'trailer'.$eol.'<< /Size '.$size.' /Root 1 0 R '.$trailerEntries.'>>'.$eol
+            .'startxref'.$eol.$startxref.$eol.'%%EOF';
+    }
 }
