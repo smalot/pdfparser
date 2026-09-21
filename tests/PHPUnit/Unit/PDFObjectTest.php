@@ -17,6 +17,15 @@ use Smalot\PdfParser\XObject\Image;
 
 class PDFObjectTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The recursion stack is static and only emptied by Page::getText().
+        // An object, whose hash equals an entry of the stack, provides no text.
+        PDFObject::$recursionStack = [];
+    }
+
     public function testGetTextOnNullPage(): void
     {
         static::assertSame(' ', (new PDFObject(new Document()))->getText());
@@ -94,5 +103,71 @@ class PDFObjectTest extends TestCase
         // Page 4 contains a non-image object, which should appear in the text
         // array.
         self::assertSame([' '], $page4->getTextArray());
+    }
+
+    /**
+     * Kerned TJ arrays split a word into many small string operands, some of
+     * them more than once ("l", "o"). Each operand ends up at its position.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/712
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (TJ)
+     */
+    public function testGetTextArrayReassemblesKernedTjArray(): void
+    {
+        $content = 'BT /F1 12 Tf 10 10 Td '
+            .'[(H)10(e)-5(l)3(l)20(o)-40( )30(W)5(o)-3(r)8(l)2(d)]TJ ET';
+
+        self::assertSame(['Hello World '], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
+     * The property list of a marked-content sequence contains a string itself.
+     * The text which follows the BDC operator is extracted nevertheless.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/712
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, EMC)
+     */
+    public function testGetTextArrayRestoresMarkedContentDictionary(): void
+    {
+        $content = '/OC << /MCID 0 /Foo (bar) >> BDC '
+            .'BT /F1 12 Tf 10 10 Td (Hello) Tj ET EMC';
+
+        self::assertSame(['Hello '], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
+     * A literal string may contain balanced pairs of parentheses, which are
+     * part of the string.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/712
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     */
+    public function testGetTextArrayKeepsBalancedParenthesesInsideString(): void
+    {
+        $content = 'BT /F1 12 Tf 10 10 Td (a(b)c) Tj ET';
+
+        self::assertSame(['a(b)c '], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
+     * Provides the text array of a page, whose content stream invokes a form
+     * XObject with the given content.
+     */
+    private function getTextArrayOfFormContent(string $content): array
+    {
+        $document = new Document();
+        $document->init();
+
+        $form = new Form($document, null, $content, new Config());
+        $header = new Header([
+            'Resources' => new Header([
+                'XObject' => new Header([
+                    'Fr0' => $form,
+                ]),
+            ]),
+            'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
+        ]);
+
+        return (new Page($document, $header))->getTextArray();
     }
 }

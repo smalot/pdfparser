@@ -48,6 +48,12 @@ class PDFObject
     public const COMMAND = 'c';
 
     /**
+     * Size of the chunks (in bytes) getSectionsText() processes a formatted
+     * stream in; bounds the per-chunk line array.
+     */
+    private const SECTIONS_CHUNK_SIZE = 1024 * 1024;
+
+    /**
      * The recursion stack.
      *
      * @var array
@@ -208,6 +214,10 @@ class PDFObject
      * separated by \r\n. If the given string is null, or binary data
      * is detected instead of a document stream then return an empty
      * string.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (Tj, TJ)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, BMC, DP, MP)
      */
     private function formatContent(?string $content): string
     {
@@ -307,9 +317,17 @@ class PDFObject
         // by the next steps
         $pdfstrings = [];
         $attempt = '(';
-        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text)) {
+        // The search starts at $offset. The content in front of $offset is
+        // collected in $processed, with each string replaced by a placeholder.
+        // The effort grows linearly with the number of strings, which matters
+        // for TJ arrays consisting of thousands of string operands.
+        $offset = 0;
+        $processed = '';
+        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text, \PREG_OFFSET_CAPTURE, $offset)) {
+            list($string, $stringPos) = $text[0];
+
             // Remove all escaped slashes and parentheses from the target text
-            $para = str_replace(['\\\\', '\\(', '\\)'], '', $text[0]);
+            $para = str_replace(['\\\\', '\\(', '\\)'], '', $string);
 
             // PDF strings can contain unescaped parentheses as long as
             // they're balanced, so check for balanced parentheses
@@ -319,22 +337,19 @@ class PDFObject
             if (')' == $para[-1] && $left == $right) {
                 // Replace the string with a unique placeholder
                 $id = uniqid('STRING_', true);
-                $pdfstrings[$id] = $text[0];
-                $content = preg_replace(
-                    '/'.preg_quote($text[0], '/').'/',
-                    '@@@'.$id.'@@@',
-                    $content,
-                    1
-                );
+                $pdfstrings[$id] = $string;
+                $processed .= substr($content, $offset, $stringPos - $offset).'@@@'.$id.'@@@';
+                $offset = $stringPos + \strlen($string);
 
                 // Reset to search for the next string
                 $attempt = '(';
             } else {
                 // We had unbalanced parentheses, so use the current
                 // match as a base to find a longer string
-                $attempt = $text[0];
+                $attempt = $string;
             }
         }
+        $content = $processed.substr($content, $offset);
 
         // Remove all carriage returns and line-feeds from the document stream
         $content = str_replace(["\r", "\n"], ' ', trim($content));
@@ -379,26 +394,32 @@ class PDFObject
             );
         }
 
-        // Restore the original content of the dictionary << >> commands
-        $dictstore = array_reverse($dictstore, true);
-        foreach ($dictstore as $id => $dict) {
-            $content = str_replace('###'.$id.'###', $dict, $content);
+        // Restore the original content of the dictionary << >> commands, all
+        // placeholders in one pass over the content
+        if ([] !== $dictstore) {
+            $dictMap = [];
+            foreach ($dictstore as $id => $dict) {
+                $dictMap['###'.$id.'###'] = $dict;
+            }
+            $content = strtr($content, $dictMap);
         }
 
-        // Restore the original string content
-        $pdfstrings = array_reverse($pdfstrings, true);
+        // Restore the original string content, all placeholders in one pass
+        // over the content
+        $stringMap = [];
         foreach ($pdfstrings as $id => $text) {
             // Strings may contain escaped newlines, or literal newlines
             // and we should clean these up before replacing the string
             // back into the content stream; this ensures no strings are
             // split between two lines (every command must be on one line)
-            $text = str_replace(
+            $stringMap['@@@'.$id.'@@@'] = str_replace(
                 ["\\\r\n", "\\\r", "\\\n", "\r", "\n"],
                 ['', '', '', '\r', '\n'],
                 $text
             );
-
-            $content = str_replace('@@@'.$id.'@@@', $text, $content);
+        }
+        if ([] !== $stringMap) {
+            $content = strtr($content, $stringMap);
         }
 
         // Restore the original content of any inline images
@@ -417,11 +438,20 @@ class PDFObject
     }
 
     /**
-     * getSectionsText() now takes an entire, unformatted
-     * document stream as a string, cleans it, then filters out
-     * commands that aren't needed for text positioning/extraction. It
-     * returns an array of unprocessed PDF commands, one command per
-     * element.
+     * Takes an entire, unformatted document stream as a string, formats
+     * it, then filters out commands that aren't needed for text
+     * positioning/extraction. It returns an array of unprocessed PDF
+     * commands, one command per element.
+     *
+     * Commands inside of a text object (BT ... ET) are kept entirely, outside
+     * of it only the ones isKeptOutsideTextBlock() approves.
+     *
+     * The formatted stream is processed in line-aligned chunks of about
+     * SECTIONS_CHUNK_SIZE bytes, so only the lines of one chunk are held in
+     * memory at a time. The result doesn't depend on the chunk size.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=89 ISO 32000-1:2008, 7.8.2 (content streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=256 ISO 32000-1:2008, 9.4.1, Table 107 (BT, ET)
      *
      * @internal
      */
@@ -429,71 +459,94 @@ class PDFObject
     {
         $sections = [];
 
-        // A cleaned stream has one command on every line, so split the
-        // cleaned stream content on \r\n into an array
-        $textCleaned = preg_split(
-            '/(\r\n|\n|\r)/',
-            $this->formatContent($content),
-            -1,
-            \PREG_SPLIT_NO_EMPTY
-        );
+        // A formatted stream has one command on every line. A graphics-heavy
+        // page can consist of hundreds of thousands of lines, of which only a
+        // handful are kept below.
+        $cleaned = $this->formatContent($content);
+        $length = \strlen($cleaned);
 
         $inTextBlock = false;
-        foreach ($textCleaned as $line) {
-            $line = trim($line);
-
-            // Skip empty lines
-            if ('' === $line) {
-                continue;
+        $chunkSize = self::SECTIONS_CHUNK_SIZE;
+        $offset = 0;
+        while ($offset < $length) {
+            // A chunk ends at the first line boundary at or after $chunkSize
+            // bytes, so a command is never split across chunks; the
+            // $inTextBlock flag carries across them.
+            $end = min($offset + $chunkSize, $length);
+            if ($end < $length) {
+                $end += strcspn($cleaned, "\r\n", $end);
             }
 
-            // If a 'BT' is encountered, set the $inTextBlock flag
-            if (preg_match('/BT$/', $line)) {
-                $inTextBlock = true;
-                $sections[] = $line;
+            // Split the chunk into lines. A stream which fits in one chunk (the
+            // common case) is used as is, which avoids copying it via substr().
+            $chunk = (0 === $offset && $length === $end)
+                ? $cleaned
+                : substr($cleaned, $offset, $end - $offset);
+            $textCleaned = preg_split('/(\r\n|\n|\r)/', $chunk, -1, \PREG_SPLIT_NO_EMPTY);
 
-                // If an 'ET' is encountered, unset the $inTextBlock flag
-            } elseif ('ET' == $line) {
-                $inTextBlock = false;
-                $sections[] = $line;
-            } elseif ($inTextBlock) {
-                // If we are inside a BT ... ET text block, save all lines
-                $sections[] = trim($line);
-            } else {
-                // Otherwise, if we are outside of a text block, only
-                // save specific, necessary lines. Care should be taken
-                // to ensure a command being checked for *only* matches
-                // that command. For instance, a simple search for 'c'
-                // may also match the 'sc' command. See the command
-                // list in the formatContent() method above.
-                // Add more commands to save here as you find them in
-                // weird PDFs!
-                if ('q' == $line[-1] || 'Q' == $line[-1]) {
-                    // Save and restore graphics state commands
+            // Advance past the chunk and the run of delimiters following it.
+            $offset = $end + strspn($cleaned, "\r\n", $end);
+
+            // Once the final chunk is split into lines, the formatted stream is
+            // no longer needed. It gets released before the lines are filtered
+            // to keep peak memory usage low.
+            if ($offset >= $length) {
+                $cleaned = $chunk = '';
+            }
+
+            // Filter lines
+            foreach ($textCleaned as $line) {
+                $line = trim($line);
+
+                // Skip empty lines
+                if ('' === $line) {
+                    continue;
+                }
+
+                // If a 'BT' is encountered, set the $inTextBlock flag
+                if (preg_match('/BT$/', $line)) {
+                    $inTextBlock = true;
                     $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)B[DM]C$/', $line)) {
-                    // Begin marked content sequence
+
+                    // If an 'ET' is encountered, unset the $inTextBlock flag
+                } elseif ('ET' == $line) {
+                    $inTextBlock = false;
                     $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)[DM]P$/', $line)) {
-                    // Marked content point
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)EMC$/', $line)) {
-                    // End marked content sequence
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)cm$/', $line)) {
-                    // Graphics position change commands
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)Tf$/', $line)) {
-                    // Font change commands
-                    $sections[] = $line;
-                } elseif (preg_match('/(?<!\w)Do$/', $line)) {
-                    // Invoke named XObject command
+
+                    // Inside a BT ... ET block keep every line; outside it, keep
+                    // only the few commands needed for positioning/extraction.
+                } elseif ($inTextBlock || $this->isKeptOutsideTextBlock($line)) {
                     $sections[] = $line;
                 }
             }
         }
 
         return $sections;
+    }
+
+    /**
+     * Whether a (trimmed, non-empty) line outside a BT...ET text block is one of
+     * the few commands worth keeping for text positioning/extraction.
+     *
+     * Care should be taken to ensure a command being checked for *only* matches
+     * that command. For instance, a simple search for 'c' may also match the
+     * 'sc' command. See the command list in the formatContent() method above.
+     * Add more commands to keep here as you find them in weird PDFs!
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=135 ISO 32000-1:2008, 8.4.4, Table 57 (q, Q, cm)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, BMC, DP, MP, EMC)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=251 ISO 32000-1:2008, 9.3.1, Table 105 (Tf)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=210 ISO 32000-1:2008, 8.8.1, Table 87 (Do)
+     */
+    private function isKeptOutsideTextBlock(string $line): bool
+    {
+        return 'q' == $line[-1] || 'Q' == $line[-1]   // save/restore graphics state
+            || preg_match('/(?<!\w)B[DM]C$/', $line)  // begin marked content sequence
+            || preg_match('/(?<!\w)[DM]P$/', $line)   // marked content point
+            || preg_match('/(?<!\w)EMC$/', $line)     // end marked content sequence
+            || preg_match('/(?<!\w)cm$/', $line)      // graphics position change
+            || preg_match('/(?<!\w)Tf$/', $line)      // font change
+            || preg_match('/(?<!\w)Do$/', $line);     // invoke named XObject
     }
 
     private function getDefaultFont(?Page $page = null): Font
