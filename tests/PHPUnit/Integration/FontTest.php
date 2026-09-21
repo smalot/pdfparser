@@ -593,4 +593,31 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         // check result
         $this->assertEquals('foobar-', $font->decodeContent("foobar-\x8D"));
     }
+
+    /**
+     * The font's Encoding entry is an indirect reference to an encoding dictionary, which lacks
+     * /Type /Encoding and is therefore a plain PDFObject instead of an Encoding instance.
+     *
+     * This is a valid structure, because all entries of an encoding dictionary are optional.
+     *
+     * 'Ansi' is only returned for backward compatibility. According to the spec, StandardEncoding
+     * or the font's built-in encoding applies, if no name is given.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/822
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=271 ISO 32000-1:2008, 9.6.6.1, Table 114
+     */
+    public function testGetDetailsWithEncodingAsIndirectPDFObject(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/EncodingAsIndirectPDFObject.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+
+        $fonts = $document->getFonts();
+        $this->assertCount(1, $fonts);
+
+        $details = reset($fonts)->getDetails();
+        $this->assertSame('Ansi', $details['Encoding']);
+
+        $this->assertSame('Hello', trim($document->getText()));
+    }
 }
