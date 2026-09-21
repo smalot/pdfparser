@@ -367,6 +367,66 @@ q
 'ET', $cleaned);
     }
 
+    /**
+     * formatContent() replaces strings and the dictionaries of marked-content
+     * operators by placeholders, puts each command on a line of its own and
+     * restores strings and dictionaries afterwards.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/712
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (Tj, TJ)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, EMC)
+     */
+    public function testFormatContentStringsAndDictionaries(): void
+    {
+        $formatContent = new \ReflectionMethod('Smalot\PdfParser\PDFObject', 'formatContent');
+
+        // TODO: remove this if-clause when dropping 8.0.x support
+        if (version_compare(\PHP_VERSION, '8.1.0', '<')) {
+            $formatContent->setAccessible(true);
+        }
+
+        $cases = [
+            'operands with the same content' => [
+                'BT [(a)1(a)-2(a)3(b)4(a)]TJ ET',
+                "BT\r\n[(a)1(a)-2(a)3(b)4(a)]TJ\r\nET",
+            ],
+            'escaped parentheses' => [
+                'BT (a\(b\)c) Tj ET',
+                "BT\r\n".'(a\(b\)c) Tj'."\r\nET",
+            ],
+            'balanced parentheses' => [
+                'BT (a(b)c) Tj (d(e(f))g) Tj ET',
+                "BT\r\n(a(b)c) Tj\r\n(d(e(f))g) Tj\r\nET",
+            ],
+            'strings in front of an unterminated string' => [
+                'BT (ok) Tj (broken Tj ET',
+                "BT\r\n(ok) Tj\r\n(broken Tj\r\nET",
+            ],
+            'end-of-line markers inside of strings' => [
+                "BT (line1\nline2) Tj (line3\\\nline4) Tj (line5\r\nline6) Tj ET",
+                "BT\r\n".'(line1\nline2) Tj'."\r\n".'(line3line4) Tj'."\r\n".'(line5\r\nline6) Tj'."\r\nET",
+            ],
+            'dictionaries, one of them with a string' => [
+                '/P <</MCID 0>> BDC BT (A) Tj ET EMC /P <</MCID 1 /T (t)>> BDC BT (B) Tj ET EMC',
+                "/P <</MCID 0>> BDC\r\nBT\r\n(A) Tj\r\nET\r\nEMC\r\n"
+                    ."/P <</MCID 1 /T (t)>> BDC\r\nBT\r\n(B) Tj\r\nET\r\nEMC",
+            ],
+            'string which looks like a placeholder' => [
+                'BT (@@@STRING_1@@@ ###DICT_1###) Tj ET',
+                "BT\r\n(@@@STRING_1@@@ ###DICT_1###) Tj\r\nET",
+            ],
+        ];
+
+        foreach ($cases as $description => $case) {
+            $this->assertSame(
+                $case[1],
+                $formatContent->invoke($this->getPdfObjectInstance(new Document()), $case[0]),
+                $description
+            );
+        }
+    }
+
     public function testGetSectionsText(): void
     {
         $content = '/Shape <</MCID 1 >>BDC

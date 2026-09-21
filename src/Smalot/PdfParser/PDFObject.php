@@ -208,6 +208,10 @@ class PDFObject
      * separated by \r\n. If the given string is null, or binary data
      * is detected instead of a document stream then return an empty
      * string.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (Tj, TJ)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, BMC, DP, MP)
      */
     private function formatContent(?string $content): string
     {
@@ -307,9 +311,17 @@ class PDFObject
         // by the next steps
         $pdfstrings = [];
         $attempt = '(';
-        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text)) {
+        // The search starts at $offset. The content in front of $offset is
+        // collected in $processed, with each string replaced by a placeholder.
+        // The effort grows linearly with the number of strings, which matters
+        // for TJ arrays consisting of thousands of string operands.
+        $offset = 0;
+        $processed = '';
+        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text, \PREG_OFFSET_CAPTURE, $offset)) {
+            list($string, $stringPos) = $text[0];
+
             // Remove all escaped slashes and parentheses from the target text
-            $para = str_replace(['\\\\', '\\(', '\\)'], '', $text[0]);
+            $para = str_replace(['\\\\', '\\(', '\\)'], '', $string);
 
             // PDF strings can contain unescaped parentheses as long as
             // they're balanced, so check for balanced parentheses
@@ -319,28 +331,19 @@ class PDFObject
             if (')' == $para[-1] && $left == $right) {
                 // Replace the string with a unique placeholder
                 $id = uniqid('STRING_', true);
-                $pdfstrings[$id] = $text[0];
-                // Replace the first literal occurrence without compiling a regex
-                // per string operand (preg_quote + preg_replace is quadratic for
-                // kerned TJ arrays with many operands).
-                $stringPos = strpos($content, $text[0]);
-                if (false !== $stringPos) {
-                    $content = substr_replace(
-                        $content,
-                        '@@@'.$id.'@@@',
-                        $stringPos,
-                        \strlen($text[0])
-                    );
-                }
+                $pdfstrings[$id] = $string;
+                $processed .= substr($content, $offset, $stringPos - $offset).'@@@'.$id.'@@@';
+                $offset = $stringPos + \strlen($string);
 
                 // Reset to search for the next string
                 $attempt = '(';
             } else {
                 // We had unbalanced parentheses, so use the current
                 // match as a base to find a longer string
-                $attempt = $text[0];
+                $attempt = $string;
             }
         }
+        $content = $processed.substr($content, $offset);
 
         // Remove all carriage returns and line-feeds from the document stream
         $content = str_replace(["\r", "\n"], ' ', trim($content));
@@ -385,8 +388,8 @@ class PDFObject
             );
         }
 
-        // Restore the original content of the dictionary << >> commands
-        $dictstore = array_reverse($dictstore, true);
+        // Restore the original content of the dictionary << >> commands, all
+        // placeholders in one pass over the content
         if ([] !== $dictstore) {
             $dictMap = [];
             foreach ($dictstore as $id => $dict) {
@@ -395,10 +398,8 @@ class PDFObject
             $content = strtr($content, $dictMap);
         }
 
-        // Restore the original string content in a single pass (strtr) instead
-        // of one full-content str_replace() per placeholder, which is quadratic
-        // for kerned TJ arrays with many string operands.
-        $pdfstrings = array_reverse($pdfstrings, true);
+        // Restore the original string content, all placeholders in one pass
+        // over the content
         $stringMap = [];
         foreach ($pdfstrings as $id => $text) {
             // Strings may contain escaped newlines, or literal newlines

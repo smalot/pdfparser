@@ -22,20 +22,23 @@ use Smalot\PdfParser\XObject\Form;
 /**
  * PDFs that emit text as kerned TJ arrays (for fine letter spacing) split a
  * single line into thousands of tiny string operands. formatContent() parks
- * each operand behind a unique placeholder and restores it afterward.
- * Restoring them with one str_replace() per placeholder scans the whole
- * content stream once per operand, i.e. O(operands * length) - quadratic in
- * the number of operands.
+ * each operand behind a unique placeholder and restores it afterward. Its
+ * effort grows linearly with the number of operands.
  *
- * This test builds a content stream with 20,000 such operands and extracts
- * its text. With the single-pass strtr() restoration this runs in ~1.5s here;
- * with the previous per-placeholder str_replace() loop it took ~10s. The time
- * budget below fails if the quadratic behaviour is reintroduced.
+ * This test builds a content stream with 60,000 such operands and extracts
+ * its text, which takes less than a second. The time budget is exceeded by
+ * far, if the effort grows quadratically with the number of operands.
  *
  * @see https://github.com/smalot/pdfparser/issues/712
+ * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=258 ISO 32000-1:2008, 9.4.3, Table 109 (TJ)
  */
-class KernedTjArrayFormatContentTest extends AbstractPerformanceTest
+final class KernedTjArrayFormatContentTest extends AbstractPerformanceTest
 {
+    /**
+     * @var positive-int
+     */
+    private const OPERANDS = 60000;
+
     /**
      * @var string
      */
@@ -43,9 +46,10 @@ class KernedTjArrayFormatContentTest extends AbstractPerformanceTest
 
     public function init(): void
     {
-        // Like a PDF that emits text letter-by-letter for fine kerning.
+        // Create a string which represents a PDF that emits text
+        // letter-by-letter for fine kerning.
         $operands = '';
-        for ($i = 0; $i < 20000; ++$i) {
+        for ($i = 0; $i < self::OPERANDS; ++$i) {
             $operands .= '(a)'.(($i % 20) - 10).' ';
         }
 
@@ -65,7 +69,14 @@ class KernedTjArrayFormatContentTest extends AbstractPerformanceTest
             'Contents' => new ElementArray([new Element('/Fr0 Do', $document)], $document),
         ]);
 
-        (new Page($document, $header))->getTextArray();
+        $textArray = (new Page($document, $header))->getTextArray();
+
+        // Each operand provides one character, a space character is appended
+        // to the text. The check makes sure the time was spent on extracting
+        // the text.
+        if (1 !== \count($textArray) || self::OPERANDS + 1 !== \strlen($textArray[0])) {
+            throw new \RuntimeException('Text of kerned TJ array was not extracted as expected.');
+        }
     }
 
     public function getMaxEstimatedTime(): int
