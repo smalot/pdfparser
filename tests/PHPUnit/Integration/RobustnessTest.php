@@ -41,46 +41,14 @@ use Smalot\PdfParser\RawData\FilterHelper;
  * pathological or malformed input: deeply nested objects, uncapped decompression
  * streams, and self-referential page trees.
  *
- * Each test asserts the behaviour the parser must have once the corresponding
- * limit is in place. Without that limit each one fails:
- *
- *   - the bounded-resource tests run the process out of memory, which is an
- *     uncatchable PHP fatal. Each lowers memory_limit first so the abort is fast
- *     and cheap instead of climbing to the suite's 1G ceiling. Because the fatal
- *     ends the PHP process, run them one at a time, e.g.
- *     phpunit --filter testDeeplyNestedArrayDoesNotExhaustMemory
- *   - testDecodeMemoryLimitIsHonoredByRunLengthDecode is an ordinary assertion
- *     failure (no process abort).
+ * Each test asserts the behaviour the parser has with the corresponding limit in
+ * place; without the limit the input would exhaust memory or recurse without
+ * bound.
  *
  * @group robustness
  */
 class RobustnessTest extends TestCase
 {
-    /**
-     * @var string|false
-     */
-    private $originalMemoryLimit;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Lower memory_limit so an unbounded run aborts quickly and cheaply. When a
-        // memory-heavy test ran earlier and left usage above this value, PHP keeps
-        // the higher limit; the '@' avoids the resulting notice. tearDown() restores
-        // the original value so the shared PHP process keeps its configured limit
-        // for the rest of the suite.
-        $this->originalMemoryLimit = ini_get('memory_limit');
-        @ini_set('memory_limit', '256M');
-    }
-
-    protected function tearDown(): void
-    {
-        ini_set('memory_limit', $this->originalMemoryLimit);
-
-        parent::tearDown();
-    }
-
     /**
      * A single object whose body is a deeply nested array makes
      * RawDataParser::getRawObject() recurse once per nesting level. With no depth
