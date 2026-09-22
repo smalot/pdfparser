@@ -69,11 +69,27 @@ class Config
     private $retainImageContent = true;
 
     /**
-     * Memory limit to use when de-compressing files, in bytes.
+     * Maximum output size, in bytes, a single stream may be decompressed to. It is
+     * the control against decompression amplification and applies to all supported
+     * filters; 0 means unlimited. The default is unlimited because legitimate PDFs
+     * may contain highly compressible streams (e.g. images) that decode far larger
+     * than the file, which cannot be told apart from a decompression bomb by size.
      *
      * @var int
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=657 ISO 32000-1:2008, Annex C (implementation limits)
      */
     private $decodeMemoryLimit = 0;
+
+    /**
+     * Maximum nesting depth of arrays and dictionaries a single object may have.
+     * Bounds the recursion of the raw object parser. 0 means unlimited.
+     *
+     * @var int
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=657 ISO 32000-1:2008, Annex C (implementation limits)
+     */
+    private $maxNestingDepth = 5000;
 
     /**
      * Whether to include font id and size in dataTm array
@@ -147,6 +163,16 @@ class Config
     public function setDecodeMemoryLimit(int $decodeMemoryLimit): void
     {
         $this->decodeMemoryLimit = $decodeMemoryLimit;
+    }
+
+    public function getMaxNestingDepth(): int
+    {
+        return $this->maxNestingDepth;
+    }
+
+    public function setMaxNestingDepth(int $maxNestingDepth): void
+    {
+        $this->maxNestingDepth = $maxNestingDepth;
     }
 
     public function getDataTmFontInfoHasToBeIncluded(): bool

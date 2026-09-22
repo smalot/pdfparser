@@ -549,6 +549,25 @@ class ParserTest extends TestCase
 
         $this->assertSame(['1_0', '2_0', '3_0'], array_keys($document->getObjects()));
     }
+
+    /**
+     * A legitimate, large FlateDecode stream is decoded in full under the default
+     * configuration. Any default output cap added for FlateDecode must stay above
+     * realistic stream sizes so legitimate PDFs keep the same decoded content.
+     */
+    public function testLegitimateLargeFlateStreamIsFullyDecoded(): void
+    {
+        // ~2.25 MB decoded: a realistic content/font stream size.
+        $data = str_repeat('The quick brown fox jumps over the lazy dog. ', 50000);
+        $stream = gzcompress($data, 9);
+
+        $document = $this->fixture->parseContent($this->createPdf([
+            1 => '<< /Type /Catalog >>',
+            2 => '<< /Length '.\strlen($stream)." /Filter /FlateDecode >>\nstream\n".$stream."\nendstream",
+        ]));
+
+        $this->assertSame($data, $document->getObjectById('2_0')->getContent());
+    }
 }
 
 /**

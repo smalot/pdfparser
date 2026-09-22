@@ -49,8 +49,9 @@ class Pages extends PDFObject
      *       in order to get Page objects out of them.
      *
      * @see https://github.com/smalot/pdfparser/issues/331
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=83 ISO 32000-1:2008, 7.7.3 (page tree)
      */
-    public function getPages(bool $deep = false): array
+    public function getPages(bool $deep = false, array $ancestorRefs = []): array
     {
         if (!$this->has('Kids')) {
             return [];
@@ -63,6 +64,16 @@ class Pages extends PDFObject
             return $kidsElement->getContent();
         }
 
+        // Guard against a page tree that references one of its own ancestors: such
+        // a cycle would otherwise recurse until the call stack or memory is
+        // exhausted. A node already on the path from the root is not descended into
+        // again, so the pages collected so far are returned.
+        $selfRef = spl_object_hash($this);
+        if (isset($ancestorRefs[$selfRef])) {
+            return [];
+        }
+        $ancestorRefs[$selfRef] = true;
+
         // Prepare to apply the Pages' object's fonts to each page
         if (false === \is_array($this->fonts)) {
             $this->setupFonts();
@@ -74,7 +85,7 @@ class Pages extends PDFObject
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true));
+                $pages = array_merge($pages, $kid->getPages(true, $ancestorRefs));
             } elseif ($kid instanceof Page) {
                 if ($fontsAvailable) {
                     $kid->setFonts($this->fonts);

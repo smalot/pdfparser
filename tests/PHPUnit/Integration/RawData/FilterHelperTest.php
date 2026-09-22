@@ -208,4 +208,21 @@ class FilterHelperTest extends TestCase
 
         $this->fixture->decodeFilter('JPXDecode', '');
     }
+
+    /*
+     * Tests for filter RunLengthDecode
+     */
+
+    /**
+     * A valid RunLength stream decodes to the same bytes independently of any
+     * decode memory limit: "\x02ABC" copies 3 literal bytes, "\xFEX" repeats 'X'
+     * three times and "\x80" is the EOD marker. An output-size bound added to this
+     * filter must leave small, valid streams like this unchanged.
+     */
+    public function testDecodeFilterRunLengthDecode(): void
+    {
+        $result = $this->fixture->decodeFilter('RunLengthDecode', "\x02ABC\xFEX\x80");
+
+        $this->assertSame('ABCXXX', $result);
+    }
 }
