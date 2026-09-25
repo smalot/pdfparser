@@ -156,6 +156,342 @@ class ParserTest extends TestCase
     }
 
     /**
+     * Provides the raw structure of an object stream.
+     *
+     * @param string|null $n     value of /N, null leaves the entry out
+     * @param string|null $first value of /First, null leaves the entry out
+     */
+    private function getObjectStreamStructure(string $content, ?string $n, ?string $first): array
+    {
+        $dictionary = [['/', 'Type', 0], ['/', 'ObjStm', 0]];
+
+        if (null !== $n) {
+            array_push($dictionary, ['/', 'N', 0], ['numeric', $n, 0]);
+        }
+
+        if (null !== $first) {
+            array_push($dictionary, ['/', 'First', 0], ['numeric', $first, 0]);
+        }
+
+        return [['<<', $dictionary], ['stream', $content]];
+    }
+
+    /**
+     * Provides the objects of an object stream: object reference => value of the entry /V.
+     *
+     * @return array<string, string|null>
+     */
+    private function parseObjectStream(array $structure): array
+    {
+        $fixture = new ParserSub();
+        $fixture->exposedParseObject('19_0', $structure, new Document());
+
+        $objects = [];
+        foreach ($fixture->getObjects() as $id => $object) {
+            $objects[$id] = $object->has('V') ? $object->get('V')->getContent() : null;
+        }
+
+        return $objects;
+    }
+
+    /**
+     * /First is the byte offset of the first object, the index in front of it
+     * consists of pairs of integers: object number and byte offset of the
+     * object relative to the first object.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
+     */
+    public function testObjectStream(): void
+    {
+        $structure = $this->getObjectStreamStructure('11 0 12 10 <</V /A>> <</V /B>>', '2', '10');
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+    }
+
+    /**
+     * The first objects of an object stream may be integers. /First tells them
+     * apart from the pairs of the index.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
+     */
+    public function testObjectStreamStartingWithIntegerObjects(): void
+    {
+        $structure = $this->getObjectStreamStructure('11 0 12 3 13 6 42 43 <</V /C>>', '3', '15');
+
+        $this->assertSame(['11_0' => null, '12_0' => null, '13_0' => 'C'], $this->parseObjectStream($structure));
+
+        // /First is sufficient, /N may be missing
+        $structure = $this->getObjectStreamStructure('11 0 12 3 13 6 42 43 <</V /C>>', null, '15');
+
+        $this->assertSame(['11_0' => null, '12_0' => null, '13_0' => 'C'], $this->parseObjectStream($structure));
+    }
+
+    /**
+     * The index ends with the last of its consecutive pairs, unless /First is
+     * located between two pairs and the number of pairs in front of it equals
+     * /N. The objects are packed without white-space, so each of the cases
+     * provides damaged objects, if /First gets used.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     * @see {U}#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
+     */
+    public function testObjectStreamWithImplausibleFirst(): void
+    {
+        $content = '11 0 12 9 13 18 <</V /A>><</V /B>><</V /C>>';
+        $expected = ['11_0' => 'A', '12_0' => 'B', '13_0' => 'C'];
+
+        $cases = [
+            '/First fits' => ['3', '16'],
+            '/First points to the white-space behind the last pair' => ['3', '15'],
+            '/First is located inside of a number' => ['3', '14'],
+            '/First is located between two pairs, /N differs from the number of pairs in front of it' => ['3', '10'],
+            '/First is located between an object number and its byte offset, /N is missing' => [null, '8'],
+            '/First is located inside of the first object' => ['3', '18'],
+            '/First is located behind the last object' => ['3', '43'],
+        ];
+
+        foreach ($cases as $description => $case) {
+            $structure = $this->getObjectStreamStructure($content, $case[0], $case[1]);
+
+            $this->assertSame($expected, $this->parseObjectStream($structure), $description);
+        }
+    }
+
+    /**
+     * Object stream 12815_0 of the file starts with integer objects. Its objects
+     * are needed to decode the ligature of "offer" on page 16.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamStartingWithIntegerObjectsInFile(): void
+    {
+        $document = $this->fixture->parseFile($this->rootDir.'/samples/DocumentWithLotsOfObjects.pdf');
+
+        $this->assertStringContainsString(
+            "making an o\u{FB00}er until reach to an end state",
+            $document->getPages()[15]->getText()
+        );
+    }
+
+    /**
+     * Every white-space character of PDF separates the integers of the index.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=20 ISO 32000-1:2008, 7.2.2, Table 1 (white-space characters)
+     */
+    public function testObjectStreamIndexWhitespace(): void
+    {
+        $index = "11\0 0\t12\f10\r\n";
+        $structure = $this->getObjectStreamStructure($index.'<</V /A>> <</V /B>>', '2', (string) \strlen($index));
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+
+        // White-space in front of the first pair is part of the index
+        $index = "\n 11 0 12 10 ";
+        $structure = $this->getObjectStreamStructure($index.'<</V /A>> <</V /B>>', '2', (string) \strlen($index));
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+
+        $structure = $this->getObjectStreamStructure($index.'<</V /A>> <</V /B>>', null, null);
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+    }
+
+    /**
+     * Objects are provided in the order of their byte offsets. If two objects
+     * share a byte offset, the latter one of the index is provided. An object,
+     * whose byte offset is located behind the content, has no entries.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     */
+    public function testObjectStreamWithUnusualIndex(): void
+    {
+        $cases = [
+            'index is sorted by object number instead of byte offset' => [
+                '11 10 12 0 <</V /B>> <</V /A>>',
+                '2',
+                ['12_0' => 'B', '11_0' => 'A'],
+            ],
+            'two objects share a byte offset' => [
+                '11 0 12 0 13 10 <</V /A>> <</V /C>>',
+                '3',
+                ['12_0' => 'A', '13_0' => 'C'],
+            ],
+            'byte offset is located behind the content' => [
+                '11 0 12 999 13 10 <</V /A>> <</V /C>>',
+                '3',
+                ['11_0' => 'A', '13_0' => 'C', '12_0' => null],
+            ],
+        ];
+
+        foreach ($cases as $description => $case) {
+            $first = (string) strpos($case[0], '<<');
+            $structure = $this->getObjectStreamStructure($case[0], $case[1], $first);
+
+            $this->assertSame($case[2], $this->parseObjectStream($structure), $description);
+        }
+    }
+
+    /**
+     * An index of this size exceeds the limits of a regular expression, which
+     * matches all pairs at once.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testLargeObjectStreamIndex(): void
+    {
+        $objectCount = 20000;
+        $index = '';
+        $body = '';
+
+        for ($position = 0; $position < $objectCount; ++$position) {
+            $index .= (10000 + $position).' '.\strlen($body).' ';
+            $body .= '<</V /O'.$position.'>> ';
+        }
+
+        $structure = $this->getObjectStreamStructure($index.$body, (string) $objectCount, (string) \strlen($index));
+        $objects = $this->parseObjectStream($structure);
+
+        $this->assertCount($objectCount, $objects);
+        $this->assertSame('O0', $objects['10000_0']);
+        $this->assertSame('O19999', $objects['29999_0']);
+    }
+
+    /**
+     * Objects are provided as far as possible, if /N or /First are missing or
+     * don't fit to the content of the object stream.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamWithUnusableMetadata(): void
+    {
+        $content = '11 0 12 10 <</V /A>> <</V /B>>';
+        $expected = ['11_0' => 'A', '12_0' => 'B'];
+
+        $cases = [
+            '/N and /First are missing' => [$content, null, null],
+            '/N is too large' => [$content, '3', '10'],
+            '/N is too small' => [$content, '1', '10'],
+            '/First is behind the content' => [$content, '2', '999'],
+            '/First is negative' => [$content, '2', '-5'],
+            '/N and /First are real numbers' => [$content, '2.0', '10.0'],
+            'integers inside of objects, /N and /First are missing' => ['11 0 12 18 <</V /A /R [1 2]>> <</V /B /R [3 4]>>', null, null],
+        ];
+
+        // PHPUnit reports warnings and notices, but the test passes nevertheless.
+        // Turn them into exceptions to let the test fail.
+        set_error_handler(function (int $severity, string $message) {
+            throw new \ErrorException($message, 0, $severity);
+        });
+
+        try {
+            foreach ($cases as $description => $case) {
+                $structure = $this->getObjectStreamStructure($case[0], $case[1], $case[2]);
+
+                $this->assertSame($expected, $this->parseObjectStream($structure), $description);
+            }
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * Numbers of any order of magnitude neither cause warnings nor exceptions:
+     * 32 bit and 64 bit integer limits, the limit of exactly representable
+     * floating point numbers and numbers beyond all of them.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamWithNumbersOfAnyOrderOfMagnitude(): void
+    {
+        $numbers = [
+            '2147483647',
+            '2147483648',
+            '4294967296',
+            '9007199254740993',
+            '9223372036854775807',
+            '9223372036854775808',
+            '99999999999999999999',
+            str_repeat('9', 400),
+        ];
+
+        // PHPUnit reports warnings and notices, but the test passes nevertheless.
+        // Turn them into exceptions to let the test fail.
+        set_error_handler(function (int $severity, string $message) {
+            throw new \ErrorException($message, 0, $severity);
+        });
+
+        try {
+            foreach ($numbers as $number) {
+                // /N and /First: the objects are provided without them
+                $content = '11 0 12 10 <</V /A>> <</V /B>>';
+                $expected = ['11_0' => 'A', '12_0' => 'B'];
+
+                foreach ([[$number, '11'], ['2', $number], ['2', '-'.$number], [$number, $number]] as $metadata) {
+                    $structure = $this->getObjectStreamStructure($content, $metadata[0], $metadata[1]);
+
+                    $this->assertSame($expected, $this->parseObjectStream($structure), '/N '.$metadata[0].', /First '.$metadata[1]);
+                }
+
+                // byte offset: it is located behind the content, the other objects are provided
+                $index = '11 0 12 '.$number.' 13 10 ';
+                $structure = $this->getObjectStreamStructure($index.'<</V /A>> <</V /C>>', '3', (string) \strlen($index));
+
+                $this->assertSame(['11_0' => 'A', '13_0' => 'C', '12_0' => null], $this->parseObjectStream($structure), 'byte offset '.$number);
+
+                // object number: it is taken as it is
+                $index = '11 0 '.$number.' 10 ';
+                $structure = $this->getObjectStreamStructure($index.'<</V /A>> <</V /B>>', '2', (string) \strlen($index));
+
+                $this->assertSame(['11_0' => 'A', $number.'_0' => 'B'], $this->parseObjectStream($structure), 'object number '.$number);
+            }
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * /N and /First may be indirect references, which are unresolved at the
+     * time the object stream gets parsed.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamWithIndirectMetadata(): void
+    {
+        $structure = [
+            [
+                '<<',
+                [
+                    ['/', 'Type', 0],
+                    ['/', 'ObjStm', 0],
+                    ['/', 'N', 0],
+                    ['objref', '2_0', 0],
+                    ['/', 'First', 0],
+                    ['objref', '3_0', 0],
+                ],
+            ],
+            ['stream', '11 0 12 10 <</V /A>> <</V /B>>'],
+        ];
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+    }
+
+    /**
+     * Content which doesn't start with an index provides no objects.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/835
+     */
+    public function testObjectStreamWithoutIndex(): void
+    {
+        $this->assertSame([], $this->parseObjectStream($this->getObjectStreamStructure('', '0', '0')));
+        $this->assertSame([], $this->parseObjectStream($this->getObjectStreamStructure('<</V /A>>', '1', '0')));
+    }
+
+    /**
      * Properly decode ANSI encodings without producing scrambled UTF-8 characters
      *
      * @see https://github.com/smalot/pdfparser/issues/202
