@@ -166,6 +166,28 @@ class RobustnessTest extends TestCase
     }
 
     /**
+     * A page tree that is a chain of many nested /Pages nodes, each with a single
+     * /Pages kid, makes Pages::getPages() recurse once per level. Its cycle guard
+     * must track the ancestors in one set shared by all levels: a set copied per
+     * level grows quadratically with the depth (well over 2 GB at this depth), so
+     * the parse would exhaust the suite's memory_limit instead of returning the
+     * single page at the bottom of the chain.
+     */
+    public function testDeepPageTreeDoesNotExhaustMemory(): void
+    {
+        $depth = 10000;
+        $objects = [1 => '<< /Type /Catalog /Pages 2 0 R >>'];
+        for ($i = 2; $i <= $depth + 1; ++$i) {
+            $objects[$i] = '<< /Type /Pages /Kids ['.($i + 1).' 0 R] /Count 1 >>';
+        }
+        $objects[$depth + 2] = '<< /Type /Page /Parent '.($depth + 1).' 0 R >>';
+
+        $document = $this->getParserInstance()->parseContent($this->createPdf($objects));
+
+        $this->assertCount(1, $document->getPages());
+    }
+
+    /**
      * Build a zlib/deflate stream that expands to $mb megabytes of NUL bytes,
      * without ever holding the expanded data in memory.
      */

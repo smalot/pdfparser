@@ -48,10 +48,14 @@ class Pages extends PDFObject
      * @todo Objects other than Pages or Page might need to be treated specifically
      *       in order to get Page objects out of them.
      *
+     * @param \SplObjectStorage<self, null>|null $ancestorRefs Pages nodes on the path from the root to this
+     *                                                         node; used by the recursion to detect cycles.
+     *                                                         Leave it null when calling from the outside.
+     *
      * @see https://github.com/smalot/pdfparser/issues/331
      * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=83 ISO 32000-1:2008, 7.7.3 (page tree)
      */
-    public function getPages(bool $deep = false, array $ancestorRefs = []): array
+    public function getPages(bool $deep = false, ?\SplObjectStorage $ancestorRefs = null): array
     {
         if (!$this->has('Kids')) {
             return [];
@@ -66,35 +70,41 @@ class Pages extends PDFObject
 
         // Guard against a page tree that references one of its own ancestors: such
         // a cycle would otherwise recurse until the call stack or memory is
-        // exhausted. A node already on the path from the root is not descended into
-        // again, so the pages collected so far are returned.
-        $selfRef = spl_object_hash($this);
-        if (isset($ancestorRefs[$selfRef])) {
+        // exhausted. The nodes on the path from the root are tracked in a single
+        // set shared by all recursion levels (added on entry, removed on exit), so
+        // its size stays linear in the depth. A node already on the path is not
+        // descended into again, so the pages collected so far are returned.
+        $ancestorRefs = $ancestorRefs ?? new \SplObjectStorage();
+        if ($ancestorRefs->offsetExists($this)) {
             return [];
         }
-        $ancestorRefs[$selfRef] = true;
+        $ancestorRefs->offsetSet($this);
 
-        // Prepare to apply the Pages' object's fonts to each page
-        if (false === \is_array($this->fonts)) {
-            $this->setupFonts();
-        }
-        $fontsAvailable = 0 < \count($this->fonts);
-
-        $kids = $kidsElement->getContent();
-        $pages = [];
-
-        foreach ($kids as $kid) {
-            if ($kid instanceof self) {
-                $pages = array_merge($pages, $kid->getPages(true, $ancestorRefs));
-            } elseif ($kid instanceof Page) {
-                if ($fontsAvailable) {
-                    $kid->setFonts($this->fonts);
-                }
-                $pages[] = $kid;
+        try {
+            // Prepare to apply the Pages' object's fonts to each page
+            if (false === \is_array($this->fonts)) {
+                $this->setupFonts();
             }
-        }
+            $fontsAvailable = 0 < \count($this->fonts);
 
-        return $pages;
+            $kids = $kidsElement->getContent();
+            $pages = [];
+
+            foreach ($kids as $kid) {
+                if ($kid instanceof self) {
+                    $pages = array_merge($pages, $kid->getPages(true, $ancestorRefs));
+                } elseif ($kid instanceof Page) {
+                    if ($fontsAvailable) {
+                        $kid->setFonts($this->fonts);
+                    }
+                    $pages[] = $kid;
+                }
+            }
+
+            return $pages;
+        } finally {
+            $ancestorRefs->offsetUnset($this);
+        }
     }
 
     /**

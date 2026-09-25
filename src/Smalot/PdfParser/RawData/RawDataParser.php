@@ -705,7 +705,8 @@ class RawDataParser
                 if ($next > 0) {
                     $offset += $next;
 
-                    return $this->getRawObject($pdfData, $offset, null, $depth + 1);
+                    // A comment is not a nesting level, so $depth is passed on unchanged.
+                    return $this->getRawObject($pdfData, $offset, null, $depth);
                 }
                 break;
 
