@@ -639,6 +639,28 @@ class PageTest extends TestCase
         }
     }
 
+    /**
+     * Tests that getPages() reads the page tree of the newest revision of an incrementally updated file.
+     *
+     * The sample has three revisions: the second one stores the /Pages node (/Count 1) inside an object
+     * stream, the third rewrites it as an uncompressed object (/Count 2). The superseded copy from the
+     * object stream must not win.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/471
+     */
+    public function testGetPagesIncrementalUpdateObjectStream(): void
+    {
+        $filename = $this->rootDir.'/samples/bugs/IncrementalUpdateObjectStream.pdf';
+        $document = $this->getParserInstance()->parseFile($filename);
+        $pages = $document->getPages();
+
+        $this->assertCount(2, $pages);
+
+        foreach ($pages as $page) {
+            $this->assertTrue($page instanceof Page);
+        }
+    }
+
     public function testGetTextXY(): void
     {
         // Document with text.

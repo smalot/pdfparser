@@ -483,8 +483,14 @@ class RawDataParser
                     case 2:  // compressed objects
                         // $row[1] = object number of the object stream in which this object is stored
                         // $row[2] = index of this object within the object stream
-                        $index = $row[1].'_0_'.$row[2];
-                        $xref['xref'][$index] = -1;
+                        // Compressed objects always have generation number 0 (ISO 32000-1, 7.5.7).
+                        $index = $obj_num.'_0';
+                        // Sections are read newest first, so - as for type 1 entries - the first
+                        // entry seen for an object is its current revision.
+                        if (!isset($xref['xref'][$index])) {
+                            $xref['xref'][$index] = -1;
+                            $xref['objstm'][$index] = $row[1].'_0';
+                        }
                         break;
 
                     default:  // null objects

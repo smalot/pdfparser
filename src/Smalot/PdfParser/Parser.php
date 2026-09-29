@@ -60,6 +60,22 @@ class Parser
 
     protected $rawDataParser;
 
+    /**
+     * Object stream holding the current revision of each compressed object,
+     * keyed by object reference ("12_0" => "5_0").
+     *
+     * @var array<string, string>
+     */
+    private $objectStreamOf = [];
+
+    /**
+     * Objects the cross-reference data places at a byte offset (current revision
+     * is an uncompressed object), keyed by object reference.
+     *
+     * @var array<string, true>
+     */
+    private $uncompressedObjects = [];
+
     public function __construct($cfg = [], ?Config $config = null)
     {
         $this->config = $config ?: new Config();
@@ -104,6 +120,10 @@ class Parser
         // Create destination object.
         $document = new Document();
         $this->objects = [];
+        $this->objectStreamOf = $xref['objstm'] ?? [];
+        $this->uncompressedObjects = array_fill_keys(array_keys(array_filter($xref['xref'] ?? [], function ($offset) {
+            return $offset > 0;
+        })), true);
 
         // The raw objects are decoded one at a time. Each raw structure is
         // turned into a PDFObject and goes out of scope before the next one
@@ -190,8 +210,19 @@ class Parser
                         $ids = array_values($table);
                         $positions = array_keys($table);
 
+                        $streamId = $id;
+
                         foreach ($positions as $index => $position) {
                             $id = $ids[$index].'_0';
+
+                            // An object stream of an older revision still carries objects that an
+                            // incremental update has since rewritten, either uncompressed or in a
+                            // newer object stream. Only the revision the xref points at is current.
+                            if (isset($this->uncompressedObjects[$id])
+                                || (isset($this->objectStreamOf[$id]) && $this->objectStreamOf[$id] !== $streamId)) {
+                                continue;
+                            }
+
                             $next_position = isset($positions[$index + 1]) ? $positions[$index + 1] : \strlen($content);
                             $sub_content = substr($content, $position, (int) $next_position - (int) $position);
 
