@@ -261,7 +261,7 @@ class Font extends PDFObject
                      * - (?P<dest>...) Destination range's offset or each char code
                      *                 Some PDF file has 2-byte Unicode values on new lines > added \r\n
                      */
-                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *(?P<dest><[0-9A-F]+>|\[[\r\n<>0-9A-F ]+\])[ \r\n]+/is';
+                    $regexp = '/<(?P<from>[0-9A-F]+)> *<(?P<to>[0-9A-F]+)> *(?P<dest><[0-9A-F]+>|\[[\r\n<>0-9A-F ]+\])[ \r\n]*/is';
 
                     preg_match_all($regexp, $section, $matches);
 

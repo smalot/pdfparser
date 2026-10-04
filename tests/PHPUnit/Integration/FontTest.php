@@ -397,6 +397,76 @@ end';
     }
 
     /**
+     * Tests loadTranslateTable with bfrange entries which are directly followed by
+     * "endbfrange", without any whitespace in between (e.g. "<0337>]endbfrange").
+     *
+     * Such an entry must not be skipped. In case of a destination array, it also must not
+     * be torn apart, because every three consecutive values inside the array would be
+     * read as separate bfrange entries otherwise. With real-world values this led to
+     * huge ranges (e.g. from <0066006C> to <006600660069>) and a near-infinite loop.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/832
+     */
+    public function testLoadTranslateTableBfrangeEntryDirectlyBeforeEndbfrange(): void
+    {
+        $document = new Document();
+
+        $content = '<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>';
+        $header = Header::parse($content, $document);
+        $font = new Font($document, $header);
+
+        $content = "/CIDInit /ProcSet findresource begin\r\n"
+            ."1 dict begin\r\n"
+            ."begincmap\r\n"
+            ."/CMapName /Adobe-Identity-UCS def\r\n"
+            ."/CMapType 2 def\r\n"
+            ."1 begincodespacerange\r\n"
+            ."<0000> <FFFF>\r\n"
+            ."endcodespacerange\r\n"
+            ."3 beginbfrange\r\n"
+            // single destination value, CRLF
+            ."<0001> <0002> <0061>\r\n"
+            // destination array, CRLF
+            ."<0010> <0011> [<0062> <0063>]\r\n"
+            // destination array spanning several lines, directly followed by "endbfrange"
+            ."<0020> <0024> [<0041><0042><0043>\n<0044><0045>]endbfrange\n"
+            ."2 beginbfrange\n"
+            // destination array followed by a space and LF
+            ."<0030> <0031> [<0064> <0065>] \n"
+            // single destination value, directly followed by "endbfrange"
+            ."<0050> <0051> <0066>endbfrange\n"
+            ."endcmap\n"
+            ."CMapName currentdict /CMap defineresource pop\n"
+            ."end\n"
+            .'end';
+        $unicode = new PDFObject($document, null, $content);
+
+        $document->setObjects(['1_0' => $font, '2_0' => $unicode]);
+
+        $font->init();
+        $table = $font->loadTranslateTable();
+
+        $this->assertSame(
+            [
+                0x0001 => 'a',
+                0x0002 => 'b',
+                0x0010 => 'b',
+                0x0011 => 'c',
+                0x0020 => 'A',
+                0x0021 => 'B',
+                0x0022 => 'C',
+                0x0023 => 'D',
+                0x0024 => 'E',
+                0x0030 => 'd',
+                0x0031 => 'e',
+                0x0050 => 'f',
+                0x0051 => 'g',
+            ],
+            $table
+        );
+    }
+
+    /**
      * samples/bugs/Issue621.pdf contains a font whose ToUnicode CMap maps single
      * glyphs to strings of several characters via bfrange (fractions, Japanese unit names).
      * Their dstStrings exceed 16 hex digits.
