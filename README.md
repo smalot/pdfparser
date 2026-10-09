@@ -14,6 +14,15 @@ This library is under **limited maintenance**.
 It is still kept compatible with supported PHP versions, and community contributions may be accepted. However, there is currently **no active feature development** and **no guarantee** that pull requests will be reviewed or merged in a timely manner. 
 If you plan to contribute anything beyond a small, well-scoped fix, please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
 
+### Reporting security vulnerabilities
+
+If you believe you have found a security vulnerability, please send an email to @k00ni with relevant details. 
+**Do not disclose vulnerability details or proof-of-concept code publicly**, including in issues or pull requests.
+
+Please note that this project is maintained by volunteers with **very limited** time and resources. 
+While security reports are appreciated, **we cannot guarantee response times, investigations, fixes, or security releases**. 
+Some reported vulnerabilities may remain unresolved.
+
 ## Features
 
 - Load/parse objects and headers
