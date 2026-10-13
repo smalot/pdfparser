@@ -625,14 +625,53 @@ class RawDataParser
     }
 
     /**
+     * Skip a balanced pair of delimiters ('[' … ']' or '<<' … '>>') that starts at
+     * $offset and return the offset just after the matching closing delimiter. Used
+     * to discard a container whose nesting exceeds the configured limit, keeping the
+     * surrounding structure balanced.
+     */
+    private function skipBalancedDelimiters(string $pdfData, int $offset, string $open, string $close): int
+    {
+        $length = \strlen($pdfData);
+        $openLen = \strlen($open);
+        $closeLen = \strlen($close);
+        $level = 0;
+
+        while ($offset < $length) {
+            if (substr($pdfData, $offset, $closeLen) === $close) {
+                --$level;
+                $offset += $closeLen;
+                if ($level <= 0) {
+                    return $offset;
+                }
+
+                continue;
+            }
+
+            if (substr($pdfData, $offset, $openLen) === $open) {
+                ++$level;
+                $offset += $openLen;
+
+                continue;
+            }
+
+            ++$offset;
+        }
+
+        return $offset;
+    }
+
+    /**
      * Get object type, raw value and offset to next object
      *
      * @param int        $offset    Object offset
      * @param array|null $headerDic obj header's dictionary, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=26 ISO 32000-1:2008, 7.3.6 (array objects) and 7.3.7 (dictionary objects)
      */
-    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null, int $depth = 0): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -642,6 +681,22 @@ class RawDataParser
 
         // get first char
         $char = $pdfData[$offset];
+
+        // Bound the structural nesting depth. Arrays and dictionaries recurse into
+        // getRawObject() once per level; past the limit such a container is skipped
+        // as a whole and returned empty instead of being descended into, so a
+        // pathologically nested object cannot exhaust the call stack or memory
+        // while the surrounding structure stays balanced.
+        $maxNestingDepth = $this->config->getMaxNestingDepth();
+        if (0 < $maxNestingDepth && $depth >= $maxNestingDepth) {
+            if ('[' === $char) {
+                return ['[', [], $this->skipBalancedDelimiters($pdfData, $offset, '[', ']')];
+            }
+            if ('<' === $char && isset($pdfData[$offset + 1]) && '<' === $pdfData[$offset + 1]) {
+                return ['<<', [], $this->skipBalancedDelimiters($pdfData, $offset, '<<', '>>')];
+            }
+        }
+
         // get object type
         switch ($char) {
             case '%':  // \x25 PERCENT SIGN
@@ -650,7 +705,8 @@ class RawDataParser
                 if ($next > 0) {
                     $offset += $next;
 
-                    return $this->getRawObject($pdfData, $offset);
+                    // A comment is not a nesting level, so $depth is passed on unchanged.
+                    return $this->getRawObject($pdfData, $offset, null, $depth);
                 }
                 break;
 
@@ -710,7 +766,7 @@ class RawDataParser
                     do {
                         $oldOffset = $offset;
                         // get element
-                        $element = $this->getRawObject($pdfData, $offset);
+                        $element = $this->getRawObject($pdfData, $offset, null, $depth + 1);
                         $offset = $element[2];
                         $objval[] = $element;
                     } while ((']' != $element[0]) && ($offset != $oldOffset));
@@ -731,7 +787,7 @@ class RawDataParser
                         do {
                             $oldOffset = $offset;
                             // get element
-                            $element = $this->getRawObject($pdfData, $offset);
+                            $element = $this->getRawObject($pdfData, $offset, null, $depth + 1);
                             $offset = $element[2];
                             $objval[] = $element;
                         } while (('>>' != $element[0]) && ($offset != $oldOffset));

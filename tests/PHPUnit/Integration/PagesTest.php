@@ -103,4 +103,25 @@ class PagesTest extends TestCase
         // should not overwrite it
         $this->assertEquals([$font1], $page->getFonts());
     }
+
+    /**
+     * A valid (acyclic) page tree with an intermediate Pages node returns every
+     * page. A cycle guard added to Pages::getPages() must keep returning all pages
+     * of a legitimate nested tree.
+     */
+    public function testLegitimateNestedPageTreeReturnsAllPages(): void
+    {
+        $document = $this->getParserInstance()->parseContent($this->createPdf([
+            1 => '<< /Type /Catalog /Pages 2 0 R >>',
+            2 => '<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>',
+            3 => '<< /Type /Page /Parent 2 0 R >>',
+            4 => '<< /Type /Pages /Kids [5 0 R] /Count 1 >>',
+            5 => '<< /Type /Page /Parent 4 0 R >>',
+        ]));
+
+        $pages = $document->getPages();
+
+        $this->assertCount(2, $pages);
+        $this->assertContainsOnlyInstancesOf(Page::class, $pages);
+    }
 }

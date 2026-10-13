@@ -11,7 +11,7 @@ The `smalot/pdfparser` is a standalone PHP package that provides various tools t
 ### Maintenance status
 
 This library is under **limited maintenance**.
-It is still kept compatible with supported PHP versions, and community contributions may be accepted. However, there is currently **no active feature development** and **no guarantee** that pull requests will be reviewed or merged in a timely manner. 
+It is still kept compatible with supported PHP versions, and community contributions may be accepted. However, there is currently **no active feature development** and **no guarantee** that pull requests will be reviewed or merged in a timely manner.
 If you plan to contribute anything beyond a small, well-scoped fix, please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
 
 ## Features
@@ -46,15 +46,26 @@ In case you can't use Composer, you can include `alt_autoload.php-dist`. It will
 ```php
 <?php
 
-// Parse PDF file and build necessary objects.
-$parser = new \Smalot\PdfParser\Parser();
-$pdf = $parser->parseFile('/path/to/document.pdf');
+use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Parser;
 
-$text = $pdf->getText();
-echo $text;
+// Custom config: Recommended when parsing PDFs from untrusted sources
+$config = new Config();
+
+// Cap how far a single stream is decompressed, to avoid memory exhaustion.
+// Pick a value that fits your content, and combine it with a sane PHP memory_limit.
+$decodeMemoryLimit = 100 * 1024 * 1024; // = 100 MB
+$config->setDecodeMemoryLimit($decodeMemoryLimit);
+
+$parser = new Parser([], $config);
+$document = $parser->parseFile('/path/to/untrusted-file.pdf');
+
+echo $document->getText();
 ```
 
 Further usage information can be found [here](/doc/Usage.md).
+
+See [CustomConfig.md](/doc/CustomConfig.md) for all configuration options.
 
 ## Documentation
 

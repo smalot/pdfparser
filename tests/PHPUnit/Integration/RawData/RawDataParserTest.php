@@ -571,4 +571,34 @@ class RawDataParserTest extends TestCase
 
         $this->fixture->parseData('');
     }
+
+    /**
+     * A realistic level of array nesting (far below anything pathological) parses
+     * to full depth. A nesting-depth limit must stay above realistic depths so
+     * legitimate PDFs keep the same parsed structure.
+     */
+    public function testModeratelyNestedArrayIsParsedToFullDepth(): void
+    {
+        $depth = 50;
+        $result = $this->fixture->exposeGetRawObject(str_repeat('[', $depth).' 42 '.str_repeat(']', $depth));
+
+        $this->assertSame($depth, $this->arrayDepth($result));
+    }
+
+    /**
+     * Nesting depth of a getRawObject() array structure.
+     */
+    private function arrayDepth(array $node): int
+    {
+        if ('[' !== ($node[0] ?? null)) {
+            return 0;
+        }
+
+        $max = 0;
+        foreach ($node[1] as $child) {
+            $max = max($max, $this->arrayDepth($child));
+        }
+
+        return 1 + $max;
+    }
 }

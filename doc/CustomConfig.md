@@ -19,7 +19,8 @@ The `Config` class has the following options:
 
 | Option                   | Type    | Default         | Description                                                                                                                                          |
 |--------------------------|---------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `setDecodeMemoryLimit`   | Integer | `0`             | If parsing fails because of memory exhaustion, you can set a lower memory limit for decoding operations.                                             |
+| `setDecodeMemoryLimit`   | Integer | `0`             | Maximum size, in bytes, a single stream may be decompressed to (`0` = unlimited). Bounds decompression amplification; set it when parsing PDFs from untrusted sources. |
+| `setMaxNestingDepth`     | Integer | `5000`          | Maximum nesting depth of arrays and dictionaries within a single object (`0` = unlimited). Bounds parser recursion on pathologically nested objects.                                             |
 | `setFontSpaceLimit`      | Integer | `-50`           | Changing font space limit can be helpful when `Parser::getText()` returns a text with too many spaces.                                               |
 | `setIgnoreEncryption`    | Boolean | `false`         | Read PDFs that are not encrypted but have the encryption flag set. This is a temporary workaround, don't rely on it.                                 |
 | `setHorizontalOffset`    | String  | ` `             | When words are broken up or when the structure of a table is not preserved, you may get better results when adapting `setHorizontalOffset`.          |
@@ -38,6 +39,18 @@ $config = new \Smalot\PdfParser\Config();
 $config->setRetainImageContent(false);
 // Memory limit to use when de-compressing files, in bytes
 $config->setDecodeMemoryLimit(1000000);
+$parser = new \Smalot\PdfParser\Parser([], $config);
+```
+
+`setDecodeMemoryLimit` is also the control against decompression amplification: with it set, a small compressed stream cannot inflate without limit. Set it, together with a sane PHP `memory_limit`, when parsing PDFs from untrusted sources. A legitimate, highly compressible stream (e.g. an image) cannot be told apart from a decompression bomb by size, which is why the default is unlimited — choose a limit that fits your content.
+
+## option setMaxNestingDepth (bound parser recursion)
+
+Arrays and dictionaries are parsed recursively, once per nesting level. `setMaxNestingDepth` bounds that depth so a pathologically nested object cannot exhaust the call stack or memory; beyond the limit the container is skipped and parsing continues. The default is far above what regular PDFs use, so it only affects malformed input.
+
+```php
+$config = new \Smalot\PdfParser\Config();
+$config->setMaxNestingDepth(5000);
 $parser = new \Smalot\PdfParser\Parser([], $config);
 ```
 
