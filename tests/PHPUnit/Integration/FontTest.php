@@ -484,6 +484,23 @@ al;font-family:Helvetica,sans-serif;font-stretch:normal"><p><span style="font-fa
         $this->assertEquals('\\\\(', Font::decodeOctal('\\\\\\\\\\(')); // \\\\\( - parenthesis unescaped
     }
 
+    public function testDecodeOctalMasksOutOfRangeByteWithoutDeprecation(): void
+    {
+        set_error_handler(static function (int $severity, string $message): bool {
+            if (E_DEPRECATED === $severity) {
+                throw new \ErrorException($message, 0, $severity);
+            }
+
+            return false;
+        });
+
+        try {
+            $this->assertSame("\\xFF", Font::decodeOctal('\\777'));
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     public function testDecodeEntities(): void
     {
         $this->assertEquals('File Type', Font::decodeEntities('File#20Type'));
