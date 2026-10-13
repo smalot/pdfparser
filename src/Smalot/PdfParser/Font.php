@@ -431,7 +431,7 @@ class Font extends PDFObject
         // Now we can replace all octal codes without worrying about
         // escaped backslashes
         $text = preg_replace_callback('/\\\\([0-7]{1,3})/', function ($m) {
-            return \chr(octdec($m[1]));
+            return \chr(octdec($m[1]) & 0xFF);
         }, $text);
 
         // Unescape any parentheses
