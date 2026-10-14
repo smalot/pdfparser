@@ -537,6 +537,43 @@ class PageTest extends TestCase
         );
     }
 
+    /**
+     * Tests that the text leading is part of the text state: it is scaled by the text matrix
+     * active at T*, ' and ", survives BT/ET and is saved and restored by q/Q.
+     */
+    public function testGetDataTmTextLeadingState(): void
+    {
+        $filename = $this->rootDir.'/samples/SimpleInvoiceFilledExample2.pdf';
+        $parser = $this->getParserInstance();
+        $document = $parser->parseFile($filename);
+        $page = $document->getPages()[0];
+
+        $dataCommands = [
+            ['t' => '', 'o' => 'BT', 'c' => ''],
+            ['t' => '', 'o' => 'TL', 'c' => '2'], // text leading set before the text matrix
+            ['t' => '', 'o' => 'Tm', 'c' => '1 0 0 10 0 500'],
+            ['t' => '', 'o' => '\'', 'c' => 'first line'], // 2 * 10 pts down
+            ['t' => '', 'o' => 'ET', 'c' => ''],
+            ['t' => '', 'o' => 'BT', 'c' => ''], // keeps the text leading
+            ['t' => '', 'o' => 'Tm', 'c' => '1 0 0 10 0 500'],
+            ['t' => '', 'o' => 'T*', 'c' => ''],
+            ['t' => '(', 'o' => 'Tj', 'c' => 'second line'],
+            ['t' => '', 'o' => 'q', 'c' => ''],
+            ['t' => '', 'o' => 'TL', 'c' => '5'],
+            ['t' => '', 'o' => 'Q', 'c' => ''], // restores the text leading of 2
+            ['t' => '', 'o' => 'T*', 'c' => ''],
+            ['t' => '(', 'o' => 'Tj', 'c' => 'third line'],
+            ['t' => '', 'o' => 'ET', 'c' => ''],
+        ];
+
+        $dataTm = $page->getDataTm($dataCommands);
+
+        $this->assertCount(3, $dataTm);
+        $this->assertEquals(480, $dataTm[0][0][5]);
+        $this->assertEquals(480, $dataTm[1][0][5]);
+        $this->assertEquals(460, $dataTm[2][0][5]);
+    }
+
     public function testDataTmFontInfoHasToBeIncluded(): void
     {
         $config = new Config();
