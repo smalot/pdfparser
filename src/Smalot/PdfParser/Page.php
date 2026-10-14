@@ -744,7 +744,6 @@ class Page extends PDFObject
                  */
                 case 'BT':
                     $Tm = $defaultTm;
-                    $Tl = $defaultTl;
                     $Tx = 0;
                     $Ty = 0;
                     break;
@@ -774,8 +773,8 @@ class Page extends PDFObject
                      * Initial value: 0
                      */
                 case 'TL':
-                    // scaled text leading
-                    $Tl = (float) $command['c'] * (float) $Tm[$vSc];
+                    // unscaled text leading, scaled by the current Tm on T*, ' and "
+                    $Tl = (float) $command['c'];
                     break;
 
                     /*
@@ -802,7 +801,7 @@ class Page extends PDFObject
                      */
                 case 'TD':
                     $coord = explode(' ', $command['c']);
-                    $Tl = -((float) $coord[1] * (float) $Tm[$vSc]);
+                    $Tl = -(float) $coord[1];
                     $Tx += (float) $coord[0] * (float) $Tm[$hSc];
                     $Ty += (float) $coord[1] * (float) $Tm[$vSc];
                     $Tm[$x] = (string) $Tx;
@@ -837,7 +836,8 @@ class Page extends PDFObject
                      * Where Tl is the current leading parameter in the text state.
                      */
                 case 'T*':
-                    $Ty -= $Tl;
+                    // leading scaled by the current Tm
+                    $Ty -= $Tl * (float) $Tm[$vSc];
                     $Tm[$y] = (string) $Ty;
                     break;
 
@@ -862,7 +862,8 @@ class Page extends PDFObject
                      * string Tj
                      */
                 case "'":
-                    $Ty -= $Tl;
+                    // leading scaled by the current Tm
+                    $Ty -= $Tl * (float) $Tm[$vSc];
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $currentText];
                     break;
@@ -880,7 +881,8 @@ class Page extends PDFObject
                      */
                 case '"':
                     $data = explode(' ', $currentText);
-                    $Ty -= $Tl;
+                    // leading scaled by the current Tm
+                    $Ty -= $Tl * (float) $Tm[$vSc];
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $data[2]]; // Verify
                     break;
@@ -924,14 +926,16 @@ class Page extends PDFObject
                      * Save current graphics state to stack
                      */
                 case 'q':
-                    $graphicsStatesStack[] = $concatTm;
+                    // the text leading is part of the saved graphics state
+                    $graphicsStatesStack[] = [$concatTm, $Tl];
                     break;
                     /*
                      * Q
                      * Load last saved graphics state from stack
                      */
                 case 'Q':
-                    $concatTm = array_pop($graphicsStatesStack);
+                    // an unbalanced Q keeps the current state
+                    [$concatTm, $Tl] = array_pop($graphicsStatesStack) ?? [$concatTm, $Tl];
                     break;
                 default:
             }
