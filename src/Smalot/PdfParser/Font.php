@@ -43,6 +43,15 @@ class Font extends PDFObject
     public const MISSING = '?';
 
     /**
+     * The number of character codes which the bfrange entries of one ToUnicode CMap may expand to.
+     *
+     * A bfrange entry takes a few bytes but may cover billions of codes. A two byte code space has 65536 codes,
+     * so a CMap that stays inside of one needs a quarter of this value at most. Entries which would go beyond it
+     * are skipped.
+     */
+    private const MAX_BFRANGE_CODES = 262144;
+
+    /**
      * @var array
      */
     protected $table;
@@ -253,6 +262,8 @@ class Font extends PDFObject
 
             // Support for multiple bfrange sections
             if (preg_match_all('/beginbfrange(?P<sections>.*?)endbfrange/s', $content, $matches)) {
+                $remainingCodes = self::MAX_BFRANGE_CODES;
+
                 foreach ($matches['sections'] as $section) {
                     /**
                      * Regexp to capture <from>, <to>, and either <offset> or [...] items.
@@ -297,8 +308,16 @@ class Font extends PDFObject
                                 $prefix .= self::uchr(hexdec($part));
                             }
 
-                            for ($char = $char_from; $char <= $char_to; ++$char) {
-                                $this->table[$char] = $prefix.self::uchr($char - $char_from + $offset);
+                            // The number of codes is not an integer if a code does not fit into one (hexdec()
+                            // returns a float then). Such a range cannot be expanded, and a float is no table key.
+                            $codes = $char_to - $char_from + 1;
+                            if (!\is_int($codes) || $codes > $remainingCodes) {
+                                continue;
+                            }
+                            $remainingCodes -= max(0, $codes);
+
+                            for ($i = 0; $i < $codes; ++$i) {
+                                $this->table[$char_from + $i] = $prefix.self::uchr($i + $offset);
                             }
                         } else {
                             // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]

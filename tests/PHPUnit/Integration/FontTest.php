@@ -423,6 +423,127 @@ end';
         $this->assertSame("\u{FB01}", $table[0x0070]);
     }
 
+    /**
+     * Loads the translate table of a font whose ToUnicode CMap contains the given bfrange sections.
+     */
+    private function loadTranslateTableOfBfrange(string $sections): array
+    {
+        $document = new Document();
+
+        $header = Header::parse('<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>', $document);
+        $font = new Font($document, $header);
+
+        $content = "/CIDInit /ProcSet findresource begin\n"
+            ."1 dict begin\n"
+            ."begincmap\n"
+            ."1 begincodespacerange\n"
+            ."<0000> <FFFF>\n"
+            ."endcodespacerange\n"
+            .$sections
+            ."endcmap\n"
+            ."CMapName currentdict /CMap defineresource pop\n"
+            ."end\n"
+            .'end';
+        $unicode = new PDFObject($document, null, $content);
+
+        $document->setObjects(['1_0' => $font, '2_0' => $unicode]);
+
+        $font->init();
+
+        return $font->loadTranslateTable();
+    }
+
+    /**
+     * Some producers write the identity mapping of a whole two byte code space as a single bfrange.
+     * Its 65536 codes must still be mapped.
+     */
+    public function testLoadTranslateTableBfrangeOfTheWholeTwoByteCodeSpace(): void
+    {
+        $table = $this->loadTranslateTableOfBfrange("1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\n");
+
+        $this->assertCount(65536, $table);
+        $this->assertSame('A', $table[0x0041]);
+        $this->assertSame("\u{FFFF}", $table[0xFFFF]);
+    }
+
+    /**
+     * A bfrange which covers more codes than a code space has cannot be a real mapping. It is skipped,
+     * the library would store a table entry for each of its codes otherwise.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/832
+     */
+    public function testLoadTranslateTableSkipsBfrangeWithTooManyCodes(): void
+    {
+        $table = $this->loadTranslateTableOfBfrange(
+            "3 beginbfrange\n"
+            ."<0001> <0003> <0061>\n"
+            // 1048576 codes
+            ."<00000000> <000FFFFF> <0041>\n"
+            ."<0010> <0011> <0062>\n"
+            ."endbfrange\n"
+        );
+
+        // Checked first because PHPUnit takes very long to show the difference of a table with a million entries
+        $this->assertCount(5, $table);
+        $this->assertSame([0x0001 => 'a', 0x0002 => 'b', 0x0003 => 'c', 0x0010 => 'b', 0x0011 => 'c'], $table);
+    }
+
+    /**
+     * Ranges whose loop would take billions of rounds or would never end.
+     */
+    public function testLoadTranslateTableSkipsBfrangeWhichCannotBeExpanded(): void
+    {
+        $table = $this->loadTranslateTableOfBfrange(
+            "7 beginbfrange\n"
+            ."<0001> <0001> <0061>\n"
+            // 4294967296 codes
+            ."<00000000> <FFFFFFFF> <0041>\n"
+            // more than 16 hex digits: hexdec() returns a float, and adding 1 to a float of this size changes nothing
+            ."<FFFFFFFFFFFFFFFFFFFF> <FFFFFFFFFFFFFFFFFFFF> <0041>\n"
+            // the first value which hexdec() returns as a float
+            ."<8000000000000000> <8000000000000000> <0041>\n"
+            // the end is before the start: no codes, and no credit for the ranges below
+            ."<FFFFFFFF> <00000000> <0041>\n"
+            ."<00000000> <0FFFFFFF> <0041>\n"
+            ."<0002> <0002> <0062>\n"
+            ."endbfrange\n"
+        );
+
+        $this->assertSame([0x0001 => 'a', 0x0002 => 'b'], $table);
+    }
+
+    /**
+     * The largest integer plus 1 is a float which is equal to the largest integer when they are compared,
+     * so a loop that counts the codes up to the end of such a range never ends.
+     */
+    public function testLoadTranslateTableBfrangeAtTheLargestInteger(): void
+    {
+        $max = strtoupper(dechex(\PHP_INT_MAX));
+
+        $table = $this->loadTranslateTableOfBfrange("1 beginbfrange\n<".$max.'> <'.$max."> <0041>\nendbfrange\n");
+
+        $this->assertSame([\PHP_INT_MAX => 'A'], $table);
+    }
+
+    /**
+     * The ranges of one font may add up to a few times the codes of a two byte code space. A CMap with
+     * hundreds of thousands of full ranges is only a few kilobytes when compressed, and would keep the
+     * library busy for minutes.
+     */
+    public function testLoadTranslateTableLimitsTheCodesOfAllBfrangeEntriesTogether(): void
+    {
+        $entries = '';
+        for ($i = 0; $i < 200; ++$i) {
+            $entries .= sprintf("<0000> <FFFF> <%04X>\n", $i);
+        }
+
+        $table = $this->loadTranslateTableOfBfrange("200 beginbfrange\n".$entries."endbfrange\n");
+
+        $this->assertCount(65536, $table);
+        // The last range is not applied, code 0 would map to the character with the number 199 otherwise
+        $this->assertNotSame(Font::uchr(199), $table[0x0000]);
+    }
+
     public function testDecodeHexadecimal(): void
     {
         $hexa = '<322041>';
