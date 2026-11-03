@@ -171,6 +171,22 @@ class FilterHelperTest extends TestCase
     }
 
     /**
+     * Uses every code width (9 to 12 bits) and several clear-table codes.
+     * Decoding used to be quadratic; this took seconds.
+     */
+    public function testDecodeFilterLZWDecodeLargeStream(): void
+    {
+        $data = '';
+        for ($i = 0; \strlen($data) < 300000; ++$i) {
+            $data .= 'BT /F'.($i % 7).' '.(8 + $i % 5).' Tf '.($i * 37 % 500).' '.($i * 91 % 700).' Td ('.md5((string) $i).') Tj ET'."\n";
+        }
+
+        $result = $this->fixture->decodeFilter('LZWDecode', $this->encodeLZW($data));
+
+        $this->assertSame($data, $result);
+    }
+
+    /**
      * How does function behave if an unknown filter name was given.
      */
     public function testDecodeFilterUnknownFilter(): void
