@@ -368,6 +368,8 @@ class FilterHelper
                     // index do not exist on dictionary
                     $dic_val = $dictionary[$prev_index].$dictionary[$prev_index][0];
                     $decoded .= $dic_val;
+                    // the next code continues from the entry added below
+                    $prev_index = $dix;
                 }
                 // update dictionary
                 $dictionary[$dix] = $dic_val;
