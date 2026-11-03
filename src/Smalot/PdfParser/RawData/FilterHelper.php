@@ -335,10 +335,12 @@ class FilterHelper
         }
         // previous val
         $prev_index = 0;
+        // position of the next code in $bitstring
+        $bitpos = 0;
         // while we encounter EOD marker (257), read code_length bits
-        while (($data_length > 0) && (257 != ($index = bindec(substr($bitstring, 0, $bitlen))))) {
-            // remove read bits from string
-            $bitstring = substr($bitstring, $bitlen);
+        while (($data_length > 0) && (257 != ($index = bindec(substr($bitstring, $bitpos, $bitlen))))) {
+            // skip the read bits (cutting them off copies the rest each time)
+            $bitpos += $bitlen;
             // update number of bits
             $data_length -= $bitlen;
             if (256 == $index) { // clear-table marker
@@ -368,6 +370,8 @@ class FilterHelper
                     // index do not exist on dictionary
                     $dic_val = $dictionary[$prev_index].$dictionary[$prev_index][0];
                     $decoded .= $dic_val;
+                    // the next code continues from the entry added below
+                    $prev_index = $dix;
                 }
                 // update dictionary
                 $dictionary[$dix] = $dic_val;
