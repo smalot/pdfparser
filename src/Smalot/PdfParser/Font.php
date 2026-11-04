@@ -302,8 +302,9 @@ class Font extends PDFObject
                             }
                         } else {
                             // Support for : <srcCode1> <srcCodeN> [<dstString1> <dstString2> ... <dstStringN>]
+                            // A dstString may contain whitespace between its code units, e.g. <0066 0069> for "fi".
                             $strings = [];
-                            $matched = preg_match_all('/<(?P<string>[0-9A-F]+)> */is', $dest, $strings);
+                            $matched = preg_match_all('/<(?P<string>[0-9A-F\s]+)> */is', $dest, $strings);
                             if (false === $matched || 0 === $matched) {
                                 continue;
                             }
@@ -311,7 +312,7 @@ class Font extends PDFObject
                             foreach ($strings['string'] as $position => $string) {
                                 $parts = preg_split(
                                     '/([0-9A-F]{4})/i',
-                                    $string,
+                                    preg_replace('/\s+/', '', $string),
                                     0,
                                     \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE
                                 );

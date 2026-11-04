@@ -397,6 +397,58 @@ end';
     }
 
     /**
+     * Tests loadTranslateTable with bfrange definitions of the form
+     * <srcCode1> <srcCodeN> [<dstString1> ... <dstStringN>], where a dstString
+     * contains whitespace between its code units (e.g. <0066 0069> for "fi").
+     *
+     * Such an entry must not be skipped, otherwise every following entry of the
+     * array is mapped to the previous source code.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=303 ISO 32000-1:2008, 9.10.3
+     */
+    public function testLoadTranslateTableBfrangeArrayWithWhitespaceInDestination(): void
+    {
+        $document = new Document();
+
+        $content = '<</Type/Font /Subtype /Type0 /ToUnicode 2 0 R>>';
+        $header = Header::parse($content, $document);
+        $font = new Font($document, $header);
+
+        $content = '/CIDInit /ProcSet findresource begin
+1 dict begin
+begincmap
+/CMapName /Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<0000> <FFFF>
+endcodespacerange
+1 beginbfrange
+<0001> <0005> [<0041> <0066 0069> <0042> <0066 006C> <0043>]
+endbfrange
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end';
+        $unicode = new PDFObject($document, null, $content);
+
+        $document->setObjects(['1_0' => $font, '2_0' => $unicode]);
+
+        $font->init();
+        $table = $font->loadTranslateTable();
+
+        $this->assertSame(
+            [
+                0x0001 => 'A',
+                0x0002 => 'fi',
+                0x0003 => 'B',
+                0x0004 => 'fl',
+                0x0005 => 'C',
+            ],
+            $table
+        );
+    }
+
+    /**
      * samples/bugs/Issue621.pdf contains a font whose ToUnicode CMap maps single
      * glyphs to strings of several characters via bfrange (fractions, Japanese unit names).
      * Their dstStrings exceed 16 hex digits.
