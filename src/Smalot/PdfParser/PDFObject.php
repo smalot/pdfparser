@@ -1153,6 +1153,16 @@ class PDFObject
             do {
                 $oldCommand = $command;
 
+                // Search for a number before the first string, eg. [-250(text)]TJ
+                if (preg_match('/^ *(-?[\d.]+) */', $command, $tjmatch)) {
+                    $subcommand[] = [
+                        self::TYPE => 'n',
+                        self::OPERATOR => '',
+                        self::COMMAND => $tjmatch[1],
+                    ];
+                    $command = substr($command, \strlen($tjmatch[0]));
+                }
+
                 // Search for parentheses string () format
                 if (preg_match('/^ *\((.*?)(?<![^\\\\]\\\\)\) *(-?[\d.]+)?/', $command, $tjmatch)) {
                     $subcommand[] = [
