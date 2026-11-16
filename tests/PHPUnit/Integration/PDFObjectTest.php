@@ -857,6 +857,29 @@ ET';
     }
 
     /**
+     * A TJ array may start with a number (ISO 32000-1:2008, 9.4.3, Table 109):
+     * the strings after it must not be lost.
+     */
+    public function testGetCommandsTextTJStartingWithNumber(): void
+    {
+        $pdfObject = $this->getPdfObjectInstance(new Document());
+
+        $this->assertEquals(
+            [
+                self::TYPE => '[',
+                self::OPERATOR => 'TJ',
+                self::COMMAND => [
+                    [self::TYPE => 'n', self::OPERATOR => '', self::COMMAND => '-250'],
+                    [self::TYPE => '(', self::OPERATOR => 'TJ', self::COMMAND => 'Hello'],
+                    [self::TYPE => 'n', self::OPERATOR => '', self::COMMAND => '-250'],
+                    [self::TYPE => '<', self::OPERATOR => 'TJ', self::COMMAND => '576f726c64'],
+                ],
+            ],
+            $pdfObject->getCommandsText('[-250(Hello)-250<576f726c64>]TJ')[0]
+        );
+    }
+
+    /**
      * Tests that an invalid command does not cause an error, but just
      * returns an empty array
      */
