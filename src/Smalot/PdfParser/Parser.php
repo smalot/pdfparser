@@ -174,8 +174,8 @@ class Parser
                     $content = isset($part[3][0]) ? $part[3][0] : $part[1];
 
                     if ($header->get('Type')->equals('ObjStm')) {
-                        list($objectNumbers, $byteOffsets, $firstObjectOffset) = $this->getObjectStreamIndex($header, $content);
-                        $content = substr($content, $firstObjectOffset);
+                        list($objectNumbers, $byteOffsets, $byteOffsetBase) = $this->getObjectStreamIndex($header, $content);
+                        $content = substr($content, $byteOffsetBase);
                         $table = [];
 
                         foreach ($byteOffsets as $key => $byteOffset) {
@@ -227,19 +227,23 @@ class Parser
     }
 
     /**
-     * Provides the index of an object stream and the byte offset of its first
-     * object.
+     * Provides the index of an object stream and the base of its byte offsets:
+     * the position within the content they are relative to.
      *
      * The index consists of pairs of integers: the number of an object and its
-     * byte offset relative to the first object. The index is expected to end
-     * with the last pair, which directly follows another pair.
+     * byte offset, as a rule relative to the first object. The index is
+     * expected to end with the last pair, which directly follows another pair.
      *
      * Integer objects behind the index look like pairs. /First, the byte offset
      * of the first object, tells them apart. It is used, if it is located
      * between two pairs and the number of pairs in front of it equals /N (as
      * far as /N is usable).
      *
-     * @return array{0: array<int, string>, 1: array<int, string>, 2: int} [$objectNumbers, $byteOffsets, $firstObjectOffset]
+     * /First may also point to white-space behind the last pair. The byte
+     * offsets are relative to /First then, if the smallest one leads to the
+     * first byte behind that white-space.
+     *
+     * @return array{0: array<int, string>, 1: array<int, string>, 2: int} [$objectNumbers, $byteOffsets, $byteOffsetBase]
      *
      * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
      * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (N, First)
@@ -256,12 +260,27 @@ class Parser
 
         if (
             null === $first
-            // only white-space between /First and the end of the pairs
-            || false === strpbrk(substr($content, $first, $length - $first), '0123456789')
             // /First is located inside of a number
             || (0 < $first && 2 === strspn($content, '0123456789', $first - 1, 2))
         ) {
             return [$index[1], $index[2], $length];
+        }
+
+        // only white-space between /First and the end of the pairs
+        if (false === strpbrk(substr($content, $first, $length - $first), '0123456789')) {
+            $smallestByteOffset = \PHP_INT_MAX;
+
+            foreach ($index[2] as $byteOffset) {
+                // A byte offset with as many digits as PHP_INT_MAX or more
+                // is not the smallest one in any case
+                if (\strlen($byteOffset) < \strlen((string) \PHP_INT_MAX)) {
+                    $smallestByteOffset = min($smallestByteOffset, (int) $byteOffset);
+                }
+            }
+
+            // The byte offsets are relative to /First, if the smallest one leads to the first byte behind the white-space.
+            // Otherwise they are relative to that byte.
+            return [$index[1], $index[2], $length - $first === $smallestByteOffset ? $first : $length];
         }
 
         preg_match_all($pattern, substr($content, 0, $first), $indexInFrontOfFirst);
