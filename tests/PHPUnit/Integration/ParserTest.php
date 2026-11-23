@@ -261,6 +261,28 @@ class ParserTest extends TestCase
     }
 
     /**
+     * White-space separates the index from the first object and /First points
+     * to it. The byte offsets are relative to /First, as written by Spire.PDF,
+     * if the smallest one leads to the first byte behind that white-space.
+     *
+     * @see https://github.com/smalot/pdfparser/issues/856
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=54 ISO 32000-1:2008, 7.5.7, Table 16 (First)
+     */
+    public function testObjectStreamWithWhitespaceCountedInByteOffsets(): void
+    {
+        // /First is 11: the objects start at 11 + 2 and 11 + 12
+        $structure = $this->getObjectStreamStructure("11 2 12 12 \r\n<</V /A>> <</V /B>>", '2', '11');
+
+        $this->assertSame(['11_0' => 'A', '12_0' => 'B'], $this->parseObjectStream($structure));
+
+        // /First is 10: the objects start at 10 + 1 and 10 + 11, the smallest
+        // byte offset is not the first one of the index
+        $structure = $this->getObjectStreamStructure('11 11 12 1 <</V /B>> <</V /A>>', '2', '10');
+
+        $this->assertSame(['12_0' => 'B', '11_0' => 'A'], $this->parseObjectStream($structure));
+    }
+
+    /**
      * Object stream 12815_0 of the file starts with integer objects. Its objects
      * are needed to decode the ligature of "offer" on page 16.
      *
