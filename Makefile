@@ -9,3 +9,6 @@ run-phpstan:
 
 run-phpunit:
 	dev-tools/vendor/bin/phpunit $(ARGS)
+
+run-performance-tests:
+	php tests/Performance/runPerformanceTests.php
