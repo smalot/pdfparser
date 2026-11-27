@@ -141,6 +141,51 @@ class FilterHelperTest extends TestCase
         self::assertStringContainsString('Two Westbrook Corporate Center Suite 500', $document->getText());
     }
 
+    /*
+     * Tests for filter LZWDecode
+     */
+
+    /**
+     * Example from ISO 32000-1:2008, 7.4.4.2: codes 256 45 258 258 65 259 66 257.
+     * The first 258 is the entry being added (the "KwKwK" case).
+     */
+    public function testDecodeFilterLZWDecode(): void
+    {
+        $result = $this->fixture->decodeFilter('LZWDecode', "\x80\x0B\x60\x50\x22\x0C\x0C\x85\x01");
+
+        $this->assertSame('-----A---B', $result);
+    }
+
+    /**
+     * A run of one byte hits the "KwKwK" case at almost every code.
+     */
+    public function testDecodeFilterLZWDecodeRepeatedByte(): void
+    {
+        // 256 97 258 259 97 257: "aaaaaaaaaa"
+        $result = $this->fixture->decodeFilter('LZWDecode', "\x80\x18\x60\x50\x38\x24\x04");
+        $this->assertSame(str_repeat('a', 10), $result);
+
+        $data = str_repeat('a', 5000).str_repeat('ab', 5000);
+        $result = $this->fixture->decodeFilter('LZWDecode', $this->encodeLZW($data));
+        $this->assertSame($data, $result);
+    }
+
+    /**
+     * Uses every code width (9 to 12 bits) and several clear-table codes.
+     * Decoding used to be quadratic; this took seconds.
+     */
+    public function testDecodeFilterLZWDecodeLargeStream(): void
+    {
+        $data = '';
+        for ($i = 0; \strlen($data) < 300000; ++$i) {
+            $data .= 'BT /F'.($i % 7).' '.(8 + $i % 5).' Tf '.($i * 37 % 500).' '.($i * 91 % 700).' Td ('.md5((string) $i).') Tj ET'."\n";
+        }
+
+        $result = $this->fixture->decodeFilter('LZWDecode', $this->encodeLZW($data));
+
+        $this->assertSame($data, $result);
+    }
+
     /**
      * How does function behave if an unknown filter name was given.
      */
@@ -224,5 +269,64 @@ class FilterHelperTest extends TestCase
         $result = $this->fixture->decodeFilter('RunLengthDecode', "\x02ABC\xFEX\x80");
 
         $this->assertSame('ABCXXX', $result);
+    }
+
+    /**
+     * Minimal LZW encoder per ISO 32000-1:2008, 7.4.4.2 (EarlyChange 1).
+     * Starts with a clear-table code, clears again when the table is full,
+     * ends with EOD.
+     */
+    private function encodeLZW(string $data): string
+    {
+        $bits = '';
+        $width = 9;
+        $table = [];
+        $next = 258;
+        $emit = function (int $code) use (&$bits, &$width) {
+            $bits .= str_pad(decbin($code), $width, '0', \STR_PAD_LEFT);
+        };
+        $reset = function () use (&$table, &$next, &$width) {
+            $table = [];
+            for ($i = 0; $i < 256; ++$i) {
+                $table[\chr($i)] = $i;
+            }
+            $next = 258;
+            $width = 9;
+        };
+
+        $reset();
+        $emit(256);
+        $current = '';
+        $length = \strlen($data);
+        for ($i = 0; $i < $length; ++$i) {
+            $extended = $current.$data[$i];
+            if (isset($table[$extended])) {
+                $current = $extended;
+                continue;
+            }
+            $emit($table[$current]);
+            $table[$extended] = $next++;
+            // EarlyChange 1: widen the codes one code early
+            if ($next + 1 > (1 << $width) && $width < 12) {
+                ++$width;
+            }
+            if ($next >= 4095) {
+                $emit(256);
+                $reset();
+            }
+            $current = $data[$i];
+        }
+        if ('' !== $current) {
+            $emit($table[$current]);
+        }
+        $emit(257);
+
+        $bits .= str_repeat('0', (8 - \strlen($bits) % 8) % 8);
+        $encoded = '';
+        foreach (str_split($bits, 8) as $byte) {
+            $encoded .= \chr(bindec($byte));
+        }
+
+        return $encoded;
     }
 }
