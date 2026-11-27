@@ -432,6 +432,58 @@ q
     }
 
     /**
+     * formatContent() replaces inline images by placeholders before it looks
+     * for strings, so image data does not affect the strings behind it.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=222 ISO 32000-1:2008, 8.9.7 (inline images)
+     */
+    public function testFormatContentInlineImageCases(): void
+    {
+        $cases = [
+            'two images with text in between' => [
+                'q BI /W 1 /H 1 ID x EI Q BT (a) Tj ET q BI /W 2 /H 2 ID y EI Q',
+                "q\r\nBI\r\n/W 1 /H 1 ID\r\nx EI\r\nQ\r\nBT\r\n(a) Tj\r\nET\r\nq\r\nBI\r\n/W 2 /H 2 ID\r\ny EI\r\nQ",
+            ],
+            'image data with unbalanced parentheses' => [
+                'q BI /W 1 /H 1 ID (( EI Q BT (a) Tj ET',
+                "q\r\nBI\r\n/W 1 /H 1 ID\r\n(( EI\r\nQ\r\nBT\r\n(a) Tj\r\nET",
+            ],
+            'image dictionary with a string' => [
+                'q BI /W 1 /H 1 /X (a(b)c) ID x EI Q',
+                "q\r\nBI\r\n/W 1 /H 1 /X (a(b)c) ID\r\nx EI\r\nQ",
+            ],
+            'image dictionary without width and height' => [
+                'q BI /A 1 ID x EI Q BT (a) Tj ET',
+                "q\r\nBI\r\n/A 1 ID\r\nx EI\r\nQ\r\nBT\r\n(a) Tj\r\nET",
+            ],
+            'EI inside of image data' => [
+                'q BI /W 1 /H 1 ID xEIy EI Q',
+                "q\r\nBI\r\n/W 1 /H 1 ID\r\nxEIy EI\r\nQ",
+            ],
+        ];
+
+        foreach ($cases as $description => $case) {
+            $this->assertSame($case[1], $this->formatContent($case[0]), $description);
+        }
+    }
+
+    /**
+     * The size of a string with balanced parentheses doesn't affect the
+     * strings behind it. A regular expression built from more than 64 KB of
+     * string could not be compiled, the strings behind it were no longer
+     * protected and got split at the operators found in them.
+     */
+    public function testFormatContentLargeStringWithBalancedParentheses(): void
+    {
+        $string = '(a('.str_repeat('x', 100000).')b)';
+
+        $this->assertSame(
+            "BT\r\n".$string." Tj\r\n(c Tj) Tj\r\nET",
+            $this->formatContent('BT '.$string.' Tj (c Tj) Tj ET')
+        );
+    }
+
+    /**
      * formatContent() replaces strings and the dictionaries of marked-content
      * operators by placeholders, puts each command on a line of its own and
      * restores strings and dictionaries afterwards.
@@ -463,9 +515,57 @@ q
                 'BT (a(b)c) Tj (d(e(f))g) Tj ET',
                 "BT\r\n(a(b)c) Tj\r\n(d(e(f))g) Tj\r\nET",
             ],
+            'deeply nested parentheses' => [
+                'BT (a(b(c(d)e)f)g) Tj ET',
+                "BT\r\n(a(b(c(d)e)f)g) Tj\r\nET",
+            ],
+            'sibling pairs of parentheses' => [
+                'BT (()()()) Tj ET',
+                "BT\r\n(()()()) Tj\r\nET",
+            ],
+            'strings consisting of parentheses only' => [
+                'BT (()) Tj () Tj ET',
+                "BT\r\n(()) Tj\r\n() Tj\r\nET",
+            ],
+            'escaped parentheses around a balanced pair' => [
+                'BT (a\((b)\)c) Tj ET',
+                "BT\r\n".'(a\((b)\)c) Tj'."\r\nET",
+            ],
+            'escaped backslash in front of the closing parenthesis' => [
+                'BT (a\\\\) Tj (b) Tj ET',
+                "BT\r\n".'(a\\\\) Tj'."\r\n(b) Tj\r\nET",
+            ],
+            'escaped backslash in front of an escaped parenthesis' => [
+                'BT (a\\\\\)b) Tj ET',
+                "BT\r\n".'(a\\\\\)b) Tj'."\r\nET",
+            ],
+            'operators inside of a string' => [
+                'BT (BT ET Tj q Q cm) Tj ET',
+                "BT\r\n(BT ET Tj q Q cm) Tj\r\nET",
+            ],
+            'marked-content dictionary inside of a string' => [
+                'BT (<</A 1>> BDC) Tj ET',
+                "BT\r\n(<</A 1>> BDC) Tj\r\nET",
+            ],
+            'balanced parentheses inside of a TJ array' => [
+                'BT [(a(b)c)-5(d)]TJ ET',
+                "BT\r\n[(a(b)c)-5(d)]TJ\r\nET",
+            ],
             'strings in front of an unterminated string' => [
                 'BT (ok) Tj (broken Tj ET',
                 "BT\r\n(ok) Tj\r\n(broken Tj\r\nET",
+            ],
+            // Strings behind an unterminated string are no longer protected,
+            // the operators found in them are put on lines of their own
+            'strings behind an unterminated string' => [
+                'BT (ok) Tj (a(b Tj (c) Tj ET',
+                "BT\r\n(ok) Tj\r\n(a(b\r\nTj\r\n(c\r\n) Tj\r\nET",
+            ],
+            // The string ends at the first balancing parenthesis, the
+            // remaining one is not part of it ("b" is an operator)
+            'superfluous closing parenthesis' => [
+                'BT (a)b) Tj (c) Tj ET',
+                "BT\r\n(a)b\r\n) Tj\r\n(c) Tj\r\nET",
             ],
             'end-of-line markers inside of strings' => [
                 "BT (line1\nline2) Tj (line3\\\nline4) Tj (line5\r\nline6) Tj ET",
@@ -475,6 +575,26 @@ q
                 '/P <</MCID 0>> BDC BT (A) Tj ET EMC /P <</MCID 1 /T (t)>> BDC BT (B) Tj ET EMC',
                 "/P <</MCID 0>> BDC\r\nBT\r\n(A) Tj\r\nET\r\nEMC\r\n"
                     ."/P <</MCID 1 /T (t)>> BDC\r\nBT\r\n(B) Tj\r\nET\r\nEMC",
+            ],
+            'nested dictionary' => [
+                '/P <</A <</B 1>> >> BDC BT (x) Tj ET EMC',
+                "/P <</A <</B 1>> >> BDC\r\nBT\r\n(x) Tj\r\nET\r\nEMC",
+            ],
+            'dictionary directly followed by the operator' => [
+                '/P <</MCID 0>>BDC BT (x) Tj ET EMC',
+                "/P <</MCID 0>>BDC\r\nBT\r\n(x) Tj\r\nET\r\nEMC",
+            ],
+            'dictionaries of DP and MP' => [
+                '/P <</A 1>> DP /Q <</B 2>> MP BT (x) Tj ET',
+                "/P <</A 1>> DP\r\n/Q <</B 2>> MP\r\nBT\r\n(x) Tj\r\nET",
+            ],
+            'BMC without dictionary' => [
+                '/P BMC BT (x) Tj ET EMC',
+                "/P BMC\r\nBT\r\n(x) Tj\r\nET\r\nEMC",
+            ],
+            'consecutive dictionaries' => [
+                '/P <</MCID 0>> BDC /P <</MCID 1>> BDC /P <</MCID 2>> BDC BT (x) Tj ET EMC EMC EMC',
+                "/P <</MCID 0>> BDC\r\n/P <</MCID 1>> BDC\r\n/P <</MCID 2>> BDC\r\nBT\r\n(x) Tj\r\nET\r\nEMC\r\nEMC\r\nEMC",
             ],
             'string which looks like a placeholder' => [
                 'BT (@@@STRING_1@@@ ###DICT_1###) Tj ET',
@@ -744,6 +864,31 @@ ET';
         $this->assertCount(3, $dictionary['Array']);
 
         $this->assertEquals('<>', $dictionary['Silent']);
+    }
+
+    /**
+     * A closing bracket or closing angle brackets without an opening
+     * counterpart are ignored, the result equals the one of the balanced
+     * dictionary. They made parseDictionary() return null, which violated
+     * its return type and ended in a TypeError.
+     */
+    public function testParseDictionaryWithUnbalancedClosingTokens(): void
+    {
+        $cases = [
+            'closing bracket' => ['<</A ]>>', []],
+            'closing angle brackets' => ['<</A 1>> >>', ['A' => '1']],
+            'entries around a closing bracket' => ['<</A 1 ] /B 2>>', ['A' => '1', 'B' => '2']],
+            'closing bracket behind an array' => ['<</A [1 2]] /B 3>>', ['A' => '[1 2]', 'B' => '3']],
+            'closing bracket behind a dictionary' => ['<</A <</B 1>>] /C 2>>', ['A' => ['B' => '1'], 'C' => '2']],
+        ];
+
+        foreach ($cases as $description => $case) {
+            $this->assertSame(
+                $case[1],
+                $this->getPdfObjectInstance(new Document())->parseDictionary($case[0]),
+                $description
+            );
+        }
     }
 
     /**

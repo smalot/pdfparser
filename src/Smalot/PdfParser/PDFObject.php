@@ -255,8 +255,14 @@ class PDFObject
 
         // Find all inline image content and replace them so they aren't
         // affected by the next steps
+        // The search starts at $offsetBI. The content in front of $offset is
+        // collected in $processed, with each image replaced by a placeholder.
+        // No regular expression is built from the content, so the effort
+        // grows linearly with the number and the size of the images.
         $pdfInlineImages = [];
         $offsetBI = 0;
+        $offset = 0;
+        $processed = '';
         while (preg_match('/\sBI\s(\/.+?)\sID\s(.+?)\sEI(?=\s|$)/s', $content, $text, \PREG_OFFSET_CAPTURE, $offsetBI)) {
             // Attempt to detemine if this instance of the 'BI' command
             // actually occured within a (string) using the following
@@ -268,10 +274,7 @@ class PDFObject
 
             // Step 2: Remove all correctly ordered and balanced
             // parentheses from (strings)
-            do {
-                $paraTest = $para;
-                $para = preg_replace('/\(([^()]*)\)/', '$1', $paraTest);
-            } while ($para != $paraTest);
+            $para = $this->removeBalancedParentheses($para);
 
             $paraOpen = strpos($para, '(');
             $paraClose = strpos($para, ')');
@@ -298,12 +301,8 @@ class PDFObject
                     preg_replace(['/\r\n/', '/\r/', '/\n/'], ' ', $text[1][0]),
                     preg_replace(['/\r\n/', '/\r/', '/\n/'], '', $text[2][0]),
                 ];
-                $content = preg_replace(
-                    '/'.preg_quote($text[0][0], '/').'/',
-                    '^^^'.$id.'^^^',
-                    $content,
-                    1
-                );
+                $processed .= substr($content, $offset, $text[0][1] - $offset).'^^^'.$id.'^^^';
+                $offset = $offsetBI = $text[0][1] + \strlen($text[0][0]);
             } else {
                 // If there was no valid dictionary, or a height and width
                 // weren't specified, then we don't know what this is, so
@@ -312,42 +311,32 @@ class PDFObject
                 $offsetBI = (int) $text[1][1];
             }
         }
+        $content = $processed.substr($content, $offset);
 
         // Find all strings () and replace them so they aren't affected
         // by the next steps
         $pdfstrings = [];
-        $attempt = '(';
         // The search starts at $offset. The content in front of $offset is
         // collected in $processed, with each string replaced by a placeholder.
-        // The effort grows linearly with the number of strings, which matters
-        // for TJ arrays consisting of thousands of string operands.
+        // Each string is scanned once, so the effort grows linearly with the
+        // number and the length of the strings, no matter how many
+        // parentheses they contain.
         $offset = 0;
         $processed = '';
-        while (preg_match('/'.preg_quote($attempt, '/').'.*?\)/s', $content, $text, \PREG_OFFSET_CAPTURE, $offset)) {
-            list($string, $stringPos) = $text[0];
+        while (false !== ($stringPos = strpos($content, '(', $offset))) {
+            $stringEnd = $this->findStringEnd($content, $stringPos);
 
-            // Remove all escaped slashes and parentheses from the target text
-            $para = str_replace(['\\\\', '\\(', '\\)'], '', $string);
-
-            // PDF strings can contain unescaped parentheses as long as
-            // they're balanced, so check for balanced parentheses
-            $left = preg_match_all('/\(/', $para);
-            $right = preg_match_all('/\)/', $para);
-
-            if (')' == $para[-1] && $left == $right) {
-                // Replace the string with a unique placeholder
-                $id = uniqid('STRING_', true);
-                $pdfstrings[$id] = $string;
-                $processed .= substr($content, $offset, $stringPos - $offset).'@@@'.$id.'@@@';
-                $offset = $stringPos + \strlen($string);
-
-                // Reset to search for the next string
-                $attempt = '(';
-            } else {
-                // We had unbalanced parentheses, so use the current
-                // match as a base to find a longer string
-                $attempt = $string;
+            // The string is not terminated, leave the rest of the content
+            // as it is
+            if (null === $stringEnd) {
+                break;
             }
+
+            // Replace the string with a unique placeholder
+            $id = uniqid('STRING_', true);
+            $pdfstrings[$id] = substr($content, $stringPos, $stringEnd + 1 - $stringPos);
+            $processed .= substr($content, $offset, $stringPos - $offset).'@@@'.$id.'@@@';
+            $offset = $stringEnd + 1;
         }
         $content = $processed.substr($content, $offset);
 
@@ -356,17 +345,18 @@ class PDFObject
 
         // Find all dictionary << >> commands and replace them so they
         // aren't affected by the next steps
+        // The search starts at $offset, the content in front of it is
+        // collected in $processed (see strings above).
         $dictstore = [];
-        while (preg_match('/(<<.*?>> *)(BDC|BMC|DP|MP)/s', $content, $dicttext)) {
+        $offset = 0;
+        $processed = '';
+        while (preg_match('/(<<.*?>> *)(BDC|BMC|DP|MP)/s', $content, $dicttext, \PREG_OFFSET_CAPTURE, $offset)) {
             $dictid = uniqid('DICT_', true);
-            $dictstore[$dictid] = $dicttext[1];
-            $content = preg_replace(
-                '/'.preg_quote($dicttext[0], '/').'/',
-                ' ###'.$dictid.'###'.$dicttext[2],
-                $content,
-                1
-            );
+            $dictstore[$dictid] = $dicttext[1][0];
+            $processed .= substr($content, $offset, $dicttext[0][1] - $offset).' ###'.$dictid.'###'.$dicttext[2][0];
+            $offset = $dicttext[0][1] + \strlen($dicttext[0][0]);
         }
+        $content = $processed.substr($content, $offset);
 
         // Normalize white-space in the document stream
         $content = preg_replace('/\s{2,}/', ' ', $content);
@@ -422,19 +412,106 @@ class PDFObject
             $content = strtr($content, $stringMap);
         }
 
-        // Restore the original content of any inline images
-        $pdfInlineImages = array_reverse($pdfInlineImages, true);
+        // Restore the original content of any inline images, all
+        // placeholders in one pass over the content
+        $imageMap = [];
         foreach ($pdfInlineImages as $id => $image) {
-            $content = str_replace(
-                '^^^'.$id.'^^^',
-                "\r\nBI\r\n".$image[0]." ID\r\n".$image[1]." EI\r\n",
-                $content
-            );
+            $imageMap['^^^'.$id.'^^^'] = "\r\nBI\r\n".$image[0]." ID\r\n".$image[1]." EI\r\n";
+        }
+        if ([] !== $imageMap) {
+            $content = strtr($content, $imageMap);
         }
 
         $content = trim(preg_replace(['/(\r\n){2,}/', '/\r\n +/'], "\r\n", $content));
 
         return $content;
+    }
+
+    /**
+     * Returns the position of the parenthesis which terminates the literal
+     * string starting at $start, or null if the string is not terminated.
+     *
+     * Balanced pairs of parentheses inside of the string are part of it, a
+     * backslash escapes the character following it. The content is scanned
+     * once, so the effort grows linearly with the length of the string.
+     *
+     * @param int $start position of the opening parenthesis
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     */
+    private function findStringEnd(string $content, int $start): ?int
+    {
+        $length = \strlen($content);
+        $depth = 0;
+        $pos = $start;
+
+        while ($pos < $length) {
+            $char = $content[$pos];
+
+            if ('\\' === $char) {
+                // Skip the escaped character
+                $pos += 2;
+            } else {
+                if ('(' === $char) {
+                    ++$depth;
+                } elseif (0 === --$depth) {
+                    return $pos;
+                }
+                ++$pos;
+            }
+
+            // Jump to the next character of interest
+            if ($pos < $length) {
+                $pos += strcspn($content, '()\\', $pos);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Removes the balanced pairs of parentheses from the given text, keeps
+     * their content and every unbalanced parenthesis.
+     *
+     * Example: "a(b(c)d))(e" becomes "abcd)(e".
+     *
+     * The text is scanned once, so the effort grows linearly with its length,
+     * no matter how deeply the parentheses are nested.
+     */
+    private function removeBalancedParentheses(string $text): string
+    {
+        $length = \strlen($text);
+        $openPositions = [];
+        $removedPositions = [];
+
+        for ($pos = strcspn($text, '()'); $pos < $length; ++$pos) {
+            if ('(' === $text[$pos]) {
+                $openPositions[] = $pos;
+            } elseif ([] !== $openPositions) {
+                $removedPositions[array_pop($openPositions)] = true;
+                $removedPositions[$pos] = true;
+            }
+
+            // Jump to the next parenthesis
+            if ($pos + 1 < $length) {
+                $pos += strcspn($text, '()', $pos + 1);
+            }
+        }
+
+        if ([] === $removedPositions) {
+            return $text;
+        }
+
+        ksort($removedPositions);
+
+        $result = '';
+        $copyFrom = 0;
+        foreach ($removedPositions as $pos => $removed) {
+            $result .= substr($text, $copyFrom, $pos - $copyFrom);
+            $copyFrom = $pos + 1;
+        }
+
+        return $result.substr($text, $copyFrom);
     }
 
     /**
@@ -667,6 +744,13 @@ class PDFObject
 
                     // Close numeric array
                 case ']':
+                    // Ignore a closing token without opening counterpart.
+                    // Moving down from the outermost level would turn the
+                    // result into null.
+                    if ([] === $stack) {
+                        break;
+                    }
+
                     // Revert string type arrays back to a single element
                     if (\is_array($parsed) && 1 == \count($parsed)
                         && isset($parsed[0]) && \is_string($parsed[0])
@@ -676,6 +760,11 @@ class PDFObject
                     // Close hashed array
                     // no break
                 case '>>':
+                    // See above
+                    if ([] === $stack) {
+                        break;
+                    }
+
                     $arrayTypeNumeric = false;
 
                     // Move down one level in the stack
@@ -880,6 +969,13 @@ class PDFObject
 
                         // Restore previous selected font and graphics matrix
                     case 'Q':
+                        // Ignore a Q without preceding q, the graphics state
+                        // stays as it is. Restoring from the empty stack would
+                        // set the font and the matrix to null.
+                        if ([] === $clipped_font) {
+                            break;
+                        }
+
                         list($current_font, $current_font_size) = array_pop($clipped_font);
                         $current_position_cm = array_pop($clipped_position_cm);
                         break;

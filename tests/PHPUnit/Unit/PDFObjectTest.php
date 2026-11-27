@@ -150,6 +150,155 @@ class PDFObjectTest extends TestCase
     }
 
     /**
+     * Pairs of parentheses may be nested, and escaped parentheses don't
+     * count. The escape characters are removed from the text.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=23 ISO 32000-1:2008, 7.3.4.2 (literal strings)
+     */
+    public function testGetTextArrayKeepsNestedParenthesesInsideString(): void
+    {
+        self::assertSame(
+            ['a(b(c)d)e '],
+            $this->getTextArrayOfFormContent('BT /F1 12 Tf 10 10 Td (a(b(c)d)e) Tj ET')
+        );
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            ['(((()))) '],
+            $this->getTextArrayOfFormContent('BT /F1 12 Tf 10 10 Td ((((())))) Tj ET')
+        );
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            ['a((b))c '],
+            $this->getTextArrayOfFormContent('BT /F1 12 Tf 10 10 Td (a\((b)\)c) Tj ET')
+        );
+    }
+
+    /**
+     * Text of an unterminated string is extracted, as are the strings in
+     * front of it.
+     */
+    public function testGetTextArrayWithUnterminatedString(): void
+    {
+        self::assertSame(
+            ['okbroken '],
+            $this->getTextArrayOfFormContent('BT /F1 12 Tf 10 10 Td (ok) Tj (broken Tj ET')
+        );
+    }
+
+    /**
+     * Each marked-content sequence provides its text, also if its property
+     * list contains a string.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=561 ISO 32000-1:2008, 14.6.1, Table 320 (BDC, EMC)
+     */
+    public function testGetTextArrayOfConsecutiveMarkedContentSequences(): void
+    {
+        $content = '/P <</MCID 0 /T (t)>> BDC BT /F1 12 Tf 10 10 Td (A) Tj ET EMC '
+            .'/P <</MCID 1>> BDC BT /F1 12 Tf 10 30 Td (B) Tj ET EMC';
+
+        self::assertSame(["A\nB "], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
+     * Data and dictionary of an inline image don't affect the text behind
+     * it, neither do parentheses inside of them.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=222 ISO 32000-1:2008, 8.9.7 (inline images)
+     */
+    public function testGetTextArrayBehindInlineImage(): void
+    {
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('q BI /W 1 /H 1 ID (( EI Q BT /F1 12 Tf 10 10 Td (a) Tj ET')
+        );
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('q BI /W 1 /H 1 /X (a(b)c) ID x EI Q BT /F1 12 Tf 10 10 Td (a) Tj ET')
+        );
+    }
+
+    /**
+     * A dictionary with an unbalanced closing bracket doesn't prevent text
+     * extraction, neither for an inline image nor for a marked-content
+     * sequence. It made parseDictionary() throw a TypeError.
+     */
+    public function testGetTextArrayWithUnbalancedClosingBracketInDictionary(): void
+    {
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('q BI /W 1 /H 1 /X ] ID x EI Q BT /F1 12 Tf 10 10 Td (a) Tj ET')
+        );
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('/P <</A ]>> BDC BT /F1 12 Tf 10 10 Td (a) Tj ET EMC')
+        );
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('/P <</A 1>> >> BDC BT /F1 12 Tf 10 10 Td (a) Tj ET EMC')
+        );
+    }
+
+    /**
+     * A Q operator without preceding q is ignored, the graphics state stays
+     * as it is. Restoring from the empty stack set the font to null, which
+     * ended in a TypeError.
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=135 ISO 32000-1:2008, 8.4.4, Table 57 (q, Q)
+     */
+    public function testGetTextArrayWithUnbalancedRestoreGraphicsState(): void
+    {
+        self::assertSame(
+            ['a '],
+            $this->getTextArrayOfFormContent('BT /F1 12 Tf 10 10 Td Q (a) Tj ET')
+        );
+
+        // Same text as without the superfluous Q operators
+        $content = 'BT /F1 12 Tf 10 10 Td (a) Tj ET q 1 0 0 1 50 50 cm BT /F1 12 Tf 10 10 Td (b) Tj ET Q';
+
+        PDFObject::$recursionStack = [];
+        $expected = $this->getTextArrayOfFormContent($content);
+
+        PDFObject::$recursionStack = [];
+        self::assertSame(
+            $expected,
+            $this->getTextArrayOfFormContent('Q Q '.$content.' Q')
+        );
+    }
+
+    /**
+     * The size of an inline image doesn't affect the text behind it. A
+     * regular expression built from more than 64 KB of image data could
+     * not be compiled, the text of the whole content stream got lost.
+     */
+    public function testGetTextArrayBehindLargeInlineImage(): void
+    {
+        $content = 'q BI /W 1 /H 1 ID '.str_repeat('x', 100000).' EI Q BT /F1 12 Tf 10 10 Td (a) Tj ET';
+
+        self::assertSame(['a '], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
+     * The size of a marked-content dictionary doesn't affect the text of the
+     * sequence. A regular expression built from a dictionary of more than
+     * 64 KB could not be compiled, the text of the whole content stream got
+     * lost.
+     */
+    public function testGetTextArrayOfMarkedContentWithLargeDictionary(): void
+    {
+        $content = '/P <</A /'.str_repeat('x', 100000).'>> BDC BT /F1 12 Tf 10 10 Td (a) Tj ET EMC';
+
+        self::assertSame(['a '], $this->getTextArrayOfFormContent($content));
+    }
+
+    /**
      * Provides the text array of a page, whose content stream invokes a form
      * XObject with the given content.
      */
